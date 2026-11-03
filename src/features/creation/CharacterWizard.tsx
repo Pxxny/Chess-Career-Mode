@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button, Card } from '@/components/ui';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { GAME_CONFIG } from '@/data/config';
 import { ArchetypeStep } from './steps/ArchetypeStep';
 import { ConfirmStep } from './steps/ConfirmStep';
@@ -91,11 +92,13 @@ export function CharacterWizard() {
         <h1 ref={headingRef} tabIndex={-1} className="mb-5 font-display text-2xl font-bold text-ink outline-none">
           {HEADINGS[index]}
         </h1>
-        {step.id === 'identity' && <IdentityStep draft={draft} update={update} />}
-        {step.id === 'archetype' && <ArchetypeStep draft={draft} update={update} />}
-        {step.id === 'look' && <LookStep draft={draft} update={update} />}
-        {step.id === 'year' && <StartYearStep draft={draft} update={update} />}
-        {step.id === 'confirm' && <ConfirmStep draft={draft} />}
+        <ErrorBoundary key={step.id} scope={`${step.title} step`} compact>
+          {step.id === 'identity' && <IdentityStep draft={draft} update={update} />}
+          {step.id === 'archetype' && <ArchetypeStep draft={draft} update={update} />}
+          {step.id === 'look' && <LookStep draft={draft} update={update} />}
+          {step.id === 'year' && <StartYearStep draft={draft} update={update} />}
+          {step.id === 'confirm' && <ConfirmStep draft={draft} />}
+        </ErrorBoundary>
 
         {error && <p role="alert" className="mt-4 text-sm text-red-300">{error}</p>}
 

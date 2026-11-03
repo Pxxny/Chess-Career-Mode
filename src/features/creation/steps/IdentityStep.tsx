@@ -1,6 +1,7 @@
 import { GAME_CONFIG } from '@/data/config';
 import type { PlayerGender } from '@/types';
 import { cn } from '@/utils/cn';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { CitySelect } from '../CitySelect';
 import { CountrySelect } from '../CountrySelect';
 import type { CharacterDraft } from '../useCharacterDraft';
@@ -52,8 +53,17 @@ export function IdentityStep({ draft, update }: StepProps) {
         </div>
       </fieldset>
 
-      <CountrySelect value={draft.country} onChange={(country) => update({ country, city: null })} />
-      <CitySelect country={draft.country} value={draft.city} onChange={(city) => update({ city })} />
+      <CountrySelect
+        value={draft.country}
+        onChange={(country) => {
+          // Re-picking the same nationality keeps the chosen city; a different one clears it.
+          if (country.code !== draft.country?.code) update({ country, city: null });
+        }}
+      />
+      {/* Keyed by country so a failed city list resets when the nationality changes; the rest of the form survives. */}
+      <ErrorBoundary key={draft.country?.code ?? 'none'} scope="city selection" compact>
+        <CitySelect country={draft.country} value={draft.city} onChange={(city) => update({ city })} />
+      </ErrorBoundary>
     </div>
   );
 }

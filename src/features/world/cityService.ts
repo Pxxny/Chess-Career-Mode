@@ -1,7 +1,20 @@
 import { getSeedCities } from '@/data/world/seedCities';
 import type { City, Country } from '@/types';
+import { logWarn } from '@/utils/log';
 
 const cache = new Map<string, City[] | null>();
+
+/** Keeps only well-formed [name, population] rows so one bad row can never crash rendering. */
+function sanitizeRows(rows: unknown[]): City[] {
+  const cities: City[] = [];
+  for (const row of rows) {
+    if (!Array.isArray(row)) continue;
+    const [name, population] = row as [unknown, unknown];
+    if (typeof name !== 'string' || !name.trim()) continue;
+    cities.push({ name, population: typeof population === 'number' && Number.isFinite(population) && population > 0 ? population : 0 });
+  }
+  return cities;
+}
 
 /** Per-country files are produced by scripts/build-world-data.mjs as [name, population][]. */
 async function fetchDataset(code: string): Promise<City[] | null> {
@@ -11,17 +24,20 @@ async function fetchDataset(code: string): Promise<City[] | null> {
     if (!response.ok) throw new Error(String(response.status));
     const rows: unknown = await response.json(); // a missing file returns index.html, which fails here
     if (!Array.isArray(rows)) throw new Error('unexpected city file');
-    const cities = (rows as Array<[string, number]>).map(([name, population]) => ({ name, population }));
+    const cities = sanitizeRows(rows);
+    if (cities.length === 0) throw new Error('city file has no valid rows');
     cache.set(code, cities);
     return cities;
-  } catch {
+  } catch (error) {
+    logWarn('cities', `no city dataset for "${code}", using fallback`, error instanceof Error ? error.message : error);
     cache.set(code, null);
     return null;
   }
 }
 
 /** Offline fallback: curated major cities plus the capital. */
-export function fallbackCities(country: Country): City[] {
+export function fallbackCities(country: Country | null | undefined): City[] {
+  if (!country) return [];
   const names = new Set<string>();
   const cities: City[] = [];
   const add = (name: string, isCapital = false) => {
@@ -35,6 +51,7 @@ export function fallbackCities(country: Country): City[] {
 }
 
 export async function loadCities(country: Country): Promise<{ cities: City[]; fromDataset: boolean }> {
+  if (!country?.code) return { cities: [], fromDataset: false };
   const dataset = await fetchDataset(country.code);
   if (!dataset) return { cities: fallbackCities(country), fromDataset: false };
   const capital = country.capital;
