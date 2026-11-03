@@ -3,6 +3,7 @@ export * from './archetype';
 export * from './career';
 export * from './game';
 export * from './geo';
+export * from './history';
 export * from './navigation';
 export * from './npc';
 export * from './player';

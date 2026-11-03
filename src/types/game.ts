@@ -1,6 +1,7 @@
 import type { Appearance } from './appearance';
 import type { ArchetypeId } from './archetype';
 import type { PlayerCity } from './geo';
+import type { CareerHistory } from './history';
 import type { Player, PlayerGender } from './player';
 import type { World } from './world';
 
@@ -20,6 +21,7 @@ export interface GameSave {
   career: CareerRecord;
   player: Player;
   world: World;
+  history: CareerHistory;
 }
 
 export interface NewCareerOptions {

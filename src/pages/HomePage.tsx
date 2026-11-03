@@ -1,16 +1,22 @@
-import { ArrowRight, Dumbbell, Globe, Star, Swords, TrendingUp } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { ArrowRight, Dumbbell, Swords, TrendingUp } from 'lucide-react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardTitle, PageHeader, ProgressBar, StatCard } from '@/components/ui';
+import { Card, CardTitle, PageHeader } from '@/components/ui';
 import { ROUTES } from '@/data/navigation';
+import { CompetitionsSection } from '@/features/home/CompetitionsSection';
+import { LastResultSection } from '@/features/home/LastResultSection';
+import { MoraleSection } from '@/features/home/MoraleSection';
+import { NewsSection } from '@/features/home/NewsSection';
+import { RatingsSection } from '@/features/home/RatingsSection';
+import { RecentFormSection } from '@/features/home/RecentFormSection';
+import { TitlesSection } from '@/features/home/TitlesSection';
+import { useDashboard } from '@/features/home/useDashboard';
 import { NpcProfileModal } from '@/features/world/NpcProfileModal';
 import { NpcTable } from '@/features/world/NpcTable';
 import { getCareerProgress } from '@/game/career/stages';
-import { getWorldRank } from '@/game/npc/rankings';
-import { usePlayer } from '@/hooks/useGame';
-import { useRankedNpcs } from '@/hooks/useNpcs';
+import { GAME_CONFIG } from '@/data/config';
+import { lastGame, recentGames } from '@/game/history/stats';
 import type { Npc } from '@/types';
-import { formatNumber } from '@/utils/format';
 
 const SHORTCUTS = [
   { to: ROUTES.train, label: 'Train', text: 'Build your skills.', icon: Dumbbell },
@@ -19,37 +25,26 @@ const SHORTCUTS = [
 ];
 
 export function HomePage() {
-  const player = usePlayer();
-  const ranked = useRankedNpcs();
+  const { save, ranked, rankings, titles, morale, schedule, news } = useDashboard();
+  const { player, history } = save;
   const [selected, setSelected] = useState<Npc | null>(null);
   const progress = getCareerProgress(player.rating);
-  const rank = useMemo(() => getWorldRank(player.rating, ranked), [player.rating, ranked]);
 
   return (
     <>
       <PageHeader title={`Welcome, ${player.name}`} description="Your career at a glance." />
 
-      <Card className="mb-4">
-        <p className="text-sm text-ink-muted">Current rating</p>
-        <div className="mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-          <span className="font-display text-5xl font-bold tabular-nums text-gold-400">{player.rating}</span>
-          <span className="text-lg font-semibold text-ink">{progress.current.title}</span>
-        </div>
-        <div className="mt-4">
-          <ProgressBar value={progress.percent} label="Progress to next career stage" />
-          <p className="mt-2 text-sm text-ink-muted">
-            {progress.next
-              ? `${progress.next.minRating - player.rating} rating points to ${progress.next.title}`
-              : 'You have reached the top of the career ladder.'}
-          </p>
-        </div>
-      </Card>
+      <RatingsSection player={player} rankings={rankings} progress={progress} />
+      <TitlesSection titles={titles} />
+      <CompetitionsSection player={player} schedule={schedule} rankings={rankings} />
 
-      <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-3">
-        <StatCard label="World rank" value={`#${formatNumber(rank)}`} hint={`of ${formatNumber(ranked.length + 1)} ranked players`} icon={Globe} />
-        <StatCard label="Reputation" value={formatNumber(player.reputation)} hint="Opens invitations later" icon={Star} />
-        <StatCard label="Peak rating" value={formatNumber(player.peakRating)} hint={`Age ${player.age}`} icon={TrendingUp} />
+      <div className="mb-4 grid gap-4 md:grid-cols-2">
+        <LastResultSection game={lastGame(history)} />
+        <RecentFormSection games={recentGames(history, GAME_CONFIG.history.recentFormGames)} />
       </div>
+
+      <MoraleSection morale={morale} />
+      <NewsSection news={news} />
 
       <div className="mb-4 grid gap-3 md:grid-cols-3">
         {SHORTCUTS.map(({ to, label, text, icon: Icon }) => (

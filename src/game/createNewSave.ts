@@ -1,5 +1,6 @@
 import { GAME_CONFIG } from '@/data/config';
 import type { CareerRecord, GameSave, NewCareerOptions } from '@/types';
+import { createEmptyHistory } from './history/createHistory';
 import { createPlayer } from './player/createPlayer';
 
 /** NPCs live in their own persistent database, so a save holds the player, the career record and world settings. */
@@ -13,5 +14,6 @@ export function createNewSave(options: NewCareerOptions, career: CareerRecord): 
       date: { year: career.startYear, week: 1 },
       alternateHistory: options.alternateHistory,
     },
+    history: createEmptyHistory(),
   };
 }

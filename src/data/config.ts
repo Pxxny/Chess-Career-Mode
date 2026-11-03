@@ -1,6 +1,6 @@
 export const GAME_CONFIG = {
   appName: 'Chess Career Mode',
-  saveVersion: 3,
+  saveVersion: 4,
   saveKey: 'chess-career-mode-save',
   defaultPlayerName: 'New Player',
   maxNameLength: 24,
@@ -26,6 +26,20 @@ export const GAME_CONFIG = {
     maxSkill: 100,
     /** Training speed multiplier for skills an archetype has an affinity with */
     affinityMultiplier: 1.25,
+  },
+  /** Skill upgrades: cost in AP is `baseCost + floor(skill / tierSize)`. Affinity skills gain +2 every fourth upgrade. */
+  training: {
+    baseCost: 1,
+    tierSize: 25,
+    gain: 1,
+    /** Weeks that count as "recent" for training quality and morale */
+    recentWeeks: 8,
+  },
+  history: {
+    maxGames: 1000,
+    maxNews: 60,
+    maxLedger: 200,
+    recentFormGames: 5,
   },
   world: {
     /** Fixed seed; mixed with the start year so each era has its own stable world. */

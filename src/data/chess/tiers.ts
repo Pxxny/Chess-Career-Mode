@@ -52,7 +52,7 @@ export function tierForElo(elo: number): SkillTier {
 }
 
 export const TITLE_ORDER: ChessTitle[] = ['none', 'CM', 'FM', 'IM', 'GM'];
-const TITLE_THRESHOLDS: Array<[number, ChessTitle]> = [[2500, 'GM'], [2400, 'IM'], [2300, 'FM'], [2200, 'CM']];
+export const TITLE_THRESHOLDS: Array<[number, ChessTitle]> = [[2500, 'GM'], [2400, 'IM'], [2300, 'FM'], [2200, 'CM']];
 
 /** Titles are for life, so they follow peak Elo. */
 export function titleForPeak(peakElo: number): ChessTitle {

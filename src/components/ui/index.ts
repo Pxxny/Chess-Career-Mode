@@ -8,3 +8,4 @@ export * from './PageHeader';
 export * from './ProgressBar';
 export * from './StatCard';
 export * from './SearchSelect';
+export * from './Tabs';
