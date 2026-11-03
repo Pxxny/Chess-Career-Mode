@@ -1,1 +1,23 @@
+import type { HTMLAttributes, ReactNode } from 'react';
+import { cn } from '@/utils/cn';
 
+interface CardProps extends HTMLAttributes<HTMLElement> {
+  children: ReactNode;
+}
+
+export function Card({ className, children, ...rest }: CardProps) {
+  return (
+    <section className={cn('rounded-xl border border-white/[0.06] bg-navy-800 p-5', className)} {...rest}>
+      {children}
+    </section>
+  );
+}
+
+export function CardTitle({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
+  return (
+    <div className="mb-4 flex items-center justify-between gap-3">
+      <h2 className="font-display text-lg font-bold text-ink">{children}</h2>
+      {aside}
+    </div>
+  );
+}
