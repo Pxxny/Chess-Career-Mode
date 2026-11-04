@@ -1,5 +1,6 @@
 import type { ChessTitle } from './npc';
 import type { SkillKey } from './player';
+import type { SessionRecord } from './training';
 
 export type GameOutcome = 'win' | 'draw' | 'loss';
 export type PieceColor = 'white' | 'black';
@@ -88,6 +89,8 @@ export interface CareerHistory {
   trophies: Trophy[];
   news: NewsItem[];
   training: TrainingRecord[];
+  /** Completed training sessions, oldest first */
+  sessions: SessionRecord[];
   ledger: LedgerEntry[];
   titles: TitleRecord[];
   ratingHistory: RatingSnapshot[];

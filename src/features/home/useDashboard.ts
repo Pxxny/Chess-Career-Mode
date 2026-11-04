@@ -17,7 +17,7 @@ export function useDashboard() {
 
   const rankings = useMemo(() => computeRankings(player, ranked), [player, ranked]);
   const titles = useMemo(() => getTitleStatus(player, history), [player, history]);
-  const morale = useMemo(() => computeMorale(player, history, world.date), [player, history, world.date]);
+  const morale = useMemo(() => computeMorale(player, history, world.date, save.training.fatigue), [player, history, world.date, save.training.fatigue]);
   const schedule = useMemo(
     () =>
       getSchedule(

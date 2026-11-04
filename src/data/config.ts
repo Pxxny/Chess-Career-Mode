@@ -1,6 +1,6 @@
 export const GAME_CONFIG = {
   appName: 'Chess Career Mode',
-  saveVersion: 4,
+  saveVersion: 5,
   saveKey: 'chess-career-mode-save',
   defaultPlayerName: 'New Player',
   maxNameLength: 24,
@@ -34,6 +34,26 @@ export const GAME_CONFIG = {
     gain: 1,
     /** Weeks that count as "recent" for training quality and morale */
     recentWeeks: 8,
+  },
+  /** Daily training: hours, fatigue and experience curves */
+  sessions: {
+    hoursPerDay: 8,
+    maxFatigue: 100,
+    /** At or above this fatigue the player is too tired to train */
+    exhaustedAt: 90,
+    /** Share of efficiency lost at 100 fatigue */
+    fatiguePenalty: 0.5,
+    /** Each repeat of the same session on one day earns this fraction of the previous one */
+    repeatFactor: 0.7,
+    /** Experience needed for the next point = base + perLevel * current level */
+    xpBase: 80,
+    xpPerLevel: 8,
+    minDiminishing: 0.12,
+    nightRecovery: 35,
+    restDayBonus: 20,
+    maxHistory: 200,
+    /** Weeks a scouting report or tournament plan stays useful */
+    prepWeeks: 6,
   },
   history: {
     maxGames: 1000,

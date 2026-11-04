@@ -1,7 +1,7 @@
 import type { CareerHistory, GameStamp } from '@/types';
 
 export function createEmptyHistory(): CareerHistory {
-  return { games: [], tournaments: [], trophies: [], news: [], training: [], ledger: [], titles: [], ratingHistory: [] };
+  return { games: [], tournaments: [], trophies: [], news: [], training: [], sessions: [], ledger: [], titles: [], ratingHistory: [] };
 }
 
 /** Fills any list a save from an older version is missing. */

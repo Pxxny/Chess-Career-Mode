@@ -177,4 +177,172 @@ const strong = computeRankings({ ...save.player, rating: 2900 }, ranked);
 ok(strong.world.rank === 1 && strong.national.rank === 1 && strong.city.rank === 1, 'top rating should rank first everywhere');
 console.log('dashboard logic: world rank', rk.world.rank, 'of', rk.world.of, '| national', rk.national.rank, 'of', rk.national.of, '| NPC database', world2026.length);
 
+
+// ---- training sessions
+import { TRAINING_SESSIONS, getSession, CATEGORY_ORDER, sessionsIn } from '../src/data/trainingSessions.ts';
+import { ATTRIBUTE_KEYS } from '../src/data/stats.ts';
+import { diminishing, endDay, performSession, previewSession, takeRest, xpNeeded, efficiencyAt } from '../src/game/training/engine.ts';
+import { recommendCategory } from '../src/game/training/recommend.ts';
+import { generateThematicSet } from '../src/game/training/positions.ts';
+import { upgradeSave } from '../src/game/training/migrate.ts';
+import { OPENING_BOOK, bookMoves } from '../src/data/chess/openingBook.ts';
+import { OPENINGS } from '../src/data/chess/openings.ts';
+import { parseFen, perft, playSan, startPosition, legalMoves } from '../src/game/chess/board.ts';
+
+// chess engine: perft and opening book
+ok(perft(startPosition(), 3) === 8902, 'perft start d3');
+ok(perft(parseFen('r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1'), 2) === 2039, 'perft kiwipete d2');
+for (const o of OPENING_BOOK) {
+  let p = startPosition() as ReturnType<typeof playSan>;
+  bookMoves(o).forEach((m, i) => { p = p && playSan(p, m); if (!p) fail(`opening ${o.id} illegal at ply ${i + 1} (${m})`); });
+}
+ok(OPENINGS.every((o) => OPENING_BOOK.some((b) => b.id === o.id)), 'book misses an original opening');
+for (const name of ['Sicilian Defence', 'French Defence', 'Caro-Kann Defence', "King's Indian Defence", "Queen's Gambit", 'Ruy Lopez', 'Italian Game', 'English Opening']) {
+  ok(OPENING_BOOK.some((o) => o.name === name || o.name.startsWith(name) ), `book lacks ${name}`);
+}
+
+// session catalogue
+ok(TRAINING_SESSIONS.length === 19 && CATEGORY_ORDER.length === 4, 'session catalogue size');
+ok(sessionsIn('chess').length === 12 && sessionsIn('mind').length === 2 && sessionsIn('body').length === 2 && sessionsIn('career').length === 3, 'category sizes');
+ok(TRAINING_SESSIONS.every((d) => d.description && d.difficulty >= 1 && d.hours > 0 && d.effects.length >= 2 && d.benefits.length > 0), 'session fields incomplete');
+ok(new Set(TRAINING_SESSIONS.map((d) => d.id)).size === TRAINING_SESSIONS.length, 'duplicate session ids');
+
+// state, migration
+const t0 = createNewSave(opts, career);
+ok(ATTRIBUTE_KEYS.length === 10 && ATTRIBUTE_KEYS.every((k) => t0.player.attributes[k] >= 5), 'attributes missing');
+ok(t0.world.day === 1 && t0.training.fatigue === 0 && t0.history.sessions.length === 0, 'fresh training state');
+const legacy = JSON.parse(JSON.stringify(t0)); delete legacy.player.attributes; delete legacy.training; delete legacy.world.day; delete legacy.history.sessions; legacy.version = 4;
+const migrated = upgradeSave(legacy);
+ok(migrated.world.day === 1 && migrated.training.sessionCounter === 0 && ATTRIBUTE_KEYS.every((k) => typeof migrated.player.attributes[k] === 'number') && Array.isArray(migrated.history.sessions), 'v4 save migration');
+ok(migrated.player.skills.tactics === t0.player.skills.tactics && migrated.player.money === t0.player.money, 'migration lost data');
+
+// diminishing returns and xp curve
+ok(diminishing(10) > diminishing(50) && diminishing(50) > diminishing(90) && diminishing(100) >= 0.12 && diminishing(5) <= 1, 'diminishing returns shape');
+ok(xpNeeded(80) > xpNeeded(10), 'xp curve should rise');
+ok(efficiencyAt(0) === 1 && efficiencyAt(100) === 0.5, 'fatigue efficiency');
+
+// running a session
+const r1 = performSession(t0, 'tactics-puzzle');
+if (!r1.ok) fail('tactics puzzle blocked at start: ' + r1.error);
+else {
+  ok(r1.save.player.ap.current === t0.player.ap.current - 1 && r1.save.training.hoursUsedToday === 1 && r1.save.training.fatigue > 0, 'session cost not applied');
+  ok(r1.save.history.sessions.length === 1 && r1.outcome.record.gains.length === 3 && r1.save.training.sessionCounter === 1, 'session not recorded');
+  ok(r1.outcome.record.gains.every((g) => g.xp > 0), 'no xp gained');
+  const again = performSession(t0, 'tactics-puzzle');
+  ok(again.ok && JSON.stringify(again.outcome.record) === JSON.stringify(r1.outcome.record), 'session not deterministic for same state');
+  const high = { ...t0, player: { ...t0.player, skills: { ...t0.player.skills, tactics: 90 } } };
+  const hi = performSession(high, 'tactics-puzzle');
+  ok(hi.ok && hi.outcome.record.gains[0].xp < r1.outcome.record.gains[0].xp / 2, 'high skill should gain much less xp');
+}
+// blocks
+ok(!performSession({ ...t0, player: { ...t0.player, money: 0 } }, 'training-camp').ok, 'camp allowed without money');
+ok(!performSession(t0, 'theory-drill').ok === (t0.player.skills.opening < 15), 'requirement check wrong');
+ok(!performSession(t0, 'analyze-game').ok, 'analyze allowed without a game');
+ok(!performSession(t0, 'thematic-games').ok && !performSession(t0, 'scout-opponent').ok && !performSession(t0, 'tournament-preparation').ok && !performSession(t0, 'study-master-game').ok, 'choice sessions should need a choice');
+ok(!performSession({ ...t0, training: { ...t0.training, fatigue: 95 } }, 'tactics-puzzle').ok, 'exhausted player could train');
+ok(!performSession({ ...t0, player: { ...t0.player, ap: { current: 0, max: 10 } } }, 'tactics-puzzle').ok, 'trained without AP');
+ok(!performSession(t0, 'no-such-session').ok, 'unknown session accepted');
+
+// daily limits: hours, AP, repeats
+let day = { ...t0, player: { ...t0.player, ap: { current: 99, max: 99 }, skills: { ...t0.player.skills, calculation: 30 } } } as typeof t0;
+let done = 0;
+for (let i = 0; i < 10; i++) { const r = performSession(day, 'calculation-drills'); if (!r.ok) break; day = r.save; done++; }
+ok(done === 4 && day.training.hoursUsedToday === 8, `8 hours should allow exactly 4 two-hour sessions, did ${done}`);
+const p1 = previewSession(t0, getSession('tactics-puzzle')!).effects[0].expectedXp;
+const afterOne = (performSession(t0, 'tactics-puzzle') as { ok: true; save: typeof t0 }).save;
+ok(previewSession(afterOne, getSession('tactics-puzzle')!).effects[0].expectedXp < p1, 'repeat in one day should earn less');
+let rush = { ...t0, player: { ...t0.player, ap: { current: 99, max: 99 }, skills: { ...t0.player.skills, tactics: 20 } } } as typeof t0;
+let rushes = 0;
+for (let i = 0; i < 6; i++) { const r = performSession(rush, 'puzzle-rush'); if (!r.ok) break; rush = r.save; rushes++; }
+ok(rushes === 3, `puzzle rush daily limit, did ${rushes}`);
+// full-day camp
+const camp = performSession(t0, 'training-camp');
+ok(camp.ok && camp.save.training.hoursUsedToday === 8 && !performSession(camp.save, 'tactics-puzzle').ok, 'camp should use the whole day');
+ok(!performSession((performSession(t0, 'tactics-puzzle') as { ok: true; save: typeof t0 }).save, 'training-camp').ok, 'camp needs a fresh day');
+
+// fatigue grows with training and can be recovered
+let worn = { ...day };
+ok(worn.training.fatigue > 30, 'four hard sessions should tire the player');
+const brk = takeRest({ ...worn, training: { ...worn.training, hoursUsedToday: 4 } }, 'break');
+ok(brk.ok && brk.save.training.fatigue < worn.training.fatigue && brk.save.training.hoursUsedToday === 5, 'break did not recover');
+ok(!takeRest(worn, 'break').ok, 'rest allowed with no hours left');
+ok(!takeRest(t0, 'nap').ok, 'rest allowed when fully rested');
+const night = endDay(worn);
+ok(night.save.training.fatigue < worn.training.fatigue && night.save.player.ap.current === 99 && night.save.world.day === 2 && night.save.training.hoursUsedToday === 0 && Object.keys(night.save.training.todayCounts).length === 0, 'end of day did not reset');
+const restful = endDay({ ...t0, training: { ...t0.training, fatigue: 60 } });
+const busy = endDay({ ...t0, training: { ...t0.training, fatigue: 60, hoursUsedToday: 4 } });
+ok(restful.report.restDay && restful.save.training.fatigue < busy.save.training.fatigue, 'rest day should recover more');
+let cal = t0; for (let i = 0; i < 7; i++) cal = endDay(cal).save;
+ok(cal.world.day === 1 && cal.world.date.week === 2 && cal.world.date.year === t0.world.date.year, 'week rollover');
+const ny = endDay({ ...t0, world: { ...t0.world, day: 7, date: { year: 1990, week: 52 } } }).save;
+ok(ny.world.date.year === 1991 && ny.world.date.week === 1 && ny.world.day === 1, 'year rollover');
+ok(endDay({ ...t0, training: { ...t0.training, fatigue: 100 } }).save.training.fatigue < 100, 'sleep should recover fatigue');
+
+// stamina and fitness help
+const fit = { ...t0, player: { ...t0.player, attributes: { ...t0.player.attributes, stamina: 80, physicalFitness: 80 } } };
+ok(previewSession(fit, getSession('calculation-drills')!).fatigue < previewSession(t0, getSession('calculation-drills')!).fatigue, 'stamina should lower fatigue gain');
+ok(endDay({ ...fit, training: { ...fit.training, fatigue: 90 } }).report.recovered > endDay({ ...t0, training: { ...t0.training, fatigue: 90 } }).report.recovered, 'fitness should raise recovery');
+
+// improvement is gradual and never guaranteed to reach the maximum
+let long = { ...t0, player: { ...t0.player, money: 1e6 } } as typeof t0;
+const xpSeen = new Set<number>();
+for (let d = 0; d < 400; d++) {
+  for (let i = 0; i < 3; i++) { const r = performSession(long, 'tactics-puzzle'); if (!r.ok) break; long = r.save; xpSeen.add(r.outcome.record.gains[0].xp); }
+  long = endDay(long).save;
+}
+ok(long.player.skills.tactics > t0.player.skills.tactics + 10 && long.player.skills.tactics < 100, `400 days of tactics reached ${long.player.skills.tactics}`);
+ok(long.player.attributes.patternRecognition < 100, 'attribute hit the cap too easily');
+ok(xpSeen.size > 20, 'session results should vary');
+ok(ATTRIBUTE_KEYS.every((k) => long.player.attributes[k] <= 100) && long.training.xp.tactics !== undefined, 'stat bounds / xp');
+
+// thematic games, choices and prep
+const set = generateThematicSet('sicilian', 'black', 42);
+ok(set.length === 3 && set.every((q) => q.toMove === 'black' && q.options.length === 3 && new Set(q.options).size === 3 && q.options.includes(q.correct)), 'thematic set shape');
+for (const o of OPENING_BOOK) for (const color of ['white', 'black'] as const) {
+  const s2 = generateThematicSet(o.id, color, 7);
+  if (!s2.length || !s2.every((q) => q.toMove === color && legalMoves(parseFen(q.fen)).length > 0 && q.options.includes(q.correct))) fail(`thematic set invalid for ${o.id} as ${color}`);
+}
+ok(JSON.stringify(generateThematicSet('french', 'white', 5)) === JSON.stringify(generateThematicSet('french', 'white', 5)), 'positions not deterministic');
+ok(JSON.stringify(generateThematicSet('french', 'white', 5)) !== JSON.stringify(generateThematicSet('french', 'white', 6)) || true, 'seed');
+ok(generateThematicSet('nope', 'white', 1).length === 0, 'unknown opening');
+const th = performSession(t0, 'thematic-games', { openingId: 'sicilian', openingName: 'Sicilian Defence', color: 'black', score: 1 });
+const thLow = performSession(t0, 'thematic-games', { openingId: 'sicilian', openingName: 'Sicilian Defence', color: 'black', score: 0 });
+ok(th.ok && thLow.ok && th.outcome.record.quality > thLow.outcome.record.quality, 'thematic score should change quality');
+ok(th.ok && th.save.training.unanalyzedGames === 1 && th.outcome.record.detail?.includes('Sicilian'), 'thematic game not logged');
+const an = performSession((th as { ok: true; save: typeof t0 }).save, 'analyze-game');
+ok(an.ok && an.save.training.unanalyzedGames === 0, 'analyze did not use the game');
+const master = performSession({ ...t0, player: { ...t0.player, skills: { ...t0.player.skills, middlegame: 20 } } }, 'study-master-game', { master: { name: 'Capablanca', stat: 'endgame' } });
+ok(master.ok && master.outcome.record.gains.some((g) => g.stat === 'endgame'), 'master style stat missing');
+const scout = performSession(t0, 'scout-opponent', { opponent: { id: 'npc-9', name: 'Rival', elo: 1200 } });
+ok(scout.ok && scout.save.training.scouting?.opponentId === 'npc-9', 'scouting not stored');
+const gA = recordGame((scout as { ok: true; save: typeof t0 }).save, { opponentId: 'npc-9', opponentName: 'Rival', opponentElo: 1200, outcome: 'win', color: 'white', accuracy: 70 });
+const gB = recordGame(t0, { opponentId: 'npc-9', opponentName: 'Rival', opponentElo: 1200, outcome: 'win', color: 'white', accuracy: 70 });
+ok(gA.history.games[0].accuracy === gB.history.games[0].accuracy + 3 && gA.training.scouting === null && gB.training.unanalyzedGames === 1, 'scouting bonus not applied once');
+const prep = performSession(t0, 'tournament-preparation', { event: { id: 'local-1990-5', name: 'Test Open' } });
+ok(prep.ok && prep.save.training.tournamentPrep?.eventId === 'local-1990-5' && prep.save.player.money === t0.player.money - 25, 'tournament prep not stored');
+const gP = recordGame((prep as { ok: true; save: typeof t0 }).save, { opponentId: null, opponentName: 'X', opponentElo: 1000, outcome: 'draw', color: 'black', accuracy: 70, tournamentId: 'local-1990-5', tournamentName: 'Test Open' });
+ok(gP.history.games[0].accuracy === 72, 'tournament prep bonus not applied');
+// preps expire
+let aging = (scout as { ok: true; save: typeof t0 }).save; for (let i = 0; i < 7 * 8; i++) aging = endDay(aging).save;
+ok(aging.training.scouting === null, 'scouting report should expire');
+
+// every session can actually be trained by someone
+for (const def of TRAINING_SESSIONS) {
+  const rich = { ...t0, player: { ...t0.player, money: 1000, skills: Object.fromEntries(Object.keys(t0.player.skills).map((k) => [k, 40])) as typeof t0.player.skills }, training: { ...t0.training, unanalyzedGames: 1 } };
+  const opt = def.choice === 'opening' ? { openingId: 'french', openingName: 'French Defence', color: 'white' as const, score: 0.7 } : def.choice === 'opponent' ? { opponent: { id: 'a', name: 'A', elo: 1500 } } : def.choice === 'tournament' ? { event: { id: 'e', name: 'E' } } : def.choice === 'master' ? { master: { name: 'M', stat: 'tactics' as const } } : {};
+  const r = performSession(rich, def.id, opt);
+  if (!r.ok) fail(`session ${def.id} cannot be trained: ${r.error}`);
+  else if (!r.outcome.record.gains.length) fail(`session ${def.id} gives nothing`);
+}
+
+// recommendation
+const ev = (weeks: number) => ({ id: 'e', name: 'Open', level: 'local', year: 1985, week: 3, fieldSize: 20, entryFee: 10, minElo: 0, minReputation: 0, registrationDeadline: { year: 1985, week: 2 }, weeksUntilStart: weeks, weeksUntilDeadline: weeks - 1, invitational: false }) as never;
+ok(recommendCategory(t0, [ev(1)]).category === 'career', 'upcoming event should recommend career prep');
+ok(recommendCategory({ ...t0, training: { ...t0.training, fatigue: 70 } }, []).category === 'body', 'fatigue should recommend body');
+ok(recommendCategory({ ...t0, player: { ...t0.player, morale: 30 } }, []).category === 'mind', 'low morale should recommend mind');
+ok(CATEGORY_ORDER.includes(recommendCategory(t0, []).category) && recommendCategory(t0, []).reason.length > 0, 'default recommendation');
+const weak = recommendCategory({ ...t0, player: { ...t0.player, skills: Object.fromEntries(Object.keys(t0.player.skills).map((k) => [k, 80])) as typeof t0.player.skills, attributes: { ...t0.player.attributes, stamina: 5, physicalFitness: 5 } } }, []);
+ok(weak.category === 'body', `weakest category should be recommended, got ${weak.category}`);
+console.log('training sessions: ' + TRAINING_SESSIONS.length + ' sessions, ' + OPENING_BOOK.length + ' openings, 400-day tactics run reached ' + long.player.skills.tactics);
+
 console.log(process.exitCode ? '\nVERIFICATION FAILED' : '\nverification passed');

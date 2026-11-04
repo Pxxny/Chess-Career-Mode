@@ -3,6 +3,7 @@ import { getArchetype } from '@/data/archetypes';
 import { tierForElo } from '@/data/chess/tiers';
 import { GAME_CONFIG } from '@/data/config';
 import { SKILL_DEFINITIONS } from '@/data/skills';
+import { createStartingAttributes } from '@/game/training/state';
 import type { NewCareerOptions, Player, SkillKey, Skills } from '@/types';
 
 /** Base skill plus the archetype's bonuses. Nothing is locked: every skill stays trainable. */
@@ -45,6 +46,7 @@ export function createPlayer(options: NewCareerOptions, startYear: number): Play
     ap: { current: p.startingActionPoints, max: p.maxActionPoints },
     money: p.startingMoney,
     skills: createStartingSkills(archetype.id),
+    attributes: createStartingAttributes(createStartingSkills(archetype.id)),
     createdAt: Date.now(),
   };
 }

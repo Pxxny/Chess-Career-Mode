@@ -45,7 +45,10 @@ export function recordGame(save: GameSave, input: GameInput): GameSave {
   const before = player.rating;
   const delta = ratingChange(before, input.opponentElo, input.outcome, player.ratedGames);
   const after = Math.max(100, before + delta);
-  const accuracy = Math.min(100, Math.max(0, Math.round(input.accuracy)));
+  // Preparation pays off: a scouting report on this opponent or a plan for this tournament.
+  const scouted = save.training.scouting !== null && save.training.scouting.opponentId === input.opponentId;
+  const prepared = save.training.tournamentPrep !== null && input.tournamentId != null && save.training.tournamentPrep.eventId === input.tournamentId;
+  const accuracy = Math.min(100, Math.max(0, Math.round(input.accuracy + (scouted ? 3 : 0) + (prepared ? 2 : 0))));
   const game: GameResult = {
     id: `g${history.games.length + 1}-${stamp.year}-${stamp.week}`,
     ...stamp,
@@ -113,6 +116,7 @@ export function recordGame(save: GameSave, input: GameInput): GameSave {
     ...save,
     player: { ...player, rating: after, peakRating: peak, ratedGames, league, reputation: player.reputation + reputationGain },
     history,
+    training: { ...save.training, unanalyzedGames: save.training.unanalyzedGames + 1, scouting: scouted ? null : save.training.scouting },
   };
 }
 

@@ -2,6 +2,7 @@ import type { Appearance } from './appearance';
 import type { ArchetypeId, Tendencies } from './archetype';
 import type { PlayerCity } from './geo';
 import type { SkillTier } from './npc';
+import type { Attributes } from './training';
 
 export type SkillKey =
   | 'opening'
@@ -46,6 +47,8 @@ export interface Player {
   ap: ActionPoints;
   money: number;
   skills: Skills;
+  /** Trained attributes beyond the eight core skills */
+  attributes: Attributes;
   createdAt: number;
 }
 
