@@ -1,0 +1,56 @@
+// Copies the Stockfish WebAssembly build from the `stockfish` package into public/engine/ and writes
+// public/engine/manifest.json, the list of builds the app tries (best first). Runs after `npm install`.
+// If the package is missing the app still works: it falls back to its built-in engine.
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const out = join(root, 'public', 'engine');
+const pkg = join(root, 'node_modules', 'stockfish');
+
+if (!existsSync(pkg)) {
+  console.log('[engine] The stockfish package is not installed; the app will use its built-in engine.');
+  process.exit(0);
+}
+
+const folders = ['src', 'bin'].map((f) => join(pkg, f)).filter(existsSync);
+const files = folders.flatMap((f) => readdirSync(f).map((name) => ({ name, path: join(f, name) })));
+const scripts = files.filter((f) => /^stockfish.*\.js$/.test(f.name));
+if (scripts.length === 0) {
+  console.log('[engine] No stockfish*.js files were found in the package; the app will use its built-in engine.');
+  process.exit(0);
+}
+
+// Single-thread builds need no special headers (COOP/COEP), so they are tried first. Lite builds are smaller.
+const rank = (name) => (/single/.test(name) ? 0 : 2) + (/lite/.test(name) ? 0 : 1);
+scripts.sort((a, b) => rank(a.name) - rank(b.name) || a.name.localeCompare(b.name));
+
+mkdirSync(out, { recursive: true });
+for (const f of files) if (/^stockfish.*\.(js|wasm)$/.test(f.name)) copyFileSync(f.path, join(out, f.name));
+
+// Keep the engine's notices beside the redistributed JS/WASM in production exports.
+for (const name of ['license.txt', 'Copying.txt', 'AUTHORS', 'Readme.md', 'README.upstream.md']) {
+  if (existsSync(join(pkg, name))) copyFileSync(join(pkg, name), join(out, name));
+}
+const version = JSON.parse(readFileSync(join(pkg, 'package.json'), 'utf8')).version;
+writeFileSync(join(out, 'SOURCE.md'), `# Stockfish ${version}
+
+These generated engine files come from the stockfish npm package, version ${version}.
+
+Upstream project and source: https://github.com/nmrugg/stockfish.js
+Exact npm package: https://registry.npmjs.org/stockfish/-/stockfish-${version}.tgz
+Official Stockfish source: https://github.com/official-stockfish/Stockfish
+
+License: GPLv3; see license.txt, Copying.txt and AUTHORS in this directory.
+The installed single-thread build defaults to classical evaluation (Use NNUE = false).
+This app preserves that default and does not load the optional neural-network file.
+`);
+
+const builds = scripts.map((s) => ({
+  file: s.name,
+  label: `Stockfish${/lite/.test(s.name) ? ' Lite' : ''}${/single/.test(s.name) ? '' : ' (multi-thread)'}`,
+  requiresIsolation: !/single/.test(s.name),
+}));
+writeFileSync(join(out, 'manifest.json'), JSON.stringify({ builds }, null, 2));
+console.log(`[engine] Copied ${builds.length} Stockfish build(s) to public/engine/.`);
