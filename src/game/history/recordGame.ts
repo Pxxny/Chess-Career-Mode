@@ -13,7 +13,8 @@ export interface GameInput {
   color: PieceColor;
   tournamentId?: string | null;
   tournamentName?: string | null;
-  accuracy: number;
+  /** Accuracy 0-100, or null when the engine analysis has not finished yet (set later with `withGameAccuracy`) */
+  accuracy: number | null;
   opening?: string | null;
   /** World ranks before/after, supplied by the caller that owns the NPC database */
   worldRankBefore?: number;
@@ -32,6 +33,25 @@ function addNews(history: CareerHistory, item: NewsItem): void {
   history.news = cap(history.news, GAME_CONFIG.history.maxNews);
 }
 
+/** Accuracy points a scouting report (+3) or a tournament plan (+2) adds to a game. */
+export function accuracyBonusFor(save: GameSave, opponentId: string | null, tournamentId: string | null | undefined): number {
+  const scouted = save.training.scouting !== null && save.training.scouting.opponentId === opponentId;
+  const prepared = save.training.tournamentPrep !== null && tournamentId != null && save.training.tournamentPrep.eventId === tournamentId;
+  return (scouted ? 3 : 0) + (prepared ? 2 : 0);
+}
+
+/** Sets the accuracy of a game recorded without one, once the analysis is ready. Counts the game as analysed. */
+export function withGameAccuracy(save: GameSave, gameId: string, accuracy: number, bonus = 0): GameSave {
+  const target = save.history.games.find((g) => g.id === gameId);
+  if (!target) return save;
+  const value = Math.min(100, Math.max(0, Math.round(accuracy + bonus)));
+  return {
+    ...save,
+    history: { ...save.history, games: save.history.games.map((g) => (g.id === gameId ? { ...g, accuracy: value, analyzed: true } : g)) },
+    training: target.analyzed === false ? { ...save.training, unanalyzedGames: Math.max(0, save.training.unanalyzedGames - 1) } : save.training,
+  };
+}
+
 /**
  * Records one rated game and applies every consequence: rating, peak, league, titles,
  * Elo milestones, achievements, rivalries and news. Pure: returns a new save.
@@ -48,7 +68,8 @@ export function recordGame(save: GameSave, input: GameInput): GameSave {
   // Preparation pays off: a scouting report on this opponent or a plan for this tournament.
   const scouted = save.training.scouting !== null && save.training.scouting.opponentId === input.opponentId;
   const prepared = save.training.tournamentPrep !== null && input.tournamentId != null && save.training.tournamentPrep.eventId === input.tournamentId;
-  const accuracy = Math.min(100, Math.max(0, Math.round(input.accuracy + (scouted ? 3 : 0) + (prepared ? 2 : 0))));
+  const pending = input.accuracy === null;
+  const accuracy = pending ? 0 : Math.min(100, Math.max(0, Math.round((input.accuracy as number) + (scouted ? 3 : 0) + (prepared ? 2 : 0))));
   const game: GameResult = {
     id: `g${history.games.length + 1}-${stamp.year}-${stamp.week}`,
     ...stamp,
@@ -62,6 +83,7 @@ export function recordGame(save: GameSave, input: GameInput): GameSave {
     ratingBefore: before,
     ratingAfter: after,
     accuracy,
+    ...(pending ? { analyzed: false } : {}),
     opening: input.opening ?? null,
   };
   history.games.push(game);

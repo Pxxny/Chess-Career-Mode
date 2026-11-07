@@ -102,7 +102,7 @@ export function collectOpeningGames(save: GameSave, db: OpeningDatabase): Openin
       source: 'rated',
       color: g.color,
       outcome: g.outcome,
-      accuracy: g.accuracy ?? null,
+      accuracy: g.analyzed === false ? null : (g.accuracy ?? null),
       opponentElo: g.opponentElo,
       year: g.year,
       week: g.week,

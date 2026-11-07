@@ -4,6 +4,7 @@ export * from './career';
 export * from './game';
 export * from './geo';
 export * from './history';
+export * from './match';
 export * from './training';
 export * from './navigation';
 export * from './npc';

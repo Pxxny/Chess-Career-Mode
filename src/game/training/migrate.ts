@@ -19,5 +19,8 @@ export function upgradeSave(save: GameSave): GameSave {
       ...(raw.repertoire ?? {}),
       preferences: { ...createRepertoireState().preferences, ...(raw.repertoire?.preferences ?? {}) },
     },
+    matches: raw.matches ?? [],
+    tournament: raw.tournament ?? null,
+    pendingMatch: raw.pendingMatch ?? null,
   };
 }

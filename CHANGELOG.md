@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-11-07 · Complete: Match Viewer, rated games and tournaments (save version 7)
+**Match Viewer** (`src/features/match/`, `src/game/match/`)
+- **Chessboard** (`MatchBoard.tsx`): drag and drop (mouse, touch, pen), click-to-move and keyboard play. Legal moves come from **chess.js** through a referee layer (`referee.ts`); the project's own perft-verified rules engine runs beside it for Stockfish, analysis and openings, and takes over if chess.js is missing or fails. The two are compared after every move and any disagreement is logged. Highlights: selected piece, legal targets, last move, check, checkmate, stalemate/draw. Promotion picker, castling and en passant. A read-only review mode when a past move is selected.
+- **Game information**: both players with name, title, Elo, nationality and flag; tournament name and round number; time control; who controls each side.
+- **Clock** (`clock.ts`, `timeControls.ts`): bullet, blitz, rapid, classical presets plus custom minutes and increment. Only the side to move loses time; increment after each move; flag fall ends the game. Simulated players spend game time that is played back at the chosen speed.
+- **Move list**: "1. e4 e5" rows, click any move to review, arrow/Home/End keys and buttons.
+- **Evaluation**: Stockfish (the built-in engine if it cannot load) evaluates the position on the board while you play: advantage bar, pawns and centipawns, mate detection (M3, -M2), best line and short position notes. Always White's point of view.
+- **Simulate or play**: every match can be played by you, simulated (both sides by the engine, your side at your rating, skills, morale and fatigue), or both. Take control of your side (or the opponent's) at any moment and hand it back. Speeds: real time, brisk, fast-forward, instant. Pause while nobody moves by hand. Leaving a pure simulation lets it finish in the background.
+- **Resign, draw offers** (the NPC decides from the position and its character), and **abandoned games**: leaving a game you play with two or more moves is a loss; a game closed by reloading the page is recorded as abandoned on the next start.
+
+**NPC strength model** (`npcProfile.ts`): no longer one strength for everyone. Each NPC plays at an effective Elo from its rating, morale, form and fatigue (which grows over a tournament and with age and training load), shifted per phase by its strong and weak skills (opening, middlegame, endgame). Playing style bends the choice between near-equal engine moves (attackers capture and check, defenders castle and retreat). Opening preparation sets the book depth. Time management: a poor clock manager spends too much early, then plays weaker in time trouble and can lose on time. A hopeless position may be resigned, depending on character.
+
+**Game analysis** (`review.ts`), after every finished game: evaluation graph, move-by-move table, accuracy for both sides, key moments, opening identification (and who left the book first), critical mistakes, missed opportunities, tactical opportunities (found or missed) and better alternatives with the engine's line. Every label comes from engine data, nothing is random:
+- Best / Excellent / Good / Inaccuracy / Mistake / Blunder from the win percentage the move gave away (thresholds in `THRESHOLDS`).
+- **Brilliant**: best or near-best, the engine's line gives up at least two pawns of material, the position stays sound and was not already won, and the move is clearly better than the second choice.
+- **Missed opportunity**: a mistake after the opponent erred (or with a forced mate on the board) that did not take the advantage.
+- Accuracy uses the same engine-based formula as practice games.
+
+**Career** (`aftermath.ts`, `gameStore.finishMatch`): a rated game now updates Elo, peak Elo, rated games, win rate, current form, career statistics and opening statistics (these are the existing `recordGame` effects, which no screen called before), plus fatigue and morale, the opponent's rating, form and morale, and a stored match with its analysis. The accuracy of a rated game is set when the analysis finishes. Friendly games change nothing but fatigue.
+
+**Tournaments** (`tournament.ts`): events held this week (from the existing schedule) can be entered for the fee. Swiss pairing, standings with tie-breaks, the other boards simulated from the ratings, prize money by rank, withdrawal (remaining games forfeited). The result is recorded with `recordTournament`.
+
+**Complete page** now has Play, Tournaments, History (replay with full analysis) and Players.
+
+**Changed**: save version 7 adds `matches`, `tournament` and `pendingMatch` (older saves upgrade automatically). `GameResult.analyzed` marks rated games whose analysis is still pending; statistics ignore their accuracy until it is set. `recordGame` accepts `accuracy: null`. New script `npm run test:match`.
+
+**Known limits**: chess.js and Stockfish could not be installed where this was built (no network), so the chess.js adapter is checked only against its documented API. `npm run test:match` plays 120 random games through both rule sets and compares every position as soon as chess.js is installed. Run `npm install`, `npm run typecheck` and `npm run test:match` once. Stockfish strength is approximate. Tournament pairings of other boards are simulated from ratings only.
+
 ## 2026-11-06 · Train: Games and Openings tabs (save version 6)
 **Games tab** (`src/features/training/play/`)
 - **Training Game**: play a ranked NPC. Choose opponent, an Elo override, colour, time control and objective (full game, opening practice, tactics, endgame, convert an advantage, defend, time management). The Opening objective makes the opponent follow the chosen book line. Costs 1 training hour (2 for long time controls); experience goes to the objective's skills. Optional per-move feedback, hints and take-backs. "Simulate instead" decides the result from the ratings only.

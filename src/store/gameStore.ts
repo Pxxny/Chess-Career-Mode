@@ -10,6 +10,12 @@ import { applySkillUpgrade } from '@/game/player/training';
 import { addMoney, spendActionPoints } from '@/game/player/resources';
 import { attachAnalysis, recordOpeningStudy, recordPracticeGame, recoverInterruptedPracticeGame, type FinishedGame, type RecordResult } from '@/game/play/practice';
 import type { OpeningDatabase } from '@/game/openings/database';
+import { applyFinishedMatch, applyNpcResult, attachMatchAnalysis, outcomeFor, recoverPendingMatch } from '@/game/match/aftermath';
+import type { MatchFinish } from '@/game/match/session';
+import { createTournament, withdraw } from '@/game/match/tournament';
+import { highestTitle } from '@/game/match/setup';
+import type { ScheduledEvent } from '@/game/world/schedule';
+import type { MatchAnalysisReport, MatchRecord, PendingMatch } from '@/types';
 import type { CareerRecord, GameAnalysisSummary, GameSave, NewCareerOptions, SituationId, SkillKey } from '@/types';
 import { idbStorage } from '@/utils/idbStorage';
 import { useNpcStore } from './npcStore';
@@ -41,6 +47,19 @@ interface GameStore {
   recoverPracticeGame: (db: OpeningDatabase) => void;
   /** Stores the post-game analysis on a practice game. */
   attachAnalysis: (gameId: string, analysis: GameAnalysisSummary) => void;
+  /** Records a finished match viewer game: rated result, fatigue and morale, the tournament round, the stored match. */
+  finishMatch: (finish: MatchFinish, db: OpeningDatabase) => MatchRecord | null;
+  /** Stores the engine analysis of a match and sets the accuracy of its rated game. */
+  attachMatchAnalysis: (matchId: string, report: MatchAnalysisReport) => void;
+  checkpointMatch: (pending: PendingMatch | null) => void;
+  /** A game left open by a closed page is recorded as abandoned. */
+  recoverMatch: (db: OpeningDatabase) => void;
+  /** Pays the entry fee and starts the event. */
+  enterTournament: (event: ScheduledEvent) => { ok: true } | { ok: false; error: string };
+  /** Leaves the running tournament: the remaining games are forfeited. */
+  withdrawTournament: () => void;
+  /** Closes the results of a finished tournament. */
+  closeTournament: () => void;
   /** Replaces the ordered opening list of one repertoire situation. */
   setPreference: (situation: SituationId, openingIds: string[]) => void;
   /** Records a finished Thematic Games study of an opening. */
@@ -159,6 +178,64 @@ export const useGameStore = create<GameStore>()(
         const { save } = get();
         if (!save?.practice.pendingGame) return;
         set({ save: recoverInterruptedPracticeGame(save, db) });
+      },
+
+      finishMatch: (finish, db) => {
+        const { save } = get();
+        if (!save) return null;
+        const ranked = getRankedNpcs(useNpcStore.getState().npcs);
+        const applied = applyFinishedMatch(save, finish, db, { before: getWorldRank(save.player.rating, ranked), after: (r) => getWorldRank(r, ranked) });
+        set({ save: applied.save });
+        const opponent = finish.setup.playerColor === 'white' ? finish.setup.black : finish.setup.white;
+        if (finish.setup.rated && opponent.id) {
+          const npc = useNpcStore.getState().npcs.find((n) => n.id === opponent.id);
+          const outcome = outcomeFor(finish, finish.setup.playerColor);
+          if (npc) void useNpcStore.getState().updateNpcs([applyNpcResult(npc, outcome === 'win' ? 'loss' : outcome === 'loss' ? 'win' : 'draw', save.player.rating)]);
+        }
+        return applied.record;
+      },
+
+      attachMatchAnalysis: (matchId, report) => {
+        const { save } = get();
+        if (save) set({ save: attachMatchAnalysis(save, matchId, report) });
+      },
+
+      checkpointMatch: (pending) => {
+        const { save } = get();
+        if (save) set({ save: { ...save, pendingMatch: pending } });
+      },
+
+      recoverMatch: (db) => {
+        const { save } = get();
+        if (!save?.pendingMatch) return;
+        set({ save: recoverPendingMatch(save, db).save });
+      },
+
+      enterTournament: (event) => {
+        const { save } = get();
+        if (!save) return { ok: false, error: 'No career.' };
+        if (save.tournament && save.tournament.status === 'playing') return { ok: false, error: 'You are already playing a tournament.' };
+        if (save.player.money < event.entryFee) return { ok: false, error: 'You cannot afford the entry fee.' };
+        const npcs = useNpcStore.getState().npcs;
+        const seed = (save.world.seed ^ (event.year * 100 + event.week) ^ event.id.length * 7919) >>> 0;
+        const t = createTournament({ event, player: { name: save.player.name, rating: save.player.rating, country: save.player.country, title: highestTitle(save) }, npcs, seed });
+        set({ save: { ...save, player: addMoney(save.player, -event.entryFee), tournament: t } });
+        return { ok: true };
+      },
+
+      withdrawTournament: () => {
+        const { save } = get();
+        if (!save?.tournament || save.tournament.status !== 'playing') return;
+        const t = withdraw(save.tournament);
+        const me = t.players.find((p) => p.isPlayer);
+        let next: GameSave = { ...save, tournament: t };
+        next = recordTournament(next, { tournamentId: t.eventId, name: t.name, level: t.level, rank: t.finalRank ?? t.players.length, fieldSize: t.players.length, points: me?.points ?? 0, prize: 0 });
+        set({ save: next });
+      },
+
+      closeTournament: () => {
+        const { save } = get();
+        if (save?.tournament?.status === 'finished') set({ save: { ...save, tournament: null } });
       },
 
       attachAnalysis: (gameId, analysis) => {

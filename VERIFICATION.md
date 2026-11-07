@@ -49,3 +49,7 @@ npm run dev
 ```
 
 All verification commands and Chromium installation options are in README.md. No node_modules, dist, credentials, user saves or git history are included in the delivery ZIP. Generated engine/city assets, test source, report and screenshots are included.
+
+## Match viewer (2026-11-07) — what was and was not verified
+- Ran in the build sandbox: `test:match` (clock, referee, NPC strength model, scripted and real-engine review, headless sessions with the built-in engine, tournaments, career updates, save upgrade), plus the existing `test:play`, `test:world`, `test:session`, `test:data` (all pass). The board and the whole match viewer were also driven in headless Chromium (drag and drop, click, keyboard, promotion, en passant, castling, check highlight, clocks, review mode, resign, simulation, take control, analysis report) with the built-in rules.
+- **Not run there** (no network, packages missing): `npm ci`, `tsc` on the whole project, `vite build`, chess.js, Stockfish WebAssembly. After `npm ci`, run `npm run typecheck`, `npm run build` and `npm run test:match`; with chess.js installed the test also plays 120 random games through both rule sets and compares every position, legal move, check and game end.

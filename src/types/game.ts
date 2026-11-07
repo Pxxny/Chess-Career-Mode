@@ -2,6 +2,7 @@ import type { Appearance } from './appearance';
 import type { ArchetypeId } from './archetype';
 import type { PlayerCity } from './geo';
 import type { CareerHistory } from './history';
+import type { ActiveTournament, MatchRecord, PendingMatch } from './match';
 import type { PracticeState, RepertoireState } from './play';
 import type { TrainingState } from './training';
 import type { Player, PlayerGender } from './player';
@@ -29,6 +30,12 @@ export interface GameSave {
   practice: PracticeState;
   /** Opening preferences and study. Added in save version 6. */
   repertoire: RepertoireState;
+  /** Finished matches with their analysis (rated career games and friendlies). Added in save version 7. */
+  matches: MatchRecord[];
+  /** The tournament the player is currently playing, or the one that just finished. Added in save version 7. */
+  tournament: ActiveTournament | null;
+  /** Checkpoint of a human-played match, recovered as an abandoned game after a reload. Added in save version 7. */
+  pendingMatch: PendingMatch | null;
 }
 
 export interface NewCareerOptions {

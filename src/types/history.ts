@@ -24,8 +24,10 @@ export interface GameResult extends GameStamp {
   tournamentName: string | null;
   ratingBefore: number;
   ratingAfter: number;
-  /** 0 to 100 */
+  /** 0 to 100. Meaningless while `analyzed` is false. */
   accuracy: number;
+  /** False until the engine analysis of the game has set the accuracy. Missing on older saves (= true). */
+  analyzed?: boolean;
   opening: string | null;
 }
 

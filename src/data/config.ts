@@ -1,6 +1,6 @@
 export const GAME_CONFIG = {
   appName: 'Chess Career Mode',
-  saveVersion: 6,
+  saveVersion: 7,
   saveKey: 'chess-career-mode-save',
   defaultPlayerName: 'New Player',
   maxNameLength: 24,
@@ -70,6 +70,24 @@ export const GAME_CONFIG = {
     provisionalGames: 20,
     onlinePoolSize: 600,
     analysisDepth: 11,
+  },
+  /** Rated matches, tournaments and the match viewer */
+  match: {
+    maxRecords: 60,
+    /** Depth of the post-game analysis and of the live evaluation */
+    analysisDepth: 12,
+    liveDepth: 14,
+    liveMs: 450,
+    /** Fatigue added by one rated or friendly game, by time-control category, before stamina */
+    fatigue: { none: 4, bullet: 2, blitz: 3, rapid: 5, classical: 8 } as const,
+    moraleWin: 2,
+    moraleLoss: -2,
+    /** Rounds of each tournament level */
+    rounds: { local: 5, national: 7, international: 9, elite: 9 } as const,
+    /** Share of the prize fund paid to ranks 1 to 5 */
+    prizeShares: [0.35, 0.22, 0.15, 0.1, 0.06] as readonly number[],
+    /** Time controls of tournament levels: base minutes + increment seconds */
+    levelTime: { local: [15, 10], national: [25, 10], international: [90, 30], elite: [90, 30] } as const,
   },
   history: {
     maxGames: 1000,

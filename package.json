@@ -14,6 +14,7 @@
     "test:world": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-world.ts",
     "test:e2e": "playwright test",
     "test:data": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-data.ts",
+    "test:match": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-match.ts",
     "test:session": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-session.ts",
     "test:engine": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-engine.ts",
     "test:engine:browser": "node scripts/verify-engine-browser.mjs"

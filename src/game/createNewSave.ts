@@ -20,5 +20,8 @@ export function createNewSave(options: NewCareerOptions, career: CareerRecord): 
     training: createTrainingState(),
     practice: createPracticeState(GAME_CONFIG.player.startingRating),
     repertoire: createRepertoireState(),
+    matches: [],
+    tournament: null,
+    pendingMatch: null,
   };
 }

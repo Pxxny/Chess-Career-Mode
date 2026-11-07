@@ -37,6 +37,7 @@ export default function App() {
   useEffect(() => {
     if (!hydrated || !career || !openingsReady || recoveredCareer === career.id) return;
     useGameStore.getState().recoverPracticeGame(useOpeningStore.getState().db);
+    useGameStore.getState().recoverMatch(useOpeningStore.getState().db);
     setRecoveredCareer(career.id);
   }, [hydrated, career, openingsReady, recoveredCareer]);
 

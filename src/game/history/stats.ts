@@ -33,7 +33,8 @@ export interface CareerStats {
 
 export function computeStats(history: CareerHistory): CareerStats {
   const games = history.games;
-  const accuracy = games.length ? Math.round((games.reduce((s, g) => s + g.accuracy, 0) / games.length) * 10) / 10 : null;
+  const analysed = games.filter((g) => g.analyzed !== false);
+  const accuracy = analysed.length ? Math.round((analysed.reduce((s, g) => s + g.accuracy, 0) / analysed.length) * 10) / 10 : null;
   const best = games
     .filter((g) => g.outcome !== 'loss')
     .sort((a, b) => b.opponentElo + (b.outcome === 'win' ? 50 : 0) - (a.opponentElo + (a.outcome === 'win' ? 50 : 0)))[0] ?? null;
