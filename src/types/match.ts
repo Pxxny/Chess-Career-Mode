@@ -162,6 +162,17 @@ export interface TournamentPairing {
   result: number | null;
 }
 
+/** A paid entry for an upcoming event. It becomes playable in the event's week. */
+export interface EventRegistration {
+  eventId: string;
+  name: string;
+  level: EventLevelId;
+  year: number;
+  week: number;
+  fieldSize: number;
+  entryFee: number;
+}
+
 export interface ActiveTournament {
   eventId: string;
   name: string;

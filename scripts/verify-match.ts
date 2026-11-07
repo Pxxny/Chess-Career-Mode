@@ -419,3 +419,75 @@ const until = async (cond: () => boolean, ms: number, what: string) => { const t
 }
 
 if (!process.exitCode) console.log('match checks passed');
+
+// ---- event registration
+{
+  const { registerForEvent, cancelRegistration, startRegisteredTournament, registrationStates } = await import('../src/game/match/registration.ts');
+  const region = { city: 'Oslo', countryCode: 'NO', demonym: 'Norwegian', continent: 'Europe' };
+  const sched = getSchedule(save0.world.date, region, career.id, 26);
+  const open = sched.find((e) => e.level === 'local' && e.weeksUntilDeadline >= 0)!;
+  ok(open !== undefined, 'registration: no open local event in the schedule');
+  const rich = { ...save0, player: { ...save0.player, money: 500 } };
+  const r1 = registerForEvent(rich, open);
+  ok(r1.ok && r1.save.player.money === 500 - open.entryFee && r1.save.registrations.length === 1, 'registration: fee not charged / not stored');
+  ok(r1.ok && !registerForEvent(r1.save, open).ok, 'registration: double registration allowed');
+  ok(!registerForEvent({ ...save0, player: { ...save0.player, money: 0 } }, open).ok, 'registration: a broke player registered');
+  const elite = sched.find((e) => e.level === 'elite');
+  ok(!elite || !registerForEvent(rich, elite).ok, 'registration: an ineligible player registered for an elite event');
+  if (r1.ok) {
+    ok(!startRegisteredTournament(r1.save, open.id, npcs, 1).ok || open.weeksUntilStart <= 0, 'registration: started before its week');
+    ok(registrationStates(r1.save)[0].status === 'upcoming', 'registration: wrong state');
+    const refunded = cancelRegistration(r1.save, open.id);
+    ok(refunded.player.money === 500 && refunded.registrations.length === 0, 'registration: cancelling should refund');
+    // the calendar reaches the event week
+    const later = { ...r1.save, world: { ...r1.save.world, date: { year: open.year, week: open.week } } };
+    ok(registrationStates(later)[0].status === 'ready', 'registration: not ready in its week');
+    const started = startRegisteredTournament(later, open.id, npcs, 9);
+    ok(started.ok && started.save.tournament?.status === 'playing' && started.save.registrations.length === 0 && started.save.player.money === later.player.money, 'registration: starting the event wrong (no second fee allowed)');
+    const missed = { ...r1.save, world: { ...r1.save.world, date: { year: open.year, week: open.week + 1 } } };
+    ok(registrationStates(missed)[0].status === 'missed' && !startRegisteredTournament(missed, open.id, npcs, 9).ok, 'registration: a missed event should not start');
+  }
+  if (!process.exitCode) console.log('registration checks passed');
+}
+
+// ---- rated games: the opponent cannot be controlled or made to resign
+{
+  const rated = mkSession(mkSetup({ rated: true, speed: 'max' }), { autoAnalyze: false, liveEval: false });
+  rated.session.start();
+  rated.session.setController('black', 'human');
+  ok(rated.session.getSnapshot().controllers.black === 'auto', 'rated: the opponent could be taken over');
+  rated.session.humanMove('e2e4');
+  await until(() => rated.session.getSnapshot().game.ucis.length >= 2, 15000, 'reply');
+  rated.session.resign('black');
+  ok(rated.session.getSnapshot().status === 'running' && rated.out.finishes === 0, 'rated: the opponent could be resigned for');
+  rated.session.resign('white');
+  ok(rated.out.finish?.result === 'black', 'rated: the player could not resign');
+  rated.session.dispose();
+  const friendly = mkSession(mkSetup({ rated: false, speed: 'max' }), { autoAnalyze: false, liveEval: false });
+  friendly.session.start();
+  friendly.session.setController('black', 'human');
+  ok(friendly.session.getSnapshot().controllers.black === 'human', 'friendly: two-sided control should stay possible');
+  friendly.session.dispose();
+}
+
+// ---- Train > Games: a simulated game is a real game that can be analysed
+{
+  const { playSimulatedGame } = await import('../src/game/match/headless.ts');
+  const { recordPracticeGame, attachAnalysis } = await import('../src/game/play/practice.ts');
+  const { analyzeGame } = await import('../src/game/engine/analysis.ts');
+  const npc = pickNpc(900);
+  const tcNone = { id: 'none', label: 'No clock', base: 0, increment: 0, category: 'none' as const };
+  const played = await playSimulatedGame({ save: save0, npc, eloOverride: 700, color: 'black', timeControl: tcNone, seed: 21, db, engine, timeoutMs: 120000 });
+  ok(played !== null && played.moves.length > 10 && ['win', 'draw', 'loss'].includes(played.outcome), 'simulated training game did not produce a real game');
+  if (played) {
+    const state = gameFromSans(played.moves);
+    ok(state.ucis.length === played.moves.length, 'simulated game has illegal moves');
+    const rec = recordPracticeGame(save0, { mode: 'training', opponent: { id: npc.id, name: npc.name, elo: 700, style: npc.style, temperament: 'balanced' as never, lines: { white: [], black: [] } }, color: 'black', outcome: played.outcome, termination: played.termination, timeControl: tcNone, startFen: null, moves: played.moves, objective: 'free', situation: null, rated: false, simulated: true }, db);
+    ok(rec.game.simulated && rec.game.moves.length === played.moves.length && rec.save.practice.games.length === 1, 'simulated game not stored with its moves');
+    const data = await analyzeGame(engine, { game: state, depth: 6, bookPlies: 0 });
+    const after = attachAnalysis(rec.save, rec.game.id, { engine: data.engine, depth: data.depth, evals: data.evals, labels: data.labels, whiteAccuracy: data.whiteAccuracy, blackAccuracy: data.blackAccuracy });
+    const stored = after.practice.games[0];
+    ok(stored.analysis !== null && stored.accuracy !== null && stored.analysis.labels.length === played.moves.length, 'analysis of a simulated game not stored');
+    console.log(`simulated training game: ${played.moves.length} half-moves, ${played.outcome} by ${played.termination}, accuracy ${stored.accuracy}`);
+  }
+}

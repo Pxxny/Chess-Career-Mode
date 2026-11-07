@@ -6,17 +6,16 @@ import { upgradeSave } from '@/game/training/migrate';
 import { endDay, performSession, takeRest, type NightReport, type RestKind, type SessionOptions, type SessionResult } from '@/game/training/engine';
 import { recordGame, recordTournament, type GameInput, type TournamentInput } from '@/game/history/recordGame';
 import { getRankedNpcs, getWorldRank } from '@/game/npc/rankings';
-import { applySkillUpgrade } from '@/game/player/training';
 import { addMoney, spendActionPoints } from '@/game/player/resources';
 import { attachAnalysis, recordOpeningStudy, recordPracticeGame, recoverInterruptedPracticeGame, type FinishedGame, type RecordResult } from '@/game/play/practice';
 import type { OpeningDatabase } from '@/game/openings/database';
 import { applyFinishedMatch, applyNpcResult, attachMatchAnalysis, outcomeFor, recoverPendingMatch } from '@/game/match/aftermath';
 import type { MatchFinish } from '@/game/match/session';
-import { createTournament, withdraw } from '@/game/match/tournament';
-import { highestTitle } from '@/game/match/setup';
+import { withdraw } from '@/game/match/tournament';
+import { cancelRegistration, registerForEvent, startRegisteredTournament } from '@/game/match/registration';
 import type { ScheduledEvent } from '@/game/world/schedule';
 import type { MatchAnalysisReport, MatchRecord, PendingMatch } from '@/types';
-import type { CareerRecord, GameAnalysisSummary, GameSave, NewCareerOptions, SituationId, SkillKey } from '@/types';
+import type { CareerRecord, GameAnalysisSummary, GameSave, NewCareerOptions, SituationId } from '@/types';
 import { idbStorage } from '@/utils/idbStorage';
 import { useNpcStore } from './npcStore';
 
@@ -30,7 +29,6 @@ interface GameStore {
   spendActionPoints: (amount: number) => boolean;
   addMoney: (amount: number) => void;
   /** Spends AP to raise a skill. Returns false when the skill is maxed or AP is too low. */
-  upgradeSkill: (skill: SkillKey) => boolean;
   /** Runs a training session. The result says what changed, or why it was blocked. */
   train: (sessionId: string, options?: SessionOptions) => SessionResult;
   /** Spends training hours on a break or nap to recover fatigue. */
@@ -54,8 +52,12 @@ interface GameStore {
   checkpointMatch: (pending: PendingMatch | null) => void;
   /** A game left open by a closed page is recorded as abandoned. */
   recoverMatch: (db: OpeningDatabase) => void;
-  /** Pays the entry fee and starts the event. */
-  enterTournament: (event: ScheduledEvent) => { ok: true } | { ok: false; error: string };
+  /** Registers for an upcoming event and pays the entry fee. */
+  registerForEvent: (event: ScheduledEvent) => { ok: true } | { ok: false; error: string };
+  /** Cancels a registration (refunded before the event week). */
+  cancelRegistration: (eventId: string) => void;
+  /** Starts the tournament of a registration once its week has come. */
+  startTournament: (eventId: string) => { ok: true } | { ok: false; error: string };
   /** Leaves the running tournament: the remaining games are forfeited. */
   withdrawTournament: () => void;
   /** Closes the results of a finished tournament. */
@@ -109,15 +111,6 @@ export const useGameStore = create<GameStore>()(
       addMoney: (amount) => {
         const { save } = get();
         if (save) set({ save: { ...save, player: addMoney(save.player, amount) } });
-      },
-
-      upgradeSkill: (skill) => {
-        const { save } = get();
-        if (!save) return false;
-        const next = applySkillUpgrade(save, skill);
-        if (!next) return false;
-        set({ save: next });
-        return true;
       },
 
       train: (sessionId, options) => {
@@ -211,16 +204,26 @@ export const useGameStore = create<GameStore>()(
         set({ save: recoverPendingMatch(save, db).save });
       },
 
-      enterTournament: (event) => {
+      registerForEvent: (event) => {
         const { save } = get();
         if (!save) return { ok: false, error: 'No career.' };
-        if (save.tournament && save.tournament.status === 'playing') return { ok: false, error: 'You are already playing a tournament.' };
-        if (save.player.money < event.entryFee) return { ok: false, error: 'You cannot afford the entry fee.' };
-        const npcs = useNpcStore.getState().npcs;
-        const seed = (save.world.seed ^ (event.year * 100 + event.week) ^ event.id.length * 7919) >>> 0;
-        const t = createTournament({ event, player: { name: save.player.name, rating: save.player.rating, country: save.player.country, title: highestTitle(save) }, npcs, seed });
-        set({ save: { ...save, player: addMoney(save.player, -event.entryFee), tournament: t } });
-        return { ok: true };
+        const r = registerForEvent(save, event);
+        if (r.ok) set({ save: r.save });
+        return r.ok ? { ok: true } : r;
+      },
+
+      cancelRegistration: (eventId) => {
+        const { save } = get();
+        if (save) set({ save: cancelRegistration(save, eventId) });
+      },
+
+      startTournament: (eventId) => {
+        const { save } = get();
+        if (!save) return { ok: false, error: 'No career.' };
+        const seed = (save.world.seed ^ (save.world.date.year * 100 + save.world.date.week) ^ (eventId.length * 7919)) >>> 0;
+        const r = startRegisteredTournament(save, eventId, useNpcStore.getState().npcs, seed);
+        if (r.ok) set({ save: r.save });
+        return r.ok ? { ok: true } : r;
       },
 
       withdrawTournament: () => {

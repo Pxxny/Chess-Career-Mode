@@ -168,9 +168,9 @@ export function MatchViewer({ setup, onExit }: Props) {
                   ) : (
                     <Button variant="secondary" onClick={() => session.pause()}><Pause className="h-4 w-4" aria-hidden /> Pause</Button>
                   ))}
-                  {controlButton(opponent)}
+                  {!setup.rated && controlButton(opponent)}
                   <Button variant="secondary" onClick={offerDraw} disabled={offering || snap.controllers[turnColor] !== 'human'}><Handshake className="h-4 w-4" aria-hidden /> Offer draw</Button>
-                  <Button variant="danger" onClick={() => session.resign(humanSides.includes(turnColor) ? turnColor : player)} disabled={humanSides.length === 0}><Flag className="h-4 w-4" aria-hidden /> Resign</Button>
+                  <Button variant="danger" onClick={() => session.resign(!setup.rated && humanSides.includes(turnColor) ? turnColor : player)} disabled={!humanSides.includes(player) && setup.rated || humanSides.length === 0}><Flag className="h-4 w-4" aria-hidden /> Resign</Button>
                 </>
               )}
             </div>

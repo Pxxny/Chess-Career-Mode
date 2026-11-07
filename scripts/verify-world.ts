@@ -75,7 +75,6 @@ import { createNewSave } from '../src/game/createNewSave.ts';
 import { recordGame, recordTournament } from '../src/game/history/recordGame.ts';
 import { computeStats, findRivals, recentGames } from '../src/game/history/stats.ts';
 import { computeMorale } from '../src/game/player/morale.ts';
-import { applySkillUpgrade, upgradeCost } from '../src/game/player/training.ts';
 import { getTitleStatus } from '../src/game/career/titles.ts';
 import { buildNews } from '../src/game/career/news.ts';
 import { buildFinance, buildMilestones, buildTimeline } from '../src/game/career/overview.ts';
@@ -95,17 +94,14 @@ ok(m0.value >= 60 && m0.value <= 75, `starting morale ${m0.value}`);
 const tired = computeMorale({ ...save.player, ap: { current: 0, max: 10 } }, save.history, save.world.date);
 ok(tired.value < m0.value, 'fatigue did not lower morale');
 
-// skill upgrades: cost, AP spend, history, affinity bonus, blocking
-const before = save.player.skills.tactics;
-const up = applySkillUpgrade(save, 'tactics')!;
-ok(up.player.skills.tactics === before + 1, 'upgrade did not add 1');
-ok(up.player.ap.current === 10 - upgradeCost(before), 'upgrade cost not spent');
-ok(up.history.training.length === 1, 'training not logged');
-ok(applySkillUpgrade({ ...save, player: { ...save.player, ap: { current: 0, max: 10 } } }, 'tactics') === null, 'upgrade allowed without AP');
-ok(applySkillUpgrade({ ...save, player: { ...save.player, skills: { ...save.player.skills, tactics: 100 } } }, 'tactics') === null, 'upgrade allowed at max');
-let aff = { ...save, player: { ...save.player, ap: { current: 99, max: 99 } } };
-for (let i = 0; i < 4; i++) aff = applySkillUpgrade(aff, 'tactics')!;
-ok(aff.player.skills.tactics === before + 5, `attacker affinity gain wrong: ${aff.player.skills.tactics - before}`);
+// skills grow only through training: there is no AP-for-level-up trade, and sleeping changes no skill
+const skillsOf = (g: typeof save) => JSON.stringify(g.player.skills);
+let idle = save;
+for (let day = 0; day < 60; day++) idle = endDay(idle).save;
+ok(skillsOf(idle) === skillsOf(save) && idle.player.ap.current === idle.player.ap.max, 'end-day loop changed skills');
+const trained = performSession(save, 'tactics-puzzle');
+ok(trained.ok && trained.save.player.ap.current === save.player.ap.current - 1 && trained.save.history.sessions.length === 1, 'training session did not spend AP / log');
+const up = trained.ok ? trained.save : save;
 ok(computeMorale(up.player, up.history, up.world.date).factors.find((f) => f.label === 'Training quality')!.value > 0, 'training did not raise morale');
 
 // recording games

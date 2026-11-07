@@ -52,6 +52,8 @@ export interface SetupInput {
   tournament: MatchTournamentInfo | null;
   seed: number;
   db: OpeningDatabase;
+  /** Plays the opponent at this rating instead of its own */
+  eloOverride?: number | null;
 }
 
 /** Everything a match needs: both sides' details and the strength profile of each simulated player. */
@@ -59,7 +61,7 @@ export function buildMatchSetup(input: SetupInput): MatchSetup {
   const { save, npc, playerColor, db } = input;
   const rng = createRng(mixSeed(input.seed, 0x77));
   const round = input.tournament?.round ?? 1;
-  const npcProfile = buildNpcProfile(npc, opponentFromNpc(npc).lines, { rng, round });
+  const npcProfile = buildNpcProfile(npc, opponentFromNpc(npc).lines, { rng, round, baseEloOverride: input.eloOverride ?? undefined });
   const playerProfile = buildPlayerProfile(save.player, save.training.fatigue, playerLines(db, save));
   const player = sideForPlayer(save);
   const opponent = sideForNpc(npc);

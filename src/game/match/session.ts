@@ -472,6 +472,8 @@ export class MatchSession {
   /** The person takes over a side (or hands it back to the simulator) at any moment. */
   setController(color: PieceColor, kind: ControllerKind): void {
     if (this.status === 'over' || this.controllers[color] === kind) return;
+    // In a rated game only the player's own side can be taken over. The opponent always plays for itself.
+    if (this.setup.rated && color !== this.setup.playerColor) return;
     this.controllers[color] = kind;
     this.controlLog.push({ ply: this.game.ucis.length, color, to: kind });
     if (this.status === 'paused' && kind === 'human') this.resume();
@@ -508,6 +510,8 @@ export class MatchSession {
 
   resign(color: PieceColor = this.setup.playerColor): void {
     if (this.status === 'over') return;
+    // In a rated game only the player can resign, and only for their own side.
+    if (this.setup.rated && color !== this.setup.playerColor) return;
     this.finishGame({ result: color === 'white' ? 'black' : 'white', reason: 'resignation' });
   }
 

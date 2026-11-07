@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Badge, Button, Card, CardTitle } from '@/components/ui';
+import { GAME_CONFIG } from '@/data/config';
 import { createRng } from '@/game/rng';
 import { engineOpponent } from '@/game/play/opponent';
 import { practiceBlock } from '@/game/play/practice';
@@ -63,7 +64,7 @@ export function EngineGame() {
 
   return (
     <Card>
-      <CardTitle aside={<Badge tone={info.status === 'stockfish' ? 'gold' : 'neutral'}>{info.status === 'idle' ? 'Engine starts with the game' : info.label}</Badge>}>Game vs the Engine</CardTitle>
+      <CardTitle aside={<div className="flex flex-wrap gap-2"><Badge>Costs {GAME_CONFIG.practice.ap.engine} AP</Badge><Badge tone={info.status === 'stockfish' ? 'gold' : 'neutral'}>{info.status === 'idle' ? 'Engine starts with the game' : info.label}</Badge></div>}>Game vs the Engine</CardTitle>
       <p className="mb-4 text-sm text-ink-muted">Play Stockfish at the strength you choose. Every move the engine makes is checked against the rules, so it can only play legal moves.</p>
 
       <div className="space-y-5">

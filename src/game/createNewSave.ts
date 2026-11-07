@@ -23,5 +23,6 @@ export function createNewSave(options: NewCareerOptions, career: CareerRecord): 
     matches: [],
     tournament: null,
     pendingMatch: null,
+    registrations: [],
   };
 }

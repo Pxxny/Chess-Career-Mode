@@ -26,8 +26,15 @@ interface Props {
 export function MoveList({ sans, viewPly, onView, labels }: Props) {
   const current = viewPly ?? sans.length;
   const activeRef = useRef<HTMLButtonElement | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  // Keep the current move visible by scrolling only the move list. scrollIntoView would also scroll the page.
   useEffect(() => {
-    activeRef.current?.scrollIntoView?.({ block: 'nearest' });
+    const list = listRef.current;
+    const el = activeRef.current;
+    if (!list || !el) return;
+    const top = el.offsetTop - list.offsetTop;
+    if (top < list.scrollTop) list.scrollTop = top;
+    else if (top + el.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = top + el.offsetHeight - list.clientHeight;
   }, [current, sans.length]);
 
   const go = (ply: number) => onView(ply >= sans.length ? null : Math.max(0, ply));
@@ -79,7 +86,7 @@ export function MoveList({ sans, viewPly, onView, labels }: Props) {
           ))}
         </div>
       </div>
-      <div className="max-h-72 overflow-y-auto pr-1" data-testid="move-list">
+      <div ref={listRef} className="relative max-h-72 overflow-y-auto pr-1" data-testid="move-list">
         {rows.length === 0 && <p className="px-1 py-3 text-sm text-ink-muted">No moves yet.</p>}
         {rows.map((i) => (
           <div key={i} className="grid grid-cols-[2.2rem_1fr_1fr] items-center gap-1">

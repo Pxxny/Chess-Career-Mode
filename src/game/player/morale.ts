@@ -54,7 +54,7 @@ export function computeMorale(player: Player, history: CareerHistory, now: GameS
     { label: 'Recent results', value: clamp(results, -12, 12), note: recent.length ? `Last ${recent.length} rated games` : 'No rated games yet' },
     { label: 'Losing streak', value: lossStreak >= 2 ? -Math.min(12, (lossStreak - 1) * 3) : 0, note: lossStreak >= 2 ? `${lossStreak} losses in a row` : 'No losing streak' },
     { label: 'Tournament form', value: Math.round(tournament * 10) / 10, note: lastEvents.length ? `Last ${lastEvents.length} tournaments` : 'No tournaments played' },
-    { label: 'Training quality', value: training, note: recentTraining ? `${recentTraining} skill upgrades recently` : 'No recent training' },
+    { label: 'Training quality', value: training, note: recentTraining ? `${recentTraining} training sessions recently` : 'No recent training' },
     { label: 'Fatigue', value: Math.round(fatigueEffect * 10) / 10, note: `${Math.round(fatigue)}% fatigue, ${player.ap.current} of ${player.ap.max} AP` },
     { label: 'Career achievements', value: Math.min(9, achievements * 3), note: achievements ? `${achievements} recent trophies or titles` : 'None recently' },
   ];

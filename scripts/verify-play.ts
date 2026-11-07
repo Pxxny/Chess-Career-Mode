@@ -190,7 +190,25 @@ const tg = recordPracticeGame(t0, { mode: 'training', opponent: { ...opponent, i
 ok(tg.save.training.hoursUsedToday === 1 && tg.save.practice.blitzRating === t0.practice.blitzRating && tg.gains.length > 0 && tg.save.history.sessions.length === 1, 'training game costs an hour and gives XP');
 ok(tg.gains.some((x) => x.xp > 0), 'training game XP');
 const sim = recordPracticeGame(t0, { mode: 'training', opponent, color: 'white', outcome: 'win', termination: 'resignation', timeControl: findTimeControl('none'), startFen: null, moves, objective: null, situation: null, rated: false, simulated: true }, db);
-ok(sim.save.training.fatigue === 0 && sim.gains.length === 0, 'simulated games cost nothing');
+ok(sim.save.training.fatigue > 0 && sim.gains.length > 0 && sim.gains.some((x) => x.xp > 0), 'simulated games earn experience and tire you');
+ok(sim.save.training.unanalyzedGames === 0 && sim.save.training.hoursUsedToday === 1, 'simulated game: one hour, nothing to analyse');
+// games use action points: 2 for a Training Game / Engine game, 1 per block of 5 Online Blitz games
+const apOf = (g: typeof t0) => g.player.ap.current;
+ok(apOf(tg.save) === apOf(t0) - 2 && apOf(sim.save) === apOf(t0) - 2, 'training game should cost 2 AP (played or simulated)');
+const eg = recordPracticeGame(t0, { mode: 'engine', opponent: { ...opponent, id: 'sf', elo: 1500 }, color: 'white', outcome: 'draw', termination: 'agreement' as never, timeControl: findTimeControl('none'), startFen: null, moves, objective: null, situation: null, rated: false }, db);
+ok(apOf(eg.save) === apOf(t0) - 2 && eg.gains.some((x) => x.xp > 0), 'engine game should cost 2 AP and give XP');
+let bl = t0;
+const blitzApSpent: number[] = [];
+for (let i = 0; i < 11; i++) {
+  const before = apOf(bl);
+  const r = recordPracticeGame(bl, { mode: 'blitz', opponent: { ...opponent, id: 'ol1', elo: 1500 }, color: 'white', outcome: 'win', termination: 'checkmate', timeControl: findTimeControl('3+2'), startFen: null, moves, objective: null, situation: null, rated: true }, db);
+  blitzApSpent.push(before - apOf(r.save));
+  ok(r.gains.some((x) => x.xp > 0), `blitz game ${i + 1} earned no experience`);
+  bl = { ...r.save, training: { ...r.save.training, fatigue: 0 } };
+}
+ok(blitzApSpent.join() === '1,0,0,0,0,1,0,0,0,0,1', `blitz AP per game wrong: ${blitzApSpent.join()}`);
+ok(!!practiceBlock({ ...t0, player: { ...t0.player, ap: { ...t0.player.ap, current: 1 } } }, 'training', findTimeControl('5+3')), 'training game must be blocked without 2 AP');
+ok(!practiceBlock({ ...t0, player: { ...t0.player, ap: { ...t0.player.ap, current: 1 } } }, 'blitz', findTimeControl('3+0')), 'blitz needs only 1 AP');
 ok(blitzRatingChange(1500, 1500, 'win', 0) === 20 && blitzRatingChange(1500, 1500, 'loss', 100) < 0, 'blitz K factor');
 const withAnalysis = attachAnalysis(rec.save, rec.game.id, { engine: 'x', depth: 2, evals: [], labels: '', whiteAccuracy: 88, blackAccuracy: 70 });
 ok(withAnalysis.practice.games[0].accuracy === 88, 'accuracy attached for White');

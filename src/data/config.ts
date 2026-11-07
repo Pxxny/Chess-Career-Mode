@@ -27,12 +27,8 @@ export const GAME_CONFIG = {
     /** Training speed multiplier for skills an archetype has an affinity with */
     affinityMultiplier: 1.25,
   },
-  /** Skill upgrades: cost in AP is `baseCost + floor(skill / tierSize)`. Affinity skills gain +2 every fourth upgrade. */
+  /** Weeks that count as "recent" for training quality and morale. Skills grow only through Train sessions and games. */
   training: {
-    baseCost: 1,
-    tierSize: 25,
-    gain: 1,
-    /** Weeks that count as "recent" for training quality and morale */
     recentWeeks: 8,
   },
   /** Daily training: hours, fatigue and experience curves */
@@ -46,6 +42,8 @@ export const GAME_CONFIG = {
     /** Each repeat of the same session on one day earns this fraction of the previous one */
     repeatFactor: 0.7,
     /** Experience needed for the next point = base + perLevel * current level */
+    /** Multiplier on all experience from training sessions and games */
+    xpGain: 1.4,
     xpBase: 80,
     xpPerLevel: 8,
     minDiminishing: 0.12,
@@ -64,7 +62,11 @@ export const GAME_CONFIG = {
     /** Fatigue added by one game of each mode, before stamina */
     fatigue: { training: 6, blitz: 3, engine: 3 } as const,
     /** XP multiplier per mode compared with a normal training session */
-    xpScale: { training: 1, blitz: 0.55, engine: 0.45 } as const,
+    xpScale: { training: 1, blitz: 0.7, engine: 0.9 } as const,
+    /** A simulated game earns this share of the experience of one you play yourself */
+    simulatedXp: 0.75,
+    /** Action points: Training Game and Game vs the Engine cost `training` / `engine` per game; Online Blitz costs `blitz` AP per block of `blitzBlock` games */
+    ap: { training: 2, engine: 2, blitz: 1, blitzBlock: 5 } as const,
     /** Blitz rating of a new account is the player's Elo rounded to this step */
     blitzStep: 50,
     provisionalGames: 20,

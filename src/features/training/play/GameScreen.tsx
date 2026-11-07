@@ -133,7 +133,7 @@ export function GameScreen({ config, title, onExit, extra, onAgain }: Props) {
                 </div>
                 {rec && (
                   <p className="mt-2 text-sm text-ink-muted">
-                    {rec.gains.length > 0 ? rec.gains.map((g) => `+${g.xp} ${g.stat}${g.levels ? ` (level ${g.value}!)` : ''}`).join(' · ') : 'No experience gained in this mode.'}
+                    {rec.gains.map((g) => `+${g.xp} ${g.stat}${g.levels ? ` (level ${g.value}!)` : ''}`).join(' · ')}{rec.apSpent > 0 ? ` · -${rec.apSpent} AP` : ''}
                   </p>
                 )}
                 <div className="mt-3 flex flex-wrap gap-2">

@@ -10,28 +10,33 @@ import { buildMatchSetup, highestTitle } from '@/game/match/setup';
 import { describeTimeControl } from '@/game/match/timeControls';
 import { PLAYER_ID, playerOpponentId, standings } from '@/game/match/tournament';
 import type { MatchSetup } from '@/game/match/session';
-import { getSchedule, isEligible, type ScheduledEvent } from '@/game/world/schedule';
+import { registrationStates } from '@/game/match/registration';
+import { getSchedule, isEligible, registrationOpen, type ScheduledEvent } from '@/game/world/schedule';
 import { useState } from 'react';
 
-/** Events held this week: the schedule of the week before shows them one week away. */
-function eventsThisWeek(save: ReturnType<typeof useSave>): ScheduledEvent[] {
+/** The schedule of the next half year. */
+function upcomingEvents(save: ReturnType<typeof useSave>): ScheduledEvent[] {
   const country = getCountry(save.player.country);
   const region = { city: save.player.city.name, countryCode: save.player.country, demonym: country?.nationality ?? save.player.country, continent: country?.continent ?? 'World' };
-  const d = save.world.date;
-  return getSchedule({ year: d.year, week: d.week - 1 }, region, save.career.id, 4).filter((e) => e.weeksUntilStart === 1);
+  return getSchedule(save.world.date, region, save.career.id, 26);
 }
+
+const startsIn = (w: number): string => (w <= 0 ? 'this week' : w === 1 ? 'next week' : `in ${w} weeks`);
 
 /** The tournament in progress (pairings, standings, the next game) or the events that can be entered this week. */
 export function TournamentPanel({ onStart }: { onStart: (setup: MatchSetup) => void }) {
   const save = useSave();
   const npcs = useNpcs();
   const db = useOpeningDb();
-  const enter = useGameStore((s) => s.enterTournament);
+  const register = useGameStore((s) => s.registerForEvent);
+  const cancel = useGameStore((s) => s.cancelRegistration);
+  const startEvent = useGameStore((s) => s.startTournament);
   const withdraw = useGameStore((s) => s.withdrawTournament);
   const close = useGameStore((s) => s.closeTournament);
   const [error, setError] = useState<string | null>(null);
   const t = save.tournament;
-  const events = useMemo(() => eventsThisWeek(save), [save.world.date, save.player.country, save.player.city.name, save.career.id]);
+  const events = useMemo(() => upcomingEvents(save), [save.world.date, save.player.country, save.player.city.name, save.career.id]);
+  const regs = registrationStates(save);
   const rows = useMemo(() => (t ? standings(t) : []), [t]);
 
   const play = (mode: 'play' | 'simulate') => {
@@ -87,14 +92,42 @@ export function TournamentPanel({ onStart }: { onStart: (setup: MatchSetup) => v
     );
   }
 
+  const registered = new Set(save.registrations.map((r) => r.eventId));
+  const open = events.filter((e) => !registered.has(e.id) && registrationOpen(e));
+  const weeksTo = (r: { year: number; week: number }): number => (r.year - save.world.date.year) * 52 + (r.week - save.world.date.week);
+
   return (
     <Card data-testid="tournament-panel">
-      <CardTitle>Tournaments this week</CardTitle>
-      {events.length === 0 ? (
-        <EmptyState title="No event is held this week" description="Local, national, international and elite events take place on a fixed calendar. Check Home for the next ones, or play a rated game meanwhile." />
+      <CardTitle>Tournaments</CardTitle>
+
+      <h3 className="mb-2 text-sm font-semibold text-ink-muted">Your registrations</h3>
+      {regs.length === 0 ? (
+        <p className="mb-4 text-sm text-ink-muted">You are not registered for any event.</p>
       ) : (
-        <ul className="space-y-3">
-          {events.map((e) => {
+        <ul className="mb-5 space-y-3" data-testid="registrations">
+          {regs.map((r) => (
+            <li key={r.eventId} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-navy-900 p-3">
+              <div>
+                <p className="font-semibold text-ink">{r.name}</p>
+                <p className="text-xs text-ink-muted">{r.level} · {r.fieldSize} players · year {r.year}, week {r.week} ({r.status === 'missed' ? 'missed: the fee is lost' : startsIn(weeksTo(r))})</p>
+              </div>
+              <div className="flex gap-2">
+                {r.status === 'ready' && <Button data-testid="start-event" onClick={() => { const res = startEvent(r.eventId); setError(res.ok ? null : res.error); }}><Trophy className="h-4 w-4" aria-hidden /> Start tournament</Button>}
+                {r.status === 'upcoming' && <Button variant="secondary" onClick={() => cancel(r.eventId)}>Cancel (refund)</Button>}
+                {r.status === 'missed' && <Button variant="secondary" onClick={() => cancel(r.eventId)}>Remove</Button>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+      {regs.some((r) => r.status === 'upcoming') && !regs.some((r) => r.status === 'ready') && <p className="mb-4 text-xs text-ink-faint">A tournament starts in its week. Use End Day in Train to move the calendar forward.</p>}
+
+      <h3 className="mb-2 text-sm font-semibold text-ink-muted">Open for registration</h3>
+      {open.length === 0 ? (
+        <EmptyState title="No event is open for registration" description="Events follow a fixed calendar and registration closes a few weeks before each one. Check back after the calendar moves on." />
+      ) : (
+        <ul className="space-y-3" data-testid="open-events">
+          {open.map((e) => {
             const eligible = isEligible(e, save.player.rating, save.player.reputation);
             const played = save.history.tournaments.some((r) => r.tournamentId === e.id);
             const affordable = save.player.money >= e.entryFee;
@@ -102,16 +135,18 @@ export function TournamentPanel({ onStart }: { onStart: (setup: MatchSetup) => v
               <li key={e.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-navy-900 p-3">
                 <div>
                   <p className="font-semibold text-ink">{e.name}</p>
-                  <p className="text-xs text-ink-muted">{e.level} · {e.fieldSize} players · entry {e.entryFee} · needs {e.minElo}+ Elo{e.minReputation ? `, reputation ${e.minReputation}+` : ''}</p>
+                  <p className="text-xs text-ink-muted">{e.level} · {e.fieldSize} players · entry {e.entryFee} · starts {startsIn(e.weeksUntilStart)} (year {e.year}, week {e.week}) · register by week {e.registrationDeadline.week}</p>
+                  <p className="text-xs text-ink-faint">Needs {e.minElo}+ Elo{e.minReputation ? `, reputation ${e.minReputation}+` : ''}</p>
                 </div>
                 <Button
+                  data-testid="register"
                   onClick={() => {
-                    const r = enter(e);
+                    const r = register(e);
                     setError(r.ok ? null : r.error);
                   }}
                   disabled={!eligible || played || !affordable}
                 >
-                  <Trophy className="h-4 w-4" aria-hidden /> {played ? 'Already played' : !eligible ? 'Not eligible' : !affordable ? 'Cannot afford' : 'Enter'}
+                  <Trophy className="h-4 w-4" aria-hidden /> {played ? 'Already played' : !eligible ? 'Not eligible' : !affordable ? 'Cannot afford' : 'Register'}
                 </Button>
               </li>
             );
@@ -119,7 +154,7 @@ export function TournamentPanel({ onStart }: { onStart: (setup: MatchSetup) => v
         </ul>
       )}
       {error && <p role="alert" className="mt-3 text-sm text-red-300">{error}</p>}
-      <p className="mt-3 text-xs text-ink-faint">Your title: {highestTitle(save) === 'none' ? 'none' : highestTitle(save)}. Events held this week accept entries on the spot.</p>
+      <p className="mt-3 text-xs text-ink-faint">Your title: {highestTitle(save) === 'none' ? 'none' : highestTitle(save)}.</p>
     </Card>
   );
 }

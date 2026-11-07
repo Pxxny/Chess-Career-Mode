@@ -140,7 +140,7 @@ export function BlitzLobby() {
 
       <Card className="mb-4">
         <CardTitle aside={<Badge>Simulated server · {pool.length} players</Badge>}>Find an opponent</CardTitle>
-        <p className="mb-4 text-sm text-ink-muted">Matchmaking is simulated: you are paired with a simulated online player whose rating is close to yours. It is not real multiplayer. Online games use no training hours, but they tire you a little.</p>
+        <p className="mb-4 text-sm text-ink-muted">Matchmaking is simulated: you are paired with a simulated online player whose rating is close to yours. It is not real multiplayer. Every block of {pcfg.ap.blitzBlock} games in a day costs {pcfg.ap.blitz} AP. Online games use no training hours, but they tire you a little, and every game earns experience.</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <Segmented label="Time control" value={tcId} onChange={setTcId} options={BLITZ_TIME_CONTROLS.map((t) => ({ id: t.id, label: t.label }))} />
           <Segmented label="Game type" value={rated} onChange={setRated} options={[{ id: 'rated', label: 'Rated' }, { id: 'casual', label: 'Casual' }]} />

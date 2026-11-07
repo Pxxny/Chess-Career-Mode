@@ -9,6 +9,12 @@ import { opponentFromNpc, type Opponent } from '@/game/play/opponent';
 import { practiceBlock, trainingHoursFor } from '@/game/play/practice';
 import { findTimeControl, TRAINING_TIME_CONTROLS } from '@/game/play/timeControls';
 import { strengthFor } from '@/game/engine/strength';
+import { analyzeGame } from '@/game/engine/analysis';
+import { engineManager } from '@/game/engine/manager';
+import { gameFromSans } from '@/game/chess/rules';
+import { GAME_CONFIG } from '@/data/config';
+import '@/game/match/chessjs';
+import { playSimulatedGame } from '@/game/match/headless';
 import { useNpcs } from '@/hooks/useNpcs';
 import { useSave } from '@/hooks/useGame';
 import { useGameStore } from '@/store/gameStore';
@@ -26,6 +32,7 @@ export function TrainingGame() {
   const db = useOpeningDb();
   const [started, setStarted] = useState<SessionConfig | null>(null);
   const [simulated, setSimulated] = useState<string | null>(null);
+  const [simulating, setSimulating] = useState(false);
   const [run, setRun] = useState(0);
 
   const [opponentId, setOpponentId] = useState<string>('');
@@ -109,20 +116,42 @@ export function TrainingGame() {
     return <GameScreen key={run} config={started} title="Training Game" onExit={() => setStarted(null)} onAgain={() => { setRun((r) => r + 1); setStarted(build()); }} />;
   }
 
-  const simulate = () => {
+  /**
+   * Simulates the game: both sides are played by the engine at the players' strengths, so the game has real moves
+   * that can be reviewed and analysed. If that fails, the result is rolled from the ratings (opening moves only).
+   */
+  const simulate = async () => {
     const config = build();
-    if (!config) return;
-    const game = simulateGame(db, save.repertoire.preferences, { seed: gameSeed(save, 13), playerRating: rating, playerSkill: skillAverage(save), color: config.color, opponent: config.opponent });
+    if (!config || !npc) return;
+    setSimulating(true);
+    setSimulated('Simulating the game…');
+    const seed = gameSeed(save, 13);
+    const played = await playSimulatedGame({ save, npc, eloOverride: elo, color: config.color, timeControl: tc, seed, db, engine: engineManager }).catch(() => null);
+    const fallback = played ? null : simulateGame(db, save.repertoire.preferences, { seed, playerRating: rating, playerSkill: skillAverage(save), color: config.color, opponent: config.opponent });
+    const moves = played?.moves ?? fallback!.moves;
+    const outcome = played?.outcome ?? fallback!.outcome;
+    const termination = played?.termination ?? fallback!.termination;
     const result = useGameStore.getState().recordPracticeGame(
-      { mode: 'training', opponent: config.opponent, color: config.color, outcome: game.outcome, termination: game.termination, timeControl: tc, startFen: null, moves: game.moves, objective: objectiveId, situation: game.situation, rated: false, simulated: true },
+      { mode: 'training', opponent: config.opponent, color: config.color, outcome, termination, timeControl: tc, startFen: null, moves, objective: objectiveId, situation: fallback?.situation ?? null, rated: false, simulated: true },
       db,
     );
-    setSimulated(result ? `Simulated game against ${config.opponent.name}: ${game.outcome}${game.entry ? `, ${game.entry.name}` : ''}.` : 'No career is loaded.');
+    setSimulating(false);
+    if (!result) return setSimulated('No career is loaded.');
+    setSimulated(`Simulated game against ${config.opponent.name}: ${outcome}${result.game.openingName ? `, ${result.game.openingName}` : ''}. ${played ? 'Analysing it now: open Games > History to read the analysis.' : 'Only the opening moves could be simulated.'} ${result.gains.map((g) => `+${g.xp} ${g.stat}${g.levels ? ` (level ${g.value}!)` : ''}`).join(' · ')} · -${result.apSpent} AP`);
+    if (!played || moves.length < 2) return;
+    // Analyse in the background; the result is stored on the game.
+    const careerId = save.career.id;
+    const state = gameFromSans(moves);
+    analyzeGame(engineManager, { game: state, depth: GAME_CONFIG.practice.analysisDepth, bookPlies: db.classify(moves)?.bookPlies ?? 0 })
+      .then((data) => {
+        if (useGameStore.getState().save?.career.id === careerId) useGameStore.getState().attachAnalysis(result.game.id, { engine: data.engine, depth: data.depth, evals: data.evals, labels: data.labels, whiteAccuracy: data.whiteAccuracy, blackAccuracy: data.blackAccuracy });
+      })
+      .catch(() => undefined);
   };
 
   return (
     <Card>
-      <CardTitle aside={<Badge>Costs {trainingHoursFor(tc)} training hour{trainingHoursFor(tc) === 1 ? '' : 's'}</Badge>}>Training Game</CardTitle>
+      <CardTitle aside={<Badge>Costs {GAME_CONFIG.practice.ap.training} AP · {trainingHoursFor(tc)} training hour{trainingHoursFor(tc) === 1 ? '' : 's'}</Badge>}>Training Game</CardTitle>
       <p className="mb-4 text-sm text-ink-muted">Play a full game against a ranked player with a goal in mind. You get feedback and an engine analysis afterwards, and experience in the skills the goal trains.</p>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -234,9 +263,9 @@ export function TrainingGame() {
         {simulated && <StatusLine>{simulated}</StatusLine>}
         <div className="flex flex-wrap gap-2">
           <Button disabled={!ready} onClick={() => setStarted(build())}>Start game</Button>
-          <Button variant="secondary" disabled={!npc || !!block || needsOpening || objectiveId !== 'free'} onClick={simulate} title="Skip the board: the result comes from the two ratings only">Simulate instead</Button>
+          <Button variant="secondary" disabled={!npc || !!block || needsOpening || objectiveId !== 'free' || simulating} onClick={() => void simulate()} title="Skip the board: the engine plays both sides at their strengths, and the game is analysed afterwards">{simulating ? 'Simulating…' : 'Simulate instead'}</Button>
         </div>
-        <p className="text-xs text-ink-faint">Simulating decides the result from the two ratings alone. Your preferred openings are used for the opening that is recorded, and never change the result.</p>
+        <p className="text-xs text-ink-faint">A simulated game costs the same AP and hours and earns {Math.round(GAME_CONFIG.practice.simulatedXp * 100)}% of the experience. Your preferred openings are used for the opening that is recorded, and never change the result.</p>
       </div>
     </Card>
   );

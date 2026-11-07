@@ -22,5 +22,6 @@ export function upgradeSave(save: GameSave): GameSave {
     matches: raw.matches ?? [],
     tournament: raw.tournament ?? null,
     pendingMatch: raw.pendingMatch ?? null,
+    registrations: raw.registrations ?? [],
   };
 }
