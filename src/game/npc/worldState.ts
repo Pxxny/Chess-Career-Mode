@@ -1,3 +1,4 @@
+import { RETIREMENT_AGE } from './population';
 import { higherTitle, tierForElo, titleForPeak } from '@/data/chess/tiers';
 import type { Npc } from '@/types';
 import { ageOn } from '@/utils/dates';
@@ -30,6 +31,7 @@ export function applyWorldState(npcs: Npc[], clock: WorldClock): Npc[] {
     return {
       ...npc,
       age: ageOn(npc.dateOfBirth, clock.year, clock.week),
+      careerStatus: ageOn(npc.dateOfBirth, clock.year, clock.week) >= RETIREMENT_AGE ? 'retired' : npc.careerStatus,
       league: tierForElo(npc.currentElo),
       title: higherTitle(npc.title, titleForPeak(npc.peakElo)),
     };

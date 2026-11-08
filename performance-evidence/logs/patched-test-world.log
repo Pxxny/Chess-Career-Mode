@@ -1,0 +1,39 @@
+
+> chess-career-mode@0.1.0 test:world
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-world.ts
+
+player: 1000 1000 0 beginner morale 70 money 250 AP 10 born 1970-06-15 start 1985
+attacker skills: {"opening":14,"middlegame":13,"endgame":8,"tactics":16,"calculation":13,"strategy":10,"timeManagement":9,"psychology":13}
+
+== 1950: 1223 NPCs, ranked 1129, RU fictional 147
+   tiers begi:144 amat:264 club:453 prof:288 inte:28 gran:23 elit:0 lege:0
+   top: Mikhail Botvinnik 2691 | Murat Nazarov 2643 | Lukas Krawczyk 2639 | Pavel Morozov 2639
+   legends ranked: Botvinnik(38,2691) Keres(33,2632) Smyslov(28,2602) Euwe(48,2596) Petrosian(20,2454) Korchnoi(18,2337)
+
+== 1972: 1223 NPCs, ranked 1147, RU fictional 133
+   tiers begi:144 amat:264 club:417 prof:288 inte:48 gran:39 elit:0 lege:0
+   top: Bobby Fischer 2785 | Mikhail Tal 2699 | Boris Spassky 2684 | Vasily Smyslov 2661
+   legends ranked: Fischer(28,2785) Tal(35,2699) Spassky(34,2684) Smyslov(50,2661) Larsen(36,2654) Petrosian(42,2641) Keres(55,2622) Korchnoi(40,2609) Karpov(20,2570)
+
+== 1985: 1223 NPCs, ranked 1121, RU fictional 138
+   tiers begi:144 amat:264 club:397 prof:288 inte:59 gran:48 elit:0 lege:0
+   top: Anatoly Karpov 2720 | Garry Kasparov 2700 | Burak Aliyev 2679 | Karthik Banerjee 2677
+   legends ranked: Karpov(33,2720) Kasparov(21,2700) Korchnoi(53,2676) Tal(48,2661) Smyslov(63,2624) Spassky(47,2603) Larsen(49,2579) Anand(15,2400)
+
+== 2005: 1223 NPCs, ranked 1143, RU fictional 83
+   tiers begi:144 amat:264 club:353 prof:288 inte:77 gran:62 elit:12 lege:0
+   top: Garry Kasparov 2812 | Veselin Topalov 2800 | Vladimir Kramnik 2796 | Viswanathan Anand 2788
+   legends ranked: Kasparov(41,2812) Topalov(29,2800) Kramnik(29,2796) Anand(35,2788) Karpov(53,2670) Korchnoi(73,2589) Carlsen(14,2555) Spassky(67,2481) Larsen(69,2438)
+
+== 2026: 1223 NPCs, ranked 1127, RU fictional 95
+   tiers begi:144 amat:264 club:313 prof:288 inte:96 gran:78 elit:15 lege:2
+   top: Magnus Carlsen 2840 | Darko Novak 2780 | Zhang Tianyu 2766 | Harish Gupta 2761
+   legends ranked: Carlsen(35,2840) Anand(56,2750)
+
+Carlsen 2005: {"id":"legend-magnus-carlsen","name":"Magnus Carlsen","nationality":"NO","age":14,"elo":2555,"stage":"Rising prodigy"}
+alt-history 1950 legends: 23
+events 1985: olympiad, zonals, world-championship, candidates, hastings, wijk, reggio-emilia, capablanca-memorial, biel, dortmund, tilburg, linares
+dashboard logic: world rank 1070 of 1128 | national 8 of 8 | NPC database 1223
+training sessions: 19 sessions, 40 openings, 400-day tactics run reached 70
+
+verification passed

@@ -1,0 +1,6 @@
+start       depth4 -> b1c3 (cp 0) in 104 ms
+kiwipete    depth4 -> e2a6 (cp 75) in 322 ms
+middlegame  depth4 -> c3d5 (cp 25) in 836 ms
+start       350ms budget -> reached depth 5, best b1c3
+kiwipete    350ms budget -> reached depth 4, best e2a6
+middlegame  350ms budget -> reached depth 3, best c3d5

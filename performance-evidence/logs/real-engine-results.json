@@ -1,0 +1,13 @@
+[
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:engine:browser"
+    ],
+    "project": "/workspace/performance-release/chess-career-mode",
+    "seconds": 8.942,
+    "exit_code": 0,
+    "log": "real-engine-test-engine-browser.log"
+  }
+]

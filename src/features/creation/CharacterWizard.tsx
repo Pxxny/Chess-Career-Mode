@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Button, Card } from '@/components/ui';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { GAME_CONFIG } from '@/data/config';
+import { toIsoDate } from '@/game/player/birth';
+import { useSlotUi } from '@/store/slotUi';
 import { ArchetypeStep } from './steps/ArchetypeStep';
 import { ConfirmStep } from './steps/ConfirmStep';
 import { IdentityStep } from './steps/IdentityStep';
@@ -29,10 +31,12 @@ function missingForIdentity(d: CharacterDraft): string {
   return missing.length ? `Choose ${missing.join(', ')} to continue.` : '';
 }
 
-export function CharacterWizard() {
+export function CharacterWizard({ slot }: { slot: number }) {
+  const cancelCreation = useSlotUi((s) => s.cancel);
   const { draft, update } = useCharacterDraft();
   const [index, setIndex] = useState(0);
   const [reachable, setReachable] = useState(0);
+  const creationLock = useRef(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -62,7 +66,8 @@ export function CharacterWizard() {
   };
 
   const confirm = async () => {
-    if (!draft.gender || !draft.country || !draft.city || creating) return;
+    if (!draft.gender || !draft.country || !draft.city || creationLock.current) return;
+    creationLock.current=true;
     setCreating(true);
     setError(null);
     try {
@@ -75,9 +80,11 @@ export function CharacterWizard() {
         appearance: draft.appearance,
         startYear: draft.startYear,
         alternateHistory: draft.alternateHistory,
-      });
+        dateOfBirth: toIsoDate(draft.birthDate),
+      }, slot);
     } catch {
       setError('Something went wrong while building your world. Please try again.');
+      creationLock.current=false;
       setCreating(false);
     }
   };
@@ -85,7 +92,12 @@ export function CharacterWizard() {
   return (
     <div>
       <p className="font-display text-3xl font-bold text-gold-400">{GAME_CONFIG.appName}</p>
-      <p className="mb-6 mt-1 text-ink-muted">Create your player. This becomes your permanent career profile.</p>
+      <p className="mb-6 mt-1 text-ink-muted">
+        Create your player for character slot {slot}. This becomes a permanent career profile.{' '}
+        <button type="button" onClick={cancelCreation} disabled={creating} className="font-semibold text-gold-400 underline-offset-2 hover:underline disabled:opacity-50">
+          Back to character slots
+        </button>
+      </p>
       <Stepper current={index} reachable={jumpLimit} onGo={go} />
 
       <Card>

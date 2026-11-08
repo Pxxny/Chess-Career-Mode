@@ -4,6 +4,7 @@ import { tierForElo } from '@/data/chess/tiers';
 import { GAME_CONFIG } from '@/data/config';
 import { SKILL_DEFINITIONS } from '@/data/skills';
 import { createStartingAttributes } from '@/game/training/state';
+import { ageAtStart, resolveBirthDate, toIsoDate } from './birth';
 import type { NewCareerOptions, Player, SkillKey, Skills } from '@/types';
 
 /** Base skill plus the archetype's bonuses. Nothing is locked: every skill stays trainable. */
@@ -22,8 +23,7 @@ export function createPlayer(options: NewCareerOptions, startYear: number): Play
   const { player: p } = GAME_CONFIG;
   const archetype = getArchetype(options.archetype);
   const name = options.name.trim().slice(0, GAME_CONFIG.maxNameLength) || GAME_CONFIG.defaultPlayerName;
-  // Born mid-year so the player is exactly `startingAge` on the first game day.
-  const birthYear = startYear - p.startingAge - 1;
+  const birth = resolveBirthDate(options.dateOfBirth, startYear);
   return {
     id: 'player',
     name,
@@ -32,8 +32,8 @@ export function createPlayer(options: NewCareerOptions, startYear: number): Play
     archetype: archetype.id,
     appearance: sanitizeAppearance(options.appearance),
     tendencies: { ...archetype.tendencies },
-    dateOfBirth: `${birthYear}-06-15`,
-    age: p.startingAge,
+    dateOfBirth: toIsoDate(birth),
+    age: ageAtStart(birth, startYear),
     country: options.countryCode,
     city: options.city,
     careerStartYear: startYear,

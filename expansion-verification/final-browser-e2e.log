@@ -1,0 +1,22 @@
+
+> chess-career-mode@0.1.0 test:e2e
+> playwright test
+
+[WebServer] (node:16305) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:16323) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/app.spec.ts:53:1 › production app: real games, Stockfish, analysis, history and opening performance persist (15.1s)
+  ✓  2 tests/app.spec.ts:109:1 › PGN file/paste, exports, imported opening on Games-first refresh and source removal (3.9s)
+  ✓  3 tests/app.spec.ts:141:1 › missing Stockfish uses built-in engine and keeps playing (6.4s)
+  ✓  4 tests/app.spec.ts:153:1 › reload of an active game records resignation once; version 5 save upgrades in place (3.6s)
+  ✓  5 tests/expansion.spec.ts:10:1 › expanded look, federation, coaching, team cup, tournament entrants and annual population persist (10.3s)
+  ✓  6 tests/match-clock.spec.ts:25:1 › Complete clocks update independently and live/review boards keep eight rows on phones (6.3s)
+  ✓  7 tests/mobile.spec.ts:16:1 › mobile layouts keep the board, opening details and performance within the viewport (5.3s)
+  ✓  8 tests/slots.spec.ts:34:1 › date of birth, then two characters side by side in separate slots (3.2s)
+  ✓  9 tests/slots.spec.ts:89:1 › a date of birth that does not fit the start year blocks the start year step (2.3s)
+
+  9 passed (58.0s)

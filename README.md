@@ -1,5 +1,31 @@
 # Chess Career Mode
 
+Latest release (save version 9): **Complete — Tournament, Swiss and Prepare**.
+See `COMPLETE-REPORT.md`, `CHANGELOG.md` and `verification/` for scope and actual validation.
+Existing Look, legends, annual NPC population, Federation, coaching and three-slot saves are retained.
+Use a fresh extraction directory when updating from ZIP.
+
+Complete has six submenus: Tournament, Swiss, Prepare, Rankings, League, History.
+Register before the deadline, prepare using AP/money/game hours, then start during the event week.
+Individual free play and Federation/national teams are nested under Tournament; Coach is under Prepare.
+Swiss uses no-rematch maximum matching with score/colour preferences (not certified FIDE Dutch software).
+Career competitions are simulations. Verified Candidates 2024 dates/venue/format carry a FIDE source;
+other schedules, entry rules, fees, prizes and all career results are explicitly game data.
+
+After extracting `Chess-Career-Mode-Complete-Tournament-Swiss-Prepare.zip`:
+
+```sh
+cd Chess-Career-Mode
+npm ci
+npm run typecheck
+npm run test:complete
+npm run build
+npm run dev -- --host 0.0.0.0
+```
+
+Open `http://127.0.0.1:5173` on the same device. `test:match` plays and analyses real
+engine games and takes considerably longer than the small system tests, especially on Termux.
+
 Stage 1: foundation (shell, navigation, state, UI kit). Stage 2: world database. Stage 3: character creation. Stage 4: dashboard, profile and career. Stage 5: training. See `CHANGELOG.md` for details of every change.
 
 ## Run
@@ -15,7 +41,7 @@ npm run test:play    # Node 22+: openings, PGN, engine wrapper, practice games, 
 - **Federations** – FIDE code (ISO alpha-3 with FIDE's known exceptions) plus a name. Names are generated as "<Country> Chess Federation" except for a handful of well-known ones.
 - **Cities** – `scripts/build-world-data.mjs` converts the `all-the-cities` (GeoNames, population >= 1000) package into one file per country in `public/data/cities/`. The selector loads the file for the chosen country, shows the largest cities first, searches the rest, and accepts custom entries. Same-named towns in a country are collapsed to the largest. If the files are missing it falls back to curated major cities + capital, still with custom entry. Rebuild with `npm run build:data`.
 - **NPCs** – `src/game/npc/`. 1,200 fictional players (deterministic from `GAME_CONFIG.world.seed`, ID `npc-0001`...) plus 23 historical legends. Fixed tier quotas guarantee beginners through legendary players. Each NPC is generated from its own seeded RNG, so IDs and attributes are stable.
-- **Persistence** – the NPC database lives in its own IndexedDB store, written once and loaded on later launches. It is rebuilt only if the seed, schema version or count in `GAME_CONFIG` changes, or when a new career starts. Changed NPCs are written back individually (`store/npcRepository.ts`).
+- **Persistence** – up to `GAME_CONFIG.saveSlots` (3) characters live side by side (`store/saveSlots.ts`); the open one is the game store's save. Each character has its own NPC world in the `careerNpcs` IndexedDB store, keyed by career id, written once and loaded on later launches. A world is rebuilt only if the seed, schema version or count in `GAME_CONFIG` changes, or when a new career starts. Changed NPCs are written back individually (`store/npcRepository.ts`). A single save from before slots existed becomes slot 1, with its NPC world, the first time it loads.
 - **Legends** – `src/data/chess/legends.ts`. They only hold a ranking in the years they were active (Elo interpolated from `ratings`). Alternate history mode (character creation or Profile) places every legend in their prime. Pre-1970 Elo values are retrospective estimates and dates are best-effort; edit the file to adjust.
 
 ## Structure
@@ -41,7 +67,7 @@ npm run test:play    # Node 22+: openings, PGN, engine wrapper, practice games, 
 - **Rankings** – `game/world/standings.ts` ranks the player among the NPCs holding a world ranking, by world, nationality, home city and league.
 - **Titles** – CM 2200, FM 2300, IM 2400, GM 2500 peak Elo (`data/titles.ts`, shared with the NPC world).
 - **Morale** – `game/player/morale.ts`: baseline plus recent results, losing streak, tournament form, training, fatigue and recent achievements, all shown on Home.
-- **Tournaments** – `game/world/schedule.ts` builds a deterministic upcoming schedule from country, city, rating and reputation. Events held this week can be entered and played from Complete > Tournaments (see `game/match/tournament.ts`).
+- **Tournaments** – `game/world/schedule.ts` builds a deterministic upcoming schedule from country, city, rating and reputation. Register in advance under Complete > Tournament; paid entries become playable in their starting week (see `game/match/tournament.ts`).
 
 ## Training (stage 5)
 - **Sessions** – 19 sessions in `data/trainingSessions.ts`. `game/training/engine.ts` applies them: AP, money, hours, fatigue, morale, experience.
@@ -63,6 +89,11 @@ npm run test:play    # Node 22+: openings, PGN, engine wrapper, practice games, 
 - `npm run test:match` verifies all of it.
 
 ## Verification and reproducible setup
+
+The latest performance patch and its verification are documented in `PERFORMANCE.md`.
+Run `npm run bench:chess` for a repeatable perft benchmark, and
+`npm run test:chess-cache` for mutable-position, returned-move and frozen-input regressions.
+The phone-sized live/review board and clock lifecycle checks run with `npm run test:e2e`.
 
 Use Node.js 22.6 or newer (the verification scripts use native TypeScript stripping).
 The committed `package-lock.json` pins the tested dependency versions.

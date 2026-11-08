@@ -1,0 +1,6 @@
+
+> chess-career-mode@0.1.0 test:play
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-play.ts
+
+
+play verification passed: 3865 openings, 141 families, 500 ECO codes

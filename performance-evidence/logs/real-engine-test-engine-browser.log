@@ -1,0 +1,7 @@
+
+> chess-career-mode@0.1.0 test:engine:browser
+> node scripts/verify-engine-browser.mjs
+
+Real Stockfish: 16 legal plies across five Elo levels and full strength; no page errors.
+Missing manifest: legal built-in move, accurate engine status, fallback in 107ms.
+Missing wasm: legal built-in move, accurate engine status, fallback in 178ms.

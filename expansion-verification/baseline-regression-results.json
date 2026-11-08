@@ -1,0 +1,90 @@
+[
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "project": "/workspace/expansion-release/chess-career-mode",
+    "seconds": 5.117,
+    "exit_code": 0,
+    "log": "baseline-regression-typecheck.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:world"
+    ],
+    "project": "/workspace/expansion-release/chess-career-mode",
+    "seconds": 0.872,
+    "exit_code": 0,
+    "log": "baseline-regression-test-world.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:ages"
+    ],
+    "project": "/workspace/expansion-release/chess-career-mode",
+    "seconds": 0.621,
+    "exit_code": 0,
+    "log": "baseline-regression-test-ages.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:characters"
+    ],
+    "project": "/workspace/expansion-release/chess-career-mode",
+    "seconds": 0.288,
+    "exit_code": 0,
+    "log": "baseline-regression-test-characters.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:data"
+    ],
+    "project": "/workspace/expansion-release/chess-career-mode",
+    "seconds": 0.45,
+    "exit_code": 0,
+    "log": "baseline-regression-test-data.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:session"
+    ],
+    "project": "/workspace/expansion-release/chess-career-mode",
+    "seconds": 0.373,
+    "exit_code": 0,
+    "log": "baseline-regression-test-session.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:engine"
+    ],
+    "project": "/workspace/expansion-release/chess-career-mode",
+    "seconds": 0.249,
+    "exit_code": 0,
+    "log": "baseline-regression-test-engine.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:play"
+    ],
+    "project": "/workspace/expansion-release/chess-career-mode",
+    "seconds": 5.134,
+    "exit_code": 0,
+    "log": "baseline-regression-test-play.log"
+  }
+]

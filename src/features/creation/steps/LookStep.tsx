@@ -1,7 +1,7 @@
 import { Dices, RotateCcw } from 'lucide-react';
 import { CharacterPortrait } from '@/components/game/CharacterPortrait';
 import { Button } from '@/components/ui';
-import { APPEARANCE_OPTIONS, DEFAULT_APPEARANCE, randomAppearance } from '@/data/appearance';
+import { optionsForGender, DEFAULT_APPEARANCE, randomAppearance } from '@/data/appearance';
 import type { AppearanceField } from '@/types';
 import { cn } from '@/utils/cn';
 import type { CharacterDraft } from '../useCharacterDraft';
@@ -27,7 +27,7 @@ export function LookStep({ draft, update }: { draft: CharacterDraft; update: (p:
       <div className="md:sticky md:top-4 md:self-start">
         <CharacterPortrait appearance={draft.appearance} label={`${draft.name || 'Your player'} portrait`} className="mx-auto h-44 w-44 border-2 border-gold-500/70 md:h-52 md:w-52" />
         <div className="mt-4 flex justify-center gap-2">
-          <Button variant="secondary" onClick={() => update({ appearance: randomAppearance() })}>
+          <Button variant="secondary" onClick={() => update({ appearance: randomAppearance(Math.random, draft.gender) })}>
             <Dices size={16} aria-hidden /> Randomize
           </Button>
           <Button variant="secondary" onClick={() => update({ appearance: { ...DEFAULT_APPEARANCE } })}>
@@ -36,12 +36,12 @@ export function LookStep({ draft, update }: { draft: CharacterDraft; update: (p:
         </div>
       </div>
 
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-5"><p className="text-sm text-ink-muted">50 new choices per gender: hairstyles, outfits, accessories and colors. Randomize follows your selected gender; you can customize every detail.</p>
         {GROUPS.map(({ field, label, swatches }) => (
           <fieldset key={field}>
             <legend className="mb-2 text-sm text-ink-muted">{label}</legend>
             <div role="radiogroup" aria-label={label} className="flex flex-wrap gap-2">
-              {APPEARANCE_OPTIONS[field].map((opt) => {
+              {optionsForGender(field, draft.gender).map((opt) => {
                 const active = draft.appearance[field] === opt.id;
                 return swatches ? (
                   <button

@@ -211,6 +211,11 @@ const legacy = JSON.parse(JSON.stringify(t0)); delete legacy.player.attributes; 
 const migrated = upgradeSave(legacy);
 ok(migrated.world.day === 1 && migrated.training.sessionCounter === 0 && ATTRIBUTE_KEYS.every((k) => typeof migrated.player.attributes[k] === 'number') && Array.isArray(migrated.history.sessions), 'v4 save migration');
 ok(migrated.player.skills.tactics === t0.player.skills.tactics && migrated.player.money === t0.player.money, 'migration lost data');
+// a save of the current version written before tournaments could be registered for: the Tournament screen must still open
+const noRegs = JSON.parse(JSON.stringify(t0)); delete noRegs.registrations; delete noRegs.tournament; delete noRegs.matches; delete noRegs.pendingMatch; delete noRegs.history.tournaments;
+const healed = upgradeSave(noRegs);
+ok(Array.isArray(healed.registrations) && Array.isArray(healed.matches) && Array.isArray(healed.history.tournaments) && healed.tournament === null, 'upgradeSave left tournament fields missing');
+ok(healed.registrations.map((r: unknown) => r).length === 0 && getSchedule(healed.world.date, { city: healed.player.city.name, countryCode: healed.player.country, demonym: 'x', continent: 'World' }, healed.career.id, 26).length > 0, 'tournament screen logic fails on an upgraded save');
 
 // diminishing returns and xp curve
 ok(diminishing(10) > diminishing(50) && diminishing(50) > diminishing(90) && diminishing(100) >= 0.12 && diminishing(5) <= 1, 'diminishing returns shape');

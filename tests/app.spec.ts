@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { createCareer } from './helpers';
+import { GAME_CONFIG } from '../src/data/config';
 
 
 async function readSave(page: Page): Promise<any> {
@@ -89,8 +90,8 @@ test('production app: real games, Stockfish, analysis, history and opening perfo
   expect(save.practice.games.at(-1).ratingAfter).toBe(save.practice.blitzRating);
 
   await gamesTab(page, /^History/);
-  await expect(page.getByRole('button', { name: 'Review', exact: true })).toHaveCount(3);
-  await page.getByRole('button', { name: 'Review', exact: true }).first().click();
+  await expect(page.getByRole('button', { name: 'Analysis', exact: true })).toHaveCount(3);
+  await page.getByRole('button', { name: 'Analysis', exact: true }).first().click();
   await expect(page.getByRole('button', { name: 'Close review', exact: true })).toBeVisible();
   await page.screenshot({ path: 'artifacts/desktop-analysis.png', fullPage: true });
   await openingsTab(page, 'Performance');
@@ -196,7 +197,7 @@ test('reload of an active game records resignation once; version 5 save upgrades
   await page.reload();
   await expect(page.getByRole('tab', { name: 'Games', exact: true })).toBeVisible();
   save = await readSave(page);
-  expect(save.version).toBe(6);
+  expect(save.version).toBe(GAME_CONFIG.saveVersion);
   expect(save.career.id).toBe(careerId);
   expect(save.player.name).toBe('Browser Test Player');
   expect(save.practice.games).toEqual([]);

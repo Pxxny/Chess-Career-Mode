@@ -3,6 +3,7 @@ import { cultureFor, formatCultureName, type NameCulture } from '@/data/world/cu
 import { OPENINGS } from '@/data/chess/openings';
 import { EVENT_FIELD_SIZE, EVENT_PATTERNS, type EventLevel } from '@/data/chess/tournaments';
 import { PERSONALITIES, PLAY_STYLES, STYLE_PROFILE } from '@/data/chess/traits';
+import { ADULT_AGE, eloCapForAge, minAgeForElo } from '@/data/chess/ages';
 import { TIERS, eraEloCeiling, getTier, higherTitle, tierForElo, titleForPeak, type TierDefinition } from '@/data/chess/tiers';
 import type { Gender, Npc, PlayStyle, SkillKey, SkillTier, TournamentResult, TrainingIntensity } from '@/types';
 import { createRng, mixSeed, type Rng } from '../rng';
@@ -133,6 +134,24 @@ function buildHistory(
   return results.slice(-8);
 }
 
+/**
+ * Adults follow a bell curve around the tier's typical age. A small share of each tier is under 18:
+ * mostly teenagers, with the occasional child prodigy, and never younger than the tier's rating allows.
+ */
+export function sampleAge(rng: Rng, def: TierDefinition): number {
+  const [minAge, maxAge] = def.age;
+  if (rng.chance(def.youthShare)) {
+    const youthMin = Math.max(minAge, minAgeForElo(def.minElo));
+    if (youthMin < ADULT_AGE) return Math.min(ADULT_AGE - 1, youthMin + Math.floor((ADULT_AGE - youthMin) * Math.sqrt(rng.next())));
+  }
+  const adultMin = Math.max(ADULT_AGE, minAge);
+  for (let attempt = 0; attempt < 40; attempt++) {
+    const age = Math.round(rng.normal(def.ageMean, def.ageSd));
+    if (age >= adultMin && age <= maxAge) return age;
+  }
+  return clamp(Math.round(def.ageMean), adultMin, maxAge);
+}
+
 function generateOne(ctx: WorldGenContext, index: number, tier: SkillTier, taken: Set<string>): Npc {
   const rng = createRng(mixSeed(ctx.seed, index + 1000));
   const def = getTier(tier);
@@ -144,8 +163,7 @@ function generateOne(ctx: WorldGenContext, index: number, tier: SkillTier, taken
   const cities = ctx.seedCities(country.code);
   const city = cities.length ? rng.pick(cities) : country.capital ?? country.name;
 
-  const [minAge, maxAge] = def.age;
-  const age = Math.min(maxAge, minAge + Math.floor((maxAge - minAge + 1) * Math.pow(rng.next(), def.ageSkew)));
+  const age = sampleAge(rng, def);
   const birthYear = ctx.startYear - age - 1;
   const dateOfBirth = `${birthYear}-${pad(rng.int(2, 12), 2)}-${pad(rng.int(1, 28), 2)}`;
 
@@ -153,6 +171,9 @@ function generateOne(ctx: WorldGenContext, index: number, tier: SkillTier, taken
   const ceiling = eraEloCeiling(ctx.startYear);
   let currentElo = def.minElo + Math.round((def.maxElo - def.minElo) * spread);
   if (currentElo > ceiling) currentElo = ceiling - rng.int(0, 30);
+  // A young player can be far above their tier's average but never above what their age allows.
+  const ageCap = eloCapForAge(age);
+  if (currentElo > ageCap) currentElo = Math.max(def.minElo, ageCap - rng.int(0, 30));
 
   let peakElo = currentElo;
   if (age >= 33) peakElo += Math.round(rng.int(0, 60) * clamp((age - 30) / 20, 0.2, 1.2) * def.peakFactor);

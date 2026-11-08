@@ -1,0 +1,96 @@
+
+> chess-career-mode@0.1.0 test:e2e
+> playwright test
+
+[WebServer] (node:7415) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:7433) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 tests/app.spec.ts:52:1 › production app: real games, Stockfish, analysis, history and opening performance persist (41.7s)
+(node:8107) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 tests/app.spec.ts:108:1 › PGN file/paste, exports, imported opening on Games-first refresh and source removal (4.2s)
+  ✓  3 tests/app.spec.ts:140:1 › missing Stockfish uses built-in engine and keeps playing (7.5s)
+  ✘  4 tests/app.spec.ts:152:1 › reload of an active game records resignation once; version 5 save upgrades in place (5.1s)
+(node:8387) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  5 tests/match-clock.spec.ts:25:1 › Complete clocks update independently and live/review boards keep eight rows on phones (7.2s)
+  ✓  6 tests/mobile.spec.ts:16:1 › mobile layouts keep the board, opening details and performance within the viewport (25.1s)
+
+
+  1) tests/app.spec.ts:52:1 › production app: real games, Stockfish, analysis, history and opening performance persist 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByRole('button', { name: 'Review', exact: true })
+    Expected: 3
+    Received: 0
+    Timeout:  20000ms
+
+    Call log:
+      - Expect "toHaveCount" getByRole('button', { name: 'Review', exact: true }) with timeout 20000ms
+      - waiting for getByRole('button', { name: 'Review', exact: true })
+        44 × locator resolved to 0 elements
+           - unexpected value "0"
+
+
+      90 |
+      91 |   await gamesTab(page, /^History/);
+    > 92 |   await expect(page.getByRole('button', { name: 'Review', exact: true })).toHaveCount(3);
+         |                                                                           ^
+      93 |   await page.getByRole('button', { name: 'Review', exact: true }).first().click();
+      94 |   await expect(page.getByRole('button', { name: 'Close review', exact: true })).toBeVisible();
+      95 |   await page.screenshot({ path: 'artifacts/desktop-analysis.png', fullPage: true });
+        at /workspace/performance-release/chess-career-mode/tests/app.spec.ts:92:75
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/app-production-app-real-ga-d88ac-opening-performance-persist/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/app-production-app-real-ga-d88ac-opening-performance-persist/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/app-production-app-real-ga-d88ac-opening-performance-persist/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/app-production-app-real-ga-d88ac-opening-performance-persist/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests/app.spec.ts:152:1 › reload of an active game records resignation once; version 5 save upgrades in place 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 6
+    Received: 7
+
+      197 |   await expect(page.getByRole('tab', { name: 'Games', exact: true })).toBeVisible();
+      198 |   save = await readSave(page);
+    > 199 |   expect(save.version).toBe(6);
+          |                        ^
+      200 |   expect(save.career.id).toBe(careerId);
+      201 |   expect(save.player.name).toBe('Browser Test Player');
+      202 |   expect(save.practice.games).toEqual([]);
+        at /workspace/performance-release/chess-career-mode/tests/app.spec.ts:199:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/app-reload-of-an-active-ga-1fb9c-on-5-save-upgrades-in-place/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/app-reload-of-an-active-ga-1fb9c-on-5-save-upgrades-in-place/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/app-reload-of-an-active-ga-1fb9c-on-5-save-upgrades-in-place/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/app-reload-of-an-active-ga-1fb9c-on-5-save-upgrades-in-place/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests/app.spec.ts:52:1 › production app: real games, Stockfish, analysis, history and opening performance persist 
+    tests/app.spec.ts:152:1 › reload of an active game records resignation once; version 5 save upgrades in place 
+  4 passed (1.6m)

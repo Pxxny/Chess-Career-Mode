@@ -1,29 +1,71 @@
-import { GAME_CONFIG } from '@/data/config';
-import { applyMove, inCheck, legalMoves, squareName, toFen, toSan, type Move, type Position } from '@/game/chess/board';
-import { createGame, currentPosition, detectEnd, makeMove, moveToUci, parseUci, timeoutResult, type GameEnd, type GameState } from '@/game/chess/rules';
-import type { EngineAnswer } from '@/game/engine/manager';
-import type { SearchRequest } from '@/game/engine/types';
-import { winPercent } from '@/game/engine/analysis';
-import { lineScore } from '@/game/engine/strength';
-import type { OpeningDatabase } from '@/game/openings/database';
-import { acceptsDraw } from '@/game/play/opponent';
-import { createRng, mixSeed, type Rng } from '@/game/rng';
-import type { ControlChange, MatchAnalysisReport, MatchResultKind, MatchSetupLite, MatchTermination, PendingMatch, PieceColor } from '@/types';
-import { logWarn } from '@/utils/log';
-import { MatchClock, type Side } from './clock';
-import { bookMoveFor, phaseOf, pickStyled, strengthForMove, thinkTimeMs, timePressure, wouldResign, type MoveProfile } from './npcProfile';
-import { BuiltInReferee, createReferee, fenCore, type Referee } from './referee';
-import { analyzeMatch, lineCp } from './review';
+import { reasonableEarlyDraw } from "@/game/competition/preparation";
+import { GAME_CONFIG } from "@/data/config";
+import {
+  applyMove,
+  inCheck,
+  legalMoves,
+  squareName,
+  toFen,
+  toSan,
+  type Move,
+  type Position,
+} from "@/game/chess/board";
+import {
+  createGame,
+  currentPosition,
+  detectEnd,
+  makeMove,
+  moveToUci,
+  parseUci,
+  timeoutResult,
+  type GameEnd,
+  type GameState,
+} from "@/game/chess/rules";
+import type { EngineAnswer } from "@/game/engine/manager";
+import type { SearchRequest } from "@/game/engine/types";
+import { winPercent } from "@/game/engine/analysis";
+import { lineScore } from "@/game/engine/strength";
+import type { OpeningDatabase } from "@/game/openings/database";
+import { acceptsDraw } from "@/game/play/opponent";
+import { createRng, mixSeed, type Rng } from "@/game/rng";
+import type {
+  ControlChange,
+  MatchAnalysisReport,
+  MatchResultKind,
+  MatchSetupLite,
+  MatchTermination,
+  PendingMatch,
+  PieceColor,
+} from "@/types";
+import { logWarn } from "@/utils/log";
+import { MatchClock, type Side } from "./clock";
+import {
+  bookMoveFor,
+  phaseOf,
+  pickStyled,
+  strengthForMove,
+  thinkTimeMs,
+  timePressure,
+  wouldResign,
+  type MoveProfile,
+} from "./npcProfile";
+import {
+  BuiltInReferee,
+  createReferee,
+  fenCore,
+  type Referee,
+} from "./referee";
+import { analyzeMatch, lineCp } from "./review";
 
-export type ControllerKind = 'human' | 'auto';
+export type ControllerKind = "human" | "auto";
 /** How fast simulated players move: real time, a brisk pace, fast-forward, or as fast as the engine can play. */
-export type Speed = 'real' | 'brisk' | 'fast' | 'max';
-export type MatchStatus = 'ready' | 'running' | 'paused' | 'over';
+export type Speed = "real" | "brisk" | "fast" | "max";
+export type MatchStatus = "ready" | "running" | "paused" | "over";
 
 export interface MatchSetup extends MatchSetupLite {
   profiles: Record<PieceColor, MoveProfile>;
   /** "play": the player moves for themselves. "simulate": both sides are played by the simulator until the player takes control. */
-  mode: 'play' | 'simulate';
+  mode: "play" | "simulate";
   speed: Speed;
   seed: number;
 }
@@ -54,7 +96,11 @@ export interface MatchFinish {
   playerMoved: boolean;
 }
 
-export type AnalysisProgress = { status: 'idle' } | { status: 'running'; done: number; total: number } | { status: 'done'; report: MatchAnalysisReport } | { status: 'error'; message: string };
+export type AnalysisProgress =
+  | { status: "idle" }
+  | { status: "running"; done: number; total: number }
+  | { status: "done"; report: MatchAnalysisReport }
+  | { status: "error"; message: string };
 
 export interface MatchSnapshot {
   status: MatchStatus;
@@ -75,7 +121,7 @@ export interface MatchSnapshot {
   viewPly: number | null;
   live: LiveEval | null;
   notice: string | null;
-  referee: 'chess.js' | 'built-in';
+  referee: "chess.js" | "built-in";
   rulesWarnings: number;
   finish: MatchFinish | null;
   analysis: AnalysisProgress;
@@ -106,22 +152,45 @@ export interface MatchSessionOptions {
   liveEval?: boolean;
 }
 
-const SPEED_SCALE: Record<Speed, number> = { real: 1, brisk: 1, fast: 0.6, max: 0.35 };
-const letterOf = (c: PieceColor): Side => (c === 'white' ? 'w' : 'b');
-const colorOf = (s: Side): PieceColor => (s === 'w' ? 'white' : 'black');
-const defaultSleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+const SPEED_SCALE: Record<Speed, number> = {
+  real: 1,
+  brisk: 1,
+  fast: 0.6,
+  max: 0.35,
+};
+const letterOf = (c: PieceColor): Side => (c === "white" ? "w" : "b");
+const colorOf = (s: Side): PieceColor => (s === "w" ? "white" : "black");
+const defaultSleep = (ms: number): Promise<void> =>
+  new Promise((r) => setTimeout(r, ms));
 
 /** Real-time wait and clock rate for a simulated move that takes `thinkMs` of game time. */
-export function pacing(speed: Speed, thinkMs: number): { wait: number; rate: number } {
-  if (speed === 'max') return { wait: 0, rate: 1 };
-  const wait = speed === 'real' ? thinkMs : speed === 'brisk' ? Math.min(thinkMs, 2500) : Math.min(thinkMs / 8, 1200);
+export function pacing(
+  speed: Speed,
+  thinkMs: number,
+): { wait: number; rate: number } {
+  if (speed === "max") return { wait: 0, rate: 1 };
+  const wait =
+    speed === "real"
+      ? thinkMs
+      : speed === "brisk"
+        ? Math.min(thinkMs, 2500)
+        : Math.min(thinkMs / 8, 1200);
   return { wait, rate: wait > 0 ? Math.max(1, thinkMs / wait) : 1 };
 }
 
 /** Combines the end reported by chess.js and by the built-in rules. If they differ, the one that sees an end wins. */
-export function mergeEnds(primary: GameEnd | null, secondary: GameEnd | null): { end: GameEnd | null; agree: boolean } {
+export function mergeEnds(
+  primary: GameEnd | null,
+  secondary: GameEnd | null,
+): { end: GameEnd | null; agree: boolean } {
   if (!primary && !secondary) return { end: null, agree: true };
-  if (primary && secondary) return { end: primary, agree: primary.result === secondary.result && primary.reason === secondary.reason };
+  if (primary && secondary)
+    return {
+      end: primary,
+      agree:
+        primary.result === secondary.result &&
+        primary.reason === secondary.reason,
+    };
   return { end: primary ?? secondary, agree: false };
 }
 
@@ -143,7 +212,7 @@ export class MatchSession {
 
   private game: GameState;
   private referee: Referee;
-  private status: MatchStatus = 'ready';
+  private status: MatchStatus = "ready";
   private end: GameEnd | null = null;
   private controllers: Record<PieceColor, ControllerKind>;
   private speed: Speed;
@@ -152,7 +221,7 @@ export class MatchSession {
   private notice: string | null = null;
   private warnings = 0;
   private finish: MatchFinish | null = null;
-  private analysis: AnalysisProgress = { status: 'idle' };
+  private analysis: AnalysisProgress = { status: "idle" };
   private epoch = 0;
   private evalEpoch = 0;
   private searching = 0;
@@ -161,7 +230,10 @@ export class MatchSession {
   private disposed = false;
   private timer: ReturnType<typeof setInterval> | null = null;
   private readonly controlLog: ControlChange[] = [];
-  private readonly lastEval: Record<PieceColor, number | null> = { white: null, black: null };
+  private readonly lastEval: Record<PieceColor, number | null> = {
+    white: null,
+    black: null,
+  };
   private readonly evalCache = new Map<number, LiveEval>();
 
   constructor(options: MatchSessionOptions) {
@@ -171,12 +243,20 @@ export class MatchSession {
     this.sleep = options.sleep ?? defaultSleep;
     this.rng = createRng(mixSeed(options.setup.seed, 0x51ed));
     const tc = options.setup.timeControl;
-    this.clock = new MatchClock(tc.category === 'none' ? 0 : tc.base * 1000, tc.increment * 1000, this.now);
+    this.clock = new MatchClock(
+      tc.category === "none" ? 0 : tc.base * 1000,
+      tc.increment * 1000,
+      this.now,
+    );
     this.game = createGame();
     this.referee = createReferee(toFen(currentPosition(this.game)));
     this.speed = options.setup.speed;
-    const human = options.setup.mode === 'play' ? options.setup.playerColor : null;
-    this.controllers = { white: human === 'white' ? 'human' : 'auto', black: human === 'black' ? 'human' : 'auto' };
+    const human =
+      options.setup.mode === "play" ? options.setup.playerColor : null;
+    this.controllers = {
+      white: human === "white" ? "human" : "auto",
+      black: human === "black" ? "human" : "auto",
+    };
     this.snap = this.build();
   }
 
@@ -190,7 +270,10 @@ export class MatchSession {
 
   /** Milliseconds left on each clock right now. Infinity without a clock. */
   clocks(): Record<PieceColor, number> {
-    return { white: this.clock.remaining('w'), black: this.clock.remaining('b') };
+    return {
+      white: this.clock.remaining("w"),
+      black: this.clock.remaining("b"),
+    };
   }
   get hasClock(): boolean {
     return this.clock.hasTime;
@@ -203,27 +286,48 @@ export class MatchSession {
   }
   /** Squares the piece on `from` ("e2") can legally move to, according to the referee. */
   legalTargets(from: string): string[] {
-    return this.guard(() => this.referee.targets(from), () => legalMoves(currentPosition(this.game)).filter((m) => squareName(m.from) === from).map((m) => squareName(m.to)));
+    return this.guard(
+      () => this.referee.targets(from),
+      () =>
+        legalMoves(currentPosition(this.game))
+          .filter((m) => squareName(m.from) === from)
+          .map((m) => squareName(m.to)),
+    );
   }
   isLegal(uci: string): boolean {
-    return this.guard(() => this.referee.isLegal(uci), () => parseUci(currentPosition(this.game), uci) !== null);
+    return this.guard(
+      () => this.referee.isLegal(uci),
+      () => parseUci(currentPosition(this.game), uci) !== null,
+    );
   }
 
   private build(): MatchSnapshot {
     const position = currentPosition(this.game);
-    const last = this.game.moves.length ? this.game.moves[this.game.moves.length - 1] : null;
-    const check = this.guard(() => this.referee.inCheck(), () => inCheck(position));
+    const last = this.game.moves.length
+      ? this.game.moves[this.game.moves.length - 1]
+      : null;
+    const check = this.guard(
+      () => this.referee.inCheck(),
+      () => inCheck(position),
+    );
     const shown = this.viewPly ?? this.game.ucis.length;
-    const live = this.analysis.status === 'done' ? this.fromReport(shown) : (this.evalCache.get(shown) ?? null);
+    const live =
+      this.analysis.status === "done"
+        ? this.fromReport(shown)
+        : (this.evalCache.get(shown) ?? null);
     return {
       status: this.status,
       game: this.game,
       position,
       fen: toFen(position),
-      turn: position.turn === 'w' ? 'white' : 'black',
+      turn: position.turn === "w" ? "white" : "black",
       lastMove: last ? { from: last.from, to: last.to } : null,
       check,
-      checkSquare: check ? position.board.findIndex((p) => p === (position.turn === 'w' ? 'K' : 'k')) : -1,
+      checkSquare: check
+        ? position.board.findIndex(
+            (p) => p === (position.turn === "w" ? "K" : "k"),
+          )
+        : -1,
       end: this.end,
       controllers: { ...this.controllers },
       speed: this.speed,
@@ -239,13 +343,21 @@ export class MatchSession {
   }
 
   private fromReport(ply: number): LiveEval | null {
-    if (this.analysis.status !== 'done') return null;
+    if (this.analysis.status !== "done") return null;
     const report = this.analysis.report;
     const cp = report.evals[Math.min(ply, report.evals.length - 1)];
     if (cp === undefined) return null;
     const review = ply > 0 ? report.moves[ply - 1] : null;
     const cached = this.evalCache.get(ply);
-    return { cp, mate: review?.mateAfter ?? cached?.mate ?? null, depth: report.depth, bestSan: cached?.bestSan ?? null, pv: cached?.pv ?? [], engine: report.engine, ply };
+    return {
+      cp,
+      mate: review?.mateAfter ?? cached?.mate ?? null,
+      depth: report.depth,
+      bestSan: cached?.bestSan ?? null,
+      pv: cached?.pv ?? [],
+      engine: report.engine,
+      ply,
+    };
   }
 
   private emit(): void {
@@ -258,8 +370,8 @@ export class MatchSession {
     try {
       return fn();
     } catch (error) {
-      if (this.referee.name === 'built-in') return fallback();
-      logWarn('match', 'chess.js failed; the built-in rules take over', error);
+      if (this.referee.name === "built-in") return fallback();
+      logWarn("match", "chess.js failed; the built-in rules take over", error);
       this.warnings++;
       this.referee = new BuiltInReferee(toFen(currentPosition(this.game)));
       return fallback();
@@ -270,10 +382,10 @@ export class MatchSession {
 
   /** Starts the clocks and the simulated players. */
   start(): void {
-    if (this.status !== 'ready' || this.disposed) return;
-    this.status = 'running';
+    if (this.status !== "ready" || this.disposed) return;
+    this.status = "running";
     void this.opts.engine.ensureLoaded?.();
-    this.clock.start('w', 1);
+    this.clock.start("w", 1);
     this.timer = setInterval(() => this.tick(), 100);
     this.emit();
     this.schedule();
@@ -281,8 +393,12 @@ export class MatchSession {
 
   /** Checks for a fallen flag. Called by a timer; tests call it directly. */
   tick(): void {
-    if (this.status !== 'running') return;
-    const side = letterOf(this.game.positions[this.game.positions.length - 1].turn === 'w' ? 'white' : 'black');
+    if (this.status !== "running") return;
+    const side = letterOf(
+      this.game.positions[this.game.positions.length - 1].turn === "w"
+        ? "white"
+        : "black",
+    );
     if (this.clock.hasTime && this.clock.remaining(side) <= 0) {
       this.clock.flag(side);
       this.finishGame(timeoutResult(this.game, side));
@@ -299,15 +415,15 @@ export class MatchSession {
   }
 
   private turnColor(): PieceColor {
-    return currentPosition(this.game).turn === 'w' ? 'white' : 'black';
+    return currentPosition(this.game).turn === "w" ? "white" : "black";
   }
 
   /** Decides what happens next: a simulated player moves, or the person is asked. */
   private schedule(): void {
-    if (this.status !== 'running' || this.disposed) return;
+    if (this.status !== "running" || this.disposed) return;
     const color = this.turnColor();
     const myEpoch = ++this.epoch;
-    if (this.controllers[color] === 'human') {
+    if (this.controllers[color] === "human") {
       this.thinking = null;
       this.clock.setRate(1);
       this.emit();
@@ -324,7 +440,8 @@ export class MatchSession {
     const pos = currentPosition(game);
     const ply = game.ucis.length;
     const side = letterOf(color);
-    const stale = (): boolean => myEpoch !== this.epoch || this.disposed || this.status !== 'running';
+    const stale = (): boolean =>
+      myEpoch !== this.epoch || this.disposed || this.status !== "running";
     this.thinking = color;
     this.emit();
     const startedAt = this.now();
@@ -336,8 +453,10 @@ export class MatchSession {
       let fromBook = false;
       const bookSan = bookMoveFor(profile, color, game.sans, this.rng);
       if (bookSan) {
-        const clean = (s: string): string => s.replace(/[+#!?]/g, '');
-        const found = legal.find((m) => clean(toSan(pos, m, legal)) === clean(bookSan));
+        const clean = (s: string): string => s.replace(/[+#!?]/g, "");
+        const found = legal.find(
+          (m) => clean(toSan(pos, m, legal)) === clean(bookSan),
+        );
         if (found) {
           uci = moveToUci(found);
           fromBook = true;
@@ -348,35 +467,100 @@ export class MatchSession {
       const phase = phaseOf(pos, ply);
       const pressure = timePressure(remaining, tc);
       const complexity = legal.length > 36 ? 1.25 : legal.length < 12 ? 0.7 : 1;
-      const spent = thinkTimeMs(profile, this.rng, { remainingMs: remaining, incrementMs: tc.increment * 1000, ply, fromBook, tc, complexity });
+      const spent = thinkTimeMs(profile, this.rng, {
+        remainingMs: remaining,
+        incrementMs: tc.increment * 1000,
+        ply,
+        fromBook,
+        tc,
+        complexity,
+      });
       const { wait, rate } = pacing(this.speed, spent);
       if (this.clock.hasTime) this.clock.setRate(rate);
 
       // 3. Otherwise the engine, weakened to this player's strength in this phase and clock situation.
       let evalCp: number | null = null;
       if (!uci) {
-        const strength = strengthForMove(profile, phase, pressure, SPEED_SCALE[this.speed]);
+        const strength = strengthForMove(
+          profile,
+          phase,
+          pressure,
+          SPEED_SCALE[this.speed],
+        );
         this.searching++;
         let answer: EngineAnswer;
         try {
-          answer = await this.opts.engine.search({ fen: game.startFen, moves: game.ucis, movetime: strength.movetime, multiPv: strength.multiPv, limitElo: strength.limitElo });
+          answer = await this.opts.engine.search({
+            fen: game.startFen,
+            moves: game.ucis,
+            movetime: strength.movetime,
+            multiPv: strength.multiPv,
+            limitElo: strength.limitElo,
+          });
         } finally {
           this.searching--;
         }
         if (stale()) return;
-        const lines = answer.lines.length ? answer.lines : [{ uci: answer.best, cp: 0, mate: null, pv: [answer.best], depth: answer.depth }];
-        const picked = pickStyled(lines, pos, profile, strength.temperature, this.rng);
-        uci = parseUci(pos, picked.uci, legal) ? picked.uci : (lines.find((l) => parseUci(pos, l.uci, legal))?.uci ?? moveToUci(legal[0]));
+        const lines = answer.lines.length
+          ? answer.lines
+          : [
+              {
+                uci: answer.best,
+                cp: 0,
+                mate: null,
+                pv: [answer.best],
+                depth: answer.depth,
+              },
+            ];
+        const picked = pickStyled(
+          lines,
+          pos,
+          profile,
+          strength.temperature,
+          this.rng,
+        );
+        uci = parseUci(pos, picked.uci, legal)
+          ? picked.uci
+          : (lines.find((l) => parseUci(pos, l.uci, legal))?.uci ??
+            moveToUci(legal[0]));
         evalCp = Math.max(-10000, Math.min(10000, lineScore(lines[0])));
       }
       if (stale()) return;
 
+      const playerProfile = this.setup.profiles[this.setup.playerColor];
+      const opponentProfile =
+        this.setup.profiles[
+          this.setup.playerColor === "white" ? "black" : "white"
+        ];
+      if (
+        evalCp !== null &&
+        this.controllers[this.setup.playerColor] === "auto" &&
+        reasonableEarlyDraw({
+          enabled: playerProfile.earlyDraw ?? false,
+          ply,
+          evalCp,
+          opponentStubborn: opponentProfile.stubborn,
+          tournamentContext: !!this.setup.tournament,
+          drawUseful: playerProfile.drawUseful ?? false,
+        })
+      ) {
+        this.finishGame({ result: "draw", reason: "agreement" });
+        return;
+      }
+
       // 4. A hopeless position may be resigned (never for the player's own side).
       if (evalCp !== null) {
-        const resign = wouldResign(profile, this.rng, { evalCp, previousEvalCp: this.lastEval[color], ply });
+        const resign = wouldResign(profile, this.rng, {
+          evalCp,
+          previousEvalCp: this.lastEval[color],
+          ply,
+        });
         this.lastEval[color] = evalCp;
         if (resign) {
-          this.finishGame({ result: color === 'white' ? 'black' : 'white', reason: 'resignation' });
+          this.finishGame({
+            result: color === "white" ? "black" : "white",
+            reason: "resignation",
+          });
           return;
         }
       }
@@ -389,11 +573,15 @@ export class MatchSession {
       this.commit(uci, spent);
     } catch (error) {
       if (stale()) return;
-      logWarn('match', 'A simulated move failed; a fallback move was played', error);
+      logWarn(
+        "match",
+        "A simulated move failed; a fallback move was played",
+        error,
+      );
       this.thinking = null;
       const any = legalMoves(pos)[0];
       if (any) {
-        this.notice = 'The engine had a problem. A fallback move was played.';
+        this.notice = "The engine had a problem. A fallback move was played.";
         this.commit(moveToUci(any), undefined);
       }
     }
@@ -401,12 +589,20 @@ export class MatchSession {
 
   /** Plays a move for the side to move. Both the referee and the built-in rules must accept it. */
   private commit(uci: string, spentMs: number | undefined): boolean {
-    if (this.status !== 'running' || this.disposed) return false;
+    if (this.status !== "running" || this.disposed) return false;
     const pos = currentPosition(this.game);
     const move: Move | null = parseUci(pos, uci);
-    const refereeOk = this.guard(() => this.referee.isLegal(uci), () => move !== null);
+    const refereeOk = this.guard(
+      () => this.referee.isLegal(uci),
+      () => move !== null,
+    );
     if (!move || !refereeOk) {
-      if (move !== null || refereeOk) logWarn('match', 'The referee and the built-in rules disagree about a move', { uci, fen: toFen(pos), referee: refereeOk, builtIn: move !== null });
+      if (move !== null || refereeOk)
+        logWarn(
+          "match",
+          "The referee and the built-in rules disagree about a move",
+          { uci, fen: toFen(pos), referee: refereeOk, builtIn: move !== null },
+        );
       return false;
     }
     const mover = this.turnColor();
@@ -415,22 +611,45 @@ export class MatchSession {
       return false;
     }
     if (!this.clock.hasTime) this.clock.press(letterOf(mover), spentMs);
-    const played = this.guard(() => this.referee.play(uci), () => 'ok');
+    const played = this.guard(
+      () => this.referee.play(uci),
+      () => "ok",
+    );
     if (played === null) return false;
     this.game = makeMove(this.game, move);
     this.viewPly = null;
     this.notice = null;
     // The two rule sets must stay in step. If they ever drift apart, chess.js is restarted from the built-in position.
     const here = toFen(currentPosition(this.game));
-    const same = this.guard(() => fenCore(this.referee.fen()) === fenCore(here), () => true);
+    const same = this.guard(
+      () => fenCore(this.referee.fen()) === fenCore(here),
+      () => true,
+    );
     if (!same) {
-      logWarn('match', 'The referee and the built-in rules reached different positions', { fen: here, referee: this.referee.fen() });
+      logWarn(
+        "match",
+        "The referee and the built-in rules reached different positions",
+        { fen: here, referee: this.referee.fen() },
+      );
       this.warnings++;
-      this.guard(() => this.referee.load(here), () => undefined);
+      this.guard(
+        () => this.referee.load(here),
+        () => undefined,
+      );
     }
-    const merged = mergeEnds(this.guard(() => this.referee.end(), () => null), detectEnd(this.game));
+    const merged = mergeEnds(
+      this.guard(
+        () => this.referee.end(),
+        () => null,
+      ),
+      detectEnd(this.game),
+    );
     if (!merged.agree) {
-      logWarn('match', 'The referee and the built-in rules disagree about the end of the game', { fen: here });
+      logWarn(
+        "match",
+        "The referee and the built-in rules disagree about the end of the game",
+        { fen: here },
+      );
       this.warnings++;
     }
     this.checkpoint();
@@ -445,39 +664,63 @@ export class MatchSession {
 
   private checkpoint(): void {
     if (!this.opts.onCheckpoint || this.detached) return;
-    const anyHuman = this.controllers.white === 'human' || this.controllers.black === 'human';
+    const anyHuman =
+      this.controllers.white === "human" || this.controllers.black === "human";
     if (!anyHuman && !this.playerMoved) return;
-    this.opts.onCheckpoint({ setup: this.liteSetup(), ucis: [...this.game.ucis], playerMoved: this.playerMoved });
+    this.opts.onCheckpoint({
+      setup: this.liteSetup(),
+      ucis: [...this.game.ucis],
+      playerMoved: this.playerMoved,
+    });
   }
 
   private liteSetup(): MatchSetupLite {
-    const { white, black, playerColor, timeControl, rated, tournament, accuracyBonus } = this.setup;
-    return { white, black, playerColor, timeControl, rated, tournament, accuracyBonus };
+    const {
+      white,
+      black,
+      playerColor,
+      timeControl,
+      rated,
+      tournament,
+      accuracyBonus,
+    } = this.setup;
+    return {
+      white,
+      black,
+      playerColor,
+      timeControl,
+      rated,
+      tournament,
+      accuracyBonus,
+    };
   }
 
   // ---- the person
 
   /** A move by hand (UCI, "e2e4" or "e7e8q"). Accepted only on a human-controlled side's turn. */
   humanMove(uci: string): boolean {
-    if (this.status !== 'running') return false;
+    if (this.status !== "running") return false;
     const color = this.turnColor();
-    if (this.controllers[color] !== 'human') return false;
-    if (this.viewPly !== null && this.viewPly !== this.game.ucis.length) return false;
+    if (this.controllers[color] !== "human") return false;
+    if (this.viewPly !== null && this.viewPly !== this.game.ucis.length)
+      return false;
     if (color === this.setup.playerColor) this.playerMoved = true;
     const ok = this.commit(uci, undefined);
-    if (!ok && color === this.setup.playerColor && this.game.ucis.length === 0) this.playerMoved = false;
+    if (!ok && color === this.setup.playerColor && this.game.ucis.length === 0)
+      this.playerMoved = false;
     return ok;
   }
 
   /** The person takes over a side (or hands it back to the simulator) at any moment. */
   setController(color: PieceColor, kind: ControllerKind): void {
-    if (this.status === 'over' || this.controllers[color] === kind) return;
+    if (this.status === "over" || this.controllers[color] === kind) return;
     // In a rated game only the player's own side can be taken over. The opponent always plays for itself.
     if (this.setup.rated && color !== this.setup.playerColor) return;
     this.controllers[color] = kind;
     this.controlLog.push({ ply: this.game.ucis.length, color, to: kind });
-    if (this.status === 'paused' && kind === 'human') this.resume();
-    else if (this.status === 'running' && this.turnColor() === color) this.schedule();
+    if (this.status === "paused" && kind === "human") this.resume();
+    else if (this.status === "running" && this.turnColor() === color)
+      this.schedule();
     else this.emit();
   }
 
@@ -485,15 +728,24 @@ export class MatchSession {
     if (this.speed === speed) return;
     this.speed = speed;
     // A move being thought about is replayed at the new pace.
-    if (this.status === 'running' && this.controllers[this.turnColor()] === 'auto' && !this.searching) this.schedule();
+    if (
+      this.status === "running" &&
+      this.controllers[this.turnColor()] === "auto" &&
+      !this.searching
+    )
+      this.schedule();
     else this.emit();
   }
 
   /** Pauses a game in which nobody moves by hand. */
   pause(): void {
-    if (this.status !== 'running') return;
-    if (this.controllers.white === 'human' || this.controllers.black === 'human') return;
-    this.status = 'paused';
+    if (this.status !== "running") return;
+    if (
+      this.controllers.white === "human" ||
+      this.controllers.black === "human"
+    )
+      return;
+    this.status = "paused";
     this.epoch++;
     this.thinking = null;
     this.clock.pause();
@@ -501,40 +753,54 @@ export class MatchSession {
   }
 
   resume(): void {
-    if (this.status !== 'paused') return;
-    this.status = 'running';
+    if (this.status !== "paused") return;
+    this.status = "running";
     this.clock.resume();
     this.emit();
     this.schedule();
   }
 
   resign(color: PieceColor = this.setup.playerColor): void {
-    if (this.status === 'over') return;
+    if (this.status === "over") return;
     // In a rated game only the player can resign, and only for their own side.
     if (this.setup.rated && color !== this.setup.playerColor) return;
-    this.finishGame({ result: color === 'white' ? 'black' : 'white', reason: 'resignation' });
+    this.finishGame({
+      result: color === "white" ? "black" : "white",
+      reason: "resignation",
+    });
   }
 
   /** Offers a draw to the simulated opponent. Resolves with its answer. */
   async offerDraw(): Promise<string> {
-    if (this.status !== 'running') return 'The game is not running.';
+    if (this.status !== "running") return "The game is not running.";
     const color = this.turnColor();
-    if (this.controllers[color] !== 'human') return 'Wait for your turn to offer a draw.';
-    const opponent: PieceColor = color === 'white' ? 'black' : 'white';
-    if (this.controllers[opponent] === 'human') return 'The other side is controlled by you.';
-    if (this.game.ucis.length < 2) return 'It is too early to offer a draw.';
+    if (this.controllers[color] !== "human")
+      return "Wait for your turn to offer a draw.";
+    const opponent: PieceColor = color === "white" ? "black" : "white";
+    if (this.controllers[opponent] === "human")
+      return "The other side is controlled by you.";
+    if (this.game.ucis.length < 2) return "It is too early to offer a draw.";
     const game = this.game;
     try {
-      const answer = await this.opts.engine.search({ fen: game.startFen, moves: game.ucis, movetime: 300, depth: 12 });
-      if (this.game !== game || this.status !== 'running') return 'The position changed.';
+      const answer = await this.opts.engine.search({
+        fen: game.startFen,
+        moves: game.ucis,
+        movetime: 300,
+        depth: 12,
+      });
+      if (this.game !== game || this.status !== "running")
+        return "The position changed.";
       const forMover = lineCp(answer.lines[0]);
-      if (!this.setup.profiles[opponent].stubborn && acceptsDraw(this.rng, -forMover, game.ucis.length)) {
-        this.finishGame({ result: 'draw', reason: 'agreement' });
+      if (
+        !this.setup.profiles[opponent].stubborn &&
+        acceptsDraw(this.rng, -forMover, game.ucis.length)
+      ) {
+        this.finishGame({ result: "draw", reason: "agreement" });
         return `${this.setup.profiles[opponent].name} accepted the draw.`;
       }
       return `${this.setup.profiles[opponent].name} declined the draw.`;
     } catch {
-      return 'The draw offer was declined.';
+      return "The draw offer was declined.";
     }
   }
 
@@ -543,30 +809,34 @@ export class MatchSession {
    * abandonment; a shorter one is cancelled. A pure simulation carries on to its end in the background.
    */
   leave(): void {
-    if (this.status === 'over') return;
-    const hands = this.controllers.white === 'human' || this.controllers.black === 'human';
+    if (this.status === "over") return;
+    const hands =
+      this.controllers.white === "human" || this.controllers.black === "human";
     if (hands) {
-      if (this.game.ucis.length >= 2 && this.status !== 'ready') {
+      if (this.game.ucis.length >= 2 && this.status !== "ready") {
         const loser = this.setup.playerColor;
-        this.finishGame({ result: loser === 'white' ? 'black' : 'white', reason: 'abandoned' });
+        this.finishGame({
+          result: loser === "white" ? "black" : "white",
+          reason: "abandoned",
+        });
       } else {
         this.void();
       }
       return;
     }
-    if (this.status === 'ready' || this.game.ucis.length === 0) {
+    if (this.status === "ready" || this.game.ucis.length === 0) {
       this.void();
       return;
     }
     // Pure simulation: finish it in the background.
     this.detached = true;
-    this.speed = 'max';
-    if (this.status === 'paused') this.resume();
-    else if (this.status === 'running') this.schedule();
+    this.speed = "max";
+    if (this.status === "paused") this.resume();
+    else if (this.status === "running") this.schedule();
   }
 
   private void(): void {
-    this.status = 'over';
+    this.status = "over";
     this.epoch++;
     this.evalEpoch++;
     this.clock.stop();
@@ -593,8 +863,8 @@ export class MatchSession {
   // ---- the end
 
   private finishGame(end: GameEnd): void {
-    if (this.status === 'over') return;
-    this.status = 'over';
+    if (this.status === "over") return;
+    this.status = "over";
     this.epoch++;
     this.evalEpoch++;
     this.thinking = null;
@@ -614,15 +884,19 @@ export class MatchSession {
     this.finish = finish;
     this.opts.onCheckpoint?.(null);
     this.emit();
-    if (this.game.ucis.length === 0) return;
+    if (this.game.ucis.length === 0) {
+      this.opts.onVoid?.();
+      return;
+    }
     this.opts.onFinish?.(finish);
-    if (this.opts.autoAnalyze !== false && this.game.ucis.length >= 2) void this.runAnalysis(finish);
+    if (this.opts.autoAnalyze !== false && this.game.ucis.length >= 2)
+      void this.runAnalysis(finish);
   }
 
   private async runAnalysis(finish: MatchFinish): Promise<void> {
     const game = this.game;
     const total = game.ucis.length + 1;
-    this.analysis = { status: 'running', done: 0, total };
+    this.analysis = { status: "running", done: 0, total };
     this.emit();
     try {
       const report = await analyzeMatch(
@@ -632,23 +906,33 @@ export class MatchSession {
           depth: GAME_CONFIG.match.analysisDepth,
           bookPlies: this.opts.db.classify(game.sans)?.bookPlies ?? 0,
           onProgress: (done, t) => {
-            this.analysis = { status: 'running', done, total: t };
+            this.analysis = { status: "running", done, total: t };
             this.emit();
           },
         },
         this.opts.db,
       );
-      this.analysis = { status: 'done', report };
+      this.analysis = { status: "done", report };
       this.opts.onAnalysis?.(report, finish);
     } catch (error) {
-      this.analysis = { status: 'error', message: error instanceof Error ? error.message : 'The analysis failed.' };
+      this.analysis = {
+        status: "error",
+        message:
+          error instanceof Error ? error.message : "The analysis failed.",
+      };
     }
     this.emit();
   }
 
   /** Runs the analysis again after an error. */
   retryAnalysis(): void {
-    if (this.status === 'over' && this.finish && this.analysis.status !== 'running' && this.game.ucis.length >= 2) void this.runAnalysis(this.finish);
+    if (
+      this.status === "over" &&
+      this.finish &&
+      this.analysis.status !== "running" &&
+      this.game.ucis.length >= 2
+    )
+      void this.runAnalysis(this.finish);
   }
 
   // ---- live evaluation
@@ -659,7 +943,7 @@ export class MatchSession {
    */
   private refreshEval(): void {
     if (this.opts.liveEval === false || this.disposed) return;
-    if (this.speed === 'max' && this.status === 'running') return;
+    if (this.speed === "max" && this.status === "running") return;
     const ply = this.viewPly ?? this.game.ucis.length;
     if (this.evalCache.has(ply) && this.evalCache.get(ply)!.pv.length) return;
     const my = ++this.evalEpoch;
@@ -673,16 +957,30 @@ export class MatchSession {
       const upTo = this.game.ucis.slice(0, ply);
       const pos = this.game.positions[ply];
       if (!pos) return;
-      const sign = pos.turn === 'w' ? 1 : -1;
+      const sign = pos.turn === "w" ? 1 : -1;
       const terminal = legalMoves(pos).length === 0;
       if (terminal) {
         const mated = inCheck(pos);
-        this.evalCache.set(ply, { cp: mated ? (pos.turn === 'w' ? -1500 : 1500) : 0, mate: mated ? 0 : null, depth: 0, bestSan: null, pv: [], engine: 'Rules', ply });
+        this.evalCache.set(ply, {
+          cp: mated ? (pos.turn === "w" ? -1500 : 1500) : 0,
+          mate: mated ? 0 : null,
+          depth: 0,
+          bestSan: null,
+          pv: [],
+          engine: "Rules",
+          ply,
+        });
         if (my === this.evalEpoch) this.emit();
         return;
       }
       try {
-        const answer = await this.opts.engine.search({ fen: this.game.startFen, moves: upTo, depth: GAME_CONFIG.match.liveDepth, movetime: GAME_CONFIG.match.liveMs, multiPv: 1 });
+        const answer = await this.opts.engine.search({
+          fen: this.game.startFen,
+          moves: upTo,
+          depth: GAME_CONFIG.match.liveDepth,
+          movetime: GAME_CONFIG.match.liveMs,
+          multiPv: 1,
+        });
         if (my !== this.evalEpoch || this.disposed) return;
         const top = answer.lines[0];
         const pv: string[] = [];
@@ -694,7 +992,15 @@ export class MatchSession {
           walk = applyMove(walk, m);
         }
         const mate = top.mate !== null ? top.mate * sign : null;
-        this.evalCache.set(ply, { cp: lineCp(top) * sign, mate, depth: answer.depth || top.depth, bestSan: pv[0] ?? null, pv, engine: answer.engineName, ply });
+        this.evalCache.set(ply, {
+          cp: lineCp(top) * sign,
+          mate,
+          depth: answer.depth || top.depth,
+          bestSan: pv[0] ?? null,
+          pv,
+          engine: answer.engineName,
+          ply,
+        });
         this.emit();
       } catch {
         // The live reading is optional.
@@ -704,7 +1010,9 @@ export class MatchSession {
 
   /** Win percentage for White at a half-move, from the live reading or the analysis. Null when unknown. */
   whiteWin(ply: number): number | null {
-    const e = this.evalCache.get(ply) ?? (this.analysis.status === 'done' ? this.fromReport(ply) : null);
+    const e =
+      this.evalCache.get(ply) ??
+      (this.analysis.status === "done" ? this.fromReport(ply) : null);
     return e ? winPercent(e.cp) : null;
   }
 }

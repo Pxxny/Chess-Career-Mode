@@ -1,0 +1,3 @@
+OK: 300 random games / 96705 plies identical (GameState, sans, ucis, keys, detectEnd, movesBetween)
+rules.ts before (orig board+rules) 2117.3 ms per 60 games
+rules.ts after                     894.8 ms per 60 games

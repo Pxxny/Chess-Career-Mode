@@ -1,3 +1,4 @@
+import { trainingCoachMultiplier } from '@/game/career/expansion';
 import { GAME_CONFIG } from '@/data/config';
 import { getSession } from '@/data/trainingSessions';
 import { isAttribute, STAT_LABELS } from '@/data/stats';
@@ -62,7 +63,7 @@ export function previewSession(save: GameSave, def: TrainingSessionDef): Session
   const effects = def.effects.map((e) => {
     const value = getStat(save, e.stat);
     const multiplier = diminishing(value);
-    return { stat: e.stat, label: STAT_LABELS[e.stat], value, expectedXp: round1(e.xp * cfg.xpGain * efficiency * repeatFactor * multiplier), multiplier, needed: xpNeeded(value), progress: training.xp[e.stat] ?? 0 };
+    return { stat: e.stat, label: STAT_LABELS[e.stat], value, expectedXp: round1(e.xp * cfg.xpGain * trainingCoachMultiplier(save) * efficiency * repeatFactor * multiplier), multiplier, needed: xpNeeded(value), progress: training.xp[e.stat] ?? 0 };
   });
   return { blocks, efficiency, repeatFactor, fatigue: round1(fatigueGain(def, player.attributes.stamina)), hoursLeft: hoursLeft(training), effects, requirements };
 }
@@ -120,7 +121,7 @@ export function performSession(save: GameSave, sessionId: string, options: Sessi
   for (const e of effects) {
     const start = getStat(next, e.stat);
     let value = start;
-    const gained = round1(e.xp * cfg.xpGain * quality * preview.efficiency * preview.repeatFactor * diminishing(start));
+    const gained = round1(e.xp * cfg.xpGain * trainingCoachMultiplier(save) * quality * preview.efficiency * preview.repeatFactor * diminishing(start));
     let pool = (xp[e.stat] ?? 0) + gained;
     while (value < GAME_CONFIG.player.maxSkill && pool >= xpNeeded(value)) {
       pool -= xpNeeded(value);

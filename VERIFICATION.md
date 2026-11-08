@@ -1,3 +1,5 @@
+> Archived report from an earlier release. Current Complete implementation and validation: [COMPLETE-REPORT.md](COMPLETE-REPORT.md).
+
 # Verification — 2026-11-06
 
 Reviewed and repaired the supplied `chess-career-mode-latest.zip` with real project dependencies. No React shims or replacement application libraries were used.

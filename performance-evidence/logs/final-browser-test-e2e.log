@@ -1,0 +1,19 @@
+
+> chess-career-mode@0.1.0 test:e2e
+> playwright test
+
+[WebServer] (node:9083) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:9100) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/app.spec.ts:53:1 › production app: real games, Stockfish, analysis, history and opening performance persist (19.1s)
+  ✓  2 tests/app.spec.ts:109:1 › PGN file/paste, exports, imported opening on Games-first refresh and source removal (5.9s)
+  ✓  3 tests/app.spec.ts:141:1 › missing Stockfish uses built-in engine and keeps playing (8.8s)
+  ✓  4 tests/app.spec.ts:153:1 › reload of an active game records resignation once; version 5 save upgrades in place (4.2s)
+  ✓  5 tests/match-clock.spec.ts:25:1 › Complete clocks update independently and live/review boards keep eight rows on phones (7.5s)
+  ✓  6 tests/mobile.spec.ts:16:1 › mobile layouts keep the board, opening details and performance within the viewport (19.4s)
+
+  6 passed (1.1m)

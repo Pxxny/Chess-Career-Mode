@@ -1,0 +1,24 @@
+[
+  {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "project": "/workspace/expansion-release/chess-career-mode",
+    "seconds": 10.091,
+    "exit_code": 0,
+    "log": "integration-build.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:match"
+    ],
+    "project": "/workspace/expansion-release/chess-career-mode",
+    "seconds": 251.986,
+    "exit_code": 0,
+    "log": "integration-test-match.log"
+  }
+]

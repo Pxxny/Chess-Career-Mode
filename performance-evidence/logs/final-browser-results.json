@@ -1,0 +1,13 @@
+[
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:e2e"
+    ],
+    "project": "/workspace/performance-release/chess-career-mode",
+    "seconds": 67.042,
+    "exit_code": 0,
+    "log": "final-browser-test-e2e.log"
+  }
+]

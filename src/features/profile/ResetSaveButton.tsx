@@ -1,29 +1,36 @@
-import { useState } from 'react';
-import { Button, Modal } from '@/components/ui';
-import { useGameStore } from '@/store/gameStore';
-
+import { useState } from "react";
+import { Button } from "@/components/ui";
+import { useGameStore } from "@/store/gameStore";
 export function ResetSaveButton() {
   const clearSave = useGameStore((s) => s.clearSave);
-  const [open, setOpen] = useState(false);
-
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
   return (
-    <>
-      <Button variant="danger" onClick={() => setOpen(true)}>
-        Start a new career
+    <div>
+      <Button
+        variant="danger"
+        disabled={busy}
+        onClick={async () => {
+          if (
+            !window.confirm(
+              "Delete only the current character and its NPC world? This cannot be undone.",
+            )
+          )
+            return;
+          setBusy(true);
+          try {
+            await clearSave();
+          } catch {
+            setError("Deletion failed. Please try again.");
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        Delete current character
       </Button>
-      <Modal open={open} title="Start a new career?" onClose={() => setOpen(false)}>
-        <p className="text-sm text-ink-muted">
-          This replaces your current career and returns you to character creation. The NPC world is rebuilt from its seed. This cannot be undone.
-        </p>
-        <div className="mt-5 flex justify-end gap-3">
-          <Button variant="secondary" onClick={() => setOpen(false)}>
-            Keep current career
-          </Button>
-          <Button variant="danger" onClick={clearSave}>
-            Replace career
-          </Button>
-        </div>
-      </Modal>
-    </>
+      {error && <p role="alert">{error}</p>}
+    </div>
   );
 }
+export default ResetSaveButton;

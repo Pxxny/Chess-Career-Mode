@@ -1,0 +1,90 @@
+{
+  "environment": {
+    "node": "24.22.1",
+    "npm": "11.9.0",
+    "chromium": "156",
+    "os": "Linux Cloud"
+  },
+  "commands": [
+    {
+      "command": "npm run typecheck",
+      "exit_code": 0,
+      "evidence": "typecheck-results.log"
+    },
+    {
+      "command": "npm run build",
+      "exit_code": 0,
+      "evidence": "build.log"
+    },
+    {
+      "command": "npm run test:complete",
+      "exit_code": 0,
+      "evidence": "complete-results.log"
+    },
+    {
+      "command": "npm run test:world",
+      "exit_code": 0,
+      "evidence": "world-results.log"
+    },
+    {
+      "command": "npm run test:play",
+      "exit_code": 0,
+      "evidence": "play-results.log"
+    },
+    {
+      "command": "npm run test:session",
+      "exit_code": 0,
+      "evidence": "session-results.log"
+    },
+    {
+      "command": "npm run test:match",
+      "exit_code": 0,
+      "evidence": "match-results.log"
+    },
+    {
+      "command": "npm run test:expansion",
+      "exit_code": 0,
+      "evidence": "expansion-results.log"
+    },
+    {
+      "command": "npm run test:ages",
+      "exit_code": 0,
+      "evidence": "ages-results.log"
+    },
+    {
+      "command": "npm run test:characters",
+      "exit_code": 0,
+      "evidence": "characters-results.log"
+    },
+    {
+      "command": "npm run test:data",
+      "exit_code": 0,
+      "evidence": "data-results.log"
+    },
+    {
+      "command": "npm run test:chess-cache",
+      "exit_code": 0,
+      "evidence": "chess-cache-results.log"
+    },
+    {
+      "command": "npm run test:engine",
+      "exit_code": 0,
+      "evidence": "engine-results.log"
+    },
+    {
+      "command": "npm run test:e2e",
+      "exit_code": 0,
+      "evidence": "browser-results.log"
+    }
+  ],
+  "browser_passed": 12,
+  "browser_failed": 0,
+  "match_elapsed_seconds": 257.26,
+  "notes": [
+    "Real project dependencies; no UI shims.",
+    "Stockfish and fallback checked in production browser tests.",
+    "Node test:match deliberately uses built-in engine.",
+    "Initial missing new-save Complete default was fixed; final test:data and migration checks pass.",
+    "Not measured on the user's Termux device."
+  ]
+}

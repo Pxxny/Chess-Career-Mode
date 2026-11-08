@@ -1,12 +1,21 @@
-import type { GameOutcome, PieceColor } from './history';
-import type { ChessTitle } from './npc';
+import type { GameOutcome, PieceColor } from "./history";
+import type { ChessTitle } from "./npc";
 
 /** Who won, or how the game ended without a winner. */
-export type MatchResultKind = 'white' | 'black' | 'draw';
+export type MatchResultKind = "white" | "black" | "draw";
 
-export type MatchTermination = 'checkmate' | 'resignation' | 'timeout' | 'stalemate' | 'insufficient' | 'fiftyMove' | 'repetition' | 'agreement' | 'abandoned';
+export type MatchTermination =
+  | "checkmate"
+  | "resignation"
+  | "timeout"
+  | "stalemate"
+  | "insufficient"
+  | "fiftyMove"
+  | "repetition"
+  | "agreement"
+  | "abandoned";
 
-export type EventLevelId = 'local' | 'national' | 'international' | 'elite';
+export type EventLevelId = "local" | "national" | "international" | "elite";
 
 /** One of the two players, as shown on the match screen. */
 export interface MatchSide {
@@ -37,7 +46,7 @@ export interface MatchTimeControl {
   label: string;
   base: number;
   increment: number;
-  category: 'none' | 'bullet' | 'blitz' | 'rapid' | 'classical';
+  category: "none" | "bullet" | "blitz" | "rapid" | "classical";
 }
 
 /** A light description of a match that can be stored in the save (for recovery after a reload). */
@@ -60,7 +69,16 @@ export interface PendingMatch {
 }
 
 /** One-letter codes of the move judgements, stored per half-move. */
-export type ReviewLabel = 'brilliant' | 'best' | 'excellent' | 'good' | 'book' | 'inaccuracy' | 'mistake' | 'missed' | 'blunder';
+export type ReviewLabel =
+  | "brilliant"
+  | "best"
+  | "excellent"
+  | "good"
+  | "book"
+  | "inaccuracy"
+  | "mistake"
+  | "missed"
+  | "blunder";
 
 export interface MoveReview {
   /** 1-based half-move number */
@@ -115,7 +133,7 @@ export interface ControlChange {
   /** Half-move number at which the change happened (0 = before the first move) */
   ply: number;
   color: PieceColor;
-  to: 'human' | 'auto';
+  to: "human" | "auto";
 }
 
 /** A finished match as stored in the career save. */
@@ -156,6 +174,8 @@ export interface TournamentPlayer {
 }
 
 export interface TournamentPairing {
+  /** Deciding rapid tiebreak winner when a knockout classical game is drawn. */
+  tiebreakWinner?: string;
   white: string;
   black: string;
   /** Result for White once played: 1, 0.5, 0 */
@@ -164,6 +184,9 @@ export interface TournamentPairing {
 
 /** A paid entry for an upcoming event. It becomes playable in the event's week. */
 export interface EventRegistration {
+  minElo?: number;
+  minReputation?: number;
+  details?: import("@/game/competition/types").EventDetails;
   eventId: string;
   name: string;
   level: EventLevelId;
@@ -171,18 +194,26 @@ export interface EventRegistration {
   week: number;
   fieldSize: number;
   entryFee: number;
+  /** Snapshot of the announced NPC field; stable from registration to play. */
+  entrantIds?: string[];
+  entrantSeed?: number;
 }
 
 export interface ActiveTournament {
+  entryRequirements?: string;
+  withdrawn?: boolean;
+  details?: import("@/game/competition/types").EventDetails;
+  eliminated?: string[];
+  knockoutWinners?: string[];
   eventId: string;
   name: string;
   level: EventLevelId;
   year: number;
   week: number;
   rounds: number;
-  /** Round being played, 1-based. Equals `rounds` when finished. */
+  /** Round being played, 1-based. A championship match may finish early when clinched. */
   round: number;
-  status: 'playing' | 'finished';
+  status: "playing" | "finished";
   entryFee: number;
   prizeFund: number;
   timeControl: MatchTimeControl;

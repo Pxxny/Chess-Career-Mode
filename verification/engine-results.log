@@ -1,0 +1,5 @@
+
+> chess-career-mode@0.1.0 test:engine
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-engine.ts
+
+Stockfish lifecycle, fallback, legal moves and strength regressions passed.

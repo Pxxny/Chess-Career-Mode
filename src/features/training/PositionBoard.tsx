@@ -26,7 +26,7 @@ export function PositionBoard({ fen, perspective = 'white', label = 'Chess posit
 
   return (
     <figure className="mx-auto w-full max-w-xs">
-      <div role="img" aria-label={`${label}. ${turn === 'w' ? 'White' : 'Black'} to move. White: ${describe('white')}. Black: ${describe('black')}.`} className="grid aspect-square w-full grid-cols-8 overflow-hidden rounded-lg border border-white/10">
+      <div role="img" aria-label={`${label}. ${turn === 'w' ? 'White' : 'Black'} to move. White: ${describe('white')}. Black: ${describe('black')}.`} className="grid aspect-square w-full grid-cols-8 grid-rows-8 overflow-hidden rounded-lg border border-white/10">
         {squares.map((i) => {
           const piece = board[i];
           const dark = (Math.floor(i / 8) + (i % 8)) % 2 === 1;

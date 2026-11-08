@@ -73,6 +73,11 @@ function sideLocks(w: number, h: number, length: number): string {
 
 export function renderPortraitSvg(input: Partial<Appearance> | undefined, label = 'Character portrait'): string {
   const a = sanitizeAppearance(input);
+  const hairVariant = /^(male|female)-hair-(\d+)$/.exec(a.hairStyle);
+  const outfitVariant = /^(male|female)-outfit-(\d+)$/.exec(a.clothing);
+  const accessoryVariant = /^extra-accessory-(\d+)$/.exec(a.accessory);
+  if (hairVariant) a.hairStyle = (hairVariant[1] === 'male' ? ['buzz','short','sidepart','sidepart','mohawk','short','curly','buzz','afro','long'] : ['short','bob','long','ponytail','bun','ponytail','curly','ponytail','bun','bob'])[Number(hairVariant[2])];
+  if (outfitVariant) a.clothing = (outfitVariant[1]==='female' ? ['shirt','tshirt','sweater','blazer','shirt','sweater','polo','tshirt','shirt','polo'] : ['blazer','shirt','hoodie','tshirt','blazer','sweater','shirt','blazer','sweater','polo'])[Number(outfitVariant[2])];
   const p = FACES[a.facePreset] ?? FACES.classic;
   const { w, h, jaw } = p;
   const skin = getOption('skinTone', a.skinTone).color!;
@@ -247,5 +252,23 @@ export function renderPortraitSvg(input: Partial<Appearance> | undefined, label 
   }
 
   const defs = `<defs><radialGradient id="ccm-bg" cx="50%" cy="35%" r="75%"><stop offset="0" stop-color="#2b3d63"/><stop offset="1" stop-color="#121b30"/></radialGradient><clipPath id="ccm-clip"><circle cx="100" cy="100" r="100"/></clipPath></defs>`;
+  if (hairVariant) {
+    const v = Number(hairVariant[2]);
+    out.push(`<path d="M${65+v} ${59+v%3} Q100 ${38+v} ${135-v} ${64+v%4}" fill="none" stroke="${shade(hair,25)}" stroke-width="${1+v%3}"/>`);
+    if (hairVariant[1] === 'female' && v%2===0) out.push(`<circle cx="${135-v}" cy="65" r="${3+v%3}" fill="${cloth}"/>`);
+  }
+  if (outfitVariant) {
+    const v = Number(outfitVariant[2]);
+    if(outfitVariant[1]==='female') out.push(`<path d="M82 155 Q100 ${169+v} 118 155" fill="none" stroke="${shade(cloth,45)}" stroke-width="3"/><path d="M95 163l-8 -5v10l8 -5l10 -5v10z" fill="${shade(cloth,-20)}"/>`);
+    for (let i=0;i<=v%5;i++) out.push(`<path d="M${30+i*9} ${179+i*3} L${170-i*9} ${179+i*3}" stroke="${shade(cloth,25)}" stroke-width="${1+v%2}"/>`);
+    out.push(`<path d="M${68+v} 169 l12 0 l0 15 l-12 0z" fill="none" stroke="${shade(cloth,-30)}"/><circle cx="100" cy="${172+v}" r="2" fill="#e9c46a"/>`);
+  }
+  if (accessoryVariant) {
+    const v = Number(accessoryVariant[1]);
+    if (v<2) out.push(`<circle cx="${CX+w+3}" cy="108" r="${3+v*2}" fill="${v?'none':'#e7bb55'}" stroke="#e7bb55" stroke-width="2"/>`);
+    else if(v===8) out.push(`<ellipse cx="95" cy="44" rx="48" ry="15" fill="${cloth}"/>`);
+    else if(v===6||v===7) out.push(`<path d="M132 55 l${7+v} -8 l-2 17 l-14 -4z" fill="${cloth}" stroke="#e7bb55"/>`);
+    else out.push(`<path d="M80 156 Q100 ${175+v} 120 156" fill="none" stroke="#e7bb55" stroke-width="${1+v%3}"/><${v%2?'rect':'circle'} ${v%2?`x="94" y="${171+v}" width="12" height="9"`:`cx="100" cy="${176+v}" r="${3+v%3}"`} fill="${v===4?'#ce4747':'#e7bb55'}"/>`);
+  }
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="${label.replace(/[<>&"]/g, '')}">${defs}<g clip-path="url(#ccm-clip)"><circle cx="100" cy="100" r="100" fill="url(#ccm-bg)"/><g transform="translate(100 112) scale(1.22) translate(-100 -112)">${out.join('')}</g></g></svg>`;
 }

@@ -1,0 +1,6 @@
+
+> chess-career-mode@0.1.0 test:expansion
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-expansion.ts
+
+Expansion checks passed: 50 new choices per gender; 82 legends; annual cohorts/retirement; coach fees/expiry/XP; federation/team cup; news; locked tournament entrants.
+clearSave compatibility passed: only active character/world deleted; second slot preserved; no active slot is a no-op.

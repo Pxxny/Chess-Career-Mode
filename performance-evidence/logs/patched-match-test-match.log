@@ -1,0 +1,9 @@
+
+> chess-career-mode@0.1.0 test:match
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-match.ts
+
+referee cross-check with chess.js: 23059 positions, {"castle":13,"ep":1,"promo":165,"mate":12,"stale":1}
+simulated game: 146 half-moves, black by checkmate
+match checks passed
+registration checks passed
+simulated training game: 72 half-moves, win by resignation, accuracy 78.3

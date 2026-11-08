@@ -1,0 +1,13 @@
+[
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:match"
+    ],
+    "project": "/workspace/performance-release/chess-career-mode",
+    "seconds": 212.173,
+    "exit_code": 0,
+    "log": "patched-match-test-match.log"
+  }
+]

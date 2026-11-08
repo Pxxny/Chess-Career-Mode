@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ComponentProps } from 'react';
 import { Bot, Flag, Handshake, Hand, LogOut, Pause, Play } from 'lucide-react';
 import { Badge, Button, Card, ProgressBar } from '@/components/ui';
 import { inCheck, type Position } from '@/game/chess/board';
 import type { GameEnd } from '@/game/chess/rules';
 import { describeTimeControl } from '@/game/match/timeControls';
-import type { MatchSetup, MatchSnapshot, Speed } from '@/game/match/session';
+import type { MatchSession, MatchSetup, Speed } from '@/game/match/session';
 import type { MatchSide, MatchTermination, ReviewLabel, PieceColor } from '@/types';
 import { useGameStore } from '@/store/gameStore';
 import { EvalBar, EvalPanel } from './EvalPanel';
@@ -42,6 +42,17 @@ export function resultText(end: GameEnd, white: MatchSide, black: MatchSide): st
 
 const kingSquare = (pos: Position, color: PieceColor): number => pos.board.findIndex((p) => p === (color === 'white' ? 'K' : 'k'));
 
+/** Keep clock display ticks inside the active player card, away from the board and move list. */
+function ClockedPlayerPanel({ session, ...panel }: Omit<ComponentProps<typeof PlayerPanel>, 'remaining'> & { session: MatchSession }) {
+  const [, redrawClock] = useState(0);
+  useEffect(() => {
+    if (!panel.active || !session.hasClock) return;
+    const id = setInterval(() => redrawClock((n) => n + 1), 100);
+    return () => clearInterval(id);
+  }, [session, panel.active]);
+  return <PlayerPanel {...panel} remaining={session.clocks()[panel.color]} />;
+}
+
 interface Props {
   setup: MatchSetup;
   onExit: () => void;
@@ -52,7 +63,6 @@ export function MatchViewer({ setup, onExit }: Props) {
   const { session, snap } = useMatchSession(setup);
   const [message, setMessage] = useState<string | null>(null);
   const [offering, setOffering] = useState(false);
-  const clocks = session.clocks();
   const live = snap.viewPly === null;
   const shownPly = snap.viewPly ?? snap.game.ucis.length;
   const position: Position = snap.game.positions[shownPly];
@@ -126,7 +136,7 @@ export function MatchViewer({ setup, onExit }: Props) {
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="space-y-2">
-          <PlayerPanel side={sideOf(opponent)} color={opponent} remaining={clocks[opponent]} active={snap.status === 'running' && turnColor === opponent} controller={snap.controllers[opponent]} thinking={snap.thinking === opponent} ratingChange={null} />
+          <ClockedPlayerPanel session={session} side={sideOf(opponent)} color={opponent} active={snap.status === 'running' && turnColor === opponent} controller={snap.controllers[opponent]} thinking={snap.thinking === opponent} ratingChange={null} />
           <div className="flex items-stretch gap-2">
             <EvalBar live={snap.live} flipped={flipped} />
             <div className="min-w-0 flex-1">
@@ -143,7 +153,7 @@ export function MatchViewer({ setup, onExit }: Props) {
               />
             </div>
           </div>
-          <PlayerPanel side={sideOf(player)} color={player} remaining={clocks[player]} active={snap.status === 'running' && turnColor === player} controller={snap.controllers[player]} thinking={snap.thinking === player} ratingChange={ratingChange} />
+          <ClockedPlayerPanel session={session} side={sideOf(player)} color={player} active={snap.status === 'running' && turnColor === player} controller={snap.controllers[player]} thinking={snap.thinking === player} ratingChange={ratingChange} />
           {!live && <p className="text-center text-xs text-ink-muted">Looking at move {shownPly}. <button type="button" className="underline" onClick={() => session.view(null)}>Back to the game</button></p>}
         </div>
 

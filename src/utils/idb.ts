@@ -1,7 +1,7 @@
 const DB_NAME = 'chess-career-mode';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
-export const STORES = { keyval: 'keyval', npcs: 'npcs', meta: 'meta', openingData: 'openingData' } as const;
+export const STORES = { keyval: 'keyval', npcs: 'npcs', meta: 'meta', openingData: 'openingData', careerNpcs: 'careerNpcs' } as const;
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
@@ -14,6 +14,8 @@ export function openDb(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(STORES.npcs)) db.createObjectStore(STORES.npcs, { keyPath: 'id' });
       if (!db.objectStoreNames.contains(STORES.meta)) db.createObjectStore(STORES.meta);
       if (!db.objectStoreNames.contains(STORES.openingData)) db.createObjectStore(STORES.openingData);
+      // One NPC world per character: records are keyed `<career id>|<npc id>`.
+      if (!db.objectStoreNames.contains(STORES.careerNpcs)) db.createObjectStore(STORES.careerNpcs, { keyPath: 'key' });
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => {

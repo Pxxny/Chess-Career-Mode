@@ -31,6 +31,23 @@ export const APPEARANCE_OPTIONS: Record<AppearanceField, AppearanceOption[]> = {
   accessory: [o('none', 'None'), o('earring', 'Earring'), o('headband', 'Headband'), o('cap', 'Cap'), o('headphones', 'Headphones'), o('scarf', 'Scarf'), o('pin', 'Knight pin')],
 };
 
+// Each gender gets 10 hairstyles + 10 outfits + 10 shared accessories + 20 shared colors.
+const maleHair = ['Crew crop','Textured crop','Quiff','Pompadour','Undercut','Slick back','Wavy crop','High fade','Twists','Curtains'];
+const femaleHair = ['Pixie','Wavy bob','Lob','Braids','Twin buns','Side braid','Loose waves','High pony','Crown braid','Layered fringe'];
+const maleClothes = ['Waistcoat','Tuxedo','Track jacket','Henley','Bomber','Cardigan','Mandarin collar','Denim jacket','Knit vest','Tournament jersey'];
+const femaleClothes = ['Blouse','Wrap top','Tunic','Cropped jacket','Ruffle blouse','Knit cardigan','Sailor collar','Peplum','Bow blouse','Tournament jersey'];
+for (const [gender, hair, clothes] of [['male',maleHair,maleClothes],['female',femaleHair,femaleClothes]] as const) {
+  APPEARANCE_OPTIONS.hairStyle.push(...hair.map((name,i)=>o(`${gender}-hair-${i}`,name)));
+  APPEARANCE_OPTIONS.clothing.push(...clothes.map((name,i)=>o(`${gender}-outfit-${i}`,name)));
+}
+APPEARANCE_OPTIONS.accessory.push(...['Studs','Hoops','Pendant','Medal','Bow tie','Necklace','Flower','Ribbon','Beret','Chess badge'].map((name,i)=>o(`extra-accessory-${i}`,name)));
+const newColors = ['#ce4747','#ee8970','#d6a865','#fff4dd','#ac9b79','#677955','#178875','#82b4ab','#399fc0','#276399','#5945a7','#9175ba','#c15391','#e6a1bd','#6a3443','#693f2b','#a0b3cb','#222226','#c3b391','#7eb7df'];
+APPEARANCE_OPTIONS.clothingColor.push(...newColors.map((color,i)=>o(`palette-${i}`,`Studio color ${i+1}`,color)));
+export function optionsForGender(field: AppearanceField, gender?: string | null): AppearanceOption[] {
+  const excluded = gender === 'male' ? 'female-' : gender === 'female' ? 'male-' : null;
+  return APPEARANCE_OPTIONS[field].filter(o=>!excluded || !o.id.startsWith(excluded));
+}
+
 export const DEFAULT_APPEARANCE: Appearance = {
   facePreset: 'classic', skinTone: 'light', hairStyle: 'short', hairColor: 'darkbrown', eyeColor: 'brown',
   facialHair: 'none', clothing: 'sweater', clothingColor: 'navy', glasses: 'none', accessory: 'none',
@@ -53,13 +70,15 @@ export function sanitizeAppearance(value: Partial<Appearance> | undefined): Appe
   return out;
 }
 
-export function randomAppearance(random: () => number = Math.random): Appearance {
+export function randomAppearance(random: () => number = Math.random, gender?: string | null): Appearance {
   const pick = (field: AppearanceField) => {
-    const list = APPEARANCE_OPTIONS[field];
+    const list = optionsForGender(field, gender);
     return list[Math.floor(random() * list.length)].id;
   };
   const result = { ...DEFAULT_APPEARANCE };
   for (const field of APPEARANCE_FIELDS) result[field] = pick(field);
+  if (gender === 'female') { result.facialHair = 'none'; result.hairStyle = `female-hair-${Math.floor(random()*10)}`; result.clothing = `female-outfit-${Math.floor(random()*10)}`; }
+  if (gender === 'male') { result.hairStyle = `male-hair-${Math.floor(random()*10)}`; result.clothing = `male-outfit-${Math.floor(random()*10)}`; }
   // Keep the extremes rare so random looks stay natural.
   if (random() < 0.6) result.glasses = 'none';
   if (random() < 0.6) result.accessory = 'none';

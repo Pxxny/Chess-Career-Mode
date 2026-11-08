@@ -1,0 +1,64 @@
+
+> chess-career-mode@0.1.0 test:e2e
+> playwright test
+
+[WebServer] (node:15486) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:15504) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/app.spec.ts:53:1 › production app: real games, Stockfish, analysis, history and opening performance persist (16.7s)
+  ✓  2 tests/app.spec.ts:109:1 › PGN file/paste, exports, imported opening on Games-first refresh and source removal (4.2s)
+  ✓  3 tests/app.spec.ts:141:1 › missing Stockfish uses built-in engine and keeps playing (7.1s)
+  ✓  4 tests/app.spec.ts:153:1 › reload of an active game records resignation once; version 5 save upgrades in place (3.7s)
+  ✓  5 tests/expansion.spec.ts:10:1 › expanded look, federation, coaching, team cup, tournament entrants and annual population persist (10.5s)
+  ✓  6 tests/match-clock.spec.ts:25:1 › Complete clocks update independently and live/review boards keep eight rows on phones (6.6s)
+  ✘  7 tests/mobile.spec.ts:16:1 › mobile layouts keep the board, opening details and performance within the viewport (23.0s)
+(node:15929) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  8 tests/slots.spec.ts:34:1 › date of birth, then two characters side by side in separate slots (3.5s)
+  ✓  9 tests/slots.spec.ts:89:1 › a date of birth that does not fit the start year blocks the start year step (2.4s)
+
+
+  1) tests/mobile.spec.ts:16:1 › mobile layouts keep the board, opening details and performance within the viewport 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: 'Results by opening', exact: true })
+    Expected: visible
+    Timeout: 20000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: 'Results by opening', exact: true }) with timeout 20000ms
+      - waiting for getByRole('heading', { name: 'Results by opening', exact: true })
+
+
+      46 |     await assertFits(page, width);
+      47 |     await page.getByRole('button', { name: 'Performance', exact: true }).click();
+    > 48 |     await expect(page.getByRole('heading', { name: 'Results by opening', exact: true })).toBeVisible();
+         |                                                                                          ^
+      49 |     await assertFits(page, width);
+      50 |     const table = page.getByRole('region', { name: 'Opening performance table', exact: true });
+      51 |     await expect(table).toBeVisible();
+        at /workspace/expansion-release/chess-career-mode/tests/mobile.spec.ts:48:90
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/mobile-mobile-layouts-keep-bd533-ormance-within-the-viewport/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/mobile-mobile-layouts-keep-bd533-ormance-within-the-viewport/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/mobile-mobile-layouts-keep-bd533-ormance-within-the-viewport/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/mobile-mobile-layouts-keep-bd533-ormance-within-the-viewport/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests/mobile.spec.ts:16:1 › mobile layouts keep the board, opening details and performance within the viewport 
+  8 passed (1.3m)

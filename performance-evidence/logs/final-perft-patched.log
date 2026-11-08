@@ -1,0 +1,2 @@
+perft(start,4)           median 65.7 ms
+perft(kiwipete,3)        median 32.7 ms

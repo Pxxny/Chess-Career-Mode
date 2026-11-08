@@ -1,0 +1,85 @@
+RUN final: npm run typecheck
+{"command": ["npm", "run", "typecheck"], "project": "/workspace/expansion-release/chess-career-mode", "seconds": 5.246, "exit_code": 0, "log": "final-typecheck.log"}
+
+> chess-career-mode@0.1.0 typecheck
+> tsc --noEmit
+
+
+RUN final: npm run test:expansion
+{"command": ["npm", "run", "test:expansion"], "project": "/workspace/expansion-release/chess-career-mode", "seconds": 0.551, "exit_code": 0, "log": "final-test-expansion.log"}
+
+> chess-career-mode@0.1.0 test:expansion
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-expansion.ts
+
+Expansion checks passed: 50 new choices per gender; 82 legends; annual cohorts/retirement; coach fees/expiry/XP; federation/team cup; news; locked tournament entrants.
+
+RUN final: npm run test:characters
+{"command": ["npm", "run", "test:characters"], "project": "/workspace/expansion-release/chess-career-mode", "seconds": 0.299, "exit_code": 0, "log": "final-test-characters.log"}
+
+> chess-career-mode@0.1.0 test:characters
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-characters.ts
+
+Character verification passed: date of birth, save slots, per-character NPC worlds
+
+RUN final: npm run test:ages
+{"command": ["npm", "run", "test:ages"], "project": "/workspace/expansion-release/chess-career-mode", "seconds": 0.587, "exit_code": 0, "log": "final-test-ages.log"}
+
+> chess-career-mode@0.1.0 test:ages
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-ages.ts
+
+1950: 1200 fictional NPCs, 180 under 18, 14 prodigies (<=15, 2000+), youngest 2500+: 15
+1985: 1200 fictional NPCs, 189 under 18, 13 prodigies (<=15, 2000+), youngest 2500+: 15
+beginner: n=144 age 9-69 mean 34 median 34 under18 40
+amateur: n=264 age 9-68 mean 31 median 31 under18 59
+club: n=313 age 9-62 mean 31 median 31 under18 50
+professional: n=288 age 13-63 mean 34 median 33 under18 16
+international-master: n=96 age 12-59 mean 31 median 31 under18 3
+grandmaster: n=78 age 17-58 mean 33 median 32 under18 2
+elite-grandmaster: n=15 age 17-45 mean 32 median 31 under18 1
+legendary: n=2 age 26-28 mean 27 median 28 under18 0
+2026: 1200 fictional NPCs, 171 under 18, 9 prodigies (<=15, 2000+), youngest 2500+: 17
+
+NPC age verification passed
+
+RUN final: npm run test:world
+{"command": ["npm", "run", "test:world"], "project": "/workspace/expansion-release/chess-career-mode", "seconds": 0.907, "exit_code": 0, "log": "final-test-world.log"}
+
+> chess-career-mode@0.1.0 test:world
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-world.ts
+
+player: 1000 1000 0 beginner morale 70 money 250 AP 10 born 1970-06-15 start 1985
+attacker skills: {"opening":14,"middlegame":13,"endgame":8,"tactics":16,"calculation":13,"strategy":10,"timeManagement":9,"psychology":13}
+
+== 1950: 1282 NPCs, ranked 1161, RU fictional 147
+   tiers begi:144 amat:264 club:453 prof:288 inte:28 gran:23 elit:0 lege:0
+   top: Mikhail Botvinnik 2691 | Reuben Fine 2690 | David Bronstein 2664 | Miguel Najdorf 2660
+   legends ranked: Botvinnik(38,2691) Fine(35,2690) Bronstein(25,2664) Najdorf(39,2660) Reshevsky(38,2655) Keres(33,2632) Smyslov(28,2602) Euwe(48,2596) Tartakower(62,2580) Gligoric(26,2545) Geller(24,2454) Petrosian(20,2454) Korchnoi(18,2337)
+
+== 1972: 1282 NPCs, ranked 1174, RU fictional 133
+   tiers begi:144 amat:264 club:417 prof:288 inte:48 gran:39 elit:0 lege:0
+   top: Bobby Fischer 2785 | Mikhail Tal 2699 | David Bronstein 2690 | Boris Spassky 2684
+   legends ranked: Fischer(28,2785) Tal(35,2699) Bronstein(47,2690) Spassky(34,2684) Reshevsky(60,2680) Geller(46,2670) Smyslov(50,2661) Najdorf(61,2660) Larsen(36,2654) Gligoric(48,2650) Petrosian(42,2641) Keres(55,2622) Korchnoi(40,2609) Portisch(34,2573) Karpov(20,2570) Gaprindashvili(30,2469) Ljubojevic(21,2465) Timman(20,2428)
+
+== 1985: 1282 NPCs, ranked 1167, RU fictional 138
+   tiers begi:144 amat:264 club:397 prof:288 inte:59 gran:48 elit:0 lege:0
+   top: Anatoly Karpov 2720 | Garry Kasparov 2700 | David Bronstein 2690 | Tomasz Wojcik 2688
+   legends ranked: Karpov(33,2720) Kasparov(21,2700) Bronstein(60,2690) Reshevsky(73,2680) Korchnoi(53,2676) Geller(59,2670) Tal(48,2661) Najdorf(74,2660) Portisch(47,2655) Gligoric(61,2650) Ljubojevic(34,2645) Smyslov(63,2624) Timman(33,2610) Spassky(47,2603) Larsen(49,2579) Chiburdanidze(23,2520) Gaprindashvili(43,2495) Polgar(15,2415) Anand(15,2400)
+
+== 2005: 1282 NPCs, ranked 1185, RU fictional 83
+   tiers begi:144 amat:264 club:353 prof:288 inte:77 gran:62 elit:12 lege:0
+   top: Garry Kasparov 2812 | Veselin Topalov 2800 | Vladimir Kramnik 2796 | Viswanathan Anand 2788
+   legends ranked: Kasparov(41,2812) Topalov(29,2800) Kramnik(29,2796) Anand(35,2788) Polgar(28,2735) Timman(53,2680) Karpov(53,2670) Portisch(67,2655) Ljubojevic(54,2645) Aronian(22,2602) Korchnoi(73,2589) Polgar(35,2575) Chiburdanidze(43,2560) Carlsen(14,2555) Grischuk(21,2546) Radjabov(17,2542) Karjakin(14,2529) Humpy(17,2496) Gaprindashvili(63,2495) Spassky(67,2481) Mamedyarov(19,2479) Nakamura(17,2469) Kosteniuk(20,2462) Larsen(69,2438) Muzychuk(14,2426) Vachier-Lagrave(14,2400) Hao(15,2400)
+
+== 2026: 1282 NPCs, ranked 1178, RU fictional 95
+   tiers begi:144 amat:264 club:313 prof:288 inte:96 gran:78 elit:15 lege:2
+   top: Fabiano Caruana 2844 | Magnus Carlsen 2840 | Levon Aronian 2830 | Wesley So 2822
+   legends ranked: Caruana(33,2844) Carlsen(35,2840) Aronian(43,2830) So(32,2822) Mamedyarov(40,2820) Vachier-Lagrave(35,2819) Liren(33,2816) Nakamura(38,2816) Grischuk(42,2810) Erigaisi(22,2800) Giri(31,2798) Nepomniachtchi(35,2795) Radjabov(38,2790) Karjakin(35,2788) Gukesh(19,2780) Rapport(29,2776) Praggnanandhaa(20,2770) Abdusattorov(21,2766) Yangyi(31,2765) Duda(27,2760) Yi(26,2755) Anand(56,2750) Keymer(21,2750) Liem(34,2740) Sindarov(20,2710) Sarin(21,2700) Yifan(31,2686) Erdogmus(14,2650) Humpy(38,2623) Goryachkina(27,2611) Muzychuk(35,2606) Wenjun(34,2604) Kosteniuk(41,2560) Oro(12,2550) Tingjie(28,2550) Muzychuk(33,2550) Zhongyi(34,2550) Dronavalli(34,2543) Vaishali(24,2500) Gaprindashvili(84,2495)
+
+Carlsen 2005: {"id":"legend-magnus-carlsen","name":"Magnus Carlsen","nationality":"NO","age":14,"elo":2555,"stage":"Rising prodigy"}
+alt-history 1950 legends: 82
+events 1985: olympiad, zonals, world-championship, candidates, hastings, wijk, reggio-emilia, capablanca-memorial, biel, dortmund, tilburg, linares
+dashboard logic: world rank 1099 of 1179 | national 9 of 9 | NPC database 1282
+training sessions: 19 sessions, 40 openings, 400-day tactics run reached 70
+
+verification passed
+

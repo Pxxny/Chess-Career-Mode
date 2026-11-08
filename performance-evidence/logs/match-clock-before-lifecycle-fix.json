@@ -1,0 +1,52 @@
+[
+  {
+    "label": "baseline",
+    "intervalMs": 2200,
+    "viewerRenders": 22,
+    "boardRenders": 22,
+    "whitePanelRenders": 22,
+    "blackPanelRenders": 22,
+    "clockBefore": "0:59",
+    "clockAfter": "0:57",
+    "active100msIntervals": 2,
+    "developmentStrictMode": {
+      "status": "over",
+      "active100msIntervals": 0
+    },
+    "pageErrors": [],
+    "cleanupIntervals": 0
+  },
+  {
+    "label": "patched",
+    "intervalMs": 2200,
+    "viewerRenders": 0,
+    "boardRenders": 0,
+    "whitePanelRenders": 22,
+    "blackPanelRenders": 0,
+    "clockBefore": "0:59",
+    "clockAfter": "0:57",
+    "active100msIntervals": 2,
+    "layout320": {
+      "width": 266.203125,
+      "height": 266.203125,
+      "rows": 8,
+      "minCellHeight": 33.015625,
+      "maxCellHeight": 33.03125,
+      "rowsClass": true
+    },
+    "layout390": {
+      "width": 322,
+      "height": 322,
+      "rows": 8,
+      "minCellHeight": 40,
+      "maxCellHeight": 40,
+      "rowsClass": true
+    },
+    "developmentStrictMode": {
+      "status": "over",
+      "active100msIntervals": 0
+    },
+    "pageErrors": [],
+    "cleanupIntervals": 0
+  }
+]

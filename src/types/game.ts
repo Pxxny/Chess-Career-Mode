@@ -1,12 +1,17 @@
-import type { Appearance } from './appearance';
-import type { ArchetypeId } from './archetype';
-import type { PlayerCity } from './geo';
-import type { CareerHistory } from './history';
-import type { ActiveTournament, EventRegistration, MatchRecord, PendingMatch } from './match';
-import type { PracticeState, RepertoireState } from './play';
-import type { TrainingState } from './training';
-import type { Player, PlayerGender } from './player';
-import type { World } from './world';
+import type { Appearance } from "./appearance";
+import type { ArchetypeId } from "./archetype";
+import type { PlayerCity } from "./geo";
+import type { CareerHistory } from "./history";
+import type {
+  ActiveTournament,
+  EventRegistration,
+  MatchRecord,
+  PendingMatch,
+} from "./match";
+import type { PracticeState, RepertoireState } from "./play";
+import type { TrainingState } from "./training";
+import type { Player, PlayerGender } from "./player";
+import type { World } from "./world";
 
 /** The permanent link between a player, their country and city, their historical period and their NPC database. */
 export interface CareerRecord {
@@ -20,6 +25,8 @@ export interface CareerRecord {
 }
 
 export interface GameSave {
+  competition?: import("@/game/competition/types").CompetitionState;
+  expansion?: import("@/game/career/expansion").ExpansionState;
   version: number;
   career: CareerRecord;
   player: Player;
@@ -49,4 +56,6 @@ export interface NewCareerOptions {
   appearance: Appearance;
   startYear: number;
   alternateHistory: boolean;
+  /** ISO date (YYYY-MM-DD). Without one the player is born mid-year so that they are `startingAge` on the first day. */
+  dateOfBirth?: string;
 }

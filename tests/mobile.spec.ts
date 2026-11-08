@@ -18,7 +18,17 @@ test('mobile layouts keep the board, opening details and performance within the 
   page.on('pageerror', error => errors.push(error.message));
   await createCareer(page);
   await page.getByRole('tab', { name: 'Games', exact: true }).click();
-  await page.getByRole('button', { name: 'Simulate instead', exact: true }).click();
+  // Use a completed real game: a detached full simulation may still be running when statistics are opened.
+  await page.getByRole('button', { name: /^Game vs the Engine/ }).click();
+  await page.getByRole('button', { name: 'Start game', exact: true }).click();
+  await expect(page.getByText('Your move (White).', {exact:true})).toBeVisible();
+  await page.getByRole('gridcell', {name:'e2, white pawn',exact:true}).click();
+  await page.getByRole('gridcell', {name:/^e4,.*move available/}).click();
+  await expect(page.getByText('Your move (White).', {exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Resign',exact:true}).click();
+  await page.getByRole('button',{name:'Confirm resign',exact:true}).click();
+  await expect(page.getByText('You lost by resignation',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Back to setup',exact:true}).click();
 
   for (const width of [320, 390, 768]) {
     await page.setViewportSize({ width, height: 844 });

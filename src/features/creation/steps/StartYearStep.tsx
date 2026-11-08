@@ -4,6 +4,7 @@ import { GAME_CONFIG } from '@/data/config';
 import { getEra } from '@/data/eras';
 import { getCountry } from '@/data/world/countries';
 import { previewLegends } from '@/game/npc/legends';
+import { ageAtStart, birthDateProblem, toIsoDate } from '@/game/player/birth';
 import { cn } from '@/utils/cn';
 import type { CharacterDraft } from '../useCharacterDraft';
 
@@ -18,6 +19,7 @@ export function StartYearStep({ draft, update }: { draft: CharacterDraft; update
   const events = useMemo(() => getEventsForYear(year), [year]);
   const parsed = Number(text);
   const inputValid = Number.isInteger(parsed) && parsed >= min && parsed <= max;
+  const birthProblem = birthDateProblem(draft.birthDate, year);
 
   const choose = (y: number) => {
     setText(String(y));
@@ -66,6 +68,18 @@ export function StartYearStep({ draft, update }: { draft: CharacterDraft; update
           {inputValid ? '' : `Enter a whole year between ${min} and ${max}. Your career will start in ${year}.`}
         </p>
       </div>
+
+      <p className={cn('rounded-lg border p-3 text-sm', birthProblem ? 'border-red-400/40 bg-red-500/10 text-red-200' : 'border-white/[0.06] bg-navy-900 text-ink')} aria-live="polite">
+        {birthProblem ? (
+          <>
+            {birthProblem} Go back to Identity to change your date of birth ({toIsoDate(draft.birthDate)}).
+          </>
+        ) : (
+          <>
+            Born {toIsoDate(draft.birthDate)}: you are <span className="font-semibold">{ageAtStart(draft.birthDate, year)}</span> when your career starts in {year}.
+          </>
+        )}
+      </p>
 
       <div className="rounded-xl border border-white/[0.06] bg-navy-900 p-4">
         <p className="font-display text-lg font-bold text-gold-400">

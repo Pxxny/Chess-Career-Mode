@@ -1,12 +1,13 @@
 import { Card, CardTitle } from '@/components/ui';
 import { getArchetype } from '@/data/archetypes';
+import { GAME_CONFIG } from '@/data/config';
 import { describeAppearance } from '@/data/appearance';
 import { getEra } from '@/data/eras';
 import { getCountry } from '@/data/world/countries';
 import { getTitleStatus } from '@/game/career/titles';
 import { AlternateHistoryToggle } from '@/features/profile/AlternateHistoryToggle';
 import { ProfileForm } from '@/features/profile/ProfileForm';
-import { ResetSaveButton } from '@/features/profile/ResetSaveButton';
+import { SwitchCharacterButton } from '@/features/profile/SwitchCharacterButton';
 import { useSave } from '@/hooks/useGame';
 import type { PlayerGender } from '@/types';
 
@@ -54,8 +55,10 @@ export function ProfileTab() {
       </Card>
       <Card>
         <CardTitle>Save data</CardTitle>
-        <p className="mb-4 text-sm text-ink-muted">Your career and the NPC world are saved automatically in this browser.</p>
-        <ResetSaveButton />
+        <p className="mb-4 text-sm text-ink-muted">
+          Your career and the NPC world are saved automatically in this browser. You can keep up to {GAME_CONFIG.saveSlots} characters, each with its own career and world.
+        </p>
+        <SwitchCharacterButton />
       </Card>
     </>
   );

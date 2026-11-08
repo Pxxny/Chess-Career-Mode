@@ -7,6 +7,7 @@ import { getTier, tierForElo } from '@/data/chess/tiers';
 import { GAME_CONFIG } from '@/data/config';
 import { getEra } from '@/data/eras';
 import { SKILL_DEFINITIONS } from '@/data/skills';
+import { ageAtStart, MONTH_NAMES } from '@/game/player/birth';
 import { createStartingSkills } from '@/game/player/createPlayer';
 import { formatMoney } from '@/utils/format';
 import type { CharacterDraft } from '../useCharacterDraft';
@@ -35,7 +36,7 @@ export function ConfirmStep({ draft }: { draft: CharacterDraft }) {
     ['Money', formatMoney(p.startingMoney)],
     ['Action points', `${p.startingActionPoints}/${p.maxActionPoints}`],
     ['Morale', String(p.startingMorale)],
-    ['Age', String(p.startingAge)],
+    ['Age', String(ageAtStart(draft.birthDate, draft.startYear))],
   ];
 
   return (
@@ -45,6 +46,9 @@ export function ConfirmStep({ draft }: { draft: CharacterDraft }) {
         <dl className="w-full">
           <Row label="Name">{draft.name.trim()}</Row>
           <Row label="Gender">{genderLabel(draft.gender)}</Row>
+          <Row label="Date of birth">
+            {draft.birthDate.day} {MONTH_NAMES[draft.birthDate.month - 1]} {draft.birthDate.year}
+          </Row>
           <Row label="Nationality">
             <span aria-hidden>{country?.flag}</span> {country?.nationality} ({country?.name})
           </Row>

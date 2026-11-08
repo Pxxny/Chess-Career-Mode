@@ -71,32 +71,63 @@ export function toFen(pos: Position): string {
   return `${rows.join('/')} ${pos.turn} ${pos.castling || '-'} ${pos.ep >= 0 ? squareName(pos.ep) : '-'} ${pos.halfmove} ${pos.fullmove}`;
 }
 
+const PAWN_FILES = [-1, 1] as const;
+const QUEEN_DIRS: Array<[number, number]> = [...ROOK, ...BISHOP];
+
 function isAttacked(board: Array<string | null>, target: number, by: Color): boolean {
   const tr = Math.floor(target / 8);
   const tf = target % 8;
-  const own = (p: string | null | undefined, letters: string): boolean => !!p && colorOf(p) === by && letters.includes(p.toUpperCase());
+  // Attacking pieces are of colour `by`: uppercase for white, lowercase for black.
+  const white = by === 'w';
+  const P = white ? 'P' : 'p';
+  const N = white ? 'N' : 'n';
+  const K = white ? 'K' : 'k';
+  const R = white ? 'R' : 'r';
+  const B = white ? 'B' : 'b';
+  const Q = white ? 'Q' : 'q';
   // pawns: a white pawn attacks upward (towards lower row index), so it sits one row below the target
-  const pr = by === 'w' ? tr + 1 : tr - 1;
-  for (const df of [-1, 1]) if (inside(pr, tf + df) && own(board[sq(pr, tf + df)], 'P')) return true;
-  for (const [dr, df] of KNIGHT) if (inside(tr + dr, tf + df) && own(board[sq(tr + dr, tf + df)], 'N')) return true;
-  for (const [dr, df] of KING) if (inside(tr + dr, tf + df) && own(board[sq(tr + dr, tf + df)], 'K')) return true;
-  const slide = (dirs: Array<[number, number]>, letters: string): boolean => {
-    for (const [dr, df] of dirs) {
-      let r = tr + dr;
-      let f = tf + df;
-      while (inside(r, f)) {
-        const p = board[sq(r, f)];
-        if (p) {
-          if (own(p, letters)) return true;
-          break;
-        }
-        r += dr;
-        f += df;
+  const pr = white ? tr + 1 : tr - 1;
+  for (let i = 0; i < 2; i++) {
+    const f = tf + PAWN_FILES[i];
+    if (inside(pr, f) && board[sq(pr, f)] === P) return true;
+  }
+  for (let i = 0; i < 8; i++) {
+    const r = tr + KNIGHT[i][0];
+    const f = tf + KNIGHT[i][1];
+    if (inside(r, f) && board[sq(r, f)] === N) return true;
+  }
+  for (let i = 0; i < 8; i++) {
+    const r = tr + KING[i][0];
+    const f = tf + KING[i][1];
+    if (inside(r, f) && board[sq(r, f)] === K) return true;
+  }
+  for (let d = 0; d < 4; d++) {
+    let r = tr + ROOK[d][0];
+    let f = tf + ROOK[d][1];
+    while (inside(r, f)) {
+      const p = board[sq(r, f)];
+      if (p) {
+        if (p === R || p === Q) return true;
+        break;
       }
+      r += ROOK[d][0];
+      f += ROOK[d][1];
     }
-    return false;
-  };
-  return slide(ROOK, 'RQ') || slide(BISHOP, 'BQ');
+  }
+  for (let d = 0; d < 4; d++) {
+    let r = tr + BISHOP[d][0];
+    let f = tf + BISHOP[d][1];
+    while (inside(r, f)) {
+      const p = board[sq(r, f)];
+      if (p) {
+        if (p === B || p === Q) return true;
+        break;
+      }
+      r += BISHOP[d][0];
+      f += BISHOP[d][1];
+    }
+  }
+  return false;
 }
 
 const findKing = (board: Array<string | null>, color: Color): number => board.indexOf(color === 'w' ? 'K' : 'k');
@@ -105,6 +136,8 @@ const opposite = (c: Color): Color => (c === 'w' ? 'b' : 'w');
 export function inCheck(pos: Position, color: Color = pos.turn): boolean {
   return isAttacked(pos.board, findKing(pos.board, color), opposite(color));
 }
+
+const PROMOTIONS = ['Q', 'R', 'B', 'N'] as const;
 
 function pseudoMoves(pos: Position): Move[] {
   const moves: Move[] = [];
@@ -120,19 +153,20 @@ function pseudoMoves(pos: Position): Move[] {
       const dir = us === 'w' ? -1 : 1;
       const startRow = us === 'w' ? 6 : 1;
       const promoRow = us === 'w' ? 0 : 7;
-      const add = (to: number, extra: Partial<Move>): void => {
-        if (Math.floor(to / 8) === promoRow) for (const promo of ['Q', 'R', 'B', 'N']) moves.push({ from: i, to, piece: p, capture: false, ...extra, promotion: promo });
-        else moves.push({ from: i, to, piece: p, capture: false, ...extra });
+      const add = (to: number, capture: boolean): void => {
+        if (Math.floor(to / 8) === promoRow) for (let k = 0; k < 4; k++) moves.push({ from: i, to, piece: p, capture, promotion: PROMOTIONS[k] });
+        else moves.push({ from: i, to, piece: p, capture });
       };
       if (inside(r + dir, f) && !board[sq(r + dir, f)]) {
-        add(sq(r + dir, f), {});
+        add(sq(r + dir, f), false);
         if (r === startRow && !board[sq(r + 2 * dir, f)]) moves.push({ from: i, to: sq(r + 2 * dir, f), piece: p, capture: false, doublePush: true });
       }
-      for (const df of [-1, 1]) {
+      for (let k = 0; k < 2; k++) {
+        const df = PAWN_FILES[k];
         if (!inside(r + dir, f + df)) continue;
         const to = sq(r + dir, f + df);
         const target = board[to];
-        if (target && colorOf(target) !== us) add(to, { capture: true });
+        if (target && colorOf(target) !== us) add(to, true);
         else if (!target && to === pos.ep) moves.push({ from: i, to, piece: p, capture: true, enPassant: true });
       }
     } else if (type === 'N' || type === 'K') {
@@ -156,7 +190,7 @@ function pseudoMoves(pos: Position): Move[] {
         }
       }
     } else {
-      const dirs = type === 'R' ? ROOK : type === 'B' ? BISHOP : [...ROOK, ...BISHOP];
+      const dirs = type === 'R' ? ROOK : type === 'B' ? BISHOP : QUEEN_DIRS;
       for (const [dr, df] of dirs) {
         let nr = r + dr;
         let nf = f + df;
@@ -177,6 +211,11 @@ function pseudoMoves(pos: Position): Move[] {
   return moves;
 }
 
+function stripRights(castling: string, letters: string): string {
+  for (let i = 0; i < letters.length; i++) castling = castling.replace(letters[i], '');
+  return castling;
+}
+
 export function applyMove(pos: Position, move: Move): Position {
   const board = [...pos.board];
   const us = pos.turn;
@@ -194,13 +233,13 @@ export function applyMove(pos: Position, move: Move): Position {
     }
   }
   let castling = pos.castling === '-' ? '' : pos.castling;
-  const strip = (letters: string): void => {
-    for (const l of letters) castling = castling.replace(l, '');
-  };
   const type = move.piece.toUpperCase();
-  if (type === 'K') strip(us === 'w' ? 'KQ' : 'kq');
-  for (const [square, letter] of [[63, 'K'], [56, 'Q'], [7, 'k'], [0, 'q']] as Array<[number, string]>) {
-    if (move.from === square || move.to === square) strip(letter);
+  if (castling !== '') {
+    if (type === 'K') castling = stripRights(castling, us === 'w' ? 'KQ' : 'kq');
+    if (move.from === 63 || move.to === 63) castling = stripRights(castling, 'K');
+    if (move.from === 56 || move.to === 56) castling = stripRights(castling, 'Q');
+    if (move.from === 7 || move.to === 7) castling = stripRights(castling, 'k');
+    if (move.from === 0 || move.to === 0) castling = stripRights(castling, 'q');
   }
   return {
     board,
@@ -213,7 +252,41 @@ export function applyMove(pos: Position, move: Move): Position {
 }
 
 export function legalMoves(pos: Position): Move[] {
-  return pseudoMoves(pos).filter((m) => !inCheck(applyMove(pos, m), pos.turn));
+  const pseudo = pseudoMoves(pos);
+  const us = pos.turn;
+  const them = opposite(us);
+  const kingChar = us === 'w' ? 'K' : 'k';
+  const rook = us === 'w' ? 'R' : 'r';
+  const row = us === 'w' ? 7 : 0;
+  // One scratch board for every candidate: make the move, test the king, unmake it.
+  const b = pos.board.slice();
+  const legal: Move[] = [];
+  for (const m of pseudo) {
+    const fromPiece = b[m.from];
+    const toPiece = b[m.to];
+    const epSquare = m.enPassant ? m.to + (us === 'w' ? 8 : -8) : -1;
+    const epPiece = epSquare >= 0 ? b[epSquare] : null;
+    b[m.from] = null;
+    b[m.to] = m.promotion ? (us === 'w' ? m.promotion : m.promotion.toLowerCase()) : m.piece;
+    if (epSquare >= 0) b[epSquare] = null;
+    let rookFrom = -1;
+    let rookTo = -1;
+    if (m.castle) {
+      rookFrom = sq(row, m.castle === 'K' ? 7 : 0);
+      rookTo = sq(row, m.castle === 'K' ? 5 : 3);
+      b[rookFrom] = null;
+      b[rookTo] = rook;
+    }
+    if (!isAttacked(b, b.indexOf(kingChar), them)) legal.push(m);
+    if (rookFrom >= 0) {
+      b[rookTo] = null;
+      b[rookFrom] = pos.board[rookFrom];
+    }
+    if (epSquare >= 0) b[epSquare] = epPiece;
+    b[m.to] = toPiece;
+    b[m.from] = fromPiece;
+  }
+  return legal;
 }
 
 /** Standard algebraic notation, including disambiguation and check or mate marks. */

@@ -1,0 +1,101 @@
+[
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "project": "/workspace/performance-release/chess-career-mode",
+    "seconds": 7.475,
+    "exit_code": 0,
+    "log": "patched-typecheck.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "project": "/workspace/performance-release/chess-career-mode",
+    "seconds": 23.137,
+    "exit_code": 0,
+    "log": "patched-build.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:world"
+    ],
+    "project": "/workspace/performance-release/chess-career-mode",
+    "seconds": 1.619,
+    "exit_code": 0,
+    "log": "patched-test-world.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:play"
+    ],
+    "project": "/workspace/performance-release/chess-career-mode",
+    "seconds": 6.091,
+    "exit_code": 0,
+    "log": "patched-test-play.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:session"
+    ],
+    "project": "/workspace/performance-release/chess-career-mode",
+    "seconds": 0.493,
+    "exit_code": 0,
+    "log": "patched-test-session.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:engine"
+    ],
+    "project": "/workspace/performance-release/chess-career-mode",
+    "seconds": 0.367,
+    "exit_code": 0,
+    "log": "patched-test-engine.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:data"
+    ],
+    "project": "/workspace/performance-release/chess-career-mode",
+    "seconds": 0.585,
+    "exit_code": 0,
+    "log": "patched-test-data.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:chess-cache"
+    ],
+    "project": "/workspace/performance-release/chess-career-mode",
+    "seconds": 0.325,
+    "exit_code": 0,
+    "log": "patched-test-chess-cache.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "bench:chess"
+    ],
+    "project": "/workspace/performance-release/chess-career-mode",
+    "seconds": 1.49,
+    "exit_code": 0,
+    "log": "patched-bench-chess.log"
+  }
+]

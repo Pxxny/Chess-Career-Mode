@@ -1,0 +1,10 @@
+const dir = process.argv[2];
+const { perft, parseFen } = await import(`${dir}/src/game/chess/board.ts`);
+const { PerformanceObserver } = await import('node:perf_hooks');
+let gcCount = 0, gcMs = 0;
+const obs = new PerformanceObserver((l) => { for (const e of l.getEntries()) { gcCount++; gcMs += e.duration; } });
+obs.observe({ entryTypes: ['gc'] });
+const START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+for (let i = 0; i < 5; i++) perft(parseFen(START), 4);
+await new Promise((r) => setTimeout(r, 50));
+console.log(`5x perft(start,4): GC events=${gcCount}, GC time=${gcMs.toFixed(1)} ms`);

@@ -1,7 +1,9 @@
 export const GAME_CONFIG = {
   appName: 'Chess Career Mode',
-  saveVersion: 7,
+  saveVersion: 9,
   saveKey: 'chess-career-mode-save',
+  /** Characters (separate careers) the player can keep at the same time */
+  saveSlots: 3,
   defaultPlayerName: 'New Player',
   maxNameLength: 24,
   /** Career start years the player can choose */
@@ -13,7 +15,11 @@ export const GAME_CONFIG = {
   },
   /** Every starting value of a new career. Change these to rebalance the game. */
   player: {
+    /** Age of the default date of birth in the character creator */
     startingAge: 14,
+    /** Age on the first day of the career the creator accepts */
+    minStartAge: 8,
+    maxStartAge: 60,
     startingRating: 1000,
     startingRatedGames: 0,
     startingMoney: 250,

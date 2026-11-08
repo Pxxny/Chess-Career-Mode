@@ -1,0 +1,10 @@
+
+> chess-career-mode@0.1.0 bench:chess
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/bench-chess.ts
+
+Chess benchmark — Node 24.22.1; one warm-up and seven measured runs per position.
+Starting position: depth 4; 197,281 nodes; median 106.03 ms; 1,860,556 nodes/s
+  Samples (ms): 113.56, 103.62, 104.66, 106.04, 110.62, 106.03, 90.42
+Kiwipete: depth 3; 97,862 nodes; median 31.67 ms; 3,089,574 nodes/s
+  Samples (ms): 49.69, 32.57, 31.47, 30.54, 32.23, 31.67, 30.77
+All perft reference assertions passed. Compare medians on the same machine with other CPU-heavy work stopped.

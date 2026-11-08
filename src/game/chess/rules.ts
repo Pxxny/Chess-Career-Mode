@@ -1,11 +1,33 @@
 import type { Termination } from '@/types';
 import { applyMove, inCheck, legalMoves, parseFen, startPosition, squareName, toFen, toSan, type Color, type Move, type Position } from './board';
 
+interface LegalCacheEntry {
+  snapshot: Position;
+  legal: Move[];
+}
+
+/** Reuse legal moves across a commit without requiring public Position objects to be immutable. */
+const legalCache = new WeakMap<Position, LegalCacheEntry>();
+function matchesSnapshot(pos: Position, snapshot: Position): boolean {
+  if (pos.turn !== snapshot.turn || pos.castling !== snapshot.castling || pos.ep !== snapshot.ep
+    || pos.halfmove !== snapshot.halfmove || pos.fullmove !== snapshot.fullmove || pos.board.length !== snapshot.board.length) return false;
+  for (let i = 0; i < pos.board.length; i++) if (pos.board[i] !== snapshot.board[i]) return false;
+  return true;
+}
+
+function legalOf(pos: Position): Move[] {
+  const cached = legalCache.get(pos);
+  if (cached && matchesSnapshot(pos, cached.snapshot)) return cached.legal;
+  const legal = legalMoves(pos);
+  legalCache.set(pos, { snapshot: { ...pos, board: pos.board.slice() }, legal });
+  return legal;
+}
+
 export const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 /** Position identity for repetition: pieces, side to move, castling rights and a capturable en-passant square. */
 export function positionKey(pos: Position): string {
-  const epPossible = pos.ep >= 0 && legalMoves(pos).some((m) => m.enPassant);
+  const epPossible = pos.ep >= 0 && legalOf(pos).some((m) => m.enPassant);
   return `${pos.board.map((p) => p ?? '.').join('')} ${pos.turn} ${pos.castling} ${epPossible ? pos.ep : '-'}`;
 }
 
@@ -72,21 +94,23 @@ export function makeMove(g: GameState, move: Move): GameState {
     ...g,
     positions: [...g.positions, next],
     moves: [...g.moves, move],
-    sans: [...g.sans, toSan(pos, move)],
+    sans: [...g.sans, toSan(pos, move, legalOf(pos))],
     ucis: [...g.ucis, moveToUci(move)],
     keys: [...g.keys, positionKey(next)],
   };
 }
 
 /** Finds the legal move written as UCI ("e2e4", "e7e8q"). Null when it is not legal. */
-export function parseUci(pos: Position, uci: string, legal: Move[] = legalMoves(pos)): Move | null {
+export function parseUci(pos: Position, uci: string, legal: Move[] | undefined = undefined): Move | null {
   if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(uci)) return null;
-  return legal.find((m) => moveToUci(m) === uci) ?? null;
+  const move = (legal === undefined ? legalOf(pos) : legal).find((m) => moveToUci(m) === uci);
+  // An explicitly supplied list still returns its original object. Cached moves remain private.
+  return move ? (legal === undefined ? { ...move } : move) : null;
 }
 
 /** Legal moves between two squares. More than one means a promotion choice. */
 export function movesBetween(pos: Position, from: number, to: number): Move[] {
-  return legalMoves(pos).filter((m) => m.from === from && m.to === to);
+  return legalOf(pos).filter((m) => m.from === from && m.to === to).map((m) => ({ ...m }));
 }
 
 export interface GameEnd {
@@ -98,7 +122,7 @@ export interface GameEnd {
 /** Ends the game on checkmate, stalemate, insufficient material, the 50-move rule or threefold repetition. */
 export function detectEnd(g: GameState): GameEnd | null {
   const pos = currentPosition(g);
-  const legal = legalMoves(pos);
+  const legal = legalOf(pos);
   if (legal.length === 0) {
     if (inCheck(pos)) return { result: pos.turn === 'w' ? 'black' : 'white', reason: 'checkmate' };
     return { result: 'draw', reason: 'stalemate' };

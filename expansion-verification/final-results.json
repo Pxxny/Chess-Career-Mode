@@ -1,0 +1,57 @@
+[
+  {
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "project": "/workspace/expansion-release/chess-career-mode",
+    "seconds": 5.246,
+    "exit_code": 0,
+    "log": "final-typecheck.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:expansion"
+    ],
+    "project": "/workspace/expansion-release/chess-career-mode",
+    "seconds": 0.551,
+    "exit_code": 0,
+    "log": "final-test-expansion.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:characters"
+    ],
+    "project": "/workspace/expansion-release/chess-career-mode",
+    "seconds": 0.299,
+    "exit_code": 0,
+    "log": "final-test-characters.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:ages"
+    ],
+    "project": "/workspace/expansion-release/chess-career-mode",
+    "seconds": 0.587,
+    "exit_code": 0,
+    "log": "final-test-ages.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "test:world"
+    ],
+    "project": "/workspace/expansion-release/chess-career-mode",
+    "seconds": 0.907,
+    "exit_code": 0,
+    "log": "final-test-world.log"
+  }
+]

@@ -9,11 +9,13 @@ import { CareerPage } from '@/pages/CareerPage';
 import { CharacterCreationPage } from '@/pages/CharacterCreationPage';
 import { CompletePage } from '@/pages/CompletePage';
 import { HomePage } from '@/pages/HomePage';
+import { SaveSlotsPage } from '@/pages/SaveSlotsPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { TrainPage } from '@/pages/TrainPage';
 import { useGameStore } from '@/store/gameStore';
 import { useNpcStore } from '@/store/npcStore';
 import { useOpeningStore } from '@/store/openingStore';
+import { useSlotUi } from '@/store/slotUi';
 
 export default function App() {
   const hydrated = useStoreHydration();
@@ -22,6 +24,7 @@ export default function App() {
   const loadDatabase = useNpcStore((s) => s.loadDatabase);
   const openingsReady = useOpeningStore((s) => s.status === 'ready');
   const loadOpenings = useOpeningStore((s) => s.load);
+  const creatingSlot = useSlotUi((s) => s.creatingSlot);
   const [recoveredCareer, setRecoveredCareer] = useState<string | null>(null);
 
   // Load the NPC database that belongs to the saved career.
@@ -44,7 +47,8 @@ export default function App() {
   useWorldSync();
 
   if (!hydrated) return <SplashScreen />;
-  if (!career) return <CharacterCreationPage />;
+  // No open character: pick one of the saved characters, or create one in an empty slot.
+  if (!career) return creatingSlot !== null ? <CharacterCreationPage slot={creatingSlot} /> : <SaveSlotsPage />;
   if (!npcsReady || !openingsReady || recoveredCareer !== career.id) return <SplashScreen />;
 
   return (

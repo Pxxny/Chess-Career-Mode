@@ -1,3 +1,4 @@
+import { tournamentBulletin } from '@/game/career/expansion';
 import { GAME_CONFIG } from '@/data/config';
 import { accuracyBonusFor, recordGame, recordTournament, withGameAccuracy } from '@/game/history/recordGame';
 import { ratingChange } from '@/game/history/elo';
@@ -87,7 +88,7 @@ export function applyFinishedMatch(save: GameSave, finish: MatchFinish, db: Open
   if (setup.tournament && next.tournament && next.tournament.eventId === setup.tournament.id && next.tournament.status === 'playing') {
     const t = reportPlayerResult(next.tournament, outcome);
     tournamentFinished = t.status === 'finished';
-    next = { ...next, tournament: t };
+    next = tournamentBulletin({ ...next, tournament: t }, t);
     if (tournamentFinished) {
       next = recordTournament(next, { tournamentId: t.eventId, name: t.name, level: t.level, rank: t.finalRank ?? t.players.length, fieldSize: t.players.length, points: t.players.find((p) => p.isPlayer)?.points ?? 0, prize: t.prize });
     }

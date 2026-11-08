@@ -1,0 +1,5 @@
+
+> chess-career-mode@0.1.0 test:session
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-session.ts
+
+Session verification passed: Black-first analysis/feedback, interrupted-game recovery exactly once, atomic finish, analysis accounting.

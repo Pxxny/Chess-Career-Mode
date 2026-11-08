@@ -1,0 +1,96 @@
+import type { ScheduledEvent } from "@/game/world/schedule";
+import type { ChessTitle, GameSave, SkillTier } from "@/types";
+import { competitionOf } from "./preparation";
+import { stampIndex } from "./catalog";
+const titles: ChessTitle[] = ["none", "CM", "FM", "IM", "GM"];
+const leagues: SkillTier[] = [
+  "beginner",
+  "amateur",
+  "club",
+  "professional",
+  "international-master",
+  "grandmaster",
+  "elite-grandmaster",
+  "legendary",
+];
+export function eligibilityIssues(
+  save: GameSave,
+  event: ScheduledEvent,
+): string[] {
+  const issues: string[] = [];
+  const d = event.details;
+  if (save.player.rating < event.minElo) issues.push(`${event.minElo}+ Elo`);
+  if (save.player.reputation < event.minReputation)
+    issues.push(`Reputation ${event.minReputation}+`);
+  const title = save.history.titles.reduce(
+    (best, t) => Math.max(best, titles.indexOf(t.title)),
+    0,
+  );
+  if (d?.minimumTitle && title < titles.indexOf(d.minimumTitle))
+    issues.push(`${d.minimumTitle} title`);
+  if (
+    d?.minimumLeague &&
+    leagues.indexOf(save.player.league) < leagues.indexOf(d.minimumLeague)
+  )
+    issues.push(`${d.minimumLeague} league`);
+  if (d?.nationality && save.player.country !== d.nationality)
+    issues.push(`${d.nationality} nationality`);
+  if (d?.federation && save.expansion?.membershipYear !== save.world.date.year)
+    issues.push("Current federation membership");
+  if (
+    d?.qualification &&
+    !competitionOf(save).qualifications.some(
+      (q) => q.kind === d.qualification && q.year >= save.world.date.year - 2,
+    )
+  )
+    issues.push(`Previous qualification: ${d.qualification}`);
+  return issues;
+}
+export function registrationIssue(
+  save: GameSave,
+  event: ScheduledEvent,
+): string | null {
+  if (
+    !Number.isFinite(event.entryFee) ||
+    event.entryFee < 0 ||
+    !Number.isInteger(event.fieldSize) ||
+    event.fieldSize < 2 ||
+    event.fieldSize > 256 ||
+    !Number.isInteger(event.week) ||
+    event.week < 1 ||
+    event.week > 52
+  )
+    return "Invalid event data.";
+  if (
+    stampIndex(save.world.date) > stampIndex(event.registrationDeadline) ||
+    stampIndex(save.world.date) > stampIndex(event)
+  )
+    return "Registration deadline has passed.";
+  if (
+    save.tournament?.eventId === event.id ||
+    save.registrations.some((r) => r.eventId === event.id) ||
+    save.history.tournaments.some((t) => t.tournamentId === event.id)
+  )
+    return "You are already registered or have played this event.";
+  if (save.registrations.some((r) => stampIndex(r) === stampIndex(event)))
+    return "You already entered another competition starting this week.";
+  const issues = eligibilityIssues(save, event);
+  if (issues.length) return `Requires ${issues.join(", ")}.`;
+  if (save.player.money < event.entryFee)
+    return "You cannot afford the entry fee.";
+  return null;
+}
+export const requirementsText = (e: ScheduledEvent): string =>
+  [
+    `${e.minElo}+ Elo`,
+    e.minReputation ? `reputation ${e.minReputation}+` : null,
+    e.details?.minimumTitle ? `${e.details.minimumTitle} title` : null,
+    e.details?.qualification
+      ? `qualified for ${e.details.qualification}`
+      : null,
+    e.details?.nationality ? `${e.details.nationality} nationality` : null,
+    e.details?.minimumLeague ? `${e.details.minimumLeague} league` : null,
+    e.details?.federation ? "federation member" : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
