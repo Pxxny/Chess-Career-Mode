@@ -1,3 +1,4 @@
+import { getLanguage } from "@/i18n/language";
 import type { GameSave } from "@/types";
 import { getCountry } from "@/data/world/countries";
 import { performSession } from "@/game/training/engine";
@@ -16,13 +17,17 @@ export function calendarDate(save: GameSave): Date {
   );
 }
 export const calendarLabel = (save: GameSave): string =>
-  calendarDate(save).toLocaleDateString("en-GB", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  });
+  calendarDate(save).toLocaleDateString(
+    getLanguage() === "th" ? "th-TH" : "en-GB",
+    {
+      calendar: "gregory",
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    },
+  );
 export interface FederationMove {
   from: string;
   to: string;

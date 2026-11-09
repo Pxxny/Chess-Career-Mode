@@ -84,7 +84,9 @@ export function PredictionPanel({
           <p className="text-xs uppercase tracking-wide text-ink-faint">
             Player
           </p>
-          <p className="break-words font-semibold text-ink">{p.player.name}</p>
+          <p className="break-words font-semibold text-ink">
+            <span translate="no">{p.player.name}</span>
+          </p>
           <p className="text-sm tabular-nums text-ink-muted">
             Elo {p.player.elo}
           </p>
@@ -95,7 +97,7 @@ export function PredictionPanel({
             Opponent
           </p>
           <p className="break-words font-semibold text-ink">
-            {p.opponent.name}
+            <span translate="no">{p.opponent.name}</span>
           </p>
           <p className="text-sm tabular-nums text-ink-muted">
             Elo {p.opponent.elo}

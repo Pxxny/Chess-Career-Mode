@@ -31,8 +31,18 @@ export default {
         },
       },
       fontFamily: {
-        display: ["Manrope Variable", "system-ui", "sans-serif"],
-        sans: ["Manrope Variable", "system-ui", "sans-serif"],
+        display: [
+          "Manrope Variable",
+          "Noto Sans Thai Variable",
+          "system-ui",
+          "sans-serif",
+        ],
+        sans: [
+          "Manrope Variable",
+          "Noto Sans Thai Variable",
+          "system-ui",
+          "sans-serif",
+        ],
       },
     },
   },

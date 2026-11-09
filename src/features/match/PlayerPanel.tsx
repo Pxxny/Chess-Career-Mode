@@ -54,7 +54,7 @@ export function PlayerPanel({
                 {title}
               </span>
             )}
-            {side.name}
+            <span translate="no">{side.name}</span>
           </p>
           <p className="truncate text-xs text-ink-muted">
             {side.flag && (

@@ -1,3 +1,4 @@
+import { confirmUI } from "@/i18n/translate";
 import { UpcomingPredictions } from "@/features/prediction/CareerPrediction";
 import { PredictionSummary } from "@/features/prediction/PredictionPanel";
 import { TournamentDayClock, TournamentTimetable } from "./TournamentTimetable";
@@ -293,7 +294,8 @@ function Entrants({ event }: { event: EntryEvent }) {
                 className="flex justify-between gap-2 py-1 text-ink-muted"
               >
                 <span>
-                  {getCountry(n.nationality)?.flag} {n.name}
+                  {getCountry(n.nationality)?.flag}{" "}
+                  <span translate="no">{n.name}</span>
                 </span>
                 <span>
                   {n.currentElo} · {n.careerStatus}
@@ -494,8 +496,10 @@ export function TournamentPanel({
               <h3 className="font-semibold text-ink">Upcoming match</h3>
               <p className="my-2 text-sm text-ink-muted">
                 Round {t.round}:{" "}
-                {npc?.name ?? t.players.find((p) => p.id === next.id)?.name} ·
-                Elo{" "}
+                <span translate="no">
+                  {npc?.name ?? t.players.find((p) => p.id === next.id)?.name}
+                </span>{" "}
+                · Elo{" "}
                 {npc?.currentElo ??
                   t.players.find((p) => p.id === next.id)?.elo}{" "}
                 · You play {next.color}.
@@ -540,7 +544,7 @@ export function TournamentPanel({
               disabled={running}
               className="mt-4"
               onClick={() =>
-                window.confirm(
+                confirmUI(
                   "Withdraw? Remaining games are forfeited; no prize or qualification is awarded.",
                 ) && withdraw()
               }

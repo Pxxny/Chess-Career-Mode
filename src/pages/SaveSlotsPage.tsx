@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { LanguageSelector } from "@/i18n/LanguageSelector";
 import { CharacterPortrait } from "@/components/game/CharacterPortrait";
 import { Button, Card, Modal } from "@/components/ui";
 import { GAME_CONFIG } from "@/data/config";
@@ -64,6 +65,9 @@ export function SaveSlotsPage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-8">
+      <div className="mb-4 flex justify-end">
+        <LanguageSelector />
+      </div>
       <p className="font-display text-3xl font-bold text-gold-400">
         {GAME_CONFIG.appName}
       </p>
@@ -104,7 +108,7 @@ export function SaveSlotsPage() {
                       />
                       <div className="min-w-0">
                         <p className="truncate font-display text-lg font-bold text-ink">
-                          {state.summary.name}
+                          <span translate="no">{state.summary.name}</span>
                         </p>
                         <p className="truncate text-sm text-ink-muted">
                           <span aria-hidden>

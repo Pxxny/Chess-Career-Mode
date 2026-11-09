@@ -1,17 +1,26 @@
-import { useMemo, useState } from 'react';
-import { SearchSelect, type SelectOption } from '@/components/ui';
-import { GAME_CONFIG } from '@/data/config';
-import { getMajorCities, hasExactCity, searchCities } from '@/game/world/citySearch';
-import { useCities } from '@/features/world/useCities';
-import type { City, Country, PlayerCity } from '@/types';
-import { formatNumber } from '@/utils/format';
+import { useMemo, useState } from "react";
+import { SearchSelect, type SelectOption } from "@/components/ui";
+import { GAME_CONFIG } from "@/data/config";
+import {
+  getMajorCities,
+  hasExactCity,
+  searchCities,
+} from "@/game/world/citySearch";
+import { useCities } from "@/features/world/useCities";
+import type { City, Country, PlayerCity } from "@/types";
+import { formatNumber } from "@/utils/format";
 
-const CUSTOM_PREFIX = 'custom:';
+const CUSTOM_PREFIX = "custom:";
 
 const toOption = (c: City): SelectOption => ({
   id: `city:${c.name}`,
   label: c.name,
-  description: c.isCapital ? 'Capital' : c.population > 0 ? `${formatNumber(c.population)} residents` : undefined,
+  originalLabel: true,
+  description: c.isCapital
+    ? "Capital"
+    : c.population > 0
+      ? `${formatNumber(c.population)} residents`
+      : undefined,
 });
 
 interface CitySelectProps {
@@ -22,7 +31,7 @@ interface CitySelectProps {
 
 export function CitySelect({ country, value, onChange }: CitySelectProps) {
   const { cities, status } = useCities(country);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const trimmed = query.trim();
 
   const options = useMemo(() => {
@@ -31,27 +40,44 @@ export function CitySelect({ country, value, onChange }: CitySelectProps) {
       : getMajorCities(cities, GAME_CONFIG.world.majorCityCount);
     const list = found.map(toOption);
     if (trimmed.length >= 2 && !hasExactCity(cities, trimmed)) {
-      list.push({ id: `${CUSTOM_PREFIX}${trimmed}`, label: `Use “${trimmed}”`, description: 'Add as a custom city' });
+      list.push({
+        id: `${CUSTOM_PREFIX}${trimmed}`,
+        label: `Use “${trimmed}”`,
+        description: "Add as a custom city",
+      });
     }
     return list;
   }, [cities, trimmed]);
 
   const hint =
-    status === 'fallback'
-      ? 'Showing major cities only. Type any other city to add it.'
-      : status === 'dataset'
+    status === "fallback"
+      ? "Showing major cities only. Type any other city to add it."
+      : status === "dataset"
         ? `Search ${formatNumber(cities.length)} cities, or type a new one to add it.`
         : undefined;
 
   return (
     <SearchSelect
       label="City"
-      placeholder={country ? `Search cities in ${country.name}` : 'Choose a nationality first'}
+      placeholder={
+        country
+          ? `Search cities in ${country.name}`
+          : "Choose a nationality first"
+      }
       disabled={!country}
-      loading={status === 'loading'}
+      loading={status === "loading"}
       options={options}
-      selected={value ? { id: `city:${value.name}`, label: value.name, description: value.custom ? 'Custom city' : undefined } : null}
-      listHeading={trimmed ? undefined : 'Major cities'}
+      selected={
+        value
+          ? {
+              id: `city:${value.name}`,
+              label: value.name,
+              originalLabel: true,
+              description: value.custom ? "Custom city" : undefined,
+            }
+          : null
+      }
+      listHeading={trimmed ? undefined : "Major cities"}
       onQueryChange={setQuery}
       onSelect={(option) =>
         onChange(

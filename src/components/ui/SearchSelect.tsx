@@ -1,11 +1,22 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
-import { cn } from '@/utils/cn';
+import {
+  useContext,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
+import { LanguageContext } from "@/i18n/context";
+import { translateUI } from "@/i18n/translate";
+import { cn } from "@/utils/cn";
 
 export interface SelectOption {
   id: string;
   label: string;
   description?: string;
   leading?: string;
+  /** Keep city names and user-defined labels in their original spelling. */
+  originalLabel?: boolean;
 }
 
 interface SearchSelectProps {
@@ -24,25 +35,38 @@ interface SearchSelectProps {
 }
 
 export function SearchSelect({
-  label, placeholder, options, selected, onQueryChange, onSelect, loading, disabled, listHeading, emptyMessage = 'No matches', hint,
+  label,
+  placeholder,
+  options,
+  selected,
+  onQueryChange,
+  onSelect,
+  loading,
+  disabled,
+  listHeading,
+  emptyMessage = "No matches",
+  hint,
 }: SearchSelectProps) {
   const id = useId();
+  const language = useContext(LanguageContext);
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const activeRef = useRef<HTMLLIElement | null>(null);
 
-  useEffect(() => { setActive(0); }, [options]);
+  useEffect(() => {
+    setActive(0);
+  }, [options]);
   useEffect(() => {
     // New browsers can return a Promise from scrolling; React effects may only
     // return a cleanup function, so do not return the DOM method's result.
-    activeRef.current?.scrollIntoView({ block: 'nearest' });
+    activeRef.current?.scrollIntoView({ block: "nearest" });
   }, [active, open]);
 
   const close = () => {
     setOpen(false);
-    setQuery('');
-    onQueryChange('');
+    setQuery("");
+    onQueryChange("");
   };
   const choose = (option: SelectOption) => {
     onSelect(option);
@@ -50,17 +74,17 @@ export function SearchSelect({
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'ArrowDown') {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
       setOpen(true);
       setActive((i) => Math.min(i + 1, options.length - 1));
-    } else if (e.key === 'ArrowUp') {
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setActive((i) => Math.max(i - 1, 0));
-    } else if (e.key === 'Enter' && open) {
+    } else if (e.key === "Enter" && open) {
       e.preventDefault();
       if (options[active]) choose(options[active]);
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       close();
     }
   };
@@ -76,11 +100,19 @@ export function SearchSelect({
         aria-expanded={open}
         aria-controls={`${id}-list`}
         aria-autocomplete="list"
-        aria-activedescendant={open && options[active] ? `${id}-opt-${active}` : undefined}
+        aria-activedescendant={
+          open && options[active] ? `${id}-opt-${active}` : undefined
+        }
         autoComplete="off"
         disabled={disabled}
         placeholder={placeholder}
-        value={open ? query : selected ? `${selected.leading ? `${selected.leading} ` : ''}${selected.label}` : ''}
+        value={
+          open
+            ? query
+            : selected
+              ? `${selected.leading ? `${selected.leading} ` : ""}${selected.originalLabel ? selected.label : translateUI(selected.label, language)}`
+              : ""
+        }
         onFocus={() => setOpen(true)}
         onBlur={close}
         onKeyDown={onKeyDown}
@@ -100,15 +132,28 @@ export function SearchSelect({
           className="absolute z-40 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-white/10 bg-navy-800 py-1 shadow-xl"
         >
           {listHeading && (
-            <li role="presentation" className="px-3 py-1.5 text-xs font-semibold text-ink-faint">
+            <li
+              role="presentation"
+              className="px-3 py-1.5 text-xs font-semibold text-ink-faint"
+            >
               {listHeading}
             </li>
           )}
           {loading && options.length === 0 && (
-            <li role="presentation" className="px-3 py-2 text-sm text-ink-muted">Loading…</li>
+            <li
+              role="presentation"
+              className="px-3 py-2 text-sm text-ink-muted"
+            >
+              Loading…
+            </li>
           )}
           {!loading && options.length === 0 && (
-            <li role="presentation" className="px-3 py-2 text-sm text-ink-muted">{emptyMessage}</li>
+            <li
+              role="presentation"
+              className="px-3 py-2 text-sm text-ink-muted"
+            >
+              {emptyMessage}
+            </li>
           )}
           {options.map((option, i) => (
             <li
@@ -122,12 +167,28 @@ export function SearchSelect({
                 choose(option);
               }}
               onMouseEnter={() => setActive(i)}
-              className={cn('flex cursor-pointer items-center gap-3 px-3 py-2 text-sm', i === active && 'bg-navy-600')}
+              className={cn(
+                "flex cursor-pointer items-center gap-3 px-3 py-2 text-sm",
+                i === active && "bg-navy-600",
+              )}
             >
-              {option.leading && <span aria-hidden className="text-lg">{option.leading}</span>}
+              {option.leading && (
+                <span aria-hidden className="text-lg">
+                  {option.leading}
+                </span>
+              )}
               <span className="min-w-0">
-                <span className="block truncate font-semibold text-ink">{option.label}</span>
-                {option.description && <span className="block truncate text-xs text-ink-muted">{option.description}</span>}
+                <span
+                  translate={option.originalLabel ? "no" : undefined}
+                  className="block truncate font-semibold text-ink"
+                >
+                  {option.label}
+                </span>
+                {option.description && (
+                  <span className="block truncate text-xs text-ink-muted">
+                    {option.description}
+                  </span>
+                )}
               </span>
             </li>
           ))}

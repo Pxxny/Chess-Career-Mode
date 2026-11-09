@@ -1,3 +1,4 @@
+import { confirmUI } from "@/i18n/translate";
 import { Moon } from "lucide-react";
 import { useState } from "react";
 import { Button, Card, CardTitle } from "@/components/ui";
@@ -35,7 +36,7 @@ export function RestCard() {
       tournamentSlot(save.tournament).absoluteDay <= gameDay(save);
     if (
       (missedEsports || missedTraditional) &&
-      !window.confirm(
+      !confirmUI(
         missedEsports
           ? "You still have an esports game today. Ending the day forfeits the remaining esports event without a prize. Continue?"
           : "You still have tournament games today. Ending the day forfeits the unplayed games scheduled for today. Continue?",

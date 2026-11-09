@@ -345,7 +345,7 @@ export function TrainingGame() {
             >
               {candidates.map((n) => (
                 <option key={n.id} value={n.id}>
-                  {n.name} · Elo {n.currentElo}
+                  <span translate="no">{n.name}</span> · Elo {n.currentElo}
                 </option>
               ))}
             </select>

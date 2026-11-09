@@ -10,18 +10,24 @@ import { playerActor } from "@/game/prediction/adapters";
 import { activeCoach } from "@/game/career/expansion";
 import { relationshipAt, relationshipLabel } from "@/game/social/relationships";
 import type { SkillKey } from "@/types";
+import type { ReactNode } from "react";
 
 export function ProfileFact({
   label,
   value,
 }: {
   label: string;
-  value: string;
+  value: ReactNode;
 }) {
   return (
     <div className="min-w-0">
       <dt className="text-xs text-ink-faint">{label}</dt>
-      <dd className="break-words text-sm font-semibold text-ink">{value}</dd>
+      <dd
+        translate={label === "City" ? "no" : undefined}
+        className="break-words text-sm font-semibold text-ink"
+      >
+        {value}
+      </dd>
     </div>
   );
 }
@@ -75,7 +81,7 @@ export function PlayerProfileModal({
     .filter((r) => r.closeness >= 10)
     .sort((a, b) => b.closeness - a.closeness)
     .slice(0, 5);
-  const facts: [string, string][] = [
+  const facts: [string, ReactNode][] = [
     [
       "Nationality",
       `${country?.flag ?? ""} ${country?.nationality ?? p.country}`,
@@ -83,9 +89,17 @@ export function PlayerProfileModal({
     ["City", p.city.name],
     [
       "Birth place",
-      p.birthPlace
-        ? `${p.birthPlace.city}, ${getCountry(p.birthPlace.countryCode)?.name ?? p.birthPlace.countryCode}`
-        : "Not recorded",
+      p.birthPlace ? (
+        <>
+          <span translate="no">{p.birthPlace.city}</span>,{" "}
+          <span>
+            {getCountry(p.birthPlace.countryCode)?.name ??
+              p.birthPlace.countryCode}
+          </span>
+        </>
+      ) : (
+        "Not recorded"
+      ),
     ],
     ["Gender", capitalize(p.gender)],
     ["Date of birth", p.dateOfBirth],
@@ -104,7 +118,13 @@ export function PlayerProfileModal({
     ["Rated games", String(p.ratedGames)],
   ];
   return (
-    <Modal open title={p.name} onClose={onClose} size="lg">
+    <Modal
+      open
+      title={p.name}
+      translateTitle={false}
+      onClose={onClose}
+      size="lg"
+    >
       <div className="mb-4 flex items-center gap-3">
         <Avatar
           name={p.name}

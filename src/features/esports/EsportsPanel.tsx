@@ -1,3 +1,4 @@
+import { confirmUI } from "@/i18n/translate";
 import { UpcomingPredictions } from "@/features/prediction/CareerPrediction";
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -424,7 +425,7 @@ export function EsportsPanel({
                       variant="danger"
                       disabled={running}
                       onClick={() =>
-                        window.confirm(
+                        confirmUI(
                           "Withdraw from this esports event? Remaining fixtures are forfeited and no prize is awarded.",
                         ) && run({ type: "withdraw" })
                       }
@@ -713,7 +714,7 @@ export function EsportsPanel({
                   current?.status === "playing"
                 }
                 onClick={() =>
-                  window.confirm(
+                  confirmUI(
                     state.team?.owner
                       ? "Dissolve your team? The creation fee is not refunded."
                       : "Leave this team and end your contract?",
@@ -754,7 +755,8 @@ export function EsportsPanel({
                         type="button"
                         onClick={() => setSelected(n)}
                       >
-                        {getCountry(n.nationality)?.flag} {n.name}
+                        {getCountry(n.nationality)?.flag}{" "}
+                        <span translate="no">{n.name}</span>
                         <span className="block text-xs text-ink-faint">
                           Elo {n.currentElo} · form {n.form} · {n.style}
                         </span>

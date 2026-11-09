@@ -504,13 +504,15 @@ export function PreparePanel() {
               {!npc && <option value="">No announced opponents</option>}
               {field.map((n) => (
                 <option key={n.id} value={n.id}>
-                  {n.name} · {n.currentElo} Elo
+                  <span translate="no">{n.name}</span> · {n.currentElo} Elo
                 </option>
               ))}
             </select>
             {npc && (
               <>
-                <h3 className="font-semibold text-ink">{npc.name}</h3>
+                <h3 className="font-semibold text-ink">
+                  <span translate="no">{npc.name}</span>
+                </h3>
                 <p className="my-2 text-sm text-ink-muted">
                   Elo {npc.currentElo} · Playing style: {npc.style} ·{" "}
                   {npc.title} · {npc.careerStatus}

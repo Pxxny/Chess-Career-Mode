@@ -1,3 +1,4 @@
+import { confirmUI } from "@/i18n/translate";
 import { useState } from "react";
 import { Button, Card, CardTitle, Modal } from "@/components/ui";
 import { useSave } from "@/hooks/useGame";
@@ -117,7 +118,7 @@ export function FederationTransferPanel() {
             disabled={!!issue || !country}
             onClick={() => {
               if (
-                !window.confirm(
+                !confirmUI(
                   "Apply for a federation transfer? The $250 processing fee is non-refundable. Completion cancels and refunds entries restricted to your former federation.",
                 )
               )

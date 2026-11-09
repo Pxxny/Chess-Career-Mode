@@ -1,3 +1,4 @@
+import { confirmUI } from "@/i18n/translate";
 import { useMemo, useState } from "react";
 import { Badge, Button, Card, CardTitle } from "@/components/ui";
 import { COUNTRIES, getCountry } from "@/data/world/countries";
@@ -98,7 +99,7 @@ export function WorldHub({
                 variant="secondary"
                 onClick={() => {
                   if (
-                    window.confirm(
+                    confirmUI(
                       "Cancel this contract? There is no refund for unused time.",
                     )
                   )
@@ -183,7 +184,7 @@ export function WorldHub({
           <ul className="my-3 space-y-1">
             {home?.players.map((p, i) => (
               <li key={p.id} className="text-sm text-ink-muted">
-                Board {i + 1}: {p.name} · {p.elo}
+                Board {i + 1}: <span translate="no">{p.name}</span> · {p.elo}
                 {p.id === "player" ? " · YOU" : ""}
               </li>
             ))}

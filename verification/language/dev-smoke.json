@@ -1,0 +1,12 @@
+{
+  "result": "passed",
+  "checks": [
+    "Vite JSX development runtime",
+    "English default",
+    "live Thai selector",
+    "local Thai font",
+    "input survives language switch",
+    "no browser console errors"
+  ],
+  "errors": []
+}

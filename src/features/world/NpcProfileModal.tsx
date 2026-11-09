@@ -5,6 +5,7 @@ import { useNpcStore } from "@/store/npcStore";
 import { getOpening } from "@/data/chess/openings";
 import { getCountry } from "@/data/world/countries";
 import type { Npc } from "@/types";
+import type { ReactNode } from "react";
 import { NpcSocialPanel } from "./NpcSocialPanel";
 import {
   playerDirectoryEntry,
@@ -18,11 +19,18 @@ import {
   tierLabel,
 } from "./npcLabels";
 
-function Fact({ label, value }: { label: string; value: string }) {
+function Fact({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div>
       <dt className="text-xs text-ink-faint">{label}</dt>
-      <dd className="text-sm font-semibold text-ink">{value}</dd>
+      <dd
+        translate={
+          label === "City" && value !== "National circuit" ? "no" : undefined
+        }
+        className="text-sm font-semibold text-ink"
+      >
+        {value}
+      </dd>
     </div>
   );
 }
@@ -52,7 +60,13 @@ export function NpcProfileModal({
     : npc.worldRank;
 
   return (
-    <Modal open title={npc.name} onClose={onClose} size="lg">
+    <Modal
+      open
+      title={npc.name}
+      translateTitle={false}
+      onClose={onClose}
+      size="lg"
+    >
       <div className="mb-4 flex flex-wrap gap-2">
         <Badge tone="gold">{tierLabel(npc.tier)}</Badge>
         {npc.title !== "none" && <Badge tone="gold">{npc.title}</Badge>}
@@ -71,9 +85,17 @@ export function NpcProfileModal({
         <Fact
           label="Birth place"
           value={
-            npc.birthPlace
-              ? `${npc.birthPlace.city}, ${getCountry(npc.birthPlace.countryCode)?.name ?? npc.birthPlace.countryCode}`
-              : "Not recorded"
+            npc.birthPlace ? (
+              <>
+                <span translate="no">{npc.birthPlace.city}</span>,{" "}
+                <span>
+                  {getCountry(npc.birthPlace.countryCode)?.name ??
+                    npc.birthPlace.countryCode}
+                </span>
+              </>
+            ) : (
+              "Not recorded"
+            )
           }
         />
         <Fact label="Gender" value={capitalize(npc.gender)} />

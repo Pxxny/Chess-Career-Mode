@@ -43,7 +43,7 @@ export function NpcTable({ npcs, showRank = false, onSelect }: NpcTableProps) {
                     onClick={() => onSelect(npc)}
                     className="text-left underline-offset-2 hover:text-gold-300 hover:underline"
                   >
-                    {npc.name}
+                    <span translate="no">{npc.name}</span>
                   </button>
                 ) : (
                   npc.name

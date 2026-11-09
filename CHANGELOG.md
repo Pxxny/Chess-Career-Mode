@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-09 · English and Thai interface (save version 15 compatible)
+
+- Add English / ไทย selectors before character creation, in the game top bar and in dialogs. Default to English, remember the preference separately from saves and synchronize open tabs. A blocked preference store falls back safely to an in-session choice.
+- Localize interface text, accessible labels, placeholders, activity feedback and confirmation dialogs at the React presentation boundary. Switching languages retains form controls, focus targets, open profiles, ongoing games and career data. Preserve player/NPC names, custom names, city spelling, opening notation, values and IDs.
+- Support Thai and English country searches, translated country labels and canonical country/city selection. Bundle Noto Sans Thai locally, set the document language and use a compact two-row mobile top bar. Display localized career dates using Gregorian years.
+- Add localization checks and five production browser scenarios covering defaults, persistence/tab synchronization, bilingual creation, existing saves, 320px layout, NPC actions, a live friendly board and blocked preference storage.
+
 ## 2026-11-09 · Player Directory and NPC Relationships (save version 15)
 
 - Include the active player once in Player directory with searchable real identity/country/tier/Elo, a pinned own-profile shortcut and consistent displayed world ranks that include the player. Add a detailed player profile based on saved identity, skills, repertoire, form, coach, training and tournament results.

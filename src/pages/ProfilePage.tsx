@@ -1,45 +1,58 @@
-import { useState } from 'react';
-import { Avatar, Card, PageHeader, Tabs } from '@/components/ui';
-import { getCountry } from '@/data/world/countries';
-import { ProfileTab } from '@/features/profile/tabs/ProfileTab';
-import { SkillsTab } from '@/features/profile/tabs/SkillsTab';
-import { StatsTab } from '@/features/profile/tabs/StatsTab';
-import { TrophiesTab } from '@/features/profile/tabs/TrophiesTab';
-import { usePlayer } from '@/hooks/useGame';
+import { useState } from "react";
+import { Avatar, Card, PageHeader, Tabs } from "@/components/ui";
+import { getCountry } from "@/data/world/countries";
+import { ProfileTab } from "@/features/profile/tabs/ProfileTab";
+import { SkillsTab } from "@/features/profile/tabs/SkillsTab";
+import { StatsTab } from "@/features/profile/tabs/StatsTab";
+import { TrophiesTab } from "@/features/profile/tabs/TrophiesTab";
+import { usePlayer } from "@/hooks/useGame";
 
 const TABS = [
-  { id: 'profile', label: 'Profile' },
-  { id: 'skills', label: 'Skills' },
-  { id: 'stats', label: 'Stats' },
-  { id: 'trophies', label: 'Trophies' },
+  { id: "profile", label: "Profile" },
+  { id: "skills", label: "Skills" },
+  { id: "stats", label: "Stats" },
+  { id: "trophies", label: "Trophies" },
 ] as const;
 
-type TabId = (typeof TABS)[number]['id'];
+type TabId = (typeof TABS)[number]["id"];
 
 export function ProfilePage() {
   const player = usePlayer();
   const country = getCountry(player.country);
-  const [tab, setTab] = useState<TabId>('profile');
+  const [tab, setTab] = useState<TabId>("profile");
 
   return (
     <>
       <PageHeader title="Profile" />
       <Card className="mb-4">
         <div className="flex items-center gap-4">
-          <Avatar name={player.name} seed={player.avatarSeed} appearance={player.appearance} size="lg" />
+          <Avatar
+            name={player.name}
+            seed={player.avatarSeed}
+            appearance={player.appearance}
+            size="lg"
+          />
           <div>
-            <p className="font-display text-2xl font-bold text-ink">{player.name}</p>
+            <p className="font-display text-2xl font-bold text-ink">
+              <span translate="no">{player.name}</span>
+            </p>
             <p className="text-sm text-ink-muted">
-              {player.city.name}, {country?.name ?? player.country}
+              <span translate="no">{player.city.name}</span>,{" "}
+              {country?.name ?? player.country}
             </p>
           </div>
         </div>
       </Card>
-      <Tabs tabs={[...TABS]} active={tab} onChange={setTab} label="Profile sections">
-        {tab === 'profile' && <ProfileTab />}
-        {tab === 'skills' && <SkillsTab />}
-        {tab === 'stats' && <StatsTab />}
-        {tab === 'trophies' && <TrophiesTab />}
+      <Tabs
+        tabs={[...TABS]}
+        active={tab}
+        onChange={setTab}
+        label="Profile sections"
+      >
+        {tab === "profile" && <ProfileTab />}
+        {tab === "skills" && <SkillsTab />}
+        {tab === "stats" && <StatsTab />}
+        {tab === "trophies" && <TrophiesTab />}
       </Tabs>
     </>
   );

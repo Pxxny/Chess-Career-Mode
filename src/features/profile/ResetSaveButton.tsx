@@ -1,3 +1,4 @@
+import { confirmUI } from "@/i18n/translate";
 import { useState } from "react";
 import { Button } from "@/components/ui";
 import { useGameStore } from "@/store/gameStore";
@@ -12,7 +13,7 @@ export function ResetSaveButton() {
         disabled={busy}
         onClick={async () => {
           if (
-            !window.confirm(
+            !confirmUI(
               "Delete only the current character and its NPC world? This cannot be undone.",
             )
           )

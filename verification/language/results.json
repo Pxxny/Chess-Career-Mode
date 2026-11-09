@@ -1,0 +1,44 @@
+{
+  "verifiedAt": "2026-11-09T06:11:12.319923+00:00",
+  "sourceArchive": "1-Chess-Career-Mode-Player-Directory-NPC-Relationships-Full.zip",
+  "saveVersion": 15,
+  "languages": [
+    "en",
+    "th"
+  ],
+  "defaultLanguage": "en",
+  "preferenceStorage": "browser-local, separate from career saves",
+  "build": "passed",
+  "unitSuites": [
+    "language",
+    "social",
+    "qol",
+    "world-activity",
+    "session"
+  ],
+  "productionBrowser": {
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0
+  },
+  "developmentBrowser": "passed",
+  "mobileWidthsTested": [
+    320,
+    390
+  ],
+  "vercelRewrite": "preserved",
+  "originalProjectFilesPreserved": 829,
+  "documentation": [
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "excludedGeneratedDirectories": [
+    ".git",
+    ".vite",
+    "__pycache__",
+    "dist",
+    "node_modules",
+    "playwright-report",
+    "test-results"
+  ]
+}

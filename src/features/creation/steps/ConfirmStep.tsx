@@ -48,7 +48,9 @@ export function ConfirmStep({ draft }: { draft: CharacterDraft }) {
           className="h-36 w-36 shrink-0 border-2 border-gold-500/70"
         />
         <dl className="w-full">
-          <Row label="Name">{draft.name.trim()}</Row>
+          <Row label="Name">
+            <span translate="no">{draft.name.trim()}</span>
+          </Row>
           <Row label="Gender">{genderLabel(draft.gender)}</Row>
           <Row label="Date of birth">
             {draft.birthDate.day} {MONTH_NAMES[draft.birthDate.month - 1]}{" "}
@@ -59,12 +61,19 @@ export function ConfirmStep({ draft }: { draft: CharacterDraft }) {
             {country?.name})
           </Row>
           <Row label="City">
-            {city?.name} {city?.custom && <Badge>Custom city</Badge>}
+            <span translate="no">{city?.name}</span>{" "}
+            {city?.custom && <Badge>Custom city</Badge>}
           </Row>
           <Row label="Birth place">
-            {draft.separateBirthPlace
-              ? `${draft.birthCity.trim()}, ${draft.birthCountry?.name}`
-              : `${city?.name}, ${country?.name}`}
+            <span translate="no">
+              {draft.separateBirthPlace ? draft.birthCity.trim() : city?.name}
+            </span>
+            ,{" "}
+            <span>
+              {draft.separateBirthPlace
+                ? draft.birthCountry?.name
+                : country?.name}
+            </span>
           </Row>
           <Row label="Federation">
             {country

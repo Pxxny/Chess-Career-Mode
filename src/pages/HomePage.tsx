@@ -1,7 +1,8 @@
 import { EsportsHomeCard } from "@/features/esports/EsportsPanel";
 import { calendarLabel, calendarDate } from "@/game/qol/career";
 import { ArrowRight, Dumbbell, Swords, TrendingUp } from "lucide-react";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { LanguageContext } from "@/i18n/context";
 import { Link } from "react-router-dom";
 import { Card, CardTitle, PageHeader } from "@/components/ui";
 import { ROUTES } from "@/data/navigation";
@@ -42,6 +43,7 @@ const SHORTCUTS = [
 ];
 
 export function HomePage() {
+  useContext(LanguageContext);
   const { save, ranked, rankings, titles, morale, schedule, news } =
     useDashboard();
   const { player, history } = save;

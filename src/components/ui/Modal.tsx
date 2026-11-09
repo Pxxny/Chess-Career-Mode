@@ -1,8 +1,10 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { cn } from "@/utils/cn";
+import { LanguageSelector } from "@/i18n/LanguageSelector";
 interface ModalProps {
   open: boolean;
   title: string;
+  translateTitle?: boolean;
   onClose: () => void;
   children: ReactNode;
   size?: "md" | "lg" | "game";
@@ -12,6 +14,7 @@ let originalOverflow = "";
 export function Modal({
   open,
   title,
+  translateTitle = true,
   onClose,
   children,
   size = "md",
@@ -96,17 +99,24 @@ export function Modal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
-          <h2 id={titleId} className="text-xl font-bold text-ink">
+          <h2
+            id={titleId}
+            translate={translateTitle ? undefined : "no"}
+            className="min-w-0 break-words text-xl font-bold text-ink"
+          >
             {title}
           </h2>
-          <button
-            type="button"
-            aria-label="Close dialog"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-white/15 text-xl text-ink-muted hover:text-ink"
-            onClick={onClose}
-          >
-            ×
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            <LanguageSelector compact />
+            <button
+              type="button"
+              aria-label="Close dialog"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-white/15 text-xl text-ink-muted hover:text-ink"
+              onClick={onClose}
+            >
+              ×
+            </button>
+          </div>
         </div>
         <div className="mt-3">{children}</div>
       </div>

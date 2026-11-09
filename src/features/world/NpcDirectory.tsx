@@ -6,6 +6,7 @@ import { useNpcs } from "@/hooks/useNpcs";
 import { useSave } from "@/hooks/useGame";
 import type { Npc, SkillTier } from "@/types";
 import { normalizeText } from "@/utils/text";
+import { translateUI } from "@/i18n/translate";
 import {
   directoryEntries,
   playerDirectoryEntry,
@@ -36,7 +37,10 @@ export function NpcDirectory() {
           !q ||
           normalizeText(n.name).includes(q) ||
           normalizeText(n.city).includes(q) ||
-          normalizeText(getCountry(n.nationality)?.name ?? "").includes(q),
+          normalizeText(getCountry(n.nationality)?.name ?? "").includes(q) ||
+          normalizeText(
+            translateUI(getCountry(n.nationality)?.name ?? "", "th"),
+          ).includes(q),
       );
   }, [entries, query, tier, includeUnranked]);
   const field =
@@ -54,7 +58,7 @@ export function NpcDirectory() {
             className="mt-1 text-left font-semibold text-gold-300 underline underline-offset-2"
             onClick={() => setShowPlayer(true)}
           >
-            {player.name}
+            <span translate="no">{player.name}</span>
           </button>
           <span className="ml-2 text-sm tabular-nums text-ink-muted">
             {player.currentElo} Elo
@@ -136,7 +140,7 @@ export function NpcDirectory() {
                     }
                     className="text-left underline-offset-2 hover:text-gold-300 hover:underline"
                   >
-                    {n.name}
+                    <span translate="no">{n.name}</span>
                   </button>
                   {n.kind === "player" && (
                     <span className="ml-2 text-xs text-gold-400">You</span>

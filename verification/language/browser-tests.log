@@ -1,0 +1,20 @@
+[WebServer] (node:11732) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 11 tests using 1 worker
+
+(node:11750) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/language.spec.ts:66:1 › English is the default even in a Thai browser; preference persists and synchronizes across tabs (2.2s)
+  ✓   2 tests/language.spec.ts:98:1 › Thai character creation searches both languages, retains input through a live switch and saves canonical identities (5.8s)
+  ✓   3 tests/language.spec.ts:175:1 › existing careers, navigation and an open player profile switch live without changing the save (14.7s)
+  ✓   4 tests/language.spec.ts:255:1 › NPC actions and a running friendly board retain their state when switching languages (18.9s)
+  ✓   5 tests/language.spec.ts:317:1 › blocked preference storage keeps English default and allows an in-session Thai selection (814ms)
+  ✓   6 tests/social.spec.ts:90:1 › mobile directory includes the saved player and an actual detailed player profile (5.9s)
+  ✓   7 tests/social.spec.ts:150:1 › competitive encounters remain separate from friendship; accepted conversation and cooldown persist (9.2s)
+  ✓   8 tests/social.spec.ts:194:1 › NPC play action opens a real friendly board and a completed human game grows closeness without Elo changes (1.1m)
+  ✓   9 tests/social.spec.ts:273:1 › leaving a friendly board before moving clears the invitation and gives no friendship reward (13.0s)
+  ✓  10 tests/world-activity.spec.ts:63:1 › finished player event appears in NPC profiles, survives reload, and Magnus plays the weekly circuit (17.8s)
+  ✓  11 tests/world-activity.spec.ts:192:1 › mobile year-end dialog shows real recorded totals, dismissal persists, and annual archive is readable (9.8s)
+
+  11 passed (2.7m)

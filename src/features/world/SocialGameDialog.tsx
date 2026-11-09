@@ -1,3 +1,4 @@
+import { confirmUI } from "@/i18n/translate";
 import { useState } from "react";
 import { Button, Modal } from "@/components/ui";
 import { useGameStore } from "@/store/gameStore";
@@ -28,7 +29,7 @@ export function SocialGameDialog() {
         onClose={() => {
           if (
             pending?.started &&
-            !window.confirm(
+            !confirmUI(
               "Leave this friendly game? An unfinished session gives no friendship reward.",
             )
           )

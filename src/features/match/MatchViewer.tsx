@@ -1,3 +1,4 @@
+import { confirmUI } from "@/i18n/translate";
 import { PredictionPanel } from "@/features/prediction/PredictionPanel";
 import { TournamentDayClock } from "./TournamentTimetable";
 import { useSave } from "@/hooks/useGame";
@@ -144,7 +145,7 @@ export function MatchViewer({ setup, onExit }: Props) {
     const hands = humanSides.length > 0 && snap.game.ucis.length >= 2 && !over;
     if (
       hands &&
-      !window.confirm(
+      !confirmUI(
         "Leaving now abandons the game and counts as a loss. Leave anyway?",
       )
     )

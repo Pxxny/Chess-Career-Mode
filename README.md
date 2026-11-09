@@ -1,6 +1,14 @@
 # Chess Career Mode
 
-Latest release (save version 15): **Player Directory & NPC Relationships**.
+Latest release: **English / Thai language selection** (compatible with save version 15).
+
+Choose **English** or **ไทย** from the language selector on the character slots screen, character creation, the in-game top bar or any dialog. English is the default on a fresh browser, including browsers whose device language is Thai. Your choice is remembered in this browser and synchronized across open tabs. It applies to all character slots and is separate from career saves; switching does not restart a career, reset a form or interrupt a match. If browser preference storage is blocked, the choice still works for the current session.
+
+The Thai interface covers navigation, creation, training, competitions, profiles, NPC relationships/actions, match controls, career reports, prediction settings and confirmation messages. Country search accepts both Thai and English. Player/NPC/custom names, city spellings, chess openings, SAN/PGN, codes and saved identifiers retain their original spelling. Thai uses bundled Noto Sans Thai fonts and the career calendar keeps Gregorian years.
+
+Run `npm run test:language` for localization and preference checks. Production browser coverage is in `tests/language.spec.ts` (default/persistence, bilingual creation, existing saves, mobile layout, live match switching and blocked storage).
+
+Previous release (save version 15): **Player Directory & NPC Relationships**.
 
 - Complete → Rankings → Player directory includes the active saved character alongside NPCs, with a quick link to your own profile even when your rank is outside the first page. Names, countries, Elo, tiers and the displayed world ranks include your character consistently without changing the stored NPC-only ranking data.
 - Your directory profile shows real identity, nationality, birth place, age, current/peak Elo, earned title, league, archetype, current skills, repertoire preferences, morale, recent rated form, retained training activity, coach, tournament history and friendships. Unrecorded information is not filled with invented NPC statistics.
@@ -52,6 +60,7 @@ After extracting the project ZIP:
 cd Chess-Career-Mode
 npm ci
 npm run typecheck
+npm run test:language
 npm run test:prediction
 npm run test:world-activity
 npm run test:esports
@@ -65,6 +74,50 @@ Open `http://127.0.0.1:5173` on the same device. `0.0.0.0` is the server binding
 `test:match` plays/analyzes full engine games and takes minutes. Cloud/Chromium tests are not measurements on a physical phone or Termux. Project documentation is kept in this README and `CHANGELOG.md`; older standalone reports have been removed.
 
 Stage 1: foundation (shell, navigation, state, UI kit). Stage 2: world database. Stage 3: character creation. Stage 4: dashboard, profile and career. Stage 5: training. See `CHANGELOG.md` for details of every change.
+
+## Update GitHub from Termux
+
+For `Pxxny/Chess-Career-Mode`, download the full ZIP to Android's Download folder. Run each block in the same Termux session. Stop if a command fails before committing or pushing.
+
+```sh
+termux-setup-storage
+pkg install git unzip rsync nodejs-lts
+ls "$HOME/storage/downloads/"*English-Thai-Full*.zip
+```
+
+Grant storage permission. Set `ZIP` to the exact downloaded name; if Android adds `(1)`, include it inside the quotes.
+
+```sh
+ZIP="$HOME/storage/downloads/Chess-Career-Mode-English-Thai-Full.zip"
+mkdir -p "$HOME/projects"
+UPDATE_DIR=$(mktemp -d "$HOME/projects/chess-update.XXXXXX")
+git clone --branch main https://github.com/Pxxny/Chess-Career-Mode.git "$UPDATE_DIR/repo"
+unzip "$ZIP" -d "$UPDATE_DIR/unpacked"
+rsync -av --exclude='.git/' --exclude='node_modules/' --exclude='dist/' --exclude='.env*' \
+  "$UPDATE_DIR/unpacked/Chess-Career-Mode/" "$UPDATE_DIR/repo/"
+cd "$UPDATE_DIR/repo"
+```
+
+This fresh clone retains the repository's Git history. Check the imported project:
+
+```sh
+npm ci
+npm run test:language
+npm run build
+git status --short
+git diff --stat
+```
+
+After the checks pass, review the changed files and publish the update:
+
+```sh
+git add -A
+git commit -m "Add English and Thai language selection"
+git pull --rebase origin main
+git push -u origin main
+```
+
+If Git needs an author, set `git config user.name "YOUR_NAME"` and `git config user.email "YOUR_GITHUB_EMAIL"` in this repository, then retry the commit. If rebase reports conflicts, resolve them before pushing; do not force-push. For HTTPS authentication, GitHub accepts a Personal Access Token as the password, not the account password. Keep the token private.
 
 ## Run
 ```
@@ -83,6 +136,7 @@ npm run test:play    # Node 22+: openings, PGN, engine wrapper, practice games, 
 - **Legends** – `src/data/chess/legends.ts`. They only hold a ranking in the years they were active (Elo interpolated from `ratings`). Alternate history mode (character creation or Profile) places every legend in their prime. Pre-1970 Elo values are retrospective estimates and dates are best-effort; edit the file to adjust.
 
 ## Structure
+- `src/i18n` – language preference/provider, English-source Thai catalog and the React JSX presentation boundary; canonical game values remain unchanged.
 - `src/types` – interfaces (Player, Npc, Country, City, World, GameSave...)
 - `src/data` – config and static data (`world/`, `chess/`)
 - `src/game` – pure logic, no React (NPC generation, world state, rankings, city search, career history, training, chess rules)

@@ -228,6 +228,12 @@ test("mobile year-end dialog shows real recorded totals, dismissal persists, and
   });
   await dialog.getByRole("button", { name: "Continue to 2027" }).click();
   await expect(dialog).not.toBeVisible();
+  // IndexedDB persistence is asynchronous; reload after the dismissal is durable.
+  await expect
+    .poll(async () =>
+      (await readCareer(page)).save.yearReview!.unread.includes(2026),
+    )
+    .toBe(false);
   await page.reload();
   await expect(
     page.getByRole("heading", { name: "Train", exact: true }),
