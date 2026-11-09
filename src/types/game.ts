@@ -25,6 +25,8 @@ export interface CareerRecord {
 }
 
 export interface GameSave {
+  social?: import("@/game/social/relationships").SocialState;
+  yearReview?: import("@/game/career/yearReview").YearReviewState;
   prediction?: import("@/game/prediction/types").PredictionState;
   esports?: import("@/game/esports/types").EsportsState;
   npcNameVersion?: number;

@@ -14,6 +14,8 @@
     "build:data": "node scripts/build-world-data.mjs --force",
     "test:play": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-play.ts",
     "test:world": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-world.ts",
+    "test:world-activity": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-world-activity.ts",
+    "test:social": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-social.ts",
     "test:e2e": "playwright test",
     "test:characters": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-characters.ts",
     "test:ages": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-ages.ts",

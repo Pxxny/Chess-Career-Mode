@@ -692,6 +692,7 @@ export class MatchSession {
       accuracyBonus,
       prediction,
       esports,
+      social,
     } = this.setup;
     return {
       white,
@@ -703,6 +704,7 @@ export class MatchSession {
       accuracyBonus,
       ...(prediction ? { prediction } : {}),
       ...(esports ? { esports } : {}),
+      ...(social ? { social } : {}),
     };
   }
 

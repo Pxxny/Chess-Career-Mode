@@ -398,7 +398,7 @@ export function MatchViewer({ setup, onExit }: Props) {
                         <Pause className="h-4 w-4" aria-hidden /> Pause
                       </Button>
                     ))}
-                  {!setup.rated && controlButton(opponent)}
+                  {!setup.rated && !setup.social && controlButton(opponent)}
                   <Button
                     variant="secondary"
                     onClick={offerDraw}

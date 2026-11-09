@@ -1,3 +1,5 @@
+import { recordRatedContact } from "@/game/social/relationships";
+import { trackYearActivity } from "@/game/career/yearReview";
 import { archiveCompetition } from "@/game/competition/preparation";
 import { standings } from "@/game/match/tournament";
 import { tierForElo, getTier } from "@/data/chess/tiers";
@@ -330,23 +332,32 @@ export function recordGame(save: GameSave, input: GameInput): GameSave {
       ...stamp,
     });
 
-  return {
-    ...save,
-    player: {
-      ...player,
-      rating: after,
-      peakRating: peak,
-      ratedGames,
-      league,
-      reputation: player.reputation + reputationGain,
-    },
-    history,
-    training: {
-      ...save.training,
-      unanalyzedGames: save.training.unanalyzedGames + 1,
-      scouting: scouted ? null : save.training.scouting,
-    },
-  };
+  return recordRatedContact(
+    trackYearActivity(
+      save,
+      {
+        ...save,
+        player: {
+          ...player,
+          rating: after,
+          peakRating: peak,
+          ratedGames,
+          league,
+          reputation: player.reputation + reputationGain,
+        },
+        history,
+        training: {
+          ...save.training,
+          unanalyzedGames: save.training.unanalyzedGames + 1,
+          scouting: scouted ? null : save.training.scouting,
+        },
+      },
+      "rated",
+      input.outcome,
+    ),
+    input.opponentId,
+    input.outcome,
+  );
 }
 
 export interface TournamentInput {
@@ -431,9 +442,17 @@ export function recordTournament(
     history.ledger.push(entry);
     history.ledger = cap(history.ledger, GAME_CONFIG.history.maxLedger);
   }
-  return {
-    ...save,
-    player: { ...save.player, money: save.player.money + prize, reputation },
-    history,
-  };
+  return trackYearActivity(
+    save,
+    {
+      ...save,
+      player: { ...save.player, money: save.player.money + prize, reputation },
+      history,
+    },
+    "tournament",
+    undefined,
+    save.tournament?.eventId === input.tournamentId && save.tournament.withdrawn
+      ? Infinity
+      : input.rank,
+  );
 }

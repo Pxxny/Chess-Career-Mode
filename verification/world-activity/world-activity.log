@@ -1,0 +1,10 @@
+
+> chess-career-mode@0.1.0 test:world-activity
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-world-activity.ts
+
+PASS 156 foreign events/year, diverse countries, stable IDs, distinct weekly hosts and normal travel costs.
+PASS 5910 rated NPC boards: rotating participation, regular Magnus events, draws, dynamic rankings and idempotent world sync.
+PASS finished-event NPC history, standings, one-time ratings, old-archive repair and automatic store reconciliation.
+PASS year-boundary summary, 1,105 games and 220 sessions beyond history limits, dedupe, archived summaries, migration and dismissal persistence.
+PASS real draw rules in both referees: stalemate, insufficient material, fifty-move rule and threefold repetition.
+All world-activity checks passed in 2.57s.

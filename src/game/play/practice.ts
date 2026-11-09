@@ -6,6 +6,7 @@ import type {
 import { GAME_CONFIG } from "@/data/config";
 import type { OpeningDatabase } from "@/game/openings/database";
 import { ratingChange as eloChange, expectedScore } from "@/game/history/elo";
+import { trackYearActivity } from "@/game/career/yearReview";
 import {
   diminishing,
   efficiencyAt,
@@ -315,6 +316,9 @@ export function recordPracticeGame(
           input.termination !== "abandoned",
       },
     ]);
+  next = trackYearActivity(save, next, "practice", input.outcome);
+  if (input.mode === "training")
+    next = trackYearActivity(next, next, "session");
   return { save: next, game, ratingChange: change, gains, apSpent };
 }
 

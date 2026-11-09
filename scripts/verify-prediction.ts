@@ -1,4 +1,5 @@
 import { playSimulatedGame } from "../src/game/match/headless.ts";
+import { GAME_CONFIG } from "../src/data/config.ts";
 import { compactTournament } from "../src/game/prediction/adapters.ts";
 import { tournamentGames } from "../src/game/qol/history.ts";
 import assert from "node:assert/strict";
@@ -595,12 +596,18 @@ assert.equal(blitzForecast.player.peakElo, 1550);
 assert.equal(blitzForecast.conditions.headToHead?.games, 1);
 const old = { ...base, prediction: undefined, version: 12 };
 assert.equal(upgradeSave(old).prediction?.metrics.career.adjusted.games, 0);
-assert.equal(upgradeSave(old).version, 13);
+assert.equal(upgradeSave(old).version, GAME_CONFIG.saveVersion);
 const weekly = weeklyCircuit(base, npcs);
-assert.equal(weekly.save.prediction?.metrics.npc.adjusted.games, 7);
+const circuitBoards =
+  weekly.changed.reduce(
+    (sum, n) => sum + (n.tournamentHistory.at(-1)?.games ?? 0),
+    0,
+  ) / 2;
+assert(circuitBoards > 0);
+assert.equal(weekly.save.prediction?.metrics.npc.adjusted.games, circuitBoards);
 assert.equal(
   weeklyCircuit(weekly.save, npcs).save.prediction?.metrics.npc.adjusted.games,
-  7,
+  circuitBoards,
 );
 console.log(
   "PASS career/practice persistence: frozen opponent ratings, scopes, post-result rating changes, abandoned recovery once, legacy migration without invented forecasts, actual weekly NPC circuit",

@@ -1,5 +1,29 @@
 # Changelog
 
+## 2026-11-09 · Player Directory and NPC Relationships (save version 15)
+
+- Include the active player once in Player directory with searchable real identity/country/tier/Elo, a pinned own-profile shortcut and consistent displayed world ranks that include the player. Add a detailed player profile based on saved identity, skills, repertoire, form, coach, training and tournament results.
+- Add per-career, stable-ID NPC relationships with independent familiarity and closeness. Rated games and co-attendance at traditional/esports events build recognition without granting friendship. Seed familiarity from retained old-save history without fabricating conversations or friendships.
+- Add NPC Actions: talk, study together and invite to a friendly game. Respect NPC availability, personality/mood, rating differences, AP/hours, active games, calendar simulation, daily approaches and deterministic responses. Shared study uses existing XP/session/yearly-tracking rules. Retired living players can socialize; era-inactive or deceased players cannot.
+- Connect accepted friendly invitations to the normal chess match engine, with configurable colour/time control and an unrated result. Retain invitation context in checkpoints and match records, require meaningful human participation for friendship credit and prevent duplicate rewards. Cancelling/abandoning/only simulating does not grow closeness; early exits and reloads release pending invitations safely.
+- Bound relationship/log storage and weekly closeness gains; apply inactivity decay once per elapsed period. Add persisted interaction feedback, action/cooldown explanations, relationship labels and profile counters.
+- Add social logic and real-browser regressions, including mobile player/NPC profiles, repeated competitive meetings, real friendly chess moves and results, unchanged Elo, persistence and early-exit recovery. Preserve the full project, Vercel rewrite, world simulation, annual reports and two Markdown documents.
+
+## 2026-11-09 · Living World and Year in Review (save version 14)
+
+- Expand the fictional foreign circuit to three events every week, 156 per game year, across 38 host countries. Add accessible rapid/blitz/open events and higher-level international challengers while retaining home events, normal travel costs, registration gates and clearly sourced historical references.
+- Reconcile every NPC's result from completed player tournaments and esports competitions into their persistent history. Include placement, points, rounds, played W/D/L and rating information. Repair missing history from retained archives without inventing unavailable old games or retroactive archive ratings; deduplicate by event ID across reloads.
+- Extend the existing weekly World Circuit into multiple three-round fields with rotating participation and regular elite opportunities. Record all entrants, simulate boards through the shared prediction model, update Elo/form/morale from actual outcomes, refresh world ranks and keep legends' career rating adjustments across calendar syncs. Busy traditional/esports participants do not enter simultaneous background events.
+- Add year-end reports and a Career → Year in review archive. Persist annual counters independently of trimmed game/training logs and summarize Elo, peak, wins/draws/losses, tournaments, wins/podiums, esports, practice, training, cash, reputation, titles, trophies and skill changes. Queue reports across calendar advances and preserve dismissal. Upgrade old careers in place, labeling incomplete first-year coverage.
+- Keep existing draw rules and game outcomes; add explicit regression coverage for stalemate, insufficient material, repetition, fifty-move draws, simulated draws, history persistence, eight-week participation and annual totals beyond log limits. Add production browser checks for NPC results/Magnus and mobile annual reports.
+- Keep the Vercel SPA rewrite and the two-file Markdown documentation layout.
+
+## 2026-11-09 · Vercel direct links and documentation cleanup
+
+- Add a Vite deployment configuration and SPA rewrite in `vercel.json` so direct links and refreshes on `/complete` and other React Router pages load the app instead of returning Vercel's 404.
+- Keep only the root `README.md` and `CHANGELOG.md` as project Markdown. Remove older standalone guides/reports and update README references and deployment instructions.
+- Preserve Cburnett artwork attribution as `ATTRIBUTION.txt` with its existing GPL license. Generate Stockfish source/upstream notices as `.txt` and clean up their former generated Markdown filenames on reinstall.
+
 ## 2026-11-09 · Match prediction placement; remove Elo calculator
 
 - Show the match prediction inside the tournament "Upcoming match" card, directly above Play / Simulate, so every round shows its forecast before the game starts. Individual, practice, Blitz, engine and esports match pages keep their pre-start forecast.

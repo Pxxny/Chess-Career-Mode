@@ -1,0 +1,17 @@
+[
+  {
+    "suite": "test:social",
+    "exitCode": 0,
+    "seconds": 0.98
+  },
+  {
+    "suite": "test:qol",
+    "exitCode": 0,
+    "seconds": 1.57
+  },
+  {
+    "suite": "test:session",
+    "exitCode": 0,
+    "seconds": 0.93
+  }
+]

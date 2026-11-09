@@ -1,6 +1,6 @@
 export const GAME_CONFIG = {
   appName: "Chess Career Mode",
-  saveVersion: 13,
+  saveVersion: 15,
   saveKey: "chess-career-mode-save",
   /** Characters (separate careers) the player can keep at the same time */
   saveSlots: 3,

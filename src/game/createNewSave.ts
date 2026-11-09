@@ -1,3 +1,5 @@
+import { emptySocial } from "./social/relationships";
+import { startYearReview } from "./career/yearReview";
 import { emptyPredictionState } from "./prediction/statistics";
 import { emptyQol } from "./qol/career";
 import { emptyEsports } from "./esports/core";
@@ -18,8 +20,9 @@ export function createNewSave(
   options: NewCareerOptions,
   career: CareerRecord,
 ): GameSave {
-  return {
+  return startYearReview({
     version: GAME_CONFIG.saveVersion,
+    social: emptySocial(),
     prediction: emptyPredictionState(),
     esports: emptyEsports(career.startYear * 364),
     npcNameVersion: 1,
@@ -45,5 +48,5 @@ export function createNewSave(
     tournament: null,
     pendingMatch: null,
     registrations: [],
-  };
+  });
 }

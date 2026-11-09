@@ -1,0 +1,15 @@
+[WebServer] (node:5490) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:5517) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/social.spec.ts:90:1 › mobile directory includes the saved player and an actual detailed player profile (6.9s)
+  ✓  2 tests/social.spec.ts:150:1 › competitive encounters remain separate from friendship; accepted conversation and cooldown persist (9.1s)
+  ✓  3 tests/social.spec.ts:194:1 › NPC play action opens a real friendly board and a completed human game grows closeness without Elo changes (1.1m)
+  ✓  4 tests/social.spec.ts:273:1 › leaving a friendly board before moving clears the invitation and gives no friendship reward (12.2s)
+  ✓  5 tests/world-activity.spec.ts:63:1 › finished player event appears in NPC profiles, survives reload, and Magnus plays the weekly circuit (17.3s)
+  ✓  6 tests/world-activity.spec.ts:192:1 › mobile year-end dialog shows real recorded totals, dismissal persists, and annual archive is readable (7.1s)
+
+  6 passed (2.0m)

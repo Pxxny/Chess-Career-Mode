@@ -34,6 +34,13 @@ export function useMatchSession(setup: MatchSetup): {
         db,
         onVoid: () => {
           if (careerId.current) releaseMatch(careerId.current, token.current);
+          if (
+            belongsToCareer() &&
+            setup.social &&
+            useGameStore.getState().save?.social?.pending?.id ===
+              setup.social.requestId
+          )
+            useGameStore.getState().cancelFriendly();
         },
         onFinish: (finish) => {
           if (careerId.current) releaseMatch(careerId.current, token.current);

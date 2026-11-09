@@ -1,3 +1,4 @@
+import { simulateWorldCircuit } from "@/game/npc/activity";
 import {
   npcActor,
   playerActor,
@@ -22,7 +23,6 @@ import type {
 import { GAME_CONFIG } from "@/data/config";
 import { COUNTRIES } from "@/data/world/countries";
 import { createRng, mixSeed } from "@/game/rng";
-import { expectedScore } from "@/game/history/elo";
 import { hashString } from "@/utils/format";
 import type { GameSave, Npc, NewsItem, SkillKey } from "@/types";
 
@@ -502,107 +502,28 @@ export function playTeamCup(
   }
   return { ok: true, save: next };
 }
-/** A deterministic eight-player circuit runs once per new game week; news references its actual simulated results. */
+/** The existing weekly circuit now records every entrant and updates ratings from board results. */
 export function weeklyCircuit(
   save: GameSave,
   npcs: Npc[],
 ): { save: GameSave; changed: Npc[] } {
-  const index = save.world.date.year * 52 + save.world.date.week,
-    state = stateOf(save);
+  const index = save.world.date.year * 52 + save.world.date.week;
+  const state = stateOf(save);
   if (index <= state.lastBulletin) return { save, changed: [] };
-  const active = npcs.filter(
-    (n) => n.careerStatus === "active" || n.careerStatus === "semi-retired",
-  );
-  let next = { ...save, expansion: { ...state, lastBulletin: index } };
-  if (active.length < 8) return { save: next, changed: [] };
-  const rng = createRng(mixSeed(save.world.seed, index));
-  let field = rng.shuffle(active).slice(0, 8);
-  const games: string[] = [];
-  const boardScores = new Map<string, number>();
-  const title = `World Circuit Open ${save.world.date.year}/${save.world.date.week}`;
-  while (field.length > 1) {
-    const winners: Npc[] = [];
-    for (let i = 0; i < field.length; i += 2) {
-      const a = field[i],
-        b = field[i + 1];
-      const prediction = predictMatch({
-        id: `circuit:${save.career.id}:${index}:${field.length}:${i}`,
-        stamp: predictionStamp(save),
-        player: npcActor(a),
-        opponent: npcActor(b),
-        conditions: {
-          ...plannedOpeningConditions(
-            npcActor(a),
-            npcActor(b),
-            conditionsFor("rapid", "white", "world-circuit"),
-          ),
-          tournamentName: title,
-          importance: 0.5,
-          pressure: 1 / field.length,
-        },
-        state: predictionOf(next),
-      });
-      const result = sampleOutcome(prediction.adjusted, rng.next());
-      boardScores.set(a.id, (boardScores.get(a.id) ?? 0) + scoreOf(result));
-      boardScores.set(b.id, (boardScores.get(b.id) ?? 0) + 1 - scoreOf(result));
-      next = recordPredictions(next, [
-        {
-          prediction,
-          result,
-          scope: "npc",
-          source: "abstract",
-          eligible: true,
-        },
-      ]) as typeof next;
-      // A drawn knockout game goes to a deciding tiebreak. Its advancement is separate from the recorded drawn board.
-      const aAdvances =
-        result === "win" ||
-        (result === "draw" &&
-          rng.chance(expectedScore(a.currentElo, b.currentElo)));
-      const win = aAdvances ? a : b,
-        loss = aAdvances ? b : a;
-      winners.push(win);
-      games.push(
-        result === "draw"
-          ? `${a.name} drew with ${b.name}; ${win.name} advanced after the tiebreak.`
-          : `${win.name} (${win.currentElo}) defeated ${loss.name} (${loss.currentElo}).`,
-      );
-      if (result !== "draw" && loss.currentElo - win.currentElo >= 200)
-        next = news(
-          next,
-          `upset-${index}-${i}-${field.length}`,
-          `Underdog ${win.name} topples ${loss.name}`,
-          `${title}: ${games[games.length - 1]}`,
-          "milestone",
-        ) as typeof next;
-    }
-    field = winners;
-  }
-  const winner = field[0],
-    changed = [
-      {
-        ...winner,
-        tournamentHistory: [
-          ...winner.tournamentHistory,
-          {
-            year: save.world.date.year,
-            event: title,
-            rank: 1,
-            fieldSize: 8,
-            points: boardScores.get(winner.id) ?? 0,
-            games: 3,
-          },
-        ].slice(-30),
-        form: Math.min(100, winner.form + 2),
-      },
-    ];
-  next = news(
-    next,
-    `circuit-${index}`,
-    `${winner.name} wins ${title}`,
-    games.join(" "),
-  ) as typeof next;
-  return { save: next, changed };
+  const result = simulateWorldCircuit(save, npcs);
+  let next: GameSave = {
+    ...save,
+    expansion: { ...state, lastBulletin: index },
+  };
+  next = recordPredictions(next, result.observations);
+  if (result.events)
+    next = news(
+      next,
+      `circuit-${index}`,
+      `World Circuit: ${result.events} events, ${result.observations.length} games`,
+      result.headlines.join(" "),
+    );
+  return { save: next, changed: result.changed };
 }
 
 export function tournamentBulletin(

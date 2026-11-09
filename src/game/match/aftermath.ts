@@ -1,4 +1,9 @@
 import {
+  finishSocialGame,
+  cancelSocialInvitation,
+  socialMatchValid,
+} from "@/game/social/relationships";
+import {
   predictionEnvironment,
   recordTournamentPredictions,
 } from "@/game/prediction/adapters";
@@ -13,7 +18,6 @@ import {
   recordTournament,
   withGameAccuracy,
 } from "@/game/history/recordGame";
-import { ratingChange } from "@/game/history/elo";
 import type { OpeningDatabase } from "@/game/openings/database";
 import {
   createGame,
@@ -26,7 +30,6 @@ import type {
   GameSave,
   MatchAnalysisReport,
   MatchRecord,
-  Npc,
   PieceColor,
 } from "@/types";
 import { reportPlayerResult } from "./tournament";
@@ -56,26 +59,11 @@ export function sansFromUcis(ucis: readonly string[]): string[] {
   return game.sans;
 }
 
-/** An NPC after a game against the player: rating, form and morale follow the result. */
-export function applyNpcResult(
-  npc: Npc,
-  npcOutcome: GameOutcome,
-  playerElo: number,
-): Npc {
-  const change = ratingChange(npc.currentElo, playerElo, npcOutcome, 40);
-  const shift = npcOutcome === "win" ? 3 : npcOutcome === "loss" ? -3 : 0;
-  return {
-    ...npc,
-    currentElo: Math.max(100, npc.currentElo + change),
-    peakElo: Math.max(npc.peakElo, npc.currentElo + change),
-    form: clamp(npc.form + shift, 0, 100),
-    morale: clamp(npc.morale + shift, 0, 100),
-  };
-}
+export { applyNpcResult } from "@/game/npc/results";
 
 export interface Applied {
   save: GameSave;
-  record: MatchRecord;
+  record: MatchRecord | null;
   /** The tournament ended with this game */
   tournamentFinished: boolean;
 }
@@ -102,6 +90,16 @@ export function applyFinishedMatch(
       tournamentFinished: false,
     };
   const playerColor = setup.playerColor;
+  if (
+    setup.social &&
+    (!socialMatchValid(save, setup.social) ||
+      setup.rated ||
+      setup.tournament ||
+      setup.esports ||
+      (setup.playerColor === "white" ? setup.black.id : setup.white.id) !==
+        setup.social.npcId)
+  )
+    return { save, record: null, tournamentFinished: false };
   const outcome = outcomeFor(finish, playerColor);
   const opponent = playerColor === "white" ? setup.black : setup.white;
   const hit = db.classify(finish.moves);
@@ -232,6 +230,14 @@ export function applyFinishedMatch(
     matches: [...next.matches, record].slice(-GAME_CONFIG.match.maxRecords),
   };
   if (setup.esports) next = reportEsportsGame(next, setup.esports, outcome);
+  if (setup.social)
+    next = finishSocialGame(
+      next,
+      setup.social,
+      finish.termination !== "abandoned" &&
+        finish.playerMoved &&
+        (finish.moves.length >= 12 || finish.termination === "checkmate"),
+    );
   return { save: next, record, tournamentFinished };
 }
 
@@ -271,6 +277,12 @@ export function recoverPendingMatch(
 ): Applied | { save: GameSave; record: null; tournamentFinished: false } {
   const pending = save.pendingMatch;
   if (!pending) return { save, record: null, tournamentFinished: false };
+  if (pending.setup.social && !socialMatchValid(save, pending.setup.social))
+    return {
+      save: { ...save, pendingMatch: null },
+      record: null,
+      tournamentFinished: false,
+    };
   const cleared: GameSave = { ...save, pendingMatch: null };
   if (
     pending.setup.tournament &&
@@ -287,7 +299,11 @@ export function recoverPendingMatch(
   )
     return { save: cleared, record: null, tournamentFinished: false };
   if (pending.ucis.length < 2 || !pending.playerMoved)
-    return { save: cleared, record: null, tournamentFinished: false };
+    return {
+      save: pending.setup.social ? cancelSocialInvitation(cleared) : cleared,
+      record: null,
+      tournamentFinished: false,
+    };
   const loser = pending.setup.playerColor;
   const finish: MatchFinish = {
     setup: pending.setup,

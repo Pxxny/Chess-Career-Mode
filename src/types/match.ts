@@ -51,6 +51,7 @@ export interface MatchTimeControl {
 
 /** A light description of a match that can be stored in the save (for recovery after a reload). */
 export interface MatchSetupLite {
+  social?: { requestId: string; npcId: string; careerId: string };
   prediction?: import("@/game/prediction/types").PredictionSnapshot;
   esports?: { eventId: string; round: number; opponentId: string };
   white: MatchSide;

@@ -1,0 +1,11 @@
+
+> chess-career-mode@0.1.0 test:social
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-social.ts
+
+PASS player directory includes one real player, consistent ranks/ties and live character values.
+PASS 100 competitive meetings and 30 shared events create familiarity without friendship or duplicate co-encounters.
+PASS accepted/declined actions, AP/hours, real training XP, daily cooldown, era gates and stable responses.
+PASS real friendly setup/result, single payment, meaningful-play reward, duplicate/abandonment/simulation protection and reload recovery.
+PASS store integration: NPC Elo preserved, no double reward, abandoned invitations clear, activity locks and career isolation.
+PASS gradual friendship, weekly cap, bounded values, idempotent decay and old-save migration without invented friends.
+All directory and social checks passed.

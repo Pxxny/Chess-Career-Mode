@@ -1,0 +1,48 @@
+{
+  "release": "Living World & Year in Review",
+  "saveVersion": 14,
+  "validation": {
+    "npmCi": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "logicSuites": [
+      "world",
+      "world-activity",
+      "circuit",
+      "expansion",
+      "qol",
+      "esports",
+      "complete",
+      "prediction"
+    ],
+    "browserTests": {
+      "passed": 2,
+      "failed": 0,
+      "engine": "Linux Chromium",
+      "mobileViewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    "physicalTermuxDeviceTested": false
+  },
+  "verifiedBehaviors": [
+    "156 foreign events per 52-week schedule window with stable IDs and travel costs",
+    "5910 NPC boards over eight simulated weeks, including draws, non-winner histories and regular Magnus participation",
+    "Immediate ranking changes and preserved legend simulation Elo across world syncs",
+    "Player-tournament and esports NPC history with idempotent reload and retained archive repair",
+    "Simultaneous NPC identity migration and finished-event recovery persists across browser reloads",
+    "Annual counters retain 1105 rated games and 220 sessions beyond history caps",
+    "Year-end popup, saved annual archive, dismissal persistence and old-save upgrade",
+    "Stalemate, insufficient material, fifty-move rule and threefold repetition in both referees",
+    "Existing MatchSession draw agreement and tournament/prediction regression suites"
+  ],
+  "compatibility": {
+    "vercelSpaRewritePreserved": true,
+    "markdownFiles": [
+      "README.md",
+      "CHANGELOG.md"
+    ],
+    "existingSavesUpgradedInPlace": true
+  }
+}

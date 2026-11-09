@@ -5,7 +5,11 @@ import { advancePopulation } from "@/game/npc/population";
 import { buildLegendNpcs } from "@/game/npc/legends";
 import { create } from "zustand";
 import { buildWorldNpcs } from "@/game/npc/buildWorldNpcs";
-import { applyWorldState, type WorldClock } from "@/game/npc/worldState";
+import {
+  applyWorldState,
+  rerankNpcs,
+  type WorldClock,
+} from "@/game/npc/worldState";
 import type { CareerRecord, Npc } from "@/types";
 import {
   deleteNpcDatabase,
@@ -93,7 +97,7 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
         ];
         const merged = mergeNpcAdditions(stored.npcs, candidates);
         const upgraded = upgradeNpcIdentities(merged.npcs);
-        set({ npcs: upgraded, status: "ready" });
+        set({ npcs: upgraded });
         if (grow)
           await writeNpcDatabase(upgraded, career).catch(() => undefined);
         else if (merged.added.length || upgraded !== merged.npcs) {
@@ -103,6 +107,9 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
             career.id,
           ).catch(() => undefined);
         }
+        // Publish ready only after the base upgrade is stored. History reconciliation may
+        // write newer results immediately; an older upgrade write must never overwrite them.
+        if (get().careerId === career.id) set({ status: "ready" });
         return;
       }
     } catch {
@@ -117,8 +124,9 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
         career.startYear,
       ),
     ]);
-    set({ npcs, status: "ready" });
+    set({ npcs });
     await writeNpcDatabase(npcs, career).catch(() => undefined);
+    if (get().careerId === career.id) set({ status: "ready" });
   },
 
   resetDatabase: async (career) => {
@@ -162,9 +170,13 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
 
   updateNpcs: async (changed) => {
     const byId = new Map(changed.map((n) => [n.id, n]));
-    set({ npcs: get().npcs.map((n) => byId.get(n.id) ?? n) });
+    const previous = get().npcs;
+    const npcs = rerankNpcs(previous.map((n) => byId.get(n.id) ?? n));
+    const dirty = npcs.filter((n, i) => n !== previous[i]);
+    if (!dirty.length) return;
+    set({ npcs });
     const careerId = get().careerId;
-    if (careerId) await putNpcs(changed, careerId).catch(() => undefined);
+    if (careerId) await putNpcs(dirty, careerId).catch(() => undefined);
   },
 
   forgetCareer: async (careerId) => {

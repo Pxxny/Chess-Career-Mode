@@ -1,9 +1,15 @@
 import { Badge, Modal, ProgressBar } from "@/components/ui";
 import { getLegendCareerStage } from "@/game/npc/legends";
 import { useGameStore } from "@/store/gameStore";
+import { useNpcStore } from "@/store/npcStore";
 import { getOpening } from "@/data/chess/openings";
 import { getCountry } from "@/data/world/countries";
 import type { Npc } from "@/types";
+import { NpcSocialPanel } from "./NpcSocialPanel";
+import {
+  playerDirectoryEntry,
+  npcDirectoryRank,
+} from "@/game/social/directory";
 import {
   capitalize,
   leagueName,
@@ -22,19 +28,28 @@ function Fact({ label, value }: { label: string; value: string }) {
 }
 
 export function NpcProfileModal({
-  npc,
+  npc: selectedNpc,
   onClose,
 }: {
   npc: Npc | null;
   onClose: () => void;
 }) {
-  const world = useGameStore((s) => s.save?.world);
+  const save = useGameStore((s) => s.save);
+  const world = save?.world;
+  const npcs = useNpcStore((s) => s.npcs);
+  const currentNpc = useNpcStore((s) =>
+    selectedNpc ? s.npcs.find((n) => n.id === selectedNpc.id) : undefined,
+  );
+  const npc = currentNpc ?? selectedNpc;
   if (!npc) return null;
   const country = getCountry(npc.nationality);
   const h = npc.historical;
   const openings = npc.preferredOpenings
     .map((id) => getOpening(id)?.name ?? id)
     .join(", ");
+  const rank = save
+    ? npcDirectoryRank(npc, playerDirectoryEntry(save, npcs).worldRank)
+    : npc.worldRank;
 
   return (
     <Modal open title={npc.name} onClose={onClose} size="lg">
@@ -44,6 +59,8 @@ export function NpcProfileModal({
         <Badge>{STATUS_LABELS[npc.careerStatus]}</Badge>
         {npc.kind === "legend" && <Badge>Historical legend</Badge>}
       </div>
+
+      <NpcSocialPanel npc={npc} onPlayAccepted={onClose} />
 
       <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         <Fact
@@ -62,10 +79,7 @@ export function NpcProfileModal({
         <Fact label="Gender" value={capitalize(npc.gender)} />
         <Fact label="Date of birth" value={npc.dateOfBirth} />
         <Fact label="Age" value={String(npc.age)} />
-        <Fact
-          label="World ranking"
-          value={npc.worldRank ? `#${npc.worldRank}` : "Unranked"}
-        />
+        <Fact label="World ranking" value={rank ? `#${rank}` : "Unranked"} />
         <Fact label="Current Elo" value={String(npc.currentElo)} />
         <Fact label="Peak Elo" value={String(npc.peakElo)} />
         <Fact label="Potential" value={String(npc.potentialRating)} />
@@ -129,7 +143,8 @@ export function NpcProfileModal({
           )}
           <p className="mt-1 text-ink-muted">{h.historicalTitles.join("; ")}</p>
           <p className="mt-1 text-xs text-ink-faint">
-            Peak {npc.peakElo} in {h.peakYear}.{" "}
+            Historical peak year: {h.peakYear}. Current career Elo includes
+            simulated competition results.{" "}
             {h.eloSource === "estimate"
               ? "Elo values are retrospective estimates."
               : "Elo values are FIDE-era figures, rounded."}
@@ -139,8 +154,18 @@ export function NpcProfileModal({
 
       <div className="mt-5">
         <p className="mb-2 text-sm text-ink-muted">Tournament history</p>
+        {npc.competitionStats && (
+          <p className="mb-3 text-xs text-ink-muted">
+            Career rated games: {npc.competitionStats.games} ·{" "}
+            {npc.competitionStats.wins}W {npc.competitionStats.draws}D{" "}
+            {npc.competitionStats.losses}L
+          </p>
+        )}
         {npc.tournamentHistory.length === 0 ? (
-          <p className="text-sm text-ink-faint">No recorded results.</p>
+          <p className="text-sm text-ink-faint">
+            No recorded results. World Circuit events run as career weeks
+            advance.
+          </p>
         ) : (
           <ul className="divide-y divide-white/5 text-sm">
             {[...npc.tournamentHistory].reverse().map((t, i) => (
@@ -149,7 +174,17 @@ export function NpcProfileModal({
                 className="flex justify-between gap-3 py-2"
               >
                 <span className="min-w-0 truncate text-ink">
-                  {t.year} · {t.event}
+                  {t.year}
+                  {t.week ? ` / W${t.week}` : ""} · {t.event}
+                  {t.source && (
+                    <span className="block text-xs text-ink-faint">
+                      {t.source === "career"
+                        ? "Career tournament"
+                        : t.source === "esports"
+                          ? "Esports team event"
+                          : "Simulated world circuit"}
+                    </span>
+                  )}
                 </span>
                 <span className="shrink-0 tabular-nums text-ink-muted">
                   {t.fieldSize === 2
@@ -158,8 +193,13 @@ export function NpcProfileModal({
                       : "Lost"
                     : `${t.rank} of ${t.fieldSize}`}
                   {t.points !== undefined && t.games
-                    ? ` · ${t.points}/${t.games}`
+                    ? ` · ${t.points}/${t.rounds ?? t.games}`
                     : ""}
+                  {t.draws !== undefined && (
+                    <span className="block text-xs">
+                      {t.wins}W {t.draws}D {t.losses}L
+                    </span>
+                  )}
                 </span>
               </li>
             ))}

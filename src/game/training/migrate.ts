@@ -1,3 +1,5 @@
+import { socialOf } from "@/game/social/relationships";
+import { yearReviewOf } from "@/game/career/yearReview";
 import { normalizePredictionState } from "@/game/prediction/statistics";
 import { qolOf } from "@/game/qol/career";
 import { esportsOf } from "@/game/esports/core";
@@ -19,7 +21,7 @@ export function upgradeSave(save: GameSave): GameSave {
     player: GameSave["player"];
     world: GameSave["world"];
   };
-  return {
+  const upgraded: GameSave = {
     ...save,
     version: GAME_CONFIG.saveVersion,
     prediction: normalizePredictionState(raw.prediction),
@@ -56,5 +58,10 @@ export function upgradeSave(save: GameSave): GameSave {
     tournament: raw.tournament ?? null,
     pendingMatch: raw.pendingMatch ?? null,
     registrations: raw.registrations ?? [],
+  };
+  return {
+    ...upgraded,
+    yearReview: yearReviewOf(upgraded),
+    social: socialOf(upgraded),
   };
 }

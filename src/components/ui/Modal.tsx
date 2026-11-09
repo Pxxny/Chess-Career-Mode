@@ -5,7 +5,7 @@ interface ModalProps {
   title: string;
   onClose: () => void;
   children: ReactNode;
-  size?: "md" | "lg";
+  size?: "md" | "lg" | "game";
 }
 const modalStack: HTMLElement[] = [];
 let originalOverflow = "";
@@ -87,7 +87,11 @@ export function Modal({
         aria-labelledby={titleId}
         className={cn(
           "max-h-[88dvh] w-full overflow-y-auto rounded-xl border border-white/15 bg-navy-800 p-4 shadow-xl sm:p-6",
-          size === "lg" ? "max-w-2xl" : "max-w-md",
+          size === "game"
+            ? "max-w-5xl"
+            : size === "lg"
+              ? "max-w-2xl"
+              : "max-w-md",
         )}
         onClick={(e) => e.stopPropagation()}
       >

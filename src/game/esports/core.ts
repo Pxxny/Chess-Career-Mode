@@ -1,3 +1,4 @@
+import { trackYearActivity } from "@/game/career/yearReview";
 import type { GameSave, GameOutcome, Npc } from "@/types";
 import {
   gameDay,
@@ -644,6 +645,13 @@ function finishRound(
         `${next.event.name}: #${rank}; your prize $${share}.`,
       ),
     };
+    result = trackYearActivity(
+      save,
+      result,
+      "esports",
+      undefined,
+      next.withdrawn ? Infinity : rank,
+    );
     if (share)
       result = money(
         result,

@@ -1,0 +1,17 @@
+[
+  {
+    "suite": "test:world-activity",
+    "exitCode": 0,
+    "seconds": 3.64
+  },
+  {
+    "suite": "test:esports",
+    "exitCode": 0,
+    "seconds": 2.07
+  },
+  {
+    "suite": "test:qol",
+    "exitCode": 0,
+    "seconds": 2.3
+  }
+]

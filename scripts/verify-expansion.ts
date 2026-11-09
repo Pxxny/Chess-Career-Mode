@@ -186,8 +186,17 @@ assert.equal(
 );
 assert.deepEqual(base.expansion, stateOf(base));
 const bulletin = weeklyCircuit(base, world);
-assert(bulletin.changed.length === 1);
-assert(bulletin.save.history.news.some((n) => n.headline.includes("wins")));
+assert(bulletin.changed.length >= 8);
+assert(
+  bulletin.changed.every(
+    (n) => n.tournamentHistory.at(-1)?.source === "world-circuit",
+  ),
+);
+assert(
+  bulletin.save.history.news.some(
+    (n) => n.headline.includes("World Circuit") && n.detail?.includes("wins"),
+  ),
+);
 assert.strictEqual(weeklyCircuit(bulletin.save, world).save, bulletin.save);
 const event = getSchedule(
   base.world.date,

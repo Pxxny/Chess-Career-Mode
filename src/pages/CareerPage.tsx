@@ -1,3 +1,4 @@
+import { YearReviews } from "@/features/career/YearReviews";
 import { useSearchParams } from "react-router-dom";
 import { PredictionStatistics } from "@/features/prediction/PredictionStatistics";
 import { Check } from "lucide-react";
@@ -28,7 +29,11 @@ import { formatMoney, formatNumber } from "@/utils/format";
 export function CareerPage() {
   const [params, setParams] = useSearchParams();
   const view =
-    params.get("view") === "predictions" ? "predictions" : "overview";
+    params.get("view") === "predictions"
+      ? "predictions"
+      : params.get("view") === "years"
+        ? "years"
+        : "overview";
   const save = useSave();
   const { player, world, history } = save;
   const { date } = world;
@@ -78,16 +83,17 @@ export function CareerPage() {
       <Tabs
         label="Career sections"
         active={view}
-        onChange={(v) =>
-          setParams(v === "predictions" ? { view: "predictions" } : {})
-        }
+        onChange={(v) => setParams(v === "overview" ? {} : { view: v })}
         tabs={[
           { id: "overview", label: "Overview" },
           { id: "predictions", label: "Match predictions" },
+          { id: "years", label: "Year in review" },
         ]}
       >
         {view === "predictions" ? (
           <PredictionStatistics />
+        ) : view === "years" ? (
+          <YearReviews />
         ) : (
           <>
             <Card className="mb-4">

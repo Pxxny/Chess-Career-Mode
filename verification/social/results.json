@@ -1,0 +1,49 @@
+{
+  "release": "Player Directory & NPC Relationships",
+  "saveVersion": 15,
+  "validation": {
+    "lockedDependencyInstall": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "logicSuites": [
+      "social",
+      "qol",
+      "session",
+      "world-activity",
+      "esports",
+      "prediction",
+      "complete"
+    ],
+    "browserTests": {
+      "passed": 6,
+      "failed": 0,
+      "engine": "Linux Chromium",
+      "mobileViewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    "physicalTermuxDeviceTested": false
+  },
+  "verifiedBehaviors": [
+    "The active player appears exactly once in filtered directory results, with a pinned self-profile shortcut and consistent world ranks",
+    "Player profile uses actual saved identity, skills, repertoire, form, coach, training, results and social contacts",
+    "100 rated meetings and 30 shared events create familiarity with zero automatic closeness",
+    "Talk/study/play responses are deterministic and preserve daily approach cooldown across reloads",
+    "Accepted interactions respect resources; shared study awards normal training XP and annual session counts",
+    "Accepted invitations open the real chess match engine; six human moves and a completed friendly game award closeness without Elo changes",
+    "Closeness is not awarded for cancelled, abandoned, too-short or purely simulated friendly sessions",
+    "Early exits, interrupted-game recovery, duplicate results, activity locks and separate careers are handled",
+    "Weekly closeness caps and inactivity decay are bounded and repeat-safe",
+    "Old retained competitive history seeds familiarity without fabricating friendships",
+    "Previous NPC tournament-history/Magnus activity and mobile year-end-report browser regressions pass"
+  ],
+  "compatibility": {
+    "existingSavesUpgradedInPlace": true,
+    "vercelSpaRewritePreserved": true,
+    "markdownFiles": [
+      "README.md",
+      "CHANGELOG.md"
+    ]
+  }
+}

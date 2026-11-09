@@ -60,6 +60,15 @@ export interface TrainingHabits {
 }
 
 export interface TournamentResult {
+  eventId?: string;
+  week?: number;
+  source?: "career" | "world-circuit" | "esports";
+  rounds?: number;
+  wins?: number;
+  draws?: number;
+  losses?: number;
+  ratingBefore?: number;
+  ratingAfter?: number;
   year: number;
   event: string;
   rank: number;
@@ -87,6 +96,16 @@ export interface HistoricalProfile {
 }
 
 export interface Npc {
+  /** Career simulation changes, kept separate from a legend's historical rating curve. */
+  careerRatingDelta?: number;
+  simulationPeakBase?: number;
+  competitionStats?: {
+    games: number;
+    wins: number;
+    draws: number;
+    losses: number;
+  };
+  recordedPlayerEvents?: string[];
   id: string;
   kind: "fictional" | "legend";
   name: string;

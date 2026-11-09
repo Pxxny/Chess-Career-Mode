@@ -4,6 +4,7 @@ import {
   scoutOpponent,
 } from "../src/game/competition/preparation.ts";
 import assert from "node:assert/strict";
+import { reconcileTournamentHistory } from "../src/game/npc/tournamentHistory.ts";
 import { randomAppearance } from "../src/data/appearance.ts";
 import { createCareerRecord } from "../src/game/career/createCareer.ts";
 import { createNewSave } from "../src/game/createNewSave.ts";
@@ -371,6 +372,27 @@ assert(
 );
 const complete = esportsOf(s).active!;
 assert.equal(complete.status, "finished");
+assert.equal(s.yearReview?.current.esportsTournaments, 1);
+assert.equal(s.yearReview?.current.esportsWins, Number(complete.rank === 1));
+const historyUpdates = reconcileTournamentHistory(s, npcs);
+const npcParticipants = complete.teams
+  .flatMap((t) => t.members)
+  .filter((m) => m.id !== "player");
+assert.equal(historyUpdates.length, npcParticipants.length);
+for (const n of historyUpdates) {
+  const history = n.tournamentHistory.at(-1)!;
+  assert.equal(history.eventId, `esports:${complete.event.id}`);
+  assert.equal(history.source, "esports");
+  assert.equal(history.games, 3);
+}
+const historyById = new Map(historyUpdates.map((n) => [n.id, n]));
+assert.deepEqual(
+  reconcileTournamentHistory(
+    s,
+    npcs.map((n) => historyById.get(n.id) ?? n),
+  ),
+  [],
+);
 assert.equal(esportsOf(s).history.length, 1);
 assert(complete.rank && complete.rank >= 1 && complete.rank <= 4);
 assert.equal(complete.playerPrize, Math.floor(complete.teamPrize / event.size));

@@ -1,3 +1,5 @@
+import { SocialGameDialog } from "@/features/world/SocialGameDialog";
+import { YearReviewDialog } from "@/features/career/YearReviews";
 import { CalendarProgressDialog } from "@/features/qol/CareerPanels";
 import { Outlet, useLocation } from "react-router-dom";
 import { BottomNav } from "./BottomNav";
@@ -16,6 +18,8 @@ export function AppShell() {
       </main>
       <BottomNav />
       <CalendarProgressDialog />
+      <YearReviewDialog />
+      <SocialGameDialog />
     </div>
   );
 }

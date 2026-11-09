@@ -1,4 +1,16 @@
 import { configurePredictions } from "@/game/prediction/statistics";
+import { reconcileTournamentHistory } from "@/game/npc/tournamentHistory";
+import {
+  approachNpc,
+  cancelSocialInvitation,
+  recordSharedEvent,
+  recordSharedContacts,
+  socialMatchValid,
+  type SocialAction,
+  type SocialResult,
+} from "@/game/social/relationships";
+import { beginFriendly, type FriendlyOptions } from "@/game/social/friendly";
+import type { MatchSetup } from "@/game/match/session";
 import {
   predictionEnvironment,
   recordTournamentPredictions,
@@ -106,6 +118,18 @@ let calendarOwned = false;
 let calendarDaySave: GameSave | null = null;
 let calendarSync: Promise<unknown> = Promise.resolve();
 interface GameStore {
+  approachNpc: (
+    npcId: string,
+    action: SocialAction,
+  ) =>
+    | Omit<Extract<SocialResult, { ok: true }>, "save">
+    | { ok: false; error: string };
+  beginFriendly: (
+    options: FriendlyOptions,
+    db: OpeningDatabase,
+  ) => { ok: true; setup: MatchSetup } | { ok: false; error: string };
+  cancelFriendly: () => void;
+  dismissYearReview: (year: number) => void;
   calendarProgress: { days: number; total: number; target: string } | null;
   cancelCalendar: () => void;
   simulateUntil: (
@@ -239,6 +263,45 @@ export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
       save: null,
+      approachNpc: (npcId, action) => {
+        const save = get().save,
+          world = useNpcStore.getState();
+        if (!save || world.careerId !== save.career.id)
+          return { ok: false, error: "No matching career world is loaded." };
+        if (get().calendarProgress || matchRunning(save.career.id))
+          return { ok: false, error: "Finish the running activity first." };
+        const npc = world.npcs.find((n) => n.id === npcId);
+        if (!npc) return { ok: false, error: "This player is not available." };
+        const r = approachNpc(save, npc, action);
+        if (r.ok) {
+          set({ save: r.save });
+          return { ok: true, accepted: r.accepted, message: r.message };
+        }
+        return r;
+      },
+      beginFriendly: (options, db) => {
+        const save = get().save,
+          world = useNpcStore.getState();
+        if (!save || world.careerId !== save.career.id)
+          return { ok: false, error: "No matching career world is loaded." };
+        if (get().calendarProgress || matchRunning(save.career.id))
+          return { ok: false, error: "Finish the running activity first." };
+        const npc = world.npcs.find(
+          (n) => n.id === save.social?.pending?.npcId,
+        );
+        if (!npc) return { ok: false, error: "This player is not available." };
+        const r = beginFriendly(save, npc, options, db);
+        if (r.ok) {
+          set({ save: r.save });
+          return { ok: true, setup: r.setup };
+        }
+        return r;
+      },
+      cancelFriendly: () => {
+        const save = get().save;
+        if (save && !matchRunning(save.career.id))
+          set({ save: cancelSocialInvitation(save) });
+      },
       calendarProgress: null,
       cancelCalendar: () => {
         calendarCancelled = true;
@@ -523,6 +586,19 @@ export const useGameStore = create<GameStore>()(
         return { ok: true, recovered: result.recovered };
       },
 
+      dismissYearReview: (year) => {
+        const save = get().save;
+        if (save?.yearReview)
+          set({
+            save: {
+              ...save,
+              yearReview: {
+                ...save.yearReview,
+                unread: save.yearReview.unread.filter((y) => y !== year),
+              },
+            },
+          });
+      },
       endDay: () => {
         if (get().calendarProgress && !calendarOwned) return null;
         const save =
@@ -575,6 +651,15 @@ export const useGameStore = create<GameStore>()(
                 next.world.date.year,
               ),
           ]);
+        }
+        // Settle newly expired tournaments before background fields use those same NPCs.
+        if (useNpcStore.getState().careerId === save.career.id) {
+          const completed = reconcileTournamentHistory(
+            next,
+            useNpcStore.getState().npcs,
+          );
+          if (completed.length)
+            void useNpcStore.getState().updateNpcs(completed);
         }
         const bulletin = report.newWeek
           ? weeklyCircuit(next, useNpcStore.getState().npcs)
@@ -656,7 +741,19 @@ export const useGameStore = create<GameStore>()(
         )
           return { ok: false, error: "Finish the running activity first." };
         const r = esportsCommand(save, useNpcStore.getState().npcs, command);
-        if (r.ok) set({ save: r.save });
+        if (r.ok) {
+          const c = r.save.esports?.active;
+          set({
+            save:
+              command.type === "start" && c
+                ? recordSharedContacts(
+                    r.save,
+                    `esports:${c.event.id}`,
+                    c.teams.flatMap((t) => t.members.map((m) => m.id)),
+                  )
+                : r.save,
+          });
+        }
         return r.ok ? { ok: true, message: r.message } : r;
       },
       advanceCompetitionDay: (circuit) => {
@@ -691,6 +788,8 @@ export const useGameStore = create<GameStore>()(
       finishMatch: (finish, db) => {
         const { save } = get();
         if (!save) return null;
+        if (finish.setup.social && !socialMatchValid(save, finish.setup.social))
+          return null;
         if (
           !finish.setup.esports &&
           finish.setup.tournament &&
@@ -722,12 +821,11 @@ export const useGameStore = create<GameStore>()(
           before: getWorldRank(save.player.rating, ranked),
           after: (r) => getWorldRank(r, ranked),
         });
-        set({
-          save:
-            finish.moves.length >= 12 || finish.termination === "checkmate"
-              ? coachedGame(applied.save)
-              : applied.save,
-        });
+        if (!applied.record) return null;
+        const nextSave =
+          finish.moves.length >= 12 || finish.termination === "checkmate"
+            ? coachedGame(applied.save)
+            : applied.save;
         const opponent =
           finish.setup.playerColor === "white"
             ? finish.setup.black
@@ -752,6 +850,7 @@ export const useGameStore = create<GameStore>()(
                 ),
               ]);
         }
+        set({ save: nextSave });
         return applied.record;
       },
 
@@ -767,7 +866,12 @@ export const useGameStore = create<GameStore>()(
 
       recoverMatch: (db) => {
         const { save } = get();
-        if (!save?.pendingMatch) return;
+        if (!save) return;
+        if (!save.pendingMatch) {
+          if (save.social?.pending?.started && !matchRunning(save.career.id))
+            set({ save: cancelSocialInvitation(save) });
+          return;
+        }
         set({ save: recoverPendingMatch(save, db).save });
       },
 
@@ -822,7 +926,12 @@ export const useGameStore = create<GameStore>()(
           useNpcStore.getState().npcs,
           seed,
         );
-        if (r.ok) set({ save: r.save });
+        if (r.ok)
+          set({
+            save: r.save.tournament
+              ? recordSharedEvent(r.save, r.save.tournament)
+              : r.save,
+          });
         return r.ok ? { ok: true } : r;
       },
 
@@ -899,3 +1008,31 @@ export const useGameStore = create<GameStore>()(
     },
   ),
 );
+
+// Both freshly finished tournaments and retained old archives repair NPC history once.
+// The status guard also prevents one character's results leaking into another NPC world.
+function syncFinishedNpcEvents() {
+  const save = useGameStore.getState().save;
+  const world = useNpcStore.getState();
+  if (!save || world.status !== "ready" || world.careerId !== save.career.id)
+    return;
+  const changed = reconcileTournamentHistory(save, world.npcs);
+  if (changed.length) void world.updateNpcs(changed);
+}
+useGameStore.subscribe((state, previous) => {
+  if (
+    state.save?.career.id !== previous.save?.career.id ||
+    state.save?.tournament !== previous.save?.tournament ||
+    state.save?.competition?.archive !== previous.save?.competition?.archive ||
+    state.save?.esports?.active !== previous.save?.esports?.active ||
+    state.save?.esports?.history !== previous.save?.esports?.history
+  )
+    syncFinishedNpcEvents();
+});
+useNpcStore.subscribe((state, previous) => {
+  if (
+    state.status === "ready" &&
+    (previous.status !== "ready" || state.careerId !== previous.careerId)
+  )
+    syncFinishedNpcEvents();
+});

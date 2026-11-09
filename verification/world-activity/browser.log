@@ -1,0 +1,11 @@
+[WebServer] (node:3702) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:3729) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/world-activity.spec.ts:63:1 › finished player event appears in NPC profiles, survives reload, and Magnus plays the weekly circuit (18.7s)
+  ✓  2 tests/world-activity.spec.ts:192:1 › mobile year-end dialog shows real recorded totals, dismissal persists, and annual archive is readable (7.1s)
+
+  2 passed (27.5s)

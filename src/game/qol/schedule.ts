@@ -116,6 +116,32 @@ const HOSTS = [
   ["GB-ENG", "London"],
   ["US", "New York"],
   ["CA", "Toronto"],
+  ["TH", "Bangkok"],
+  ["ID", "Jakarta"],
+  ["PH", "Manila"],
+  ["KR", "Seoul"],
+  ["CN", "Shanghai"],
+  ["AE", "Dubai"],
+  ["QA", "Doha"],
+  ["UZ", "Tashkent"],
+  ["KZ", "Almaty"],
+  ["GE", "Tbilisi"],
+  ["NO", "Oslo"],
+  ["SE", "Stockholm"],
+  ["IS", "Reykjavik"],
+  ["PL", "Warsaw"],
+  ["CZ", "Prague"],
+  ["IT", "Rome"],
+  ["GR", "Athens"],
+  ["TR", "Istanbul"],
+  ["BR", "Sao Paulo"],
+  ["AR", "Buenos Aires"],
+  ["MX", "Mexico City"],
+  ["ZA", "Cape Town"],
+  ["EG", "Cairo"],
+  ["KE", "Nairobi"],
+  ["AU", "Sydney"],
+  ["NZ", "Auckland"],
 ] as const;
 const BRANDS = [
   "Rook & File",
@@ -131,7 +157,7 @@ const BRANDS = [
   "First Rank",
   "Kingside",
 ];
-/** Weekly home opportunities and two international circuits per month, with names that do not depend on city names. */
+/** Three foreign events every week across six continents, alongside the existing home circuit. */
 export function extraCircuit(
   now: GameStamp,
   region: Region,
@@ -144,16 +170,19 @@ export function extraCircuit(
     const abs = startIndex + offset,
       stamp = stampFromIndex(abs),
       key = hashString(`${careerId}:${abs}`);
-    const home = stamp.week % 2 === 0,
-      away = stamp.week % 2 === 1 || stamp.week % 4 === 0;
-    for (const foreign of [false, true]) {
-      if ((foreign && !away) || (!foreign && !home)) continue;
+    const home = stamp.week % 2 === 0;
+    for (const { foreign, slot } of [
+      ...(home ? [{ foreign: false, slot: 0 }] : []),
+      { foreign: true, slot: 0 },
+      { foreign: true, slot: 1 },
+      { foreign: true, slot: 2 },
+    ]) {
       const candidates = HOSTS.filter((h) => h[0] !== region.countryCode),
         host = foreign
-          ? candidates[key % candidates.length]
+          ? candidates[((key % candidates.length) + slot) % candidates.length]
           : [region.countryCode, region.city];
-      const rapid = key % 3 === 0,
-        blitz = key % 3 === 1,
+      const rapid = slot === 1 || (slot === 0 && key % 3 === 0),
+        blitz = slot === 0 && key % 3 === 1,
         tc = tcOf(
           blitz
             ? "Blitz: 3 minutes with 2 seconds"
@@ -162,16 +191,16 @@ export function extraCircuit(
               : "Standard: 60 minutes with 30 seconds",
         );
       const deadline = stampFromIndex(abs - (foreign ? 2 : 1)),
-        name = `${BRANDS[key % BRANDS.length]} ${blitz ? "Blitz" : rapid ? "Rapid" : "Open"} · ${stamp.year}/${String(stamp.week).padStart(2, "0")}${foreign ? " Circuit" : " Club"}`;
+        name = `${BRANDS[(key + slot) % BRANDS.length]} ${blitz ? "Blitz" : rapid ? "Rapid" : "Open"} · ${stamp.year}/${String(stamp.week).padStart(2, "0")}${foreign ? (slot === 2 ? " International Challenger" : " Circuit") : " Club"}`;
       out.push({
-        id: `qol-circuit-${foreign ? "away" : "home"}-${stamp.year}-${stamp.week}`,
+        id: `qol-circuit-${foreign ? "away" : "home"}-${stamp.year}-${stamp.week}${slot ? `-${slot + 1}` : ""}`,
         name,
-        level: "local",
+        level: slot === 2 ? "international" : "local",
         ...stamp,
-        fieldSize: foreign ? 48 : 32,
-        entryFee: foreign ? 25 : 10,
-        minElo: 0,
-        minReputation: 0,
+        fieldSize: slot === 2 ? 64 : foreign ? 48 : 32,
+        entryFee: slot === 2 ? 75 : foreign ? 25 : 10,
+        minElo: slot === 2 ? 1800 : 0,
+        minReputation: slot === 2 ? 10 : 0,
         registrationDeadline: deadline,
         weeksUntilStart: offset,
         weeksUntilDeadline: stampIndex(deadline) - startIndex,
@@ -184,8 +213,8 @@ export function extraCircuit(
           format: "swiss",
           rounds: 7,
           timeControl: tc,
-          prize: foreign ? 1200 : 400,
-          prestige: foreign ? 25 : 10,
+          prize: slot === 2 ? 3500 : foreign ? 1200 : 400,
+          prestige: slot === 2 ? 50 : foreign ? 25 : 10,
           provenance: "fictional",
           localShare: foreign ? 0.4 : 0.7,
         },
