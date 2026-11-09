@@ -69,7 +69,7 @@ test("expanded look, federation, coaching, team entry guard, tournament entrants
     page.getByRole("link", { name: /Open profile for Expansion Browser/ }),
   ).toBeVisible();
   const original = await snapshot(page);
-  expect(original.npcs.length).toBe(1282);
+  expect(original.npcs.length).toBe(4162);
   expect(original.save.player.appearance.hairStyle).toMatch(/^female-/);
   await page.getByRole("link", { name: "Complete", exact: true }).click();
   await page.getByText("Federation & national teams", { exact: true }).click();
@@ -91,20 +91,25 @@ test("expanded look, federation, coaching, team entry guard, tournament entrants
   expect((await snapshot(page)).save.player.money).toBe(161);
   await page.getByRole("tab", { name: "Tournament", exact: true }).click();
   await page.getByText("Federation & national teams", { exact: true }).click();
-  // Selected national players must now enter via the formal registration flow.
+  // The enlarged local pool keeps this beginner outside the national top four; spectator access stays available.
   await expect(
     page.getByRole("button", {
-      name: "Register in Tournament first",
+      name: "Simulate national team cup",
       exact: true,
     }),
-  ).toBeDisabled();
+  ).toBeEnabled();
   expect((await snapshot(page)).save.expansion.cups).toHaveLength(0);
   await page.getByRole("tab", { name: "Tournament", exact: true }).click();
-  await page.getByTestId("open-events").locator("summary").first().click();
+  await page
+    .getByTestId("open-events")
+    .locator("summary")
+    .filter({ hasText: "NPC entrants" })
+    .first()
+    .click();
   await expect(
     page
       .getByTestId("open-events")
-      .getByText(/Announced invitations/)
+      .getByText(/NPC registrations increase/)
       .first(),
   ).toBeVisible();
   await page

@@ -1,0 +1,5 @@
+
+> chess-career-mode@0.1.0 test:characters
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-characters.ts
+
+Character verification passed: date of birth, save slots, per-character NPC worlds

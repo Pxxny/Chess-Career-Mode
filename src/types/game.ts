@@ -25,6 +25,10 @@ export interface CareerRecord {
 }
 
 export interface GameSave {
+  prediction?: import("@/game/prediction/types").PredictionState;
+  esports?: import("@/game/esports/types").EsportsState;
+  npcNameVersion?: number;
+  qol?: import("@/game/qol/career").QolState;
   competition?: import("@/game/competition/types").CompetitionState;
   expansion?: import("@/game/career/expansion").ExpansionState;
   version: number;
@@ -48,6 +52,7 @@ export interface GameSave {
 }
 
 export interface NewCareerOptions {
+  birthPlace?: import("./geo").BirthPlace;
   name: string;
   gender: PlayerGender;
   countryCode: string;

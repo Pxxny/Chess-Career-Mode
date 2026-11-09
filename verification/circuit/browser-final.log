@@ -1,0 +1,15 @@
+[WebServer] (node:10731) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:10749) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/circuit.spec.ts:40:1 › birth place: independent country/town in creation, confirmation, profile and reload (3.1s)
+  ✓  2 tests/circuit.spec.ts:94:1 › tournament finder, official organizer, real full state and invitation-only acceptance survive reload (5.9s)
+  ✓  3 tests/circuit.spec.ts:226:1 › analysis board: ?? and !! highlight the selected move, clear at start and use local SVG pieces (3.7s)
+  ✓  4 tests/circuit.spec.ts:339:1 › Android and iOS emulation use identical loaded piece assets with a square mobile board (5.8s)
+  ✓  5 tests/expansion.spec.ts:28:1 › expanded look, federation, coaching, team entry guard, tournament entrants and annual population persist (25.1s)
+  ✓  6 tests/mobile.spec.ts:16:1 › mobile layouts keep the board, opening details and performance within the viewport (6.6s)
+
+  6 passed (51.6s)

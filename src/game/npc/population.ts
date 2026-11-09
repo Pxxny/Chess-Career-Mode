@@ -1,3 +1,4 @@
+import { upgradeNpcIdentities } from "./identity";
 import { GAME_CONFIG } from "@/data/config";
 import { COUNTRIES } from "@/data/world/countries";
 import { getSeedCities } from "@/data/world/seedCities";
@@ -68,5 +69,5 @@ export function advancePopulation(
     if (existing.has(`recruit-${y}-1`)) continue;
     added.push(...recruitForYear(y));
   }
-  return added.length ? [...npcs, ...added] : npcs;
+  return added.length ? upgradeNpcIdentities([...npcs, ...added]) : npcs;
 }

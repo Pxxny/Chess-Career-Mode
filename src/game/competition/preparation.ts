@@ -1,3 +1,4 @@
+import { compactTournament } from "@/game/prediction/adapters";
 import { GAME_CONFIG } from "@/data/config";
 import { dayIndex } from "@/game/career/expansion";
 import { stampIndex } from "./catalog";
@@ -91,6 +92,11 @@ function availableEvent(save: GameSave, eventId: string): boolean {
   return !!(
     (save.tournament?.eventId === eventId &&
       save.tournament.status === "playing") ||
+    (save.esports?.active?.event.id === eventId &&
+      save.esports.active.status === "playing") ||
+    save.esports?.entries.some(
+      (e) => e.event.id === eventId && e.event.day >= dayIndex(save),
+    ) ||
     save.registrations.some(
       (r) =>
         r.eventId === eventId && stampIndex(r) >= stampIndex(save.world.date),
@@ -190,7 +196,11 @@ export function scoutOpponent(
   const field =
     save.tournament?.eventId === eventId
       ? save.tournament.players.map((p) => p.id)
-      : save.registrations.find((r) => r.eventId === eventId)?.entrantIds;
+      : save.esports?.active?.event.id === eventId
+        ? save.esports.active.teams
+            .filter((t) => !t.members.some((m) => m.id === "player"))
+            .flatMap((t) => t.members.map((m) => m.id))
+        : save.registrations.find((r) => r.eventId === eventId)?.entrantIds;
   if (!field?.includes(npc.id))
     return { ok: false, error: "This opponent is not in the announced field." };
   const state = competitionOf(save);
@@ -294,7 +304,7 @@ export function archiveCompetition(save: GameSave): GameSave {
     ...save,
     competition: {
       ...state,
-      archive: [...state.archive, t].slice(-30),
+      archive: [...state.archive, compactTournament(t)].slice(-30),
       qualifications: [
         ...state.qualifications,
         ...grants.map((kind) => ({

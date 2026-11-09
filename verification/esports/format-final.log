@@ -1,0 +1,11 @@
+src/game/esports/core.ts 292ms
+src/game/competition/agenda.ts 56ms (unchanged)
+src/game/match/aftermath.ts 35ms
+src/store/gameStore.ts 106ms
+src/features/training/RestCard.tsx 50ms
+src/features/esports/EsportsPanel.tsx 125ms
+scripts/verify-complete.ts 167ms
+scripts/verify-match.ts 144ms
+scripts/verify-esports.ts 55ms
+scripts/verify-expansion.ts 67ms
+tests/complete.spec.ts 25ms

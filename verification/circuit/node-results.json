@@ -1,0 +1,72 @@
+[
+  {
+    "command": "npm run test:play",
+    "exitCode": 0,
+    "seconds": 5.16
+  },
+  {
+    "command": "npm run test:session",
+    "exitCode": 0,
+    "seconds": 0.4
+  },
+  {
+    "command": "npm run test:match",
+    "exitCode": 0,
+    "seconds": 139.55
+  },
+  {
+    "command": "npm run test:ages",
+    "exitCode": 0,
+    "seconds": 1.55
+  },
+  {
+    "command": "npm run test:characters",
+    "exitCode": 0,
+    "seconds": 0.27
+  },
+  {
+    "command": "npm run test:data",
+    "exitCode": 0,
+    "seconds": 0.46
+  },
+  {
+    "command": "npm run test:chess-cache",
+    "exitCode": 0,
+    "seconds": 0.23
+  },
+  {
+    "command": "npm run test:engine",
+    "exitCode": 0,
+    "seconds": 0.26
+  },
+  {
+    "command": "npm run typecheck",
+    "exitCode": 0,
+    "seconds": 9.2
+  },
+  {
+    "command": "npm run test:complete",
+    "exitCode": 0,
+    "seconds": 2.06
+  },
+  {
+    "command": "npm run test:circuit",
+    "exitCode": 0,
+    "seconds": 0.88
+  },
+  {
+    "command": "npm run test:world",
+    "exitCode": 0,
+    "seconds": 2.48
+  },
+  {
+    "command": "npm run test:qol",
+    "exitCode": 0,
+    "seconds": 1.08
+  },
+  {
+    "command": "npm run test:expansion",
+    "exitCode": 0,
+    "seconds": 0.95
+  }
+]

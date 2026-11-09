@@ -1,5 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
-import { createCareer } from './helpers';
+import { test, expect, type Page } from "@playwright/test";
+import { createCareer } from "./helpers";
 
 test.use({ isMobile: true, hasTouch: true });
 
@@ -13,54 +13,88 @@ async function assertFits(page: Page, width: number) {
   expect(size.content).toBeLessThanOrEqual(width + 1);
 }
 
-test('mobile layouts keep the board, opening details and performance within the viewport', async ({ page }) => {
+test("mobile layouts keep the board, opening details and performance within the viewport", async ({
+  page,
+}) => {
   const errors: string[] = [];
-  page.on('pageerror', error => errors.push(error.message));
+  page.on("pageerror", (error) => errors.push(error.message));
   await createCareer(page);
-  await page.getByRole('tab', { name: 'Games', exact: true }).click();
+  await page.getByRole("tab", { name: "Games", exact: true }).click();
   // Use a completed real game: a detached full simulation may still be running when statistics are opened.
-  await page.getByRole('button', { name: /^Game vs the Engine/ }).click();
-  await page.getByRole('button', { name: 'Start game', exact: true }).click();
-  await expect(page.getByText('Your move (White).', {exact:true})).toBeVisible();
-  await page.getByRole('gridcell', {name:'e2, white pawn',exact:true}).click();
-  await page.getByRole('gridcell', {name:/^e4,.*move available/}).click();
-  await expect(page.getByText('Your move (White).', {exact:true})).toBeVisible();
-  await page.getByRole('button',{name:'Resign',exact:true}).click();
-  await page.getByRole('button',{name:'Confirm resign',exact:true}).click();
-  await expect(page.getByText('You lost by resignation',{exact:true})).toBeVisible();
-  await page.getByRole('button',{name:'Back to setup',exact:true}).click();
+  await page.getByRole("button", { name: /^Game vs the Engine/ }).click();
+  await page.getByRole("button", { name: "Start game", exact: true }).click();
+  await expect(
+    page.getByText("Your move (White).", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("gridcell", { name: "e2, white pawn", exact: true })
+    .click();
+  await page.getByRole("gridcell", { name: /^e4,.*move available/ }).click();
+  await expect(
+    page.getByText("Your move (White).", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Resign", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Confirm resign", exact: true })
+    .click();
+  await expect(
+    page.getByText("You lost by resignation", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Back to setup", exact: true })
+    .click();
 
   for (const width of [320, 390, 768]) {
     await page.setViewportSize({ width, height: 844 });
-    await page.getByRole('tab', { name: 'Games', exact: true }).click();
+    await page.getByRole("tab", { name: "Games", exact: true }).click();
     await assertFits(page, width);
-    await page.getByRole('button', { name: /^Online Blitz/ }).click();
+    await page.getByRole("button", { name: /^Online Blitz/ }).click();
     await expect(page.getByText(/It is not real multiplayer/)).toBeVisible();
     await assertFits(page, width);
-    await page.getByRole('button', { name: /^Game vs the Engine/ }).click();
+    await page.getByRole("button", { name: /^Game vs the Engine/ }).click();
     await assertFits(page, width);
-    await page.getByRole('button', { name: 'Start game', exact: true }).click();
-    await expect(page.getByRole('grid', { name: 'Chess board' })).toBeVisible();
+    await page.getByRole("button", { name: "Start game", exact: true }).click();
+    await expect(page.getByRole("grid", { name: "Chess board" })).toBeVisible();
     await assertFits(page, width);
-    await page.getByRole('button', { name: 'Leave', exact: true }).click();
-    await page.getByRole('button', { name: /^History/ }).click();
+    await page.getByRole("button", { name: "Leave", exact: true }).click();
+    await page.getByRole("button", { name: /^History/ }).click();
     await assertFits(page, width);
 
-    await page.getByRole('tab', { name: 'Openings', exact: true }).click();
+    await page.getByRole("tab", { name: "Openings", exact: true }).click();
     await assertFits(page, width);
-    await page.locator('#panel-openings ul button').first().click();
-    await expect(page.getByRole('heading', { name: 'English Opening', exact: true })).toBeVisible();
+    await page
+      .getByRole("tabpanel", { name: "Openings", exact: true })
+      .locator("ul button")
+      .first()
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "English Opening", exact: true }),
+    ).toBeVisible();
     await assertFits(page, width);
-    if (width === 320) await page.getByRole('button', { name: 'Add to preferences', exact: true }).click();
-    await page.getByRole('button', { name: 'Preferences', exact: true }).click();
+    if (width === 320)
+      await page
+        .getByRole("button", { name: "Add to preferences", exact: true })
+        .click();
+    await page
+      .getByRole("button", { name: "Preferences", exact: true })
+      .click();
     await assertFits(page, width);
-    await page.getByRole('button', { name: 'Performance', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Results by opening', exact: true })).toBeVisible();
+    await page
+      .getByRole("button", { name: "Performance", exact: true })
+      .click();
+    await expect(
+      page.getByRole("heading", { name: "Results by opening", exact: true }),
+    ).toBeVisible();
     await assertFits(page, width);
-    const table = page.getByRole('region', { name: 'Opening performance table', exact: true });
+    const table = page.getByRole("region", {
+      name: "Opening performance table",
+      exact: true,
+    });
     await expect(table).toBeVisible();
-    expect(await table.evaluate(el => el.scrollWidth > el.clientWidth)).toBe(true);
-    await page.getByRole('button', { name: 'Import', exact: true }).click();
+    expect(await table.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(
+      true,
+    );
+    await page.getByRole("button", { name: "Import", exact: true }).click();
     await assertFits(page, width);
   }
   expect(errors).toEqual([]);

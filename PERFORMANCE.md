@@ -1,4 +1,4 @@
-> Archived report from an earlier release. Current Complete implementation and validation: [COMPLETE-REPORT.md](COMPLETE-REPORT.md).
+> Archived release report. Current implementation and validation: [ESPORTS-REPORT.md](ESPORTS-REPORT.md).
 
 # รายงานแพตช์ประสิทธิภาพ — 7 พฤศจิกายน 2026
 

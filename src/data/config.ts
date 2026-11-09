@@ -1,10 +1,10 @@
 export const GAME_CONFIG = {
-  appName: 'Chess Career Mode',
-  saveVersion: 9,
-  saveKey: 'chess-career-mode-save',
+  appName: "Chess Career Mode",
+  saveVersion: 13,
+  saveKey: "chess-career-mode-save",
   /** Characters (separate careers) the player can keep at the same time */
   saveSlots: 3,
-  defaultPlayerName: 'New Player',
+  defaultPlayerName: "New Player",
   maxNameLength: 24,
   /** Career start years the player can choose */
   startYear: {
@@ -95,7 +95,12 @@ export const GAME_CONFIG = {
     /** Share of the prize fund paid to ranks 1 to 5 */
     prizeShares: [0.35, 0.22, 0.15, 0.1, 0.06] as readonly number[],
     /** Time controls of tournament levels: base minutes + increment seconds */
-    levelTime: { local: [15, 10], national: [25, 10], international: [90, 30], elite: [90, 30] } as const,
+    levelTime: {
+      local: [15, 10],
+      national: [25, 10],
+      international: [90, 30],
+      elite: [90, 30],
+    } as const,
   },
   history: {
     maxGames: 1000,
@@ -108,7 +113,7 @@ export const GAME_CONFIG = {
     seed: 1128812372,
     /** Bump to rebuild stored NPC databases after changing generation rules. */
     npcDatabaseVersion: 2,
-    fictionalNpcCount: 1200,
+    fictionalNpcCount: 4000,
     maxCityResults: 40,
     majorCityCount: 12,
   },

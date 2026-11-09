@@ -1,11 +1,11 @@
 export type Continent =
-  | 'Africa'
-  | 'Antarctica'
-  | 'Asia'
-  | 'Europe'
-  | 'North America'
-  | 'Oceania'
-  | 'South America';
+  | "Africa"
+  | "Antarctica"
+  | "Asia"
+  | "Europe"
+  | "North America"
+  | "Oceania"
+  | "South America";
 
 export interface Federation {
   /** FIDE federation code, e.g. "GER" */
@@ -29,7 +29,7 @@ export interface Country {
   federation: Federation;
   /** Alternative spellings used by search */
   aliases: string[];
-  status: 'sovereign' | 'territory' | 'additional';
+  status: "sovereign" | "territory" | "additional";
 }
 
 export interface City {
@@ -43,4 +43,10 @@ export interface PlayerCity {
   name: string;
   /** True when the player typed a city that is not in the database */
   custom: boolean;
+}
+
+export interface BirthPlace {
+  countryCode: string;
+  city: string;
+  source?: "chosen" | "generated" | "legacy";
 }

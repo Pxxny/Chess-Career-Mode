@@ -51,6 +51,8 @@ export interface MatchTimeControl {
 
 /** A light description of a match that can be stored in the save (for recovery after a reload). */
 export interface MatchSetupLite {
+  prediction?: import("@/game/prediction/types").PredictionSnapshot;
+  esports?: { eventId: string; round: number; opponentId: string };
   white: MatchSide;
   black: MatchSide;
   playerColor: PieceColor;
@@ -160,6 +162,7 @@ export interface MatchRecord {
 }
 
 export interface TournamentPlayer {
+  predictionActor?: import("@/game/prediction/types").PredictionActor;
   id: string;
   name: string;
   elo: number;
@@ -174,6 +177,8 @@ export interface TournamentPlayer {
 }
 
 export interface TournamentPairing {
+  forecast?: import("@/game/prediction/types").CompactPrediction;
+  prediction?: import("@/game/prediction/types").PredictionSnapshot;
   /** Deciding rapid tiebreak winner when a knockout classical game is drawn. */
   tiebreakWinner?: string;
   white: string;
@@ -184,6 +189,10 @@ export interface TournamentPairing {
 
 /** A paid entry for an upcoming event. It becomes playable in the event's week. */
 export interface EventRegistration {
+  registrationDay?: number;
+  registrationCloseDay?: number;
+  invitationAccepted?: boolean;
+  travelCost?: number;
   minElo?: number;
   minReputation?: number;
   details?: import("@/game/competition/types").EventDetails;
@@ -194,12 +203,14 @@ export interface EventRegistration {
   week: number;
   fieldSize: number;
   entryFee: number;
-  /** Snapshot of the announced NPC field; stable from registration to play. */
+  /** Planned roster IDs. New entries reveal the arrived prefix by day; legacy entries retain their complete field. */
   entrantIds?: string[];
   entrantSeed?: number;
 }
 
 export interface ActiveTournament {
+  predictionRecordedRounds?: number;
+  startedOnDay?: number;
   entryRequirements?: string;
   withdrawn?: boolean;
   details?: import("@/game/competition/types").EventDetails;

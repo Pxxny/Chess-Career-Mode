@@ -1,0 +1,14 @@
+
+> chess-career-mode@0.1.0 test:chess-cache
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-chess-cache.ts
+
+✓ cache refresh after changing board square
+✓ cache refresh after changing board replacement
+✓ cache refresh after changing turn
+✓ cache refresh after changing castling
+✓ cache refresh after changing en passant
+✓ cache refresh after changing halfmove
+✓ cache refresh after changing fullmove
+✓ returned moves cannot poison cached moves; explicit legal arrays retain reference behavior
+✓ legal moves and rule APIs leave frozen input positions unchanged (castling, en passant, pins, promotions)
+Chess cache regressions passed.

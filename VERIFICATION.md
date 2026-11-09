@@ -1,4 +1,6 @@
-> Archived report from an earlier release. Current Complete implementation and validation: [COMPLETE-REPORT.md](COMPLETE-REPORT.md).
+> Archived report from an earlier release. For the current save-version-13 build, see [PREDICTION-REPORT.md](PREDICTION-REPORT.md) and `verification/prediction/`.
+
+> Archived release report. Current implementation and validation: [ESPORTS-REPORT.md](ESPORTS-REPORT.md).
 
 # Verification — 2026-11-06
 

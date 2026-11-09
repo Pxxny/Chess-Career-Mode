@@ -1,0 +1,11 @@
+
+> chess-career-mode@0.1.0 test:prediction
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-prediction.ts
+
+PASS mathematical invariants: 32805 matchups, five controls, 0–4000 Elo, invalid/boundary inputs, exact rounded totals, colour symmetry, bounded context, immutable snapshots
+PASS 400,000 seeded NPC results follow W/D/L without forced wins: [{"gap":0,"win":0.35755,"draw":0.28873,"expected":0.5},{"gap":200,"win":0.10195,"draw":0.27839,"expected":0.2402530733520421},{"gap":400,"win":0.01343,"draw":0.15373,"expected":0.09090909090909091},{"gap":800,"win":0.00152,"draw":0.01705,"expected":0.009900990099009901}]
+PASS calibration: sparse prior, shrinkage, unique sample counts, seven grouping dimensions, held-out Brier/log-loss improvement ({"prior":{"brier":0.6911500000000002,"logLoss":1.1367559227541693},"posterior":{"brier":0.6377865747621879,"logLoss":1.0570669785369529}}), no result leakage, reload and duplicate protection
+PASS career/practice persistence: frozen opponent ratings, scopes, post-result rating changes, abandoned recovery once, legacy migration without invented forecasts, actual weekly NPC circuit
+PASS Swiss/tournament integration: 49 NPC boards use their original forecasts; every future round freezes before results; no repeats/double counting
+PASS bounded history stress: 1280 cells, 200 recent NPC details, 4096 dedupe IDs; 4,500 records 118.3 ms; 10,000 forecasts 112.6 ms (0.0113 ms/forecast), retained state 537.1 KiB
+Match prediction verification passed in 993.1 ms.

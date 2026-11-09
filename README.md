@@ -1,30 +1,46 @@
 # Chess Career Mode
 
-Latest release (save version 9): **Complete — Tournament, Swiss and Prepare**.
-See `COMPLETE-REPORT.md`, `CHANGELOG.md` and `verification/` for scope and actual validation.
-Existing Look, legends, annual NPC population, Federation, coaching and three-slot saves are retained.
-Use a fresh extraction directory when updating from ZIP.
+Latest release (save version 13): **Match Prediction & Calibration**.
+See `PREDICTION-GUIDE.md`, `PREDICTION-REPORT.md`, `CHANGELOG.md` and `verification/prediction/`.
 
-Complete has six submenus: Tournament, Swiss, Prepare, Rankings, League, History.
-Register before the deadline, prepare using AP/money/game hours, then start during the event week.
-Individual free play and Federation/national teams are nested under Tournament; Coach is under Prepare.
-Swiss uses no-rematch maximum matching with score/colour preferences (not certified FIDE Dutch software).
-Career competitions are simulations. Verified Candidates 2024 dates/venue/format carry a FIDE source;
-other schedules, entry rules, fees, prizes and all career results are explicitly game data.
+- Separate the exact Elo expected score from deterministic win/draw/loss probabilities. Both the raw Elo and bounded context model preserve `E = W + D/2` and `W + D + L = 1`. Displayed odds total 100.00%.
+- Use real player skills/attributes, bounded form/morale/fatigue/preparation/colour effects and clearly marked NPC skill estimates. Use the Online Blitz rating pool for its rating, peak, form and head-to-head history.
+- Show pre-match forecasts on Home, Tournament, Swiss pairings, Prepare/Scout, individual/practice/esports setups and the Match Viewer. Freeze each played game's original forecast before move one. Keep the original forecast in history and replays.
+- **Career → Match predictions** contains Accuracy, Upsets and Model settings. Match predictions are shown on the match page before each game starts (including every tournament round); there is no player-facing Elo calculator.
+- Learn draw-rate residuals from newly recorded games, with sparse-group fallback, smoothing, seven grouping dimensions and bounded storage. NPC regular boards use the same W/D/L model. Older games without a recorded forecast are never retroactively predicted.
+- Track Brier score, natural-log loss, top-choice accuracy, class-wise reliability bins and career/NPC upset records. Separate career, practice and NPC samples. Forfeits, byes, nonstandard training positions and interruptions do not train the draw model.
+- Draw priors/coefficients are configurable game-design parameters, not externally fitted FIDE statistics. NPC numeric skills are estimates from existing NPC fields. Self-generated NPC results establish internal calibration, not real-world predictive accuracy. Engine Elo remains approximate.
 
-After extracting `Chess-Career-Mode-Complete-Tournament-Swiss-Prepare.zip`:
+Features retained from Multi-Day Tournaments & Esports:
+
+- Tournament finder: Official / Unofficial, single / multiple days, 3 / 7 days, all-player rotation or BO3, plus the previous Elo / continent / capacity / start-range filters.
+- Three new rotating events each calendar month: 3-day single round robin, 7-day single round robin, and 7-day BO3 against every opponent. Existing single-day rapid/blitz events remain.
+- Each event shows its daily maximum games and HH:MM itinerary. Active tournaments show their match-day clock; other career screens keep date-only time. Future-day games are blocked until the career calendar actually reaches their day. Match-day advancement restores normal daily resources; missed games are forfeited.
+- Organizer names no longer append “(career simulation)”. Historical reference facts remain distinct from career schedules/results.
+- Complete → Tournament now switches between **Chess tournaments** and **Esports**, retaining the six existing main submenus.
+- Esports: Duo / Trio squads, Free Agency, rare elite offers, paid club contracts, owned teams, NPC invitation refusals, qualifiers, weekly cups and monthly finals. Set Traditional / Esports / Mixed as your focus without locking the other circuit.
+- D 1800–2000; C 2001–2200; B 2201–2500; A 2501–2699; S 2700+. Developing players may enter D qualifiers with a temporary pickup squad. Monthly finals require a top-two qualifier pass.
+- Esports uses separate bookings/team standings/history while sharing career Elo and the calendar. The player's board runs through the normal chess engine; teammate/NPC boards settle from ratings. Calendar conflicts, duplicate results, salaries and prizes are guarded.
+- Keep three save slots, national names/birthplace, shared SVG chess pieces, move annotations, training, federation and earlier features. Old saves upgrade automatically.
+
+All new team names and circuit events are fictional, inspired by [Liquipedia's tournament categories](https://liquipedia.net/chess/Portal:Tournaments). Elo bands, Duo/Trio rules and schedules are game design, not Liquipedia's classification policy or historical results. Standard Swiss retains its documented custom pairing engine, not certified FIDE Dutch software.
+
+After extracting `Chess-Career-Mode-Match-Prediction-Calibration.zip`:
 
 ```sh
 cd Chess-Career-Mode
 npm ci
 npm run typecheck
+npm run test:prediction
+npm run test:esports
 npm run test:complete
 npm run build
 npm run dev -- --host 0.0.0.0
 ```
 
-Open `http://127.0.0.1:5173` on the same device. `test:match` plays and analyses real
-engine games and takes considerably longer than the small system tests, especially on Termux.
+Open `http://127.0.0.1:5173` on the same device. `0.0.0.0` is the server binding address. Keep the same browser/origin to retain browser-local saves. The ZIP excludes node_modules and dist; npm ci uses the included lockfile.
+
+`test:match` plays/analyzes full engine games and takes minutes. Cloud/Chromium tests are not measurements on a physical phone or Termux. Older release reports are archived.
 
 Stage 1: foundation (shell, navigation, state, UI kit). Stage 2: world database. Stage 3: character creation. Stage 4: dashboard, profile and career. Stage 5: training. See `CHANGELOG.md` for details of every change.
 
@@ -40,7 +56,7 @@ npm run test:play    # Node 22+: openings, PGN, engine wrapper, practice games, 
 - **Countries** – `src/data/world/countries.ts` reads the maintained `world-countries` dataset (ISO 3166-1 plus territories): name, nationality (demonym), code, flag emoji, continent. England, Scotland and Wales are added as FIDE home-nation federations. Flag emoji do not render on Windows desktop browsers; the country name always appears beside them.
 - **Federations** – FIDE code (ISO alpha-3 with FIDE's known exceptions) plus a name. Names are generated as "<Country> Chess Federation" except for a handful of well-known ones.
 - **Cities** – `scripts/build-world-data.mjs` converts the `all-the-cities` (GeoNames, population >= 1000) package into one file per country in `public/data/cities/`. The selector loads the file for the chosen country, shows the largest cities first, searches the rest, and accepts custom entries. Same-named towns in a country are collapsed to the largest. If the files are missing it falls back to curated major cities + capital, still with custom entry. Rebuild with `npm run build:data`.
-- **NPCs** – `src/game/npc/`. 1,200 fictional players (deterministic from `GAME_CONFIG.world.seed`, ID `npc-0001`...) plus 23 historical legends. Fixed tier quotas guarantee beginners through legendary players. Each NPC is generated from its own seeded RNG, so IDs and attributes are stable.
+- **NPCs** – `src/game/npc/`. 4,000 fictional players (deterministic from `GAME_CONFIG.world.seed`, ID `npc-0001`...), a catalog of 82 historical legends, local cohorts and 100–250 new annual competitors. Fixed tier quotas guarantee beginners through legendary players. Each NPC is generated from its own seeded RNG, so IDs and attributes are stable.
 - **Persistence** – up to `GAME_CONFIG.saveSlots` (3) characters live side by side (`store/saveSlots.ts`); the open one is the game store's save. Each character has its own NPC world in the `careerNpcs` IndexedDB store, keyed by career id, written once and loaded on later launches. A world is rebuilt only if the seed, schema version or count in `GAME_CONFIG` changes, or when a new career starts. Changed NPCs are written back individually (`store/npcRepository.ts`). A single save from before slots existed becomes slot 1, with its NPC world, the first time it loads.
 - **Legends** – `src/data/chess/legends.ts`. They only hold a ranking in the years they were active (Elo interpolated from `ratings`). Alternate history mode (character creation or Profile) places every legend in their prime. Pre-1970 Elo values are retrospective estimates and dates are best-effort; edit the file to adjust.
 
@@ -80,7 +96,7 @@ npm run test:play    # Node 22+: openings, PGN, engine wrapper, practice games, 
 ## Practice games and openings (stage 6)
 - **Stockfish** – the `stockfish` npm package is copied into `public/engine/` by `scripts/copy-engine.mjs` after `npm install`; it runs in a Web Worker (`src/game/engine/stockfish.ts`). Single-thread builds are tried first, so no special server headers are needed. If the files are missing or fail, `EngineManager` switches to the built-in engine (`builtin.ts`). Run `node scripts/copy-engine.mjs` by hand if `public/engine/` is empty.
 - **Opening data** – `src/data/chess/eco/ecoData.ts` is generated by `scripts/build-eco-data.mjs` from lichess-org/chess-openings (CC0, public domain). Popularity, difficulty and eras in `eco/meta.ts` are editorial estimates, not counted from games. Import a PGN game collection to replace popularity with real counts.
-- **Tournament simulation** – call `simulateGame(db, save.repertoire.preferences, input)`; the result depends only on the ratings.
+- **Ratings-only simulation API** – `simulateGame(db, save.repertoire.preferences, input)` keeps opening preferences independent of its result when no forecast is supplied. Callers can now pass a previously frozen context forecast; those results sample that exact W/D/L distribution. Actual board games continue to be decided by legal moves, clocks and engine play.
 
 
 ## Match viewer (stage 7)

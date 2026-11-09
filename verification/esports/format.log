@@ -1,0 +1,35 @@
+src/data/config.ts 72ms (unchanged)
+src/pages/CompletePage.tsx 47ms
+src/pages/HomePage.tsx 42ms
+src/types/match.ts 16ms (unchanged)
+src/types/game.ts 4ms
+src/game/createNewSave.ts 5ms
+src/store/gameStore.ts 79ms
+src/game/training/migrate.ts 7ms
+src/game/esports/core.ts 111ms
+src/game/esports/types.ts 7ms
+src/game/esports/catalog.ts 12ms
+src/game/match/aftermath.ts 17ms
+src/game/match/registration.ts 26ms
+src/game/match/tournament.ts 77ms
+src/game/match/session.ts 69ms
+src/game/competition/calendar.ts 5ms
+src/game/competition/agenda.ts 20ms
+src/game/competition/types.ts 6ms
+src/game/competition/finder.ts 4ms
+src/game/competition/eligibility.ts 10ms
+src/game/world/schedule.ts 18ms
+src/features/training/RestCard.tsx 7ms
+src/features/esports/EsportsPanel.tsx 101ms
+src/features/match/TournamentTimetable.tsx 7ms
+src/features/match/TournamentPanel.tsx 60ms
+src/features/match/TournamentFinder.tsx 10ms
+src/features/match/MatchViewer.tsx 26ms
+scripts/verify-qol.ts 24ms
+scripts/verify-complete.ts 46ms (unchanged)
+scripts/verify-esports.ts 56ms
+scripts/verify-world.ts 62ms
+tests/qol.spec.ts 44ms
+tests/expansion.spec.ts 13ms
+tests/circuit.spec.ts 20ms
+tests/esports.spec.ts 15ms

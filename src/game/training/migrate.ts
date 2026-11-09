@@ -1,3 +1,6 @@
+import { normalizePredictionState } from "@/game/prediction/statistics";
+import { qolOf } from "@/game/qol/career";
+import { esportsOf } from "@/game/esports/core";
 import { competitionOf } from "@/game/competition/preparation";
 import { emptyExpansion } from "@/game/career/expansion";
 import { normalizeHistory } from "@/game/history/createHistory";
@@ -19,11 +22,19 @@ export function upgradeSave(save: GameSave): GameSave {
   return {
     ...save,
     version: GAME_CONFIG.saveVersion,
+    prediction: normalizePredictionState(raw.prediction),
+    esports: esportsOf(save),
+    qol: qolOf(save),
     competition: competitionOf(save),
     expansion: { ...emptyExpansion(), ...raw.expansion },
     world: { ...raw.world, day: raw.world.day ?? 1 },
     player: {
       ...raw.player,
+      birthPlace: raw.player.birthPlace ?? {
+        countryCode: save.career.countryCode,
+        city: save.career.city.name,
+        source: "legacy",
+      },
       attributes:
         raw.player.attributes ?? createStartingAttributes(raw.player.skills),
     },

@@ -1,0 +1,14 @@
+
+> chess-career-mode@0.1.0 test:e2e
+> playwright test tests/qol.spec.ts --grep date, work income
+
+[WebServer] (node:6097) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:6114) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/qol.spec.ts:264:1 › QoL: date, work income, abroad/FIDE filters, diverse repertoire and chosen training to the next event (5.0s)
+
+  1 passed (6.2s)

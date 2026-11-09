@@ -1,3 +1,31 @@
+import { configurePredictions } from "@/game/prediction/statistics";
+import {
+  predictionEnvironment,
+  recordTournamentPredictions,
+} from "@/game/prediction/adapters";
+import type { PredictionConfig } from "@/game/prediction/types";
+import {
+  calendarBookings,
+  gameDay,
+  tournamentSlot,
+  tournamentReady,
+} from "@/game/competition/agenda";
+import {
+  advanceEsports,
+  esportsCommand,
+  esportsOf,
+  esportsRoundDay,
+  esportsContextValid,
+} from "@/game/esports/core";
+import type { EsportsCommand } from "@/game/esports/types";
+import {
+  workJob,
+  requestTransfer,
+  settleTransfer,
+  plannedTrainingDay,
+  type CalendarAdvanceReport,
+} from "@/game/qol/career";
+import { matchRunning } from "@/store/matchLocks";
 import { expireCompetition } from "@/game/competition/calendar";
 import {
   prepareEvent,
@@ -73,7 +101,23 @@ import type {
 import { slotManager, summarize } from "./saveSlots";
 import { useNpcStore } from "./npcStore";
 
+let calendarCancelled = false;
+let calendarOwned = false;
+let calendarDaySave: GameSave | null = null;
+let calendarSync: Promise<unknown> = Promise.resolve();
 interface GameStore {
+  calendarProgress: { days: number; total: number; target: string } | null;
+  cancelCalendar: () => void;
+  simulateUntil: (
+    eventId: string,
+    sessions: string[],
+  ) => Promise<
+    { ok: true; report: CalendarAdvanceReport } | { ok: false; error: string }
+  >;
+  workCareerJob: (id: string) => { ok: true } | { ok: false; error: string };
+  requestFederationTransfer: (
+    country: string,
+  ) => { ok: true } | { ok: false; error: string };
   configureCompetition: (
     patch: Partial<Pick<CompetitionState, "target" | "plan" | "repertoire">>,
   ) => void;
@@ -111,6 +155,7 @@ interface GameStore {
   selectSlot: (slot: number) => Promise<boolean>;
   /** Deletes the character in a slot together with its NPC world. */
   deleteSlot: (slot: number) => Promise<void>;
+  configurePrediction: (config: Partial<PredictionConfig>) => void;
   renamePlayer: (name: string) => void;
   setAlternateHistory: (enabled: boolean) => void;
   spendActionPoints: (amount: number) => boolean;
@@ -138,6 +183,12 @@ interface GameStore {
   /** Stores the post-game analysis on a practice game. */
   attachAnalysis: (gameId: string, analysis: GameAnalysisSummary) => void;
   /** Records a finished match viewer game: rated result, fatigue and morale, the tournament round, the stored match. */
+  esportsAction: (
+    command: EsportsCommand,
+  ) => { ok: true; message: string } | { ok: false; error: string };
+  advanceCompetitionDay: (
+    circuit: "traditional" | "esports",
+  ) => { ok: true } | { ok: false; error: string };
   finishMatch: (finish: MatchFinish, db: OpeningDatabase) => MatchRecord | null;
   /** Stores the engine analysis of a match and sets the accuracy of its rated game. */
   attachMatchAnalysis: (matchId: string, report: MatchAnalysisReport) => void;
@@ -146,6 +197,9 @@ interface GameStore {
   recoverMatch: (db: OpeningDatabase) => void;
   /** Registers for an upcoming event and pays the entry fee. */
   registerForEvent: (
+    event: ScheduledEvent,
+  ) => { ok: true } | { ok: false; error: string };
+  acceptShowcaseInvitation: (
     event: ScheduledEvent,
   ) => { ok: true } | { ok: false; error: string };
   /** Cancels a registration (refunded before the event week). */
@@ -185,6 +239,113 @@ export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
       save: null,
+      calendarProgress: null,
+      cancelCalendar: () => {
+        calendarCancelled = true;
+      },
+      workCareerJob: (id) => {
+        const save = get().save;
+        if (!save || get().calendarProgress || matchRunning(save.career.id))
+          return { ok: false, error: "Finish the running activity first." };
+        const r = workJob(save, id);
+        if (r.ok) set({ save: r.save });
+        return r.ok ? { ok: true } : r;
+      },
+      requestFederationTransfer: (country) => {
+        const save = get().save;
+        if (!save || get().calendarProgress || matchRunning(save.career.id))
+          return { ok: false, error: "Finish the running activity first." };
+        const r = requestTransfer(save, country);
+        if (r.ok) set({ save: r.save });
+        return r.ok ? { ok: true } : r;
+      },
+      simulateUntil: async (eventId, sessions) => {
+        const start = get().save;
+        if (!start || get().calendarProgress)
+          return {
+            ok: false,
+            error: "A calendar simulation is already running.",
+          };
+        if (
+          start.pendingMatch ||
+          start.tournament?.status === "playing" ||
+          start.esports?.active?.status === "playing" ||
+          matchRunning(start.career.id)
+        )
+          return {
+            ok: false,
+            error: "Finish the running game and tournament before advancing.",
+          };
+        const bookings = calendarBookings(start),
+          now = gameDay(start);
+        const reg = bookings.find((r) => r.eventId === eventId);
+        if (!reg)
+          return { ok: false, error: "Register for this tournament first." };
+        if (reg.day < now || reg.day - now > 370)
+          return {
+            ok: false,
+            error: "Choose an upcoming registration within 52 weeks.",
+          };
+        const stop =
+          bookings.find((r) => r.day >= now && r.day <= reg.day) ?? reg;
+        const total = Math.max(0, stop.day - now);
+        const report: CalendarAdvanceReport = {
+          days: 0,
+          trained: 0,
+          skipped: 0,
+          stoppedFor: stop.name,
+          cancelled: false,
+          notes: [],
+        };
+        calendarCancelled = false;
+        set({ calendarProgress: { days: 0, total, target: stop.name } });
+        try {
+          for (let day = 0; day < total; day++) {
+            const current = get().save;
+            if (calendarCancelled || current?.career.id !== start.career.id) {
+              report.cancelled = true;
+              break;
+            }
+            const plan = plannedTrainingDay(current, sessions);
+            report.trained += plan.completed.length;
+            report.skipped += plan.skipped.length;
+            for (const skip of plan.skipped) {
+              const note = `${skip.name}: ${skip.reason}`;
+              if (!report.notes.includes(note) && report.notes.length < 8)
+                report.notes.push(note);
+            }
+            calendarOwned = true;
+            calendarDaySave = plan.save;
+            try {
+              get().endDay();
+            } finally {
+              calendarOwned = false;
+              calendarDaySave = null;
+            }
+            report.days++;
+            set({
+              calendarProgress: { days: report.days, total, target: stop.name },
+            });
+            await calendarSync;
+            await new Promise<void>((resolve) => setTimeout(resolve, 0));
+          }
+          if (calendarCancelled || get().save?.career.id !== start.career.id)
+            report.cancelled = true;
+          return { ok: true, report };
+        } catch (error) {
+          return {
+            ok: false,
+            error:
+              error instanceof Error
+                ? error.message
+                : "Calendar advance failed. Completed days remain saved.",
+          };
+        } finally {
+          calendarOwned = false;
+          calendarDaySave = null;
+          set({ calendarProgress: null });
+        }
+      },
       clearSave: async () => {
         const slot = slotManager.getActive();
         if (slot !== null) await get().deleteSlot(slot);
@@ -258,17 +419,20 @@ export const useGameStore = create<GameStore>()(
       },
 
       startNewGame: (options, career, slot) => {
+        calendarCancelled = true;
         // The slot becomes active first, so the persisted write that follows `set` goes into it.
         void slotManager.setActive(slot);
         set({ save: createNewSave(options, career) });
       },
 
       leaveSave: () => {
+        calendarCancelled = true;
         void slotManager.setActive(null);
         set({ save: null });
       },
 
       selectSlot: async (slot) => {
+        calendarCancelled = true;
         let persisted: { state?: unknown; version?: number } | null = null;
         try {
           const raw = await slotManager.readSlot(slot);
@@ -339,6 +503,8 @@ export const useGameStore = create<GameStore>()(
       },
 
       train: (sessionId, options) => {
+        if (get().calendarProgress)
+          return { ok: false, error: "Calendar simulation is running." };
         const { save } = get();
         if (!save) return { ok: false, error: "No career is loaded." };
         const result = performSession(save, sessionId, options);
@@ -347,6 +513,8 @@ export const useGameStore = create<GameStore>()(
       },
 
       rest: (kind) => {
+        if (get().calendarProgress)
+          return { ok: false, error: "Calendar simulation is running." };
         const { save } = get();
         if (!save) return { ok: false, error: "No career is loaded." };
         const result = takeRest(save, kind);
@@ -356,18 +524,29 @@ export const useGameStore = create<GameStore>()(
       },
 
       endDay: () => {
-        const { save } = get();
+        if (get().calendarProgress && !calendarOwned) return null;
+        const save =
+          calendarOwned && calendarDaySave ? calendarDaySave : get().save;
         if (!save) return null;
+        if (
+          !calendarOwned &&
+          (save.pendingMatch || matchRunning(save.career.id))
+        )
+          return null;
         const advanced = endDay(save);
-        const next = expireCompetition(advanced.save),
+        const next = advanceEsports(
+            settleTransfer(expireCompetition(advanced.save)),
+            useNpcStore.getState().npcs,
+          ),
           report = advanced.report;
+        calendarSync = Promise.resolve();
         // Apply the new date before selecting circuit entrants, so retiring players cannot compete
         // and this year's cohort is available immediately. Persistence continues asynchronously.
         if (
           report.newWeek &&
           useNpcStore.getState().careerId === save.career.id
         ) {
-          void useNpcStore
+          calendarSync = useNpcStore
             .getState()
             .syncWorld({
               year: next.world.date.year,
@@ -383,6 +562,19 @@ export const useGameStore = create<GameStore>()(
                   population.retired.map((n) => n.name),
                 );
             });
+        }
+        if (next.player.country !== save.player.country) {
+          calendarSync = Promise.all([
+            calendarSync,
+            useNpcStore
+              .getState()
+              .ensureLocalPool(
+                save.career.id,
+                next.player.country,
+                next.player.city.name,
+                next.world.date.year,
+              ),
+          ]);
         }
         const bulletin = report.newWeek
           ? weeklyCircuit(next, useNpcStore.getState().npcs)
@@ -414,9 +606,19 @@ export const useGameStore = create<GameStore>()(
         if (save) set({ save: recordTournament(save, input) });
       },
 
+      configurePrediction: (config) => {
+        const save = get().save;
+        if (save) set({ save: configurePredictions(save, config) });
+      },
+
       recordPracticeGame: (input, db) => {
         const { save } = get();
         if (!save) return null;
+        if (
+          input.prediction &&
+          save.prediction?.seen.includes(input.prediction.id)
+        )
+          return null;
         const result = recordPracticeGame(save, input, db);
         set({
           save:
@@ -444,14 +646,75 @@ export const useGameStore = create<GameStore>()(
         set({ save: recoverInterruptedPracticeGame(save, db) });
       },
 
+      esportsAction: (command) => {
+        const save = get().save;
+        if (!save) return { ok: false, error: "No career." };
+        if (
+          get().calendarProgress ||
+          matchRunning(save.career.id) ||
+          save.pendingMatch
+        )
+          return { ok: false, error: "Finish the running activity first." };
+        const r = esportsCommand(save, useNpcStore.getState().npcs, command);
+        if (r.ok) set({ save: r.save });
+        return r.ok ? { ok: true, message: r.message } : r;
+      },
+      advanceCompetitionDay: (circuit) => {
+        const save = get().save;
+        if (
+          !save ||
+          get().calendarProgress ||
+          save.pendingMatch ||
+          matchRunning(save.career.id)
+        )
+          return { ok: false, error: "Finish the running activity first." };
+        const t = save.tournament,
+          e = esportsOf(save).active;
+        const target =
+          circuit === "traditional" && t?.status === "playing"
+            ? tournamentSlot(t).absoluteDay
+            : circuit === "esports" && e?.status === "playing"
+              ? esportsRoundDay(e)
+              : null;
+        if (target === null || target <= gameDay(save))
+          return { ok: false, error: "Complete today’s games first." };
+        for (
+          let i = 0;
+          i < 64 &&
+          get().save?.career.id === save.career.id &&
+          gameDay(get().save!) < target;
+          i++
+        )
+          get().endDay();
+        return { ok: true };
+      },
       finishMatch: (finish, db) => {
         const { save } = get();
         if (!save) return null;
         if (
+          !finish.setup.esports &&
           finish.setup.tournament &&
           (save.tournament?.eventId !== finish.setup.tournament.id ||
             save.tournament.status !== "playing" ||
             save.tournament.round !== finish.setup.tournament.round)
+        )
+          return null;
+        if (
+          finish.setup.esports &&
+          !esportsContextValid(save, finish.setup.esports)
+        )
+          return null;
+        if (
+          !finish.setup.esports &&
+          finish.setup.tournament &&
+          !tournamentReady(save)
+        )
+          return null;
+        if (
+          finish.setup.prediction &&
+          save.matches.some(
+            (m) => m.setup.prediction?.id === finish.setup.prediction?.id,
+          )
         )
           return null;
         const ranked = getRankedNpcs(useNpcStore.getState().npcs);
@@ -509,9 +772,31 @@ export const useGameStore = create<GameStore>()(
       },
 
       registerForEvent: (event) => {
+        if (get().calendarProgress)
+          return { ok: false, error: "Calendar simulation is running." };
         const { save } = get();
         if (!save) return { ok: false, error: "No career." };
         const r = registerForEvent(save, event, useNpcStore.getState().npcs);
+        if (r.ok) set({ save: r.save });
+        return r.ok ? { ok: true } : r;
+      },
+
+      acceptShowcaseInvitation: (event) => {
+        if (get().calendarProgress)
+          return { ok: false, error: "Calendar simulation is running." };
+        const { save } = get();
+        if (!save) return { ok: false, error: "No career." };
+        if (!event.details?.showcase)
+          return {
+            ok: false,
+            error: "This event does not issue showcase invitations.",
+          };
+        const r = registerForEvent(
+          save,
+          event,
+          useNpcStore.getState().npcs,
+          true,
+        );
         if (r.ok) set({ save: r.save });
         return r.ok ? { ok: true } : r;
       },
@@ -522,6 +807,8 @@ export const useGameStore = create<GameStore>()(
       },
 
       startTournament: (eventId) => {
+        if (get().calendarProgress)
+          return { ok: false, error: "Calendar simulation is running." };
         const { save } = get();
         if (!save) return { ok: false, error: "No career." };
         const seed =
@@ -542,9 +829,12 @@ export const useGameStore = create<GameStore>()(
       withdrawTournament: () => {
         const { save } = get();
         if (!save?.tournament || save.tournament.status !== "playing") return;
-        const t = withdraw(save.tournament);
+        const t = withdraw(save.tournament, predictionEnvironment(save));
         const me = t.players.find((p) => p.isPlayer);
-        let next: GameSave = { ...save, tournament: t };
+        let next: GameSave = recordTournamentPredictions(
+          { ...save, tournament: t },
+          t,
+        );
         next = recordTournament(next, {
           tournamentId: t.eventId,
           name: t.name,

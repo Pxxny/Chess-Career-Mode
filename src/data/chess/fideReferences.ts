@@ -1,0 +1,1022 @@
+// Public FIDE listing facts, observed 2026-11-08. Career rules and results are separate simulated data.
+export interface FideReference {
+  id: string;
+  name: string;
+  city: string;
+  country: string;
+  startDate: string;
+  listedSystem: string;
+  source: string;
+  directory: string;
+  endDate?: string;
+  timeControl?: string;
+  players?: string;
+  system?: string;
+}
+export const FIDE_REFERENCES: {
+  observedAt: string;
+  directory: string;
+  events: FideReference[];
+} = {
+  observedAt: "2026-11-08",
+  directory: "https://ratings.fide.com/rated_tournaments.phtml",
+  events: [
+    {
+      id: "508993",
+      name: "Thailand Series X CapyChess Rapid Championship November 2026 - Open",
+      city: "Bangkok",
+      country: "TH",
+      startDate: "2026-11-07",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=508993",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=THA&period=current",
+      endDate: "2026-11-07",
+      timeControl:
+        "Rapid: 15 minutes for game with 10 seconds increment from move 1",
+      players: "30",
+      system: "s",
+    },
+    {
+      id: "482905",
+      name: "BCC FIde Blitz October 2026",
+      city: "Bangkok",
+      country: "TH",
+      startDate: "2026-10-30",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=482905",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=THA&period=current",
+      endDate: "2026-10-30",
+      timeControl:
+        "Blitz: 3 minutes for game with 2 seconds increment from move 1",
+      players: "30",
+      system: "s",
+    },
+    {
+      id: "501178",
+      name: "FCCA Rapid 3_2026 - Open",
+      city: "Bangkok",
+      country: "TH",
+      startDate: "2026-09-26",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=501178",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=THA&period=current",
+      endDate: "2026-09-26",
+      timeControl:
+        "Rapid: 15 minutes for game with 10 seconds increment from move 1",
+      players: "20",
+      system: "s",
+    },
+    {
+      id: "509676",
+      name: "Khonkaen X Chess Guild 6th Blitz Tournament - Open",
+      city: "Khonkaen",
+      country: "TH",
+      startDate: "2026-11-28",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=509676",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=THA&period=current",
+      endDate: "2026-11-28",
+      timeControl:
+        "Blitz: 3 minutes for game with 2 seconds increment from move 1",
+      players: "30",
+      system: "s",
+    },
+    {
+      id: "505434",
+      name: "RKCC FIDE Rated Rapid November 2026",
+      city: "Bangkok",
+      country: "TH",
+      startDate: "2026-11-08",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=505434",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=THA&period=current",
+      endDate: "2026-11-08",
+      timeControl:
+        "Rapid: 15 minutes for game with 5 seconds increment from move 1",
+      players: "32",
+      system: "s",
+    },
+    {
+      id: "505436",
+      name: "5th Bangkok Patana Chess Championship",
+      city: "Bangkok",
+      country: "TH",
+      startDate: "2026-11-22",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=505436",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=THA&period=current",
+      endDate: "2026-11-22",
+      timeControl:
+        "Rapid: 15 minutes for game with 5 seconds increment from move 1",
+      players: "40",
+      system: "s",
+    },
+    {
+      id: "507061",
+      name: "RBSC Rapid Chess tournament 2_2026",
+      city: "Bangkok",
+      country: "TH",
+      startDate: "2026-11-08",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=507061",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=THA&period=current",
+      endDate: "2026-11-08",
+      timeControl:
+        "Rapid: 15 minutes for game with 10 seconds increment from move 1",
+      players: "20",
+      system: "s",
+    },
+    {
+      id: "509088",
+      name: "Eastern Rapid Chess in the Pacific Park Sriracha",
+      city: "Chonburi",
+      country: "TH",
+      startDate: "2026-11-21",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=509088",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=THA&period=current",
+      endDate: "2026-11-21",
+      timeControl:
+        "Rapid: 15 minutes for game with 10 seconds increment from move 1",
+      players: "30",
+      system: "s",
+    },
+    {
+      id: "505435",
+      name: "RKCC FIDE Rated Blitz November 2026",
+      city: "Bangkok",
+      country: "TH",
+      startDate: "2026-11-08",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=505435",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=THA&period=current",
+      endDate: "2026-11-08",
+      timeControl:
+        "Blitz: 3 minutes for game with 2 seconds increment from move 1",
+      players: "28",
+      system: "s",
+    },
+    {
+      id: "502885",
+      name: "Mahachai Rapid Chess Central on Tour 2026 Season 6 - Open",
+      city: "Bangkok",
+      country: "TH",
+      startDate: "2026-10-04",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=502885",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=THA&period=current",
+      endDate: "2026-10-04",
+      timeControl:
+        "Rapid: 15 minutes for game with 10 seconds increment from move 1",
+      players: "30",
+      system: "s",
+    },
+    {
+      id: "494154",
+      name: "Chessinfo & Golden Knights Chess Academy - 1st International FIDE Rating Open Chess Tournament 2026",
+      city: "Tirupattur",
+      country: "IN",
+      startDate: "2026-10-28",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=494154",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=IND&period=current",
+      endDate: "2026-11-01",
+      timeControl: "Standard: 90 minutes with 30 second increment from move 1",
+      players: "150",
+      system: "s",
+    },
+    {
+      id: "496209",
+      name: "Lambardar Gaya Prasad Memorial FIDE rated Open Rapid Tournament",
+      city: "Bah, Agra",
+      country: "IN",
+      startDate: "2026-10-31",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=496209",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=IND&period=current",
+      endDate: "2026-11-01",
+      timeControl:
+        "Rapid: 25 minutes for game with 10 seconds increment from move 1",
+      players: "150",
+      system: "s",
+    },
+    {
+      id: "490387",
+      name: "7TH SSS INTERNATIONAL BELOW 1800 FIDE RATED CHESS TOURNAMENT",
+      city: "Pudukkottai",
+      country: "IN",
+      startDate: "2026-10-30",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=490387",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=IND&period=current",
+      endDate: "2026-11-01",
+      timeControl:
+        "Standard: 30 minutes for game with 30 seconds increment from move 1",
+      players: "150",
+      system: "s",
+    },
+    {
+      id: "492657",
+      name: "2nd Jalpaiguri CPPF International FIDE Rated Open Classical Chess Tournament 2026",
+      city: "Jalpaiguri",
+      country: "IN",
+      startDate: "2026-10-28",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=492657",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=IND&period=current",
+      endDate: "2026-11-01",
+      timeControl: "Standard: 90 minutes with 30 second increment from move 1",
+      players: "150",
+      system: "s",
+    },
+    {
+      id: "501658",
+      name: "Western Asian youth Chess Championship 2026 for category 18",
+      city: "Ahmedabad",
+      country: "IN",
+      startDate: "2026-10-23",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=501658",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=IND&period=current",
+      endDate: "2026-10-30",
+      timeControl: "Standard: 90 minutes with 30 second increment from move 1",
+      players: "150",
+      system: "s",
+    },
+    {
+      id: "506445",
+      name: "30th Rating Rocket Chess Tournament 2026 - Blitz Open",
+      city: "Ho Chi Minh City",
+      country: "VN",
+      startDate: "2026-11-01",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=506445",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=VIE&period=current",
+      endDate: "2026-11-01",
+      timeControl:
+        "Blitz: 3 minutes for game with 2 seconds increment from move 1",
+      players: "100",
+      system: "s",
+    },
+    {
+      id: "507381",
+      name: "90th Parents-Love-Chess Rated Series - Blitz",
+      city: "Ho Chi Minh City",
+      country: "VN",
+      startDate: "2026-11-01",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=507381",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=VIE&period=current",
+      endDate: "2026-11-01",
+      timeControl:
+        "Blitz: 5 minutes for game with 2 seconds increment from move 1",
+      players: "80",
+      system: "s",
+    },
+    {
+      id: "506444",
+      name: "29th Rating Rocket Chess Tournament 2026 - Rapid Open",
+      city: "Ho Chi Minh City",
+      country: "VN",
+      startDate: "2026-11-01",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=506444",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=VIE&period=current",
+      endDate: "2026-11-01",
+      timeControl:
+        "Rapid: 10 minutes for game with 2 seconds increment from move 1",
+      players: "100",
+      system: "s",
+    },
+    {
+      id: "506443",
+      name: "28th Rating Rocket Chess Tournament 2026 - Rapid Open",
+      city: "Ho Chi Minh City",
+      country: "VN",
+      startDate: "2026-11-01",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=506443",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=VIE&period=current",
+      endDate: "2026-11-01",
+      timeControl:
+        "Rapid: 10 minutes for game with 2 seconds increment from move 1",
+      players: "100",
+      system: "s",
+    },
+    {
+      id: "497660",
+      name: "Vietnam Elite Chess Championships 2026 - Blitz Open",
+      city: "Can Tho",
+      country: "VN",
+      startDate: "2026-11-01",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=497660",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=VIE&period=current",
+      endDate: "2026-11-01",
+      timeControl:
+        "Blitz: 3 minutes for game with 2 seconds increment from move 1",
+      players: "200",
+      system: "s",
+    },
+    {
+      id: "508704",
+      name: "ChessLab Deepavali Rapid 2026",
+      city: "Singapore",
+      country: "SG",
+      startDate: "2026-11-09",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=508704",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=SGP&period=current",
+      endDate: "2026-11-09",
+      timeControl:
+        "Rapid: 10 minutes for game with 5 seconds increment from move 1",
+      players: "30",
+      system: "s",
+    },
+    {
+      id: "508703",
+      name: "ChessLab Super Blitz 2026",
+      city: "Singapore",
+      country: "SG",
+      startDate: "2026-11-14",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=508703",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=SGP&period=current",
+      endDate: "2026-11-14",
+      timeControl:
+        "Blitz: 3 minutes for game with 2 seconds increment from move 1",
+      players: "30",
+      system: "s",
+    },
+    {
+      id: "506395",
+      name: "Intchess Asia Blitz - 15th Nov 2026",
+      city: "Singapore",
+      country: "SG",
+      startDate: "2026-11-15",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=506395",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=SGP&period=current",
+      endDate: "2026-11-15",
+      timeControl:
+        "Blitz: 3 minutes for game with 2 seconds increment from move 1",
+      players: "40",
+      system: "s",
+    },
+    {
+      id: "506393",
+      name: "Intchess Asia Classical Open - 8th Nov 2026",
+      city: "Singapore",
+      country: "SG",
+      startDate: "2026-11-08",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=506393",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=SGP&period=current",
+      endDate: "2026-11-08",
+      timeControl: "Standard: All Moves in 45 Min. Incr. 15 Sec. /     /",
+      players: "20",
+      system: "s",
+    },
+    {
+      id: "509809",
+      name: "CASPL 5th Standard Chess Tournament 2026 - Open",
+      city: "Singapore",
+      country: "SG",
+      startDate: "2026-11-20",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=509809",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=SGP&period=current",
+      endDate: "2026-11-22",
+      timeControl: "Standard: All Moves in 45 Min. Incr. 15 Sec. /     /",
+      players: "30",
+      system: "s",
+    },
+    {
+      id: "500528",
+      name: "3rd CMC 1800 FIDE Rated Classical Chess Busana Menara MARA",
+      city: "Kuala Lumpur",
+      country: "MY",
+      startDate: "2026-10-31",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=500528",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=MAS&period=current",
+      endDate: "2026-11-01",
+      timeControl:
+        "Standard: 30 minutes for game with 30 seconds increment from move 1",
+      players: "40",
+      system: "s",
+    },
+    {
+      id: "507019",
+      name: "Kejohanan Catur Terbuka Kuantan 2026",
+      city: "Kuantan, Pahang",
+      country: "MY",
+      startDate: "2026-10-31",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=507019",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=MAS&period=current",
+      endDate: "2026-11-01",
+      timeControl:
+        "Standard: 30 minutes for game with 30 seconds increment from move 1",
+      players: "60",
+      system: "s",
+    },
+    {
+      id: "509587",
+      name: "KEJOHANAN CATUR CELIK MINDA (Rapid)",
+      city: "Ipoh, Perak",
+      country: "MY",
+      startDate: "2026-11-28",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=509587",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=MAS&period=current",
+      endDate: "2026-11-28",
+      timeControl: "Rapid: 25 minutes for games",
+      players: "50",
+      system: "s",
+    },
+    {
+      id: "509298",
+      name: "FIDE World Amateur Chess Championships 2026 - W2000",
+      city: "Klang, Selangor",
+      country: "MY",
+      startDate: "2026-11-05",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=509298",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=MAS&period=current",
+      endDate: "2026-11-12",
+      timeControl: "Standard: 90 minutes with 30 second increment from move 1",
+      players: "50",
+      system: "s",
+    },
+    {
+      id: "509299",
+      name: "FIDE World Amateur Chess Championships 2026 - W2300",
+      city: "Klang, Selangor",
+      country: "MY",
+      startDate: "2026-11-05",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=509299",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=MAS&period=current",
+      endDate: "2026-11-12",
+      timeControl: "Standard: 90 minutes with 30 second increment from move 1",
+      players: "50",
+      system: "s",
+    },
+    {
+      id: "501282",
+      name: "2026 English Blitz Championship",
+      city: "Peterborough",
+      country: "GB-ENG",
+      startDate: "2026-11-01",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=501282",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=ENG&period=current",
+      endDate: "2026-11-01",
+      timeControl:
+        "Blitz: 3 minutes for game with 2 seconds increment from move 1",
+      players: "100",
+      system: "s",
+    },
+    {
+      id: "501281",
+      name: "2026 English Over 65 Championship",
+      city: "Peterborough",
+      country: "GB-ENG",
+      startDate: "2026-10-26",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=501281",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=ENG&period=current",
+      endDate: "2026-10-31",
+      timeControl: "Standard: 90 minutes with 30 second increment from move 1",
+      players: "100",
+      system: "s",
+    },
+    {
+      id: "501278",
+      name: "2026 English Championship",
+      city: "Peterborough",
+      country: "GB-ENG",
+      startDate: "2026-10-26",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=501278",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=ENG&period=current",
+      endDate: "2026-10-31",
+      timeControl: "Standard: 90 minutes with 30 second increment from move 1",
+      players: "100",
+      system: "s",
+    },
+    {
+      id: "506747",
+      name: "2026 XTX Markets London Chess Classic Blitz 1",
+      city: "London",
+      country: "GB-ENG",
+      startDate: "2026-11-27",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=506747",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=ENG&period=current",
+      endDate: "2026-11-27",
+      timeControl:
+        "Blitz: 3 minutes for game with 2 seconds increment from move 1",
+      players: "50",
+      system: "s",
+    },
+    {
+      id: "496753",
+      name: "Newcastle City Library FIDE Blitz Nov 2026",
+      city: "Newcastle",
+      country: "GB-ENG",
+      startDate: "2026-11-07",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=496753",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=ENG&period=current",
+      endDate: "2026-11-07",
+      timeControl:
+        "Blitz: 3 minutes for game with 2 seconds increment from move 1",
+      players: "20",
+      system: "s",
+    },
+    {
+      id: "506069",
+      name: "TIP 2 des Bouches-du-Rhone 2026-27",
+      city: "ALLAUCH",
+      country: "FR",
+      startDate: "2026-10-27",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=506069",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=FRA&period=current",
+      endDate: "2026-10-27",
+      timeControl:
+        "Rapid: 15 minutes for game with 3 seconds increment from move 1",
+      players: "48",
+      system: "s",
+    },
+    {
+      id: "464182",
+      name: "15e Open des Vendanges de Libourne",
+      city: "LIBOURNE",
+      country: "FR",
+      startDate: "2026-11-01",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=464182",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=FRA&period=current",
+      endDate: "2026-11-01",
+      timeControl:
+        "Rapid: 12 minutes for game with 3 seconds increment from move 1",
+      players: "50",
+      system: "s",
+    },
+    {
+      id: "482288",
+      name: "1er Open rapide -2200 Jean Claude Serie",
+      city: "COURSAN",
+      country: "FR",
+      startDate: "2026-11-14",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=482288",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=FRA&period=current",
+      endDate: "2026-11-14",
+      timeControl:
+        "Rapid: 12 minutes for game with 3 seconds increment from move 1",
+      players: "50",
+      system: "s",
+    },
+    {
+      id: "482879",
+      name: "Open de Niort 2026 Acession (-1900)",
+      city: "NIORT",
+      country: "FR",
+      startDate: "2026-10-29",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=482879",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=FRA&period=current",
+      endDate: "2026-10-31",
+      timeControl: "Standard: 90 minutes with 30 second increment from move 1",
+      players: "50",
+      system: "s",
+    },
+    {
+      id: "482880",
+      name: "Open International de Niort Master 2026 (p1850 elo)",
+      city: "NIORT",
+      country: "FR",
+      startDate: "2026-10-29",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=482880",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=FRA&period=current",
+      endDate: "2026-10-31",
+      timeControl: "Standard: 90 minutes with 30 second increment from move 1",
+      players: "50",
+      system: "s",
+    },
+    {
+      id: "497118",
+      name: "35th King's Island Open - Major",
+      city: "Blue Ash, OH",
+      country: "US",
+      startDate: "2026-11-13",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=497118",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=USA&period=current",
+      endDate: "2026-11-15",
+      timeControl:
+        "Standard: 40 Moves in 80 Min. Del. 30 Sec. /     / 30 Min. Del. 30 Sec.",
+      players: "50",
+      system: "s",
+    },
+    {
+      id: "497116",
+      name: "21st Annual Los Angeles Open - Major",
+      city: "Irvine, CA",
+      country: "US",
+      startDate: "2026-11-06",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=497116",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=USA&period=current",
+      endDate: "2026-11-08",
+      timeControl:
+        "Standard: 40 Moves in 80 Min. Del. 30 Sec. /     / 30 Min. Del. 30 Sec.",
+      players: "50",
+      system: "s",
+    },
+    {
+      id: "497103",
+      name: "4th Shipman Memorial Tournament - 1600-1999",
+      city: "San Francisco, CA",
+      country: "US",
+      startDate: "2026-11-21",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=497103",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=USA&period=current",
+      endDate: "2026-11-22",
+      timeControl: "Standard: 90 minutes with 30 second increment from move 1",
+      players: "25",
+      system: "s",
+    },
+    {
+      id: "497102",
+      name: "4th Shipman Memorial Tournament - 2000 and Over",
+      city: "San Francisco, CA",
+      country: "US",
+      startDate: "2026-11-21",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=497102",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=USA&period=current",
+      endDate: "2026-11-22",
+      timeControl: "Standard: 90 minutes with 30 second increment from move 1",
+      players: "25",
+      system: "s",
+    },
+    {
+      id: "494311",
+      name: "CCC Blitz South - October 2026",
+      city: "Charlotte, NC",
+      country: "US",
+      startDate: "2026-10-31",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=494311",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=USA&period=current",
+      endDate: "2026-10-31",
+      timeControl:
+        "Blitz: 3 minutes for game with 2 seconds increment from move 1",
+      players: "40",
+      system: "s",
+    },
+    {
+      id: "501722",
+      name: "Sachseneinzelmeisterschaft 2026-2027",
+      city: "Dippoldiswalde",
+      country: "DE",
+      startDate: "2026-11-18",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=501722",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=GER&period=current",
+      endDate: "2026-11-21",
+      timeControl:
+        "Standard: 90min/40moves+30min/end+30sec increment per move starting from move 1",
+      players: "40",
+      system: "s",
+    },
+    {
+      id: "501724",
+      name: "Oberfraenkische Einzelmeisterschaft 2026-2027",
+      city: "Kronach",
+      country: "DE",
+      startDate: "2026-11-05",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=501724",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=GER&period=current",
+      endDate: "2026-11-08",
+      timeControl:
+        "Standard: 90 minutes for first 40 moves and 15 min. for the rest of the game with 30 sec. increment from move 1",
+      players: "50",
+      system: "s",
+    },
+    {
+      id: "501726",
+      name: "4. Int. Baden-Badener Herbstopen A-Gruppe",
+      city: "Baden-Baden",
+      country: "DE",
+      startDate: "2026-10-29",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=501726",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=GER&period=current",
+      endDate: "2026-11-01",
+      timeControl: "Standard: 90 minutes with 30 second increment from move 1",
+      players: "100",
+      system: "s",
+    },
+    {
+      id: "501727",
+      name: "4. Int. Baden-Badener Herbstopen B-Gruppe",
+      city: "Baden-Baden",
+      country: "DE",
+      startDate: "2026-10-29",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=501727",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=GER&period=current",
+      endDate: "2026-11-01",
+      timeControl: "Standard: 90 minutes with 30 second increment from move 1",
+      players: "100",
+      system: "s",
+    },
+    {
+      id: "501354",
+      name: "Main-Taunus-Einzelmeisterschaft 2026",
+      city: "Floersheim",
+      country: "DE",
+      startDate: "2026-11-13",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=501354",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=GER&period=current",
+      endDate: "2026-11-15",
+      timeControl: "Standard: 90 minutes with 30 second increment from move 1",
+      players: "50",
+      system: "s",
+    },
+    {
+      id: "494996",
+      name: "VIII OPEN CIUTAT DEL PRAT Rondas 5",
+      city: "El Prat de Llobregat (Barcelona)",
+      country: "ES",
+      startDate: "2026-10-30",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=494996",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=ESP&period=current",
+      endDate: "2026-10-30",
+      timeControl: "Standard: 60 minutes with 30 seconds increment from move 1",
+      players: "40",
+      system: "s",
+    },
+    {
+      id: "508788",
+      name: "Campionat de Mallorca d'Escacs Blitz 2026",
+      city: "Marratxi (Baleares)",
+      country: "ES",
+      startDate: "2026-11-01",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=508788",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=ESP&period=current",
+      endDate: "2026-11-01",
+      timeControl:
+        "Blitz: 3 minutes for game with 2 seconds increment from move 1",
+      players: "60",
+      system: "s",
+    },
+    {
+      id: "494994",
+      name: "VIII OPEN CIUTAT DEL PRAT Rondas 1-4",
+      city: "El Prat de Llobregat (Barcelona)",
+      country: "ES",
+      startDate: "2026-10-02",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=494994",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=ESP&period=current",
+      endDate: "2026-10-23",
+      timeControl: "Standard: 60 minutes with 30 seconds increment from move 1",
+      players: "40",
+      system: "s",
+    },
+    {
+      id: "506791",
+      name: "I Open Internacional FUGARO Marbella",
+      city: "Marbella (Malaga)",
+      country: "ES",
+      startDate: "2026-11-01",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=506791",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=ESP&period=current",
+      endDate: "2026-11-01",
+      timeControl:
+        "Rapid: 10 minutes for game with 5 seconds increment from move 1",
+      players: "150",
+      system: "s",
+    },
+    {
+      id: "503937",
+      name: "VI Memorial Anibal Alonso",
+      city: "Mos (Pontevedra)",
+      country: "ES",
+      startDate: "2026-10-31",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=503937",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=ESP&period=current",
+      endDate: "2026-10-31",
+      timeControl:
+        "Blitz: 5 minutes for game with 2 seconds increment from move 1",
+      players: "150",
+      system: "s",
+    },
+    {
+      id: "507233",
+      name: "Open Rapid Charlois Europoort November 2026",
+      city: "Rotterdam",
+      country: "NL",
+      startDate: "2026-11-13",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=507233",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=NED&period=current",
+      endDate: "2026-11-13",
+      timeControl:
+        "Rapid: 15 minutes for game with 5 seconds increment from move 1",
+      players: "50",
+      system: "s",
+    },
+    {
+      id: "507183",
+      name: "Chessfestival Groningen 2026 Compact A",
+      city: "Groningen",
+      country: "NL",
+      startDate: "2026-12-20",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=507183",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=NED&period=current",
+      endDate: "2026-12-24",
+      timeControl: "Standard: 90 minutes with 30 second increment from move 1",
+      players: "40",
+      system: "s",
+    },
+    {
+      id: "507186",
+      name: "Chessfestival Groningen 2026 Compact D",
+      city: "Groningen",
+      country: "NL",
+      startDate: "2026-12-20",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=507186",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=NED&period=current",
+      endDate: "2026-12-24",
+      timeControl: "Standard: 90 minutes with 30 second increment from move 1",
+      players: "40",
+      system: "s",
+    },
+    {
+      id: "492087",
+      name: "ONK NSVG 2026",
+      city: "Ermelo",
+      country: "NL",
+      startDate: "2026-11-26",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=492087",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=NED&period=current",
+      endDate: "2026-11-29",
+      timeControl: "Standard: 90 minutes with 30 second increment from move 1",
+      players: "30",
+      system: "s",
+    },
+    {
+      id: "507184",
+      name: "Chessfestival Groningen 2026 Compact B",
+      city: "Groningen",
+      country: "NL",
+      startDate: "2026-12-20",
+      listedSystem: "s",
+      source:
+        "https://ratings.fide.com/tournament_information.phtml?event=507184",
+      directory:
+        "https://ratings.fide.com/a_tournaments.php?country=NED&period=current",
+      endDate: "2026-12-24",
+      timeControl: "Standard: 90 minutes with 30 second increment from move 1",
+      players: "40",
+      system: "s",
+    },
+  ],
+};

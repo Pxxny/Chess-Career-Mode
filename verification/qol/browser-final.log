@@ -1,0 +1,28 @@
+
+> chess-career-mode@0.1.0 test:e2e
+> playwright test
+
+[WebServer] (node:5183) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 15 tests using 1 worker
+
+(node:5201) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/app.spec.ts:53:1 › production app: real games, Stockfish, analysis, history and opening performance persist (19.1s)
+  ✓   2 tests/app.spec.ts:109:1 › PGN file/paste, exports, imported opening on Games-first refresh and source removal (4.6s)
+  ✓   3 tests/app.spec.ts:141:1 › missing Stockfish uses built-in engine and keeps playing (6.9s)
+  ✓   4 tests/app.spec.ts:153:1 › reload of an active game records resignation once; version 5 save upgrades in place (4.5s)
+  ✓   5 tests/complete.spec.ts:36:1 › Complete: six menus, registration, paid plan/repertoire/scout, reload and a real Swiss round on mobile (5.8s)
+  ✓   6 tests/complete.spec.ts:169:1 › 2024 Candidates uses verified dates and venue while career rules are labelled as simulated (2.8s)
+  ✓   7 tests/complete.spec.ts:202:1 › national team participation requires registration and consumes the entry once (4.1s)
+  ✓   8 tests/expansion.spec.ts:28:1 › expanded look, federation, coaching, team entry guard, tournament entrants and annual population persist (23.2s)
+  ✓   9 tests/match-clock.spec.ts:27:1 › Complete clocks update independently and live/review boards keep eight rows on phones (7.4s)
+  ✓  10 tests/mobile.spec.ts:16:1 › mobile layouts keep the board, opening details and performance within the viewport (5.7s)
+  ✓  11 tests/qol.spec.ts:264:1 › QoL: date, work income, abroad/FIDE filters, diverse repertoire and chosen training to the next event (4.3s)
+  ✓  12 tests/qol.spec.ts:377:1 › QoL: favorite opening and tournament player histories scope outcomes and open actual replays (3.8s)
+  ✓  13 tests/qol.spec.ts:456:1 › QoL: federation processing, calendar cancellation and additive legacy NPC upgrade persist (7.1s)
+  ✓  14 tests/slots.spec.ts:34:1 › date of birth, then two characters side by side in separate slots (4.6s)
+  ✓  15 tests/slots.spec.ts:89:1 › a date of birth that does not fit the start year blocks the start year step (2.8s)
+
+  15 passed (1.8m)

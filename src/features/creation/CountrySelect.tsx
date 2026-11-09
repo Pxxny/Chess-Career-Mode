@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
-import { SearchSelect, type SelectOption } from '@/components/ui';
-import { COUNTRIES, getCountry, searchCountries } from '@/data/world/countries';
-import type { Country } from '@/types';
-import { logError } from '@/utils/log';
+import { useMemo, useState } from "react";
+import { SearchSelect, type SelectOption } from "@/components/ui";
+import { COUNTRIES, getCountry, searchCountries } from "@/data/world/countries";
+import type { Country } from "@/types";
+import { logError } from "@/utils/log";
 
 const toOption = (c: Country): SelectOption => ({
   id: c.code,
@@ -11,13 +11,21 @@ const toOption = (c: Country): SelectOption => ({
   leading: c.flag,
 });
 
-export function CountrySelect({ value, onChange }: { value: Country | null; onChange: (country: Country) => void }) {
-  const [query, setQuery] = useState('');
+export function CountrySelect({
+  value,
+  onChange,
+  label = "Nationality",
+}: {
+  value: Country | null;
+  onChange: (country: Country) => void;
+  label?: string;
+}) {
+  const [query, setQuery] = useState("");
   const options = useMemo(() => searchCountries(query).map(toOption), [query]);
 
   return (
     <SearchSelect
-      label="Nationality"
+      label={label}
       placeholder={`Search ${COUNTRIES.length} countries and territories`}
       options={options}
       selected={value ? toOption(value) : null}
@@ -25,7 +33,11 @@ export function CountrySelect({ value, onChange }: { value: Country | null; onCh
       onSelect={(option) => {
         const country = getCountry(option.id);
         if (country) onChange(country);
-        else logError('nationality', `selected option "${option.id}" is not a known country code`);
+        else
+          logError(
+            "nationality",
+            `selected option "${option.id}" is not a known country code`,
+          );
       }}
       emptyMessage="No country matches your search"
     />

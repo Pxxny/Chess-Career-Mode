@@ -1,18 +1,18 @@
-import type { Appearance } from './appearance';
-import type { ArchetypeId, Tendencies } from './archetype';
-import type { PlayerCity } from './geo';
-import type { SkillTier } from './npc';
-import type { Attributes } from './training';
+import type { Appearance } from "./appearance";
+import type { ArchetypeId, Tendencies } from "./archetype";
+import type { PlayerCity } from "./geo";
+import type { SkillTier } from "./npc";
+import type { Attributes } from "./training";
 
 export type SkillKey =
-  | 'opening'
-  | 'middlegame'
-  | 'endgame'
-  | 'tactics'
-  | 'calculation'
-  | 'strategy'
-  | 'timeManagement'
-  | 'psychology';
+  | "opening"
+  | "middlegame"
+  | "endgame"
+  | "tactics"
+  | "calculation"
+  | "strategy"
+  | "timeManagement"
+  | "psychology";
 
 export type Skills = Record<SkillKey, number>;
 
@@ -21,7 +21,7 @@ export interface ActionPoints {
   max: number;
 }
 
-export type PlayerGender = 'male' | 'female' | 'nonbinary' | 'undisclosed';
+export type PlayerGender = "male" | "female" | "nonbinary" | "undisclosed";
 
 export interface Player {
   id: string;
@@ -32,10 +32,11 @@ export interface Player {
   appearance: Appearance;
   tendencies: Tendencies;
   dateOfBirth: string;
+  birthPlace?: import("./geo").BirthPlace;
   age: number;
-  /** Country code from the world database (permanent) */
+  /** Current represented country; birth federation remains in the career record */
   country: string;
-  /** Home city (permanent) */
+  /** Current home city */
   city: PlayerCity;
   careerStartYear: number;
   rating: number;

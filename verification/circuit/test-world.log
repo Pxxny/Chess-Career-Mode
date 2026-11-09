@@ -1,0 +1,39 @@
+
+> chess-career-mode@0.1.0 test:world
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-world.ts
+
+player: 1000 1000 0 beginner morale 70 money 250 AP 10 born 1970-06-15 start 1985
+attacker skills: {"opening":14,"middlegame":13,"endgame":8,"tactics":16,"calculation":13,"strategy":10,"timeManagement":9,"psychology":13}
+
+== 1950: 4082 NPCs, ranked 3853, RU fictional 442
+   tiers begi:480 amat:880 club:1506 prof:960 inte:96 gran:78 elit:0 lege:0
+   top: Mikhail Botvinnik 2691 | Reuben Fine 2690 | David Bronstein 2664 | Miguel Najdorf 2660
+   legends ranked: Botvinnik(38,2691) Fine(35,2690) Bronstein(25,2664) Najdorf(39,2660) Reshevsky(38,2655) Keres(33,2632) Smyslov(28,2602) Euwe(48,2596) Tartakower(62,2580) Gligoric(26,2545) Geller(24,2454) Petrosian(20,2454) Korchnoi(18,2337)
+
+== 1972: 4082 NPCs, ranked 3847, RU fictional 443
+   tiers begi:480 amat:880 club:1390 prof:960 inte:160 gran:130 elit:0 lege:0
+   top: Bobby Fischer 2785 | Mikhail Tal 2699 | David Bronstein 2690 | George Bell 2689
+   legends ranked: Fischer(28,2785) Tal(35,2699) Bronstein(47,2690) Spassky(34,2684) Reshevsky(60,2680) Geller(46,2670) Smyslov(50,2661) Najdorf(61,2660) Larsen(36,2654) Gligoric(48,2650) Petrosian(42,2641) Keres(55,2622) Korchnoi(40,2609) Portisch(34,2573) Karpov(20,2570) Gaprindashvili(30,2469) Ljubojevic(21,2465) Timman(20,2428)
+
+== 1985: 4082 NPCs, ranked 3871, RU fictional 452
+   tiers begi:480 amat:880 club:1320 prof:960 inte:199 gran:161 elit:0 lege:0
+   top: Anatoly Karpov 2720 | Garry Kasparov 2700 | Pavel Zakharov 2695 | David Bronstein 2690
+   legends ranked: Karpov(33,2720) Kasparov(21,2700) Bronstein(60,2690) Reshevsky(73,2680) Korchnoi(53,2676) Geller(59,2670) Tal(48,2661) Najdorf(74,2660) Portisch(47,2655) Gligoric(61,2650) Ljubojevic(34,2645) Smyslov(63,2624) Timman(33,2610) Spassky(47,2603) Larsen(49,2579) Chiburdanidze(23,2520) Gaprindashvili(43,2495) Polgar(15,2415) Anand(15,2400)
+
+== 2005: 4082 NPCs, ranked 3869, RU fictional 248
+   tiers begi:480 amat:880 club:1172 prof:960 inte:258 gran:209 elit:41 lege:0
+   top: Garry Kasparov 2812 | Veselin Topalov 2800 | Vladimir Kramnik 2796 | Viswanathan Anand 2788
+   legends ranked: Kasparov(41,2812) Topalov(29,2800) Kramnik(29,2796) Anand(35,2788) Polgar(28,2735) Timman(53,2680) Karpov(53,2670) Portisch(67,2655) Ljubojevic(54,2645) Aronian(22,2602) Korchnoi(73,2589) Polgar(35,2575) Chiburdanidze(43,2560) Carlsen(14,2555) Grischuk(21,2546) Radjabov(17,2542) Karjakin(14,2529) Humpy(17,2496) Gaprindashvili(63,2495) Spassky(67,2481) Mamedyarov(19,2479) Nakamura(17,2469) Kosteniuk(20,2462) Larsen(69,2438) Muzychuk(14,2426) Vachier-Lagrave(14,2400) Hao(15,2400)
+
+== 2026: 4082 NPCs, ranked 3891, RU fictional 297
+   tiers begi:480 amat:880 club:1040 prof:960 inte:320 gran:260 elit:52 lege:8
+   top: Fabiano Caruana 2844 | Magnus Carlsen 2840 | Levon Aronian 2830 | Maxime Bonnet 2828
+   legends ranked: Caruana(33,2844) Carlsen(35,2840) Aronian(43,2830) So(32,2822) Mamedyarov(40,2820) Vachier-Lagrave(35,2819) Liren(33,2816) Nakamura(38,2816) Grischuk(42,2810) Erigaisi(22,2800) Giri(31,2798) Nepomniachtchi(35,2795) Radjabov(38,2790) Karjakin(35,2788) Gukesh(19,2780) Rapport(29,2776) Praggnanandhaa(20,2770) Abdusattorov(21,2766) Yangyi(31,2765) Duda(27,2760) Yi(26,2755) Anand(56,2750) Keymer(21,2750) Liem(34,2740) Sindarov(20,2710) Sarin(21,2700) Yifan(31,2686) Erdogmus(14,2650) Humpy(38,2623) Goryachkina(27,2611) Muzychuk(35,2606) Wenjun(34,2604) Kosteniuk(41,2560) Oro(12,2550) Tingjie(28,2550) Muzychuk(33,2550) Zhongyi(34,2550) Dronavalli(34,2543) Vaishali(24,2500) Gaprindashvili(84,2495)
+
+Carlsen 2005: {"id":"legend-magnus-carlsen","name":"Magnus Carlsen","nationality":"NO","age":14,"elo":2555,"stage":"Rising prodigy"}
+alt-history 1950 legends: 82
+events 1985: olympiad, zonals, world-championship, candidates, hastings, wijk, reggio-emilia, capablanca-memorial, biel, dortmund, tilburg, linares
+dashboard logic: world rank 3649 of 3892 | national 48 of 52 | NPC database 4082
+training sessions: 19 sessions, 40 openings, 400-day tactics run reached 70
+
+verification passed

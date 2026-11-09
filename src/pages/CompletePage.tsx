@@ -1,3 +1,6 @@
+import { EsportsPanel } from "@/features/esports/EsportsPanel";
+import { SectionMenu } from "@/components/ui/SectionMenu";
+import { useSearchParams } from "react-router-dom";
 import { PreparePanel } from "@/features/competition/PreparePanel";
 import { competitionOf } from "@/game/competition/preparation";
 import {
@@ -6,7 +9,7 @@ import {
 } from "@/features/match/TournamentPanel";
 import { useSave } from "@/hooks/useGame";
 import { WorldHub } from "@/features/expansion/WorldHub";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Card, CardTitle, PageHeader, Tabs } from "@/components/ui";
 import { MatchHistory } from "@/features/match/MatchHistory";
 import { MatchSetupPanel } from "@/features/match/MatchSetupPanel";
@@ -31,11 +34,21 @@ type Tab =
 
 export function CompletePage() {
   const save = useSave();
+  const [params] = useSearchParams();
+  const [circuit, setCircuit] = useState<"traditional" | "esports">(
+    params.get("circuit") === "esports" ? "esports" : "traditional",
+  );
   const player = usePlayer();
   const ranked = useRankedNpcs();
   const [selected, setSelected] = useState<Npc | null>(null);
   const [tab, setTab] = useState<Tab>("tournament");
   const [active, setActive] = useState<MatchSetup | null>(null);
+  useEffect(() => {
+    if (params.get("circuit") === "esports") {
+      setCircuit("esports");
+      setTab("tournament");
+    }
+  }, [params]);
 
   const nearby = useMemo(
     () =>
@@ -87,24 +100,39 @@ export function CompletePage() {
       >
         {tab === "tournament" && (
           <div className="space-y-4">
-            <TournamentPanel onStart={setActive} />
-            <details>
-              <summary className="cursor-pointer rounded-lg bg-navy-800 p-3 text-gold-400">
-                Individual match / free play
-              </summary>
-              <div className="mt-3">
-                <MatchSetupPanel onStart={setActive} />
-              </div>
-            </details>
-            <details>
-              <summary className="cursor-pointer rounded-lg bg-navy-800 p-3 text-gold-400">
-                Federation & national teams
-              </summary>
-              <div className="mt-3 space-y-4">
-                <WorldHub view="federation" />
-                <WorldHub view="teams" />
-              </div>
-            </details>
+            <SectionMenu
+              label="Competition circuits"
+              active={circuit}
+              onChange={setCircuit}
+              items={[
+                { id: "traditional", label: "Chess tournaments" },
+                { id: "esports", label: "Esports" },
+              ]}
+            />
+            {circuit === "esports" ? (
+              <EsportsPanel onStart={setActive} />
+            ) : (
+              <>
+                <TournamentPanel onStart={setActive} />
+                <details>
+                  <summary className="cursor-pointer rounded-lg bg-navy-800 p-3 text-gold-400">
+                    Individual match / free play
+                  </summary>
+                  <div className="mt-3">
+                    <MatchSetupPanel onStart={setActive} />
+                  </div>
+                </details>
+                <details>
+                  <summary className="cursor-pointer rounded-lg bg-navy-800 p-3 text-gold-400">
+                    Federation & national teams
+                  </summary>
+                  <div className="mt-3 space-y-4">
+                    <WorldHub view="federation" />
+                    <WorldHub view="teams" />
+                  </div>
+                </details>
+              </>
+            )}
           </div>
         )}
         {tab === "swiss" && <TournamentPanel onStart={setActive} swissOnly />}

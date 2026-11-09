@@ -1,3 +1,24 @@
+import {
+  npcActor,
+  playerActor,
+  ratingActor,
+  conditionsFor,
+  predictionStamp,
+  playerView,
+  plannedOpeningConditions,
+} from "@/game/prediction/adapters";
+import {
+  predictMatch,
+  sampleOutcome,
+  scoreOf,
+  outcomeOf,
+  invertOutcome,
+} from "@/game/prediction/model";
+import { predictionOf, recordPredictions } from "@/game/prediction/statistics";
+import type {
+  PredictionObservation,
+  PredictionSnapshot,
+} from "@/game/prediction/types";
 import { GAME_CONFIG } from "@/data/config";
 import { COUNTRIES } from "@/data/world/countries";
 import { createRng, mixSeed } from "@/game/rng";
@@ -21,6 +42,7 @@ export interface CoachContract {
   fee: number;
 }
 export interface NationalBoard {
+  prediction?: PredictionSnapshot;
   round: number;
   white: string;
   black: string;
@@ -333,6 +355,8 @@ export function playTeamCup(
     return { ok: false, error: "Representing your country costs 2 AP." };
   const rng = createRng(mixSeed(hashString(save.career.id), year));
   const boards: NationalBoard[] = [];
+  const predictionSamples: PredictionObservation[] = [];
+  const byNpc = new Map(npcs.map((n) => [n.id, n]));
   let round = 0;
   for (let a = 0; a < teams.length; a++)
     for (let b = a + 1; b < teams.length; b++) {
@@ -352,22 +376,55 @@ export function playTeamCup(
             name: `Unfilled board (${bt.country})`,
             elo: 0,
           };
-        const expected = expectedScore(w.elo, bl.elo),
-          draw = 0.24,
-          scoreW =
-            w.id === "bye"
-              ? bl.id === "bye"
-                ? 0.5
-                : 0
-              : bl.id === "bye"
-                ? 1
-                : rng.chance(draw)
-                  ? 0.5
-                  : rng.chance(expected)
-                    ? 1
-                    : 0;
+        const actor = (m: typeof w) =>
+          m.id === "player"
+            ? playerActor(save)
+            : byNpc.has(m.id)
+              ? npcActor(byNpc.get(m.id)!)
+              : ratingActor(m.elo, m.name, m.id);
+        const prediction =
+          w.id !== "bye" && bl.id !== "bye"
+            ? predictMatch({
+                id: `national:${save.career.id}:${year}:${round}:${k}`,
+                stamp: predictionStamp(save),
+                player: actor(w),
+                opponent: actor(bl),
+                conditions: {
+                  ...plannedOpeningConditions(
+                    actor(w),
+                    actor(bl),
+                    conditionsFor("classical", "white", "national-team"),
+                  ),
+                  tournamentName: "National Team Cup",
+                  importance: 0.8,
+                  pressure: 0.6,
+                },
+                state: predictionOf(save),
+              })
+            : undefined;
+        const scoreW =
+          w.id === "bye"
+            ? bl.id === "bye"
+              ? 0.5
+              : 0
+            : bl.id === "bye"
+              ? 1
+              : scoreOf(sampleOutcome(prediction!.adjusted, rng.next()));
+        if (prediction)
+          predictionSamples.push({
+            prediction:
+              bl.id === "player" ? playerView(prediction) : prediction,
+            result:
+              bl.id === "player"
+                ? invertOutcome(outcomeOf(scoreW))
+                : outcomeOf(scoreW),
+            scope: w.id === "player" || bl.id === "player" ? "career" : "npc",
+            source: "abstract",
+            eligible: true,
+          });
         score += flip ? 1 - scoreW : scoreW;
         boards.push({
+          ...(prediction ? { prediction } : {}),
           round,
           white: w.name,
           black: bl.name,
@@ -413,6 +470,7 @@ export function playTeamCup(
       cups: [...state.cups.filter((c) => c.year !== year), cup].slice(-20),
     },
   };
+  next = recordPredictions(next, predictionSamples);
   if (prize)
     next = {
       ...next,
@@ -460,19 +518,56 @@ export function weeklyCircuit(
   const rng = createRng(mixSeed(save.world.seed, index));
   let field = rng.shuffle(active).slice(0, 8);
   const games: string[] = [];
+  const boardScores = new Map<string, number>();
   const title = `World Circuit Open ${save.world.date.year}/${save.world.date.week}`;
   while (field.length > 1) {
     const winners: Npc[] = [];
     for (let i = 0; i < field.length; i += 2) {
       const a = field[i],
-        b = field[i + 1],
-        win = rng.chance(expectedScore(a.currentElo, b.currentElo)) ? a : b,
-        loss = win === a ? b : a;
+        b = field[i + 1];
+      const prediction = predictMatch({
+        id: `circuit:${save.career.id}:${index}:${field.length}:${i}`,
+        stamp: predictionStamp(save),
+        player: npcActor(a),
+        opponent: npcActor(b),
+        conditions: {
+          ...plannedOpeningConditions(
+            npcActor(a),
+            npcActor(b),
+            conditionsFor("rapid", "white", "world-circuit"),
+          ),
+          tournamentName: title,
+          importance: 0.5,
+          pressure: 1 / field.length,
+        },
+        state: predictionOf(next),
+      });
+      const result = sampleOutcome(prediction.adjusted, rng.next());
+      boardScores.set(a.id, (boardScores.get(a.id) ?? 0) + scoreOf(result));
+      boardScores.set(b.id, (boardScores.get(b.id) ?? 0) + 1 - scoreOf(result));
+      next = recordPredictions(next, [
+        {
+          prediction,
+          result,
+          scope: "npc",
+          source: "abstract",
+          eligible: true,
+        },
+      ]) as typeof next;
+      // A drawn knockout game goes to a deciding tiebreak. Its advancement is separate from the recorded drawn board.
+      const aAdvances =
+        result === "win" ||
+        (result === "draw" &&
+          rng.chance(expectedScore(a.currentElo, b.currentElo)));
+      const win = aAdvances ? a : b,
+        loss = aAdvances ? b : a;
       winners.push(win);
       games.push(
-        `${win.name} (${win.currentElo}) defeated ${loss.name} (${loss.currentElo}).`,
+        result === "draw"
+          ? `${a.name} drew with ${b.name}; ${win.name} advanced after the tiebreak.`
+          : `${win.name} (${win.currentElo}) defeated ${loss.name} (${loss.currentElo}).`,
       );
-      if (loss.currentElo - win.currentElo >= 200)
+      if (result !== "draw" && loss.currentElo - win.currentElo >= 200)
         next = news(
           next,
           `upset-${index}-${i}-${field.length}`,
@@ -494,7 +589,7 @@ export function weeklyCircuit(
             event: title,
             rank: 1,
             fieldSize: 8,
-            points: 3,
+            points: boardScores.get(winner.id) ?? 0,
             games: 3,
           },
         ].slice(-30),

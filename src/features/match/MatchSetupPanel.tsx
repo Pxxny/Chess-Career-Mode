@@ -1,3 +1,4 @@
+import { CareerPredictionPanel } from "@/features/prediction/CareerPrediction";
 import { useMatchRunning } from "@/store/matchLocks";
 import { useMemo, useState } from "react";
 import { Swords } from "lucide-react";
@@ -333,6 +334,16 @@ export function MatchSetupPanel({
           </section>
         )}
 
+        {chosen && (
+          <CareerPredictionPanel
+            opponent={chosen}
+            options={{
+              color: color === "random" ? "unknown" : color,
+              timeControl: tc.category,
+              tournamentType: rated ? "rated" : "friendly",
+            }}
+          />
+        )}
         <Button
           onClick={start}
           disabled={!chosen || running}

@@ -1,3 +1,24 @@
+import { UpcomingPredictions } from "@/features/prediction/CareerPrediction";
+import { PredictionSummary } from "@/features/prediction/PredictionPanel";
+import { TournamentDayClock, TournamentTimetable } from "./TournamentTimetable";
+import {
+  tournamentReady,
+  bookedStart,
+  bookedEnd,
+  reservedUntil,
+  eventAgenda,
+  dayLabel,
+} from "@/game/competition/agenda";
+import { bookingConflict } from "@/game/esports/core";
+import { registrationCount, type EntryEvent } from "@/game/competition/entries";
+import { showcaseSelection } from "@/game/competition/showcase";
+import {
+  matchesTournamentSearch,
+  type TournamentSearch,
+} from "@/game/competition/finder";
+import { TournamentFinder } from "./TournamentFinder";
+import { AdvanceToEvent } from "@/features/qol/CareerPanels";
+import { TournamentHistoryDialog } from "@/features/qol/HistoryDialogs";
 import { useMatchRunning } from "@/store/matchLocks";
 import { useMemo, useState } from "react";
 import { Badge, Button, Card, CardTitle } from "@/components/ui";
@@ -18,6 +39,7 @@ import {
 } from "@/game/competition/catalog";
 import {
   eligibilityIssues,
+  registrationIssue,
   requirementsText,
 } from "@/game/competition/eligibility";
 import type { ActiveTournament } from "@/types";
@@ -31,22 +53,51 @@ export function EventFacts({ event }: { event: ScheduledEvent }) {
     ],
     [
       "Start",
-      d?.historicalSchedule
-        ? `${d.historicalSchedule.startDate} (W${event.week})`
-        : dateLabel(event),
+      d?.agenda?.exactStart
+        ? dayLabel(bookedStart(event))
+        : d?.reference?.sourceYear === event.year
+          ? `${d.reference.startDate} (W${event.week})`
+          : d?.historicalSchedule
+            ? `${d.historicalSchedule.startDate} (W${event.week})`
+            : dateLabel(event),
     ],
     [
       "End",
-      d?.historicalSchedule
-        ? `${d.historicalSchedule.endDate} (W${d.end.week})`
-        : dateLabel(d?.end ?? event),
+      d?.agenda?.exactStart
+        ? dayLabel(bookedEnd(event))
+        : d?.reference?.sourceYear === event.year && d.reference.endDate
+          ? `${d.reference.endDate} (W${d.end.week})`
+          : d?.historicalSchedule
+            ? `${d.historicalSchedule.endDate} (W${d.end.week})`
+            : dateLabel(d?.end ?? event),
     ],
     ["Registration deadline", dateLabel(event.registrationDeadline)],
     ["Entry fee", `$${event.entryFee}`],
+    ["Travel estimate", `$${d?.travelCost ?? 0}`],
+    ["Total to register", `$${event.entryFee + (d?.travelCost ?? 0)}`],
     ["Required Elo", `${event.minElo}+`],
     ["Participant limit", event.fieldSize],
+    ["Duration", `${eventAgenda(event).days} day(s)`],
+    ...(d?.agenda?.exactStart
+      ? [["Starting day", dayLabel(bookedStart(event))]]
+      : []),
+    ["Organizer", d?.organizer ? d.organizer.name : "Not recorded"],
+    ["Organization", d?.organizer?.status ?? "Not recorded"],
     ["Time control", d?.timeControl.label ?? "Classical"],
     ["Format", d?.format ?? "swiss"],
+    ...(d?.format?.includes("round-robin")
+      ? [
+          [
+            "Games per opponent",
+            d.format === "round-robin-bo3"
+              ? "BO3 · 2–3 games, plus a decider if tied"
+              : d.format === "double-round-robin"
+                ? "2"
+                : "1",
+          ],
+          ["Opponents per player", event.fieldSize - 1],
+        ]
+      : []),
     ["Rounds", d?.rounds ?? "Announced at start"],
     ["Prize money", `$${d?.prize ?? 0}`],
     ["Prestige", `${d?.prestige ?? 0}/100`],
@@ -65,8 +116,18 @@ export function EventFacts({ event }: { event: ScheduledEvent }) {
 }
 export function TournamentStandings({ t }: { t: ActiveTournament }) {
   const rows = useMemo(() => standings(t), [t]);
+  const bo3 = t.details?.format === "round-robin-bo3";
+  const [selected, setSelected] = useState<string | null>(null);
   return (
     <div className="max-h-[32rem] overflow-auto">
+      {selected && (
+        <TournamentHistoryDialog
+          key={`${t.eventId}-${selected}`}
+          t={t}
+          playerId={selected}
+          onClose={() => setSelected(null)}
+        />
+      )}
       <table
         className="w-full min-w-[560px] text-left text-sm"
         data-testid="standings"
@@ -79,13 +140,14 @@ export function TournamentStandings({ t }: { t: ActiveTournament }) {
         </caption>
         <thead className="sticky top-0 bg-navy-800 text-xs text-ink-faint">
           <tr>
-            {["#", "Player", "Elo", "Points", "BH-C1", "BH", "SB", "Wins"].map(
-              (h) => (
-                <th key={h} className="py-2 pr-3">
-                  {h}
-                </th>
-              ),
-            )}
+            {(bo3
+              ? ["#", "Player", "Elo", "Series wins"]
+              : ["#", "Player", "Elo", "Points", "BH-C1", "BH", "SB", "Wins"]
+            ).map((h) => (
+              <th key={h} className="py-2 pr-3">
+                {h}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
@@ -100,15 +162,26 @@ export function TournamentStandings({ t }: { t: ActiveTournament }) {
             >
               <td className="py-2">{r.rank}</td>
               <td className="pr-3">
-                {getCountry(r.player.countryCode)?.flag} {r.player.name}
-                {r.player.isPlayer ? " (you)" : ""}
+                <button
+                  type="button"
+                  className="min-h-11 text-left underline decoration-current/30 underline-offset-4 hover:text-ink"
+                  onClick={() => setSelected(r.player.id)}
+                  aria-label={`Tournament games for ${r.player.name}`}
+                >
+                  {getCountry(r.player.countryCode)?.flag} {r.player.name}
+                  {r.player.isPlayer ? " (you)" : ""}
+                </button>
               </td>
               <td>{r.player.elo}</td>
               <td>{r.player.points}</td>
-              <td>{r.buchholzCut1.toFixed(1)}</td>
-              <td>{r.buchholz.toFixed(1)}</td>
-              <td>{r.sonnebornBerger.toFixed(2)}</td>
-              <td>{r.wins}</td>
+              {!bo3 && (
+                <>
+                  <td>{r.buchholzCut1.toFixed(1)}</td>
+                  <td>{r.buchholz.toFixed(1)}</td>
+                  <td>{r.sonnebornBerger.toFixed(2)}</td>
+                  <td>{r.wins}</td>
+                </>
+              )}
             </tr>
           ))}
         </tbody>
@@ -143,6 +216,29 @@ export function PairingHistory({ t }: { t: ActiveTournament }) {
                       ? " · upcoming"
                       : ` · ${p.result} – ${1 - p.result}`}
                 </span>
+                {(p.prediction ?? p.forecast) && (
+                  <>
+                    <PredictionSummary
+                      prediction={p.prediction ?? p.forecast}
+                      actual={
+                        p.result === null
+                          ? undefined
+                          : p.result === 1
+                            ? "win"
+                            : p.result === 0.5
+                              ? "draw"
+                              : "loss"
+                      }
+                    />
+                    <span className="text-xs text-ink-faint">
+                      White expected score{" "}
+                      {(
+                        (p.prediction ?? p.forecast)!.adjusted.expected * 100
+                      ).toFixed(2)}
+                      % · {(p.prediction ?? p.forecast)!.classification}
+                    </span>
+                  </>
+                )}
                 {p.tiebreakWinner &&
                   ` · rapid tiebreak: ${names.get(p.tiebreakWinner)}`}
               </li>
@@ -153,11 +249,7 @@ export function PairingHistory({ t }: { t: ActiveTournament }) {
     </div>
   );
 }
-function Entrants({
-  event,
-}: {
-  event: Pick<ScheduledEvent, "id" | "level" | "fieldSize" | "details">;
-}) {
+function Entrants({ event }: { event: EntryEvent }) {
   const save = useSave(),
     npcs = useNpcs();
   const [open, setOpen] = useState(false);
@@ -168,6 +260,8 @@ function Entrants({
       save.registrations,
       save.career.id,
       save.world.seed,
+      save.world.date,
+      save.world.day,
       save.player.rating,
       npcs,
       event.id,
@@ -187,8 +281,10 @@ function Entrants({
       {open && (
         <>
           <p className="my-2 text-ink-faint">
-            Announced invitations; identities are locked on registration.
-            Retired players withdraw. This is an in-game field.
+            NPC registrations increase as game days pass until the deadline.
+            Paid entries hold a seat; inactive entrants are removed at the
+            start. Showcases list organizer invitations. All fields are
+            simulated.
           </p>
           <ul className="max-h-48 overflow-auto">
             {field.map((n) => (
@@ -221,11 +317,16 @@ export function TournamentPanel({
     npcs = useNpcs(),
     db = useOpeningDb();
   const running = useMatchRunning(save.career.id);
+  const acceptInvitation = useGameStore((s) => s.acceptShowcaseInvitation);
+  const [finderOpen, setFinderOpen] = useState(false);
+  const [search, setSearch] = useState<TournamentSearch | null>(null);
   const register = useGameStore((s) => s.registerForEvent),
     cancel = useGameStore((s) => s.cancelRegistration),
     start = useGameStore((s) => s.startTournament),
     withdraw = useGameStore((s) => s.withdrawTournament),
     close = useGameStore((s) => s.closeTournament);
+  const [location, setLocation] = useState("all");
+  const [source, setSource] = useState("all");
   const [error, setError] = useState(""),
     [query, setQuery] = useState(""),
     [category, setCategory] = useState("all"),
@@ -258,7 +359,7 @@ export function TournamentPanel({
   const next = t ? playerOpponentId(t) : null,
     npc = next ? npcs.find((n) => n.id === next.id) : undefined;
   const play = (mode: "play" | "simulate") => {
-    if (!t || !next || !npc || running) return;
+    if (!t || !next || !npc || running || !tournamentReady(save)) return;
     onStart(
       buildMatchSetup({
         save,
@@ -285,11 +386,38 @@ export function TournamentPanel({
   const filtered = events.filter(
     (e) =>
       (!swissOnly || e.details?.format === "swiss") &&
+      (!search ||
+        (matchesTournamentSearch(e, search) &&
+          (!search.availableOnly ||
+            registrationIssue(save, e, npcs) === null))) &&
+      (source === "all" ||
+        (source === "fide" && !!e.details?.reference) ||
+        (source === "fictional" && !e.details?.reference)) &&
+      (location === "all" ||
+        (location === "home" && e.details?.country === save.player.country) ||
+        (location === "abroad" && e.details?.country !== save.player.country) ||
+        e.details?.country === location) &&
       (category === "all" || e.details?.category === category) &&
       e.name.toLowerCase().includes(query.toLowerCase()),
   );
   return (
     <div className="space-y-4" data-testid="tournament-panel">
+      {finderOpen && (
+        <TournamentFinder
+          initial={search}
+          rating={save.player.rating}
+          onClose={() => setFinderOpen(false)}
+          onApply={(value) => {
+            setSearch(value);
+            setLocation("all");
+            setSource("all");
+            setCategory("all");
+            setQuery("");
+            setLimit(6);
+            setFinderOpen(false);
+          }}
+        />
+      )}
       {swissOnly && (
         <Card>
           <CardTitle>Swiss Open</CardTitle>
@@ -308,7 +436,9 @@ export function TournamentPanel({
               <Badge tone="gold">
                 {t.status === "finished"
                   ? "Finished"
-                  : `Round ${t.round} / ${t.rounds}`}
+                  : t.details?.format === "round-robin-bo3"
+                    ? `Series ${Math.ceil(t.round / 3)} / ${Math.ceil(t.rounds / 3)} · game ${((t.round - 1) % 3) + 1}`
+                    : `Round ${t.round} / ${t.rounds}`}
               </Badge>
             }
           >
@@ -323,6 +453,8 @@ export function TournamentPanel({
                   save.player.country,
               ],
               ["Tournament category", t.details?.category ?? t.level],
+              ["Organizer", t.details?.organizer?.name ?? "Not recorded"],
+              ["Organization", t.details?.organizer?.status ?? "Not recorded"],
               ["Time control", t.timeControl.label],
               [
                 "Player ranking",
@@ -368,16 +500,17 @@ export function TournamentPanel({
                   t.players.find((p) => p.id === next.id)?.elo}{" "}
                 · You play {next.color}.
               </p>
+              <UpcomingPredictions circuit="traditional" />
               <div className="flex flex-wrap gap-2">
                 <Button
-                  disabled={!npc || running}
+                  disabled={!npc || running || !tournamentReady(save)}
                   onClick={() => play("play")}
                   data-testid="play-round"
                 >
                   Play the game
                 </Button>
                 <Button
-                  disabled={!npc || running}
+                  disabled={!npc || running || !tournamentReady(save)}
                   variant="secondary"
                   onClick={() => play("simulate")}
                 >
@@ -394,6 +527,10 @@ export function TournamentPanel({
               </Button>
             </div>
           )}
+          {t.status === "playing" && (
+            <TournamentDayClock tournament={t} interactive />
+          )}
+          <TournamentTimetable tournament={t} />
           <h3 className="mb-2 font-semibold text-ink">Tournament standings</h3>
           <TournamentStandings t={t} />
           <PairingHistory t={t} />
@@ -440,7 +577,8 @@ export function TournamentPanel({
             <li key={r.eventId} className="rounded-lg bg-navy-900 p-3">
               <p className="font-semibold text-ink">{r.name}</p>
               <p className="my-2 text-xs text-ink-muted">
-                {dateLabel(r)} · {r.status} · fee paid ${r.entryFee}
+                {dateLabel(r)} · {r.status} · fee paid ${r.entryFee} · travel $
+                {r.travelCost ?? 0}
                 {r.status === "missed" ? " · fee lost" : ""}
               </p>
               <Entrants
@@ -452,6 +590,13 @@ export function TournamentPanel({
                 }}
               />
               <div className="mt-3 flex flex-wrap gap-2">
+                {r.status !== "missed" && (
+                  <AdvanceToEvent
+                    eventId={r.eventId}
+                    name={r.name}
+                    ready={r.status === "ready"}
+                  />
+                )}
                 {r.status === "ready" && (
                   <Button
                     data-testid="start-event"
@@ -480,6 +625,27 @@ export function TournamentPanel({
       </Card>
       <Card>
         <CardTitle>Upcoming tournaments</CardTitle>
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <Button variant="secondary" onClick={() => setFinderOpen(true)}>
+            Find suitable tournaments
+          </Button>
+          {search && (
+            <>
+              <span role="status" className="text-xs text-ink-muted">
+                {filtered.length} matching tournaments
+              </span>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setSearch(null);
+                  setLimit(6);
+                }}
+              >
+                Clear finder
+              </Button>
+            </>
+          )}
+        </div>
         <p className="mb-3 text-xs text-ink-muted">
           Career fields, fees, entry deadlines, requirements, prizes and results
           are simulated. Dates and formats are generated unless a historical
@@ -487,6 +653,49 @@ export function TournamentPanel({
           eight-team round-robin simulation.
         </p>
         <div className="mb-4 flex flex-wrap gap-3">
+          <select
+            aria-label="Tournament source"
+            value={source}
+            onChange={(e) => {
+              setSource(e.target.value);
+              setLimit(6);
+            }}
+            className="max-w-full rounded-lg bg-navy-900 p-3 text-sm text-ink"
+          >
+            <option value="all">All sources</option>
+            <option value="fide">FIDE-listed references</option>
+            <option value="fictional">In-game circuit</option>
+          </select>
+          <select
+            aria-label="Tournament location"
+            value={location}
+            onChange={(e) => {
+              setLocation(e.target.value);
+              setLimit(6);
+            }}
+            className="max-w-full rounded-lg bg-navy-900 p-3 text-sm text-ink"
+          >
+            <option value="all">All locations</option>
+            <option value="home">Home country</option>
+            <option value="abroad">Abroad</option>
+            {[
+              ...new Set(
+                events
+                  .map((e) => e.details?.country)
+                  .filter((c): c is string => !!c),
+              ),
+            ]
+              .sort((a, b) =>
+                (getCountry(a)?.name ?? a).localeCompare(
+                  getCountry(b)?.name ?? b,
+                ),
+              )
+              .map((c) => (
+                <option key={c} value={c}>
+                  {getCountry(c)?.flag} {getCountry(c)?.name ?? c}
+                </option>
+              ))}
+          </select>
           <input
             aria-label="Search tournaments"
             placeholder="Search tournaments…"
@@ -520,6 +729,13 @@ export function TournamentPanel({
         </div>
         <ul className="space-y-4" data-testid="open-events">
           {filtered.slice(0, limit).map((e) => {
+            const totalEntrants = e.details?.showcase
+              ? null
+              : registrationCount(save, e, npcs);
+            const full = totalEntrants !== null && totalEntrants >= e.fieldSize;
+            const invitation = e.details?.showcase
+              ? showcaseSelection(save, e, npcs)
+              : null;
             const registered = save.registrations.some(
                 (r) => r.eventId === e.id,
               ),
@@ -530,13 +746,18 @@ export function TournamentPanel({
                 stampIndex(save.world.date) >
                 stampIndex(e.registrationDeadline),
               issues = eligibilityIssues(save, e),
-              conflict = save.registrations.some(
-                (r) => stampIndex(r) === stampIndex(e),
+              conflict = bookingConflict(
+                save,
+                bookedStart(e),
+                reservedUntil(e),
+                e.id,
               ),
-              afford = save.player.money >= e.entryFee;
+              afford =
+                save.player.money >= e.entryFee + (e.details?.travelCost ?? 0);
             return (
               <li
                 key={e.id}
+                data-event-id={e.id}
                 className="rounded-xl border border-white/10 bg-navy-900 p-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -544,11 +765,13 @@ export function TournamentPanel({
                     <h3 className="font-semibold text-ink">{e.name}</h3>
                     <p className="mt-1 text-xs text-ink-faint">
                       {e.details?.category} ·{" "}
-                      {e.details?.historicalSchedule
-                        ? "Verified dates & format · career simulation"
-                        : e.details?.provenance === "fictional"
-                          ? "Fictional event"
-                          : "Inspired format · game schedule"}
+                      {e.details?.reference
+                        ? "FIDE-listed reference · career simulation"
+                        : e.details?.historicalSchedule
+                          ? "Verified dates & format · career simulation"
+                          : e.details?.provenance === "fictional"
+                            ? "Fictional event"
+                            : "Inspired format · game schedule"}
                     </p>
                   </div>
                   <Badge tone={closed ? "neutral" : "gold"}>
@@ -556,10 +779,56 @@ export function TournamentPanel({
                       ? "Registered"
                       : closed
                         ? "Registration closed"
-                        : "Registration open"}
+                        : e.details?.showcase
+                          ? invitation?.invited
+                            ? "You are invited"
+                            : "Invitation only"
+                          : full
+                            ? "Full"
+                            : "Registration open"}
                   </Badge>
                 </div>
                 <EventFacts event={e} />
+                <TournamentTimetable event={e} />
+                {totalEntrants !== null && e.details?.format !== "team" && (
+                  <p
+                    className="mt-3 text-sm text-ink"
+                    data-testid="entry-count"
+                  >
+                    {Math.min(
+                      e.fieldSize,
+                      totalEntrants + (registered ? 1 : 0),
+                    )}{" "}
+                    / {e.fieldSize} registered
+                    {registered ? " · includes you" : ""}
+                    {full && !registered ? " · full" : ""}
+                  </p>
+                )}
+                {invitation && (
+                  <p className="mt-3 text-sm text-ink-muted">
+                    Organizer-selected showmatch · up to{" "}
+                    {e.details!.showcase!.perCountry} rising stars per country,
+                    up to {e.details!.showcase!.countries} countries · age{" "}
+                    {e.details!.showcase!.maxAge} and under ·{" "}
+                    {e.details!.rounds} rounds. Current selection:{" "}
+                    {invitation.entrants.length + (invitation.invited ? 1 : 0)}{" "}
+                    players from {invitation.countries} countries.{" "}
+                    {invitation.invited
+                      ? "Your organizer invitation is available."
+                      : "Public registration is unavailable. Reach your national top five and a selected delegation to earn an invitation."}
+                  </p>
+                )}
+                {e.details?.reference && (
+                  <a
+                    href={e.details.reference.url}
+                    rel="noreferrer"
+                    target="_blank"
+                    className="mt-3 inline-block text-xs text-gold-300 underline"
+                  >
+                    FIDE reference · listed {e.details.reference.startDate} ·
+                    checked {e.details.reference.observedAt}
+                  </a>
+                )}
                 {e.details?.historicalSchedule && (
                   <a
                     href={e.details.historicalSchedule.source}
@@ -580,6 +849,9 @@ export function TournamentPanel({
                   className="mt-3"
                   data-testid="register"
                   disabled={
+                    registrationIssue(save, e, npcs) !== null ||
+                    full ||
+                    (invitation !== null && !invitation.invited) ||
                     registered ||
                     played ||
                     closed ||
@@ -587,7 +859,9 @@ export function TournamentPanel({
                     !afford ||
                     conflict
                   }
-                  onClick={() => result(register(e))}
+                  onClick={() =>
+                    result(invitation ? acceptInvitation(e) : register(e))
+                  }
                 >
                   {registered
                     ? "Registered"
@@ -601,7 +875,13 @@ export function TournamentPanel({
                             ? "Not eligible"
                             : !afford
                               ? "Cannot afford"
-                              : "Register"}
+                              : invitation
+                                ? invitation.invited
+                                  ? "Accept invitation"
+                                  : "Invitation only"
+                                : full
+                                  ? "Full"
+                                  : "Register"}
                 </Button>
               </li>
             );

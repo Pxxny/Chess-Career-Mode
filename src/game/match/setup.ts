@@ -1,3 +1,4 @@
+import { careerPrediction } from "@/game/prediction/adapters";
 import { standings } from "./tournament";
 import { applyPreparedProfile } from "@/game/competition/preparation";
 import { getCountry } from "@/data/world/countries";
@@ -126,9 +127,32 @@ export function buildMatchSetup(input: SetupInput): MatchSetup {
       save.tournament.round >= save.tournament.rounds - 1;
   }
   const player = sideForPlayer(save);
-  const opponent = sideForNpc(npc);
+  const opponent = {
+    ...sideForNpc(npc),
+    elo: input.eloOverride ?? npc.currentElo,
+  };
   const npcColor: PieceColor = playerColor === "white" ? "black" : "white";
   return {
+    prediction: careerPrediction(save, npc, {
+      id: `match:${save.career.id}:${save.prediction?.metrics.career.adjusted.games ?? 0}:${npc.id}:${input.seed}:${input.tournament?.id ?? "friendly"}:${round}:${playerColor}:${input.timeControl.id}`,
+      color: playerColor,
+      timeControl: input.timeControl.category,
+      eventId: input.tournament?.id,
+      eventName: input.tournament?.name,
+      round,
+      rounds: input.tournament?.rounds,
+      tournamentType:
+        input.tournament && input.tournament.id === save.tournament?.eventId
+          ? (save.tournament?.details?.category ?? "tournament")
+          : input.tournament
+            ? save.esports?.active?.event.id === input.tournament.id
+              ? "esports"
+              : "tournament"
+            : input.rated
+              ? "rated"
+              : "friendly",
+      opponentElo: input.eloOverride ?? npc.currentElo,
+    }),
     white: playerColor === "white" ? player : opponent,
     black: playerColor === "white" ? opponent : player,
     playerColor,

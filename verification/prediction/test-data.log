@@ -1,0 +1,5 @@
+
+> chess-career-mode@0.1.0 test:data
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-data.ts
+
+Data verification passed: legacy v3/v4/v5, repertoire export/import, malformed PGN, variation results, collection counts.

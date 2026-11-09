@@ -1,0 +1,23 @@
+
+> chess-career-mode@0.1.0 build
+> tsc --noEmit && vite build
+
+vite v5.4.21 building for production...
+transforming...
+✓ 1820 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                                0.66 kB │ gzip:   0.38 kB
+dist/assets/manrope-vietnamese-wght-normal-usUDDRr7.woff2      8.52 kB
+dist/assets/manrope-greek-wght-normal-DL7QRZyv.woff2           9.44 kB
+dist/assets/manrope-cyrillic-wght-normal-Dvxsihut.woff2       14.50 kB
+dist/assets/manrope-latin-ext-wght-normal-Ch3YOpNY.woff2      15.12 kB
+dist/assets/manrope-latin-wght-normal-DHIcAJRg.woff2          24.84 kB
+dist/assets/index-C8PK4qYd.css                                38.44 kB │ gzip:  10.70 kB
+dist/assets/index-DSDygGek.js                              1,738.58 kB │ gzip: 455.97 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.29s

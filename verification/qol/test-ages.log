@@ -1,0 +1,17 @@
+
+> chess-career-mode@0.1.0 test:ages
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-ages.ts
+
+1950: 4000 fictional NPCs, 636 under 18, 42 prodigies (<=15, 2000+), youngest 2500+: 15
+1985: 4000 fictional NPCs, 619 under 18, 51 prodigies (<=15, 2000+), youngest 2500+: 13
+beginner: n=480 age 9-70 mean 31 median 31 under18 143
+amateur: n=880 age 8-68 mean 32 median 32 under18 187
+club: n=1040 age 9-68 mean 32 median 32 under18 151
+professional: n=960 age 12-65 mean 32 median 32 under18 70
+international-master: n=320 age 13-58 mean 31 median 30 under18 17
+grandmaster: n=260 age 13-63 mean 33 median 31 under18 5
+elite-grandmaster: n=52 age 18-41 mean 29 median 28 under18 0
+legendary: n=8 age 23-35 mean 27 median 27 under18 0
+2026: 4000 fictional NPCs, 573 under 18, 38 prodigies (<=15, 2000+), youngest 2500+: 13
+
+NPC age verification passed

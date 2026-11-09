@@ -1,3 +1,7 @@
+import { rotatingEvents } from "@/game/competition/agenda";
+import { showcaseEvents } from "@/game/competition/showcase";
+import { getCountry } from "@/data/world/countries";
+import { sourcedEvents, extraCircuit, withTravel } from "@/game/qol/schedule";
 import { careerEvents } from "@/game/competition/catalog";
 import type { EventDetails } from "@/game/competition/types";
 import {
@@ -106,6 +110,17 @@ export function getSchedule(
         EVENT_PATTERNS[level][seed % EVENT_PATTERNS[level].length],
         region,
       ).replace(/Junior/g, "Community");
+      name =
+        [
+          "Founders Cup",
+          "The Chess Collective",
+          "Rising Knights",
+          "Heritage Trophy",
+          "Rookhouse Open",
+          "Grandboard Challenge",
+          "Chess Guild Series",
+          "The Players Open",
+        ][seed % 8] + ` · ${when.year}/${when.week}`;
       const [minField, maxField] = EVENT_FIELD_SIZE[level];
       const deadline = normalize(when.year, when.week - rule.deadlineWeeks);
       events.push({
@@ -158,10 +173,46 @@ export function getSchedule(
       });
     }
   }
-  return [...events, ...careerEvents(now, region, horizon)].sort(
-    (a, b) =>
-      a.weeksUntilStart - b.weeksUntilStart || a.name.localeCompare(b.name),
-  );
+  return [
+    ...events,
+    ...careerEvents(now, region, horizon),
+    ...sourcedEvents(now, region, horizon),
+    ...extraCircuit(now, region, careerId, horizon),
+    ...showcaseEvents(now, region, horizon),
+    ...rotatingEvents(now, region, horizon),
+  ]
+    .map((e) => {
+      if (e.details && !e.details.organizer) {
+        const official =
+          e.details.federation ||
+          /Championship|World Cup|Candidates|Olympiad|Grand Swiss/.test(
+            e.details.category,
+          );
+        const federation =
+          getCountry(e.details.country)?.federation.name ?? "Host federation";
+        e = {
+          ...e,
+          details: {
+            ...e.details,
+            organizer: {
+              name: official
+                ? federation
+                : `${e.name.split(" · ")[0]} Organizing Club`,
+              status: official ? "Official" : "Unofficial",
+              simulated: true,
+            },
+          },
+        };
+      }
+      return withTravel(e, region.countryCode);
+    })
+    .sort(
+      (a, b) =>
+        a.weeksUntilStart - b.weeksUntilStart ||
+        (a.details?.agenda?.startDay ?? 1) -
+          (b.details?.agenda?.startDay ?? 1) ||
+        a.name.localeCompare(b.name),
+    );
 }
 
 export const isEligible = (

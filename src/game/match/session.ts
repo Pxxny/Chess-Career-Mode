@@ -36,6 +36,7 @@ import type {
   MatchTermination,
   PendingMatch,
   PieceColor,
+  ReviewLabel,
 } from "@/types";
 import { logWarn } from "@/utils/log";
 import { MatchClock, type Side } from "./clock";
@@ -55,7 +56,7 @@ import {
   fenCore,
   type Referee,
 } from "./referee";
-import { analyzeMatch, lineCp } from "./review";
+import { analyzeMatch, lineCp, baseLabel, isSacrifice } from "./review";
 
 export type ControllerKind = "human" | "auto";
 /** How fast simulated players move: real time, a brisk pace, fast-forward, or as fast as the engine can play. */
@@ -71,6 +72,9 @@ export interface MatchSetup extends MatchSetupLite {
 }
 
 export interface LiveEval {
+  bestUci?: string | null;
+  sacrifice?: boolean;
+  gap?: number | null;
   /** Centipawns, White's point of view, clamped */
   cp: number;
   /** Mate in N, White's point of view (negative: Black mates). 0 = checkmate on the board. Null when there is none. */
@@ -103,6 +107,7 @@ export type AnalysisProgress =
   | { status: "error"; message: string };
 
 export interface MatchSnapshot {
+  moveJudgment: ReviewLabel | null;
   status: MatchStatus;
   game: GameState;
   position: Position;
@@ -142,7 +147,7 @@ export interface MatchSessionOptions {
   /** Called once when the game ends (not for a voided game) */
   onFinish?: (finish: MatchFinish) => void;
   onAnalysis?: (report: MatchAnalysisReport, finish: MatchFinish) => void;
-  /** Called after each move of a game in which the player moves by hand; null when it is over */
+  /** Called before the first move and after human-game moves; null when it is over. */
   onCheckpoint?: (pending: PendingMatch | null) => void;
   /** Called when a game with fewer than two moves is left: nothing is recorded */
   onVoid?: () => void;
@@ -317,6 +322,7 @@ export class MatchSession {
         : (this.evalCache.get(shown) ?? null);
     return {
       status: this.status,
+      moveJudgment: this.judgeShownMove(shown),
       game: this.game,
       position,
       fen: toFen(position),
@@ -387,6 +393,7 @@ export class MatchSession {
     void this.opts.engine.ensureLoaded?.();
     this.clock.start("w", 1);
     this.timer = setInterval(() => this.tick(), 100);
+    this.checkpoint();
     this.emit();
     this.schedule();
   }
@@ -666,7 +673,7 @@ export class MatchSession {
     if (!this.opts.onCheckpoint || this.detached) return;
     const anyHuman =
       this.controllers.white === "human" || this.controllers.black === "human";
-    if (!anyHuman && !this.playerMoved) return;
+    if (!anyHuman && !this.playerMoved && this.game.ucis.length > 0) return;
     this.opts.onCheckpoint({
       setup: this.liteSetup(),
       ucis: [...this.game.ucis],
@@ -683,6 +690,8 @@ export class MatchSession {
       rated,
       tournament,
       accuracyBonus,
+      prediction,
+      esports,
     } = this.setup;
     return {
       white,
@@ -692,6 +701,8 @@ export class MatchSession {
       rated,
       tournament,
       accuracyBonus,
+      ...(prediction ? { prediction } : {}),
+      ...(esports ? { esports } : {}),
     };
   }
 
@@ -979,7 +990,7 @@ export class MatchSession {
           moves: upTo,
           depth: GAME_CONFIG.match.liveDepth,
           movetime: GAME_CONFIG.match.liveMs,
-          multiPv: 1,
+          multiPv: 2,
         });
         if (my !== this.evalEpoch || this.disposed) return;
         const top = answer.lines[0];
@@ -993,6 +1004,14 @@ export class MatchSession {
         }
         const mate = top.mate !== null ? top.mate * sign : null;
         this.evalCache.set(ply, {
+          bestUci: answer.best,
+          sacrifice: isSacrifice(pos, top.pv, pos.turn === "w"),
+          gap: answer.lines[1]
+            ? Math.max(
+                0,
+                winPercent(lineCp(top)) - winPercent(lineCp(answer.lines[1])),
+              )
+            : null,
           cp: lineCp(top) * sign,
           mate,
           depth: answer.depth || top.depth,
@@ -1006,6 +1025,33 @@ export class MatchSession {
         // The live reading is optional.
       }
     })();
+  }
+
+  /** Provisional live labels need evaluations of both positions; review later replaces them. */
+  private judgeShownMove(ply: number): ReviewLabel | null {
+    if (ply < 1) return null;
+    if (this.analysis.status === "done")
+      return this.analysis.report.moves[ply - 1]?.label ?? null;
+    const before = this.evalCache.get(ply - 1),
+      after = this.evalCache.get(ply);
+    if (!before || !after) return null;
+    const position = this.game.positions[ply - 1],
+      sign = position.turn === "w" ? 1 : -1;
+    const priorWin = winPercent(before.cp * sign),
+      afterWin = winPercent(after.cp * sign);
+    const best = before.bestUci === this.game.ucis[ply - 1];
+    const label = baseLabel(Math.max(0, priorWin - afterWin), best);
+    if (
+      (label === "best" || label === "excellent") &&
+      best &&
+      before.sacrifice &&
+      (before.gap ?? 0) >= 5 &&
+      legalMoves(position).length > 1 &&
+      priorWin < 92 &&
+      afterWin >= 45
+    )
+      return "brilliant";
+    return label;
   }
 
   /** Win percentage for White at a half-move, from the live reading or the analysis. Null when unknown. */

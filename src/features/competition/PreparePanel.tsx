@@ -1,3 +1,8 @@
+import { dayStamp } from "@/game/competition/agenda";
+import { playerOpponentId } from "@/game/match/tournament";
+import { nextEsportsGame } from "@/game/esports/core";
+import { CareerPredictionPanel } from "@/features/prediction/CareerPrediction";
+import { RepertoirePicker } from "@/features/qol/RepertoirePicker";
 import { useMemo, useState } from "react";
 import { Button, Card, CardTitle, Tabs } from "@/components/ui";
 import { WorldHub } from "@/features/expansion/WorldHub";
@@ -49,6 +54,10 @@ export function PreparePanel() {
           {
             id: save.tournament.eventId,
             name: save.tournament.name,
+            time: save.tournament.timeControl.category,
+            type: save.tournament.details?.category ?? "tournament",
+            round: save.tournament.round,
+            rounds: save.tournament.rounds,
             year: save.tournament.year,
             week: save.tournament.week,
             ids: save.tournament.players
@@ -66,9 +75,43 @@ export function PreparePanel() {
       .map((r) => ({
         id: r.eventId,
         name: r.name,
+        time: r.details?.timeControl.category ?? "classical",
+        type: r.details?.category ?? "tournament",
+        round: undefined,
+        rounds: undefined,
         year: r.year,
         week: r.week,
         ids: r.entrantIds ?? [],
+      })),
+    ...(save.esports?.active?.status === "playing"
+      ? [
+          {
+            id: save.esports.active.event.id,
+            name: save.esports.active.event.name,
+            year: dayStamp(save.esports.active.event.day).year,
+            week: dayStamp(save.esports.active.event.day).week,
+            time: save.esports.active.event.timeControl.category,
+            type: "esports",
+            round: save.esports.active.round,
+            rounds: 3,
+            ids: save.esports.active.teams
+              .filter((t) => !t.members.some((m) => m.id === "player"))
+              .flatMap((t) => t.members.map((m) => m.id)),
+          },
+        ]
+      : []),
+    ...(save.esports?.entries ?? [])
+      .filter((e) => e.event.id !== save.esports?.active?.event.id)
+      .map((e) => ({
+        id: e.event.id,
+        name: e.event.name,
+        year: dayStamp(e.event.day).year,
+        week: dayStamp(e.event.day).week,
+        time: e.event.timeControl.category,
+        type: "esports",
+        round: undefined,
+        rounds: 3,
+        ids: [] as string[],
       })),
   ];
   const target = available.find((e) => e.id === state.target) ?? available[0];
@@ -77,7 +120,19 @@ export function PreparePanel() {
     const ids = new Set(fieldIds);
     return npcs.filter((n) => ids.has(n.id));
   }, [npcs, fieldIds.join("|")]);
-  const npc = field.find((n) => n.id === selectedNpc) ?? field[0];
+  const paired =
+    target && save.tournament?.eventId === target.id
+      ? playerOpponentId(save.tournament)
+      : target && save.esports?.active?.event.id === target.id
+        ? (() => {
+            const g = nextEsportsGame(save);
+            return g ? { id: g.opponent.id, color: g.color } : null;
+          })()
+        : null;
+  const npc =
+    field.find((n) => n.id === selectedNpc) ??
+    field.find((n) => n.id === paired?.id) ??
+    field[0];
   const report = state.scouts.find(
     (s) => s.eventId === target?.id && s.npcId === npc?.id,
   );
@@ -141,10 +196,26 @@ export function PreparePanel() {
         </div>
         <p className="mt-3 text-xs text-ink-faint">
           Settings are drafts. Complete preparation to apply the saved plan and
-          repertoire to this event. Human moves remain under your control. Team
-          events use their separate rating-based simulation.
+          repertoire to this event. Human moves remain under your control.
+          National team cups use their separate simulation; esports prepares
+          each board individually.
         </p>
       </Card>
+      {npc && target && (
+        <CareerPredictionPanel
+          opponent={npc}
+          chooseColor
+          options={{
+            color: paired?.color ?? "unknown",
+            timeControl: target.time,
+            eventId: target.id,
+            eventName: target.name,
+            tournamentType: target.type,
+            round: target.round,
+            rounds: target.rounds,
+          }}
+        />
+      )}
       <Tabs
         label="Preparation sections"
         active={tab}
@@ -343,9 +414,6 @@ export function PreparePanel() {
             />
             <div className="grid gap-4 lg:grid-cols-2">
               {repertoireGroups.map((group) => {
-                const choices = found
-                  .filter((e) => !group.first || e.moves[0] === group.first)
-                  .slice(0, 100);
                 return (
                   <section
                     key={group.key}
@@ -395,32 +463,24 @@ export function PreparePanel() {
                         </li>
                       ))}
                     </ol>
-                    <select
-                      aria-label={`Add ${group.label}`}
-                      value=""
+                    <RepertoirePicker
+                      db={db}
+                      label={group.label}
+                      query={search}
+                      first={group.first}
+                      side={
+                        group.key === "white"
+                          ? "white"
+                          : group.key === "black"
+                            ? "black"
+                            : undefined
+                      }
+                      exclude={state.repertoire[group.key]}
                       disabled={state.repertoire[group.key].length >= 8}
-                      className="w-full min-w-0 rounded-lg bg-navy-700 p-2 text-xs text-ink"
-                      onChange={(e) => {
-                        if (e.target.value)
-                          setList(group.key, [
-                            ...state.repertoire[group.key],
-                            e.target.value,
-                          ]);
-                      }}
-                    >
-                      <option value="">
-                        Add opening… (search to narrow list)
-                      </option>
-                      {choices
-                        .filter(
-                          (e) => !state.repertoire[group.key].includes(e.id),
-                        )
-                        .map((e) => (
-                          <option key={e.id} value={e.id}>
-                            {e.eco} · {e.name}
-                          </option>
-                        ))}
-                    </select>
+                      onPick={(id) =>
+                        setList(group.key, [...state.repertoire[group.key], id])
+                      }
+                    />
                   </section>
                 );
               })}

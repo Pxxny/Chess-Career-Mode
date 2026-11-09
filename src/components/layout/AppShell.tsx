@@ -1,6 +1,7 @@
-import { Outlet, useLocation } from 'react-router-dom';
-import { BottomNav } from './BottomNav';
-import { TopBar } from './TopBar';
+import { CalendarProgressDialog } from "@/features/qol/CareerPanels";
+import { Outlet, useLocation } from "react-router-dom";
+import { BottomNav } from "./BottomNav";
+import { TopBar } from "./TopBar";
 
 export function AppShell() {
   const { pathname } = useLocation();
@@ -14,6 +15,7 @@ export function AppShell() {
         </div>
       </main>
       <BottomNav />
+      <CalendarProgressDialog />
     </div>
   );
 }

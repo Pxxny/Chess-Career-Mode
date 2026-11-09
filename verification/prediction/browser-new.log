@@ -1,0 +1,18 @@
+
+> chess-career-mode@0.1.0 test:e2e
+> playwright test tests/prediction.spec.ts
+
+[WebServer] (node:22448) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 5 tests using 1 worker
+
+(node:22465) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/prediction.spec.ts:73:1 › calculator works before character creation, obeys Elo and handles mobile/invalid/extreme ratings (1.4s)
+  ✓  2 tests/prediction.spec.ts:114:1 › a real friendly game persists its forecast before move one and scores only once in Career and History (7.6s)
+  ✓  3 tests/prediction.spec.ts:188:1 › Swiss, Home and Prepare show forecasts; completed NPC boards populate calibration without rewriting their original forecasts (6.4s)
+  ✓  4 tests/prediction.spec.ts:266:1 › practice reload preserves the pre-game snapshot, records one loss and excludes interruption from draw learning (4.9s)
+  ✓  5 tests/prediction.spec.ts:304:1 › model settings persist, all career statistics start empty, and calculator/upset panels remain readable on small phones (3.7s)
+
+  5 passed (25.4s)

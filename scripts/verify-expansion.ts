@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { registrationIssue } from "../src/game/competition/eligibility.ts";
 import {
   APPEARANCE_OPTIONS,
   DEFAULT_APPEARANCE,
@@ -193,7 +194,13 @@ const event = getSchedule(
   { city: "Bangkok", countryCode: "TH", demonym: "Thai", continent: "Asia" },
   base.career.id,
   26,
-).find((e) => e.minElo <= 1000 && e.entryFee <= 250 && e.minReputation === 0)!;
+).find(
+  (e) =>
+    e.minElo <= 1000 &&
+    e.entryFee <= 250 &&
+    e.minReputation === 0 &&
+    registrationIssue(base, e, world) === null,
+)!;
 assert(event);
 const preview = previewEntrants(base, event, world),
   reg = registerForEvent(base, event, world);
@@ -204,13 +211,17 @@ assert.deepEqual(
 );
 const ready = {
   ...reg.save,
-  world: { ...reg.save.world, date: { year: event.year, week: event.week } },
+  world: {
+    ...reg.save.world,
+    date: { year: event.year, week: event.week },
+    day: event.details?.agenda?.exactStart ? event.details.agenda.startDay : 1,
+  },
 };
 const started = startRegisteredTournament(ready, event.id, world, 42);
 assert(started.ok);
 assert.deepEqual(
   started.save.tournament!.players.filter((p) => !p.isPlayer).map((p) => p.id),
-  preview.map((n) => n.id),
+  previewEntrants(ready, event, world).map((n) => n.id),
 );
 const noOpponents = startRegisteredTournament(
   ready,

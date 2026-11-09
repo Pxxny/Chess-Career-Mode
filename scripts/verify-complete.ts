@@ -40,6 +40,7 @@ import {
   thinkTimeMs,
 } from "../src/game/match/npcProfile.ts";
 import { recordTournament } from "../src/game/history/recordGame.ts";
+import { registrationIssue } from "../src/game/competition/eligibility.ts";
 import { upgradeSave } from "../src/game/training/migrate.ts";
 import { createRng } from "../src/game/rng.ts";
 import type {
@@ -70,8 +71,17 @@ const region = {
 };
 const events = getSchedule(base.world.date, region, base.career.id, 52);
 assert.equal(new Set(events.map((e) => e.id)).size, events.length);
-assert.equal(new Set(events.map((e) => e.details?.category)).size, 12);
-const open = events.find((e) => e.level === "local")!;
+assert.equal(new Set(events.map((e) => e.details?.category)).size, 14);
+const open = events.find(
+  (e) =>
+    e.level === "local" &&
+    e.details?.format === "swiss" &&
+    registrationIssue(
+      { ...base, player: { ...base.player, money: 1000 } },
+      e,
+      npcs,
+    ) === null,
+)!;
 let save: GameSave = {
   ...base,
   player: { ...base.player, money: 1000, ap: { current: 10, max: 10 } },
@@ -79,7 +89,10 @@ let save: GameSave = {
 const paid = registerForEvent(save, open, npcs);
 assert(paid.ok);
 save = paid.save;
-assert.equal(save.player.money, 1000 - open.entryFee);
+assert.equal(
+  save.player.money,
+  1000 - open.entryFee - (open.details?.travelCost ?? 0),
+);
 assert(!registerForEvent(save, open, npcs).ok);
 const late = {
   ...base,
@@ -110,7 +123,7 @@ const active = startRegisteredTournament(atEvent, open.id, npcs, 1);
 assert(active.ok && active.save.tournament);
 assert.deepEqual(
   active.save.tournament.players.filter((p) => !p.isPlayer).map((p) => p.id),
-  previewEntrants(save, open, npcs).map((p) => p.id),
+  previewEntrants(atEvent, open, npcs).map((p) => p.id),
 );
 assert(
   !startRegisteredTournament(active.save, open.id, npcs, 1).ok,
@@ -241,6 +254,35 @@ for (const size of [9, 16, 48, 128]) {
       );
     assert.equal(new Set(ids).size, size);
     assert.equal(ids.length, size);
+    const bye = round.find((p) => p.black === "bye");
+    if (
+      size === 9 &&
+      bye &&
+      t.players.find((p) => p.id === bye.white)!.opponents.includes("bye")
+    ) {
+      const alternative = t.players.some((candidate) => {
+        if (candidate.opponents.includes("bye")) return false;
+        const pool = t.players.filter((p) => p !== candidate);
+        const graph = pool.map((p, i) =>
+          pool
+            .map((_, j) => j)
+            .filter(
+              (j) =>
+                j !== i &&
+                !p.opponents.includes(pool[j].id) &&
+                !pool[j].opponents.includes(p.id),
+            ),
+        );
+        return oracle(
+          graph,
+          graph.map((_, i) => i),
+        );
+      });
+      assert(
+        !alternative,
+        "repeat bye only when no fresh-bye/no-rematch complete pairing exists",
+      );
+    }
     round.forEach((p) => {
       if (p.black !== "bye")
         assert(
@@ -251,12 +293,6 @@ for (const size of [9, 16, 48, 128]) {
     t = reportPlayerResult(t, "draw");
   }
   assert(t.players.every((p) => p.points >= 0 && p.points <= t.rounds));
-  if (size === 9)
-    assert(
-      t.players.every(
-        (p) => p.opponents.filter((id) => id === "bye").length <= 1,
-      ),
-    );
   swissMs += performance.now() - start;
 }
 console.log(

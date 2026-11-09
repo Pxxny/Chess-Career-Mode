@@ -1,3 +1,5 @@
+> Archived release report. Current implementation and validation: [ESPORTS-REPORT.md](ESPORTS-REPORT.md).
+
 # Chess Career Mode — Complete: Tournament, Swiss, Prepare
 
 วันที่ตรวจ: 2026-11-08 · Save version 9

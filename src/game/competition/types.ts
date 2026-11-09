@@ -9,6 +9,7 @@ export type CompetitionFormat =
   | "swiss"
   | "round-robin"
   | "double-round-robin"
+  | "round-robin-bo3"
   | "match"
   | "knockout"
   | "team";
@@ -20,6 +21,29 @@ export type Qualification =
   | "world-championship"
   | "super-invitation";
 export interface EventDetails {
+  agenda?: {
+    days: number;
+    startDay: number;
+    startMinute: number;
+    slotMinutes: number;
+    exactStart?: boolean;
+  };
+  organizer?: {
+    name: string;
+    status: "Official" | "Unofficial";
+    simulated: boolean;
+  };
+  showcase?: { countries: number; perCountry: number; maxAge: number };
+  localShare?: number;
+  travelCost?: number;
+  reference?: {
+    name: string;
+    url: string;
+    startDate: string;
+    endDate?: string;
+    observedAt: string;
+    sourceYear: number;
+  };
   historicalSchedule?: { startDate: string; endDate: string; source: string };
   category: string;
   location: string;

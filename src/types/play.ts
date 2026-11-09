@@ -1,14 +1,37 @@
-import type { GameOutcome, GameStamp, PieceColor } from './history';
-import type { FinishedGame } from '@/game/play/practice';
+import type { GameOutcome, GameStamp, PieceColor } from "./history";
+import type { FinishedGame } from "@/game/play/practice";
 
-export type GameMode = 'training' | 'blitz' | 'engine';
+export type GameMode = "training" | "blitz" | "engine";
 
-export type Termination = 'checkmate' | 'resignation' | 'timeout' | 'stalemate' | 'insufficient' | 'fiftyMove' | 'repetition' | 'agreement' | 'abandoned';
+export type Termination =
+  | "checkmate"
+  | "resignation"
+  | "timeout"
+  | "stalemate"
+  | "insufficient"
+  | "fiftyMove"
+  | "repetition"
+  | "agreement"
+  | "abandoned";
 
-export type ObjectiveId = 'free' | 'opening' | 'tactics' | 'endgame' | 'conversion' | 'defence' | 'time';
+export type ObjectiveId =
+  | "free"
+  | "opening"
+  | "tactics"
+  | "endgame"
+  | "conversion"
+  | "defence"
+  | "time";
 
 /** How each half-move was judged in the post-game analysis. One letter per half-move in `labels`. */
-export type MoveLabel = 'book' | 'best' | 'good' | 'inaccuracy' | 'mistake' | 'blunder';
+export type MoveLabel =
+  | "brilliant"
+  | "book"
+  | "best"
+  | "good"
+  | "inaccuracy"
+  | "mistake"
+  | "blunder";
 
 export interface GameAnalysisSummary {
   /** Engine that produced it: "Stockfish 16" or "Built-in engine" */
@@ -16,7 +39,7 @@ export interface GameAnalysisSummary {
   depth: number;
   /** Evaluation after each half-move (white's point of view, centipawns, clamped to +-1500). Index 0 is the start. */
   evals: number[];
-  /** One letter per half-move: B book, b best, g good, i inaccuracy, m mistake, x blunder */
+  /** One letter per half-move: R brilliant, B book, b best, g good, i inaccuracy, m mistake, x blunder */
   labels: string;
   whiteAccuracy: number;
   blackAccuracy: number;
@@ -24,6 +47,7 @@ export interface GameAnalysisSummary {
 
 /** A finished practice game (training, online blitz or engine). Rated career games are in `history.games`. */
 export interface PlayedGame extends GameStamp {
+  prediction?: import("@/game/prediction/types").PredictionSnapshot;
   id: string;
   mode: GameMode;
   opponentId: string | null;
@@ -67,7 +91,16 @@ export interface PracticeState {
   gameCounter: number;
 }
 
-export type SituationId = 'white' | 'black' | 'vs-e4' | 'vs-d4' | 'vs-c4' | 'vs-nf3' | 'vs-aggressive' | 'vs-defensive' | 'critical';
+export type SituationId =
+  | "white"
+  | "black"
+  | "vs-e4"
+  | "vs-d4"
+  | "vs-c4"
+  | "vs-nf3"
+  | "vs-aggressive"
+  | "vs-defensive"
+  | "critical";
 
 export interface OpeningStudy extends GameStamp {
   openingId: string;

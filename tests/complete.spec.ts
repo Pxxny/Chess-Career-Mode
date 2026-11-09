@@ -20,6 +20,9 @@ async function stored(page: Page, advance = false) {
       if (advance) {
         const reg = state.state.save.registrations[0];
         state.state.save.world.date = { year: reg.year, week: reg.week };
+        state.state.save.world.day = reg.details?.agenda?.exactStart
+          ? reg.details.agenda.startDay
+          : 1;
         store.put(JSON.stringify(state), "chess-career-mode-save-slot-1");
       }
       await new Promise<void>((resolve, reject) => {
@@ -50,6 +53,7 @@ test("Complete: six menus, registration, paid plan/repertoire/scout, reload and 
     "League",
     "History",
   ]);
+  await tabs.getByRole("tab", { name: "Swiss", exact: true }).click();
   const before = await stored(page);
   await page
     .locator('button[data-testid="register"]:enabled')
@@ -63,7 +67,9 @@ test("Complete: six menus, registration, paid plan/repertoire/scout, reload and 
   const paid = await stored(page);
   expect(paid.registrations).toHaveLength(1);
   expect(paid.player.money).toBe(
-    before.player.money - paid.registrations[0].entryFee,
+    before.player.money -
+      paid.registrations[0].entryFee -
+      (paid.registrations[0].travelCost ?? 0),
   );
   await tabs.getByRole("tab", { name: "Prepare", exact: true }).click();
   await page.getByRole("tab", { name: "Game Plan", exact: true }).click();

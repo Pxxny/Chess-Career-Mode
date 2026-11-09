@@ -1,3 +1,16 @@
+import { observePredictions } from "@/game/prediction/statistics";
+import {
+  freezeTournamentRound,
+  npcActor,
+  conditionsFor,
+  ratingActor,
+  tournamentObservations,
+} from "@/game/prediction/adapters";
+import { predictMatch, sampleOutcome, scoreOf } from "@/game/prediction/model";
+import type {
+  PredictionEnvironment,
+  PredictionActor,
+} from "@/game/prediction/types";
 import { requirementsText } from "@/game/competition/eligibility";
 import { swissPairings } from "@/game/competition/swiss";
 import { GAME_CONFIG } from "@/data/config";
@@ -49,12 +62,60 @@ export function pickField(
   return chosen;
 }
 
+/** An announced field targets local representation without inventing eligibility for national events. */
+export function pickEventField(
+  npcs: Npc[],
+  playerRating: number,
+  event: Pick<ScheduledEvent, "level" | "fieldSize" | "details">,
+  rng: Rng,
+): Npc[] {
+  const count = Math.max(1, event.fieldSize - 1),
+    d = event.details;
+  const eligible = npcs.filter(
+    (n) =>
+      (n.careerStatus === "active" || n.careerStatus === "semi-retired") &&
+      (!d?.nationality || n.nationality === d.nationality),
+  );
+  if (d?.nationality)
+    return pickField(eligible, playerRating, event.level, count, rng);
+  const local = eligible.filter((n) => n.nationality === d?.country);
+  const city = local.filter((n) => n.city === d?.location);
+  const share =
+    d?.localShare ??
+    (event.level === "local" ? 0.65 : event.level === "national" ? 0.8 : 0.25);
+  const localCount = Math.min(local.length, Math.ceil(count * share));
+  const cityCount = Math.min(city.length, Math.ceil(localCount * 0.6));
+  const chosen = pickField(city, playerRating, event.level, cityCount, rng);
+  const ids = new Set(chosen.map((n) => n.id));
+  const countryPlayers = pickField(
+    local.filter((n) => !ids.has(n.id)),
+    playerRating,
+    event.level,
+    localCount - chosen.length,
+    rng,
+  );
+  chosen.push(...countryPlayers);
+  countryPlayers.forEach((n) => ids.add(n.id));
+  return [
+    ...chosen,
+    ...pickField(
+      eligible.filter((n) => !ids.has(n.id)),
+      playerRating,
+      event.level,
+      count - chosen.length,
+      rng,
+    ),
+  ];
+}
+
 export interface CreateTournamentInput {
   event: ScheduledEvent;
   player: { name: string; rating: number; country: string; title: ChessTitle };
   npcs: Npc[];
   seed: number;
   fieldIds?: string[];
+  predictionEnvironment?: PredictionEnvironment;
+  playerActor?: PredictionActor;
 }
 
 export function createTournament(
@@ -72,16 +133,11 @@ export function createTournament(
             (n.careerStatus === "active" || n.careerStatus === "semi-retired"),
         )
         .slice(0, event.fieldSize - 1)
-    : pickField(
-        input.npcs,
-        player.rating,
-        event.level,
-        Math.max(1, event.fieldSize - 1),
-        rng,
-      );
+    : pickEventField(input.npcs, player.rating, event, rng);
   const players: TournamentPlayer[] = [
     {
       id: PLAYER_ID,
+      predictionActor: input.playerActor,
       name: player.name,
       elo: player.rating,
       title: player.title,
@@ -93,6 +149,7 @@ export function createTournament(
     },
     ...field.map((n) => ({
       id: n.id,
+      predictionActor: npcActor(n),
       name: n.name,
       elo: n.currentElo,
       title: n.title,
@@ -107,9 +164,15 @@ export function createTournament(
   const rounds =
     format === "match"
       ? 14
-      : format === "round-robin" || format === "double-round-robin"
+      : format === "round-robin" ||
+          format === "double-round-robin" ||
+          format === "round-robin-bo3"
         ? (players.length % 2 ? players.length : players.length - 1) *
-          (format === "double-round-robin" ? 2 : 1)
+          (format === "double-round-robin"
+            ? 2
+            : format === "round-robin-bo3"
+              ? 3
+              : 1)
         : format === "knockout"
           ? Math.ceil(Math.log2(players.length))
           : Math.max(
@@ -141,7 +204,7 @@ export function createTournament(
     finalRank: null,
     prize: 0,
   };
-  return startRound(t);
+  return startRound(t, input.predictionEnvironment);
 }
 
 const byId = (t: ActiveTournament, id: string): TournamentPlayer =>
@@ -161,11 +224,18 @@ export function pairRound(t: ActiveTournament): TournamentPairing[] {
         result: null,
       },
     ];
-  if (format === "round-robin" || format === "double-round-robin") {
+  if (
+    format === "round-robin" ||
+    format === "double-round-robin" ||
+    format === "round-robin-bo3"
+  ) {
     const circle: (TournamentPlayer | null)[] = [...order];
     if (circle.length % 2) circle.push(null);
     const cycle = circle.length - 1,
-      rotation = (t.round - 1) % cycle;
+      rotation =
+        (format === "round-robin-bo3"
+          ? Math.floor((t.round - 1) / 3)
+          : t.round - 1) % cycle;
     for (let r = 0; r < rotation; r++) circle.splice(1, 0, circle.pop()!);
     const pairs: TournamentPairing[] = [];
     for (let i = 0; i < circle.length / 2; i++) {
@@ -176,7 +246,27 @@ export function pairRound(t: ActiveTournament): TournamentPairing[] {
         continue;
       }
       if ((i === 0 && rotation % 2 === 1) || i % 2 === 1) [a, b] = [b, a];
-      if (t.round > cycle) [a, b] = [b, a];
+      if (
+        (format === "double-round-robin" && t.round > cycle) ||
+        (format === "round-robin-bo3" && t.round % 3 === 2)
+      )
+        [a, b] = [b, a];
+      if (format === "round-robin-bo3" && t.round % 3 === 0) {
+        const previous = t.pairings
+          .slice(-2)
+          .flat()
+          .filter(
+            (p) =>
+              (p.white === a!.id && p.black === b!.id) ||
+              (p.white === b!.id && p.black === a!.id),
+          );
+        const score = previous.reduce(
+          (sum, p) =>
+            sum + (p.white === a!.id ? (p.result ?? 0) : 1 - (p.result ?? 0)),
+          0,
+        );
+        if (previous.length === 2 && (score === 2 || score === 0)) continue;
+      }
       pairs.push({ white: a.id, black: b.id, result: null });
     }
     return pairs;
@@ -208,17 +298,25 @@ export function pairRound(t: ActiveTournament): TournamentPairing[] {
 }
 
 /** Begins the current round. A bye for the player is played automatically. */
-export function startRound(t: ActiveTournament): ActiveTournament {
-  const next: ActiveTournament = {
-    ...t,
-    pairings: [...t.pairings, pairRound(t)],
-  };
+export function startRound(
+  t: ActiveTournament,
+  env?: PredictionEnvironment,
+): ActiveTournament {
+  const next: ActiveTournament = freezeTournamentRound(
+    {
+      ...t,
+      pairings: [...t.pairings, pairRound(t)],
+    },
+    env,
+  );
   const mine = playerPairing(next);
   if (
     (mine && mine.black === "bye") ||
-    (!mine && t.details?.format === "knockout")
+    (!mine &&
+      (t.details?.format === "knockout" ||
+        t.details?.format === "round-robin-bo3"))
   )
-    return completeRound(next, null);
+    return completeRound(next, null, env);
   return next;
 }
 
@@ -248,17 +346,17 @@ export function simulateResult(
   elite: boolean,
   rng: Rng,
 ): number {
-  const e = expectedScore(whiteElo + 35, blackElo);
-  const draw = Math.min(
-    0.5,
-    Math.max(
-      0.06,
-      0.1 + 0.32 * (1 - Math.abs(e - 0.5) * 2) + (elite ? 0.14 : 0),
+  const prediction = predictMatch({
+    id: "ratings-only-npc",
+    player: ratingActor(whiteElo, "White"),
+    opponent: ratingActor(blackElo, "Black"),
+    conditions: conditionsFor(
+      elite ? "classical" : "rapid",
+      "white",
+      "tournament",
     ),
-  );
-  const win = Math.max(0.02, e - draw / 2);
-  const r = rng.next();
-  return r < win ? 1 : r < win + draw ? 0.5 : 0;
+  });
+  return scoreOf(sampleOutcome(prediction.adjusted, rng.next()));
 }
 
 /**
@@ -268,8 +366,10 @@ export function simulateResult(
 export function completeRound(
   t: ActiveTournament,
   playerScore: number | null,
+  env?: PredictionEnvironment,
 ): ActiveTournament {
   if (t.status !== "playing") return t;
+  t = freezeTournamentRound(t, env);
   const knockout = t.details?.format === "knockout";
   const winners: string[] = [],
     eliminated = [...(t.eliminated ?? [])];
@@ -296,12 +396,14 @@ export function completeRound(
         const score = playerScore ?? 0;
         p.result = p.white === PLAYER_ID ? score : 1 - score;
       } else
-        p.result = simulateResult(
-          byId(t, p.white).elo,
-          byId(t, p.black).elo,
-          t.level === "elite",
-          rng,
-        );
+        p.result = p.prediction
+          ? scoreOf(sampleOutcome(p.prediction.adjusted, rng.next()))
+          : simulateResult(
+              byId(t, p.white).elo,
+              byId(t, p.black).elo,
+              t.level === "elite",
+              rng,
+            );
     }
     const w = get(p.white);
     const b = get(p.black);
@@ -328,6 +430,30 @@ export function completeRound(
   const pairings = t.pairings.map((r, i) =>
     i === t.round - 1 ? roundPairings : r,
   );
+  if (t.details?.format === "round-robin-bo3" && t.round % 3 === 0) {
+    for (const p of roundPairings) {
+      if (p.black === "bye") continue;
+      const games = [
+        ...t.pairings.slice(t.round - 3, t.round - 1).flat(),
+        p,
+      ].filter(
+        (g) =>
+          (g.white === p.white && g.black === p.black) ||
+          (g.white === p.black && g.black === p.white),
+      );
+      const score = games.reduce(
+        (sum, g) =>
+          sum + (g.white === p.white ? (g.result ?? 0) : 1 - (g.result ?? 0)),
+        0,
+      );
+      if (score === 1.5)
+        p.tiebreakWinner = rng.chance(
+          expectedScore(get(p.white).elo, get(p.black).elo),
+        )
+          ? p.white
+          : p.black;
+    }
+  }
   const done: ActiveTournament = {
     ...t,
     players,
@@ -345,20 +471,34 @@ export function completeRound(
     done.knockoutWinners = [winner];
     roundPairings[0].tiebreakWinner = winner;
   }
+  const nextEnv = env
+    ? {
+        ...env,
+        state: observePredictions(
+          env.state,
+          tournamentObservations({ ...done, pairings: [roundPairings] }),
+        ),
+      }
+    : undefined;
   const matchClinched =
     t.details?.format === "match" &&
     Math.abs(players[0].points - players[1].points) > t.rounds - t.round;
   if (t.round >= t.rounds || matchClinched) return finishTournament(done);
-  return startRound({ ...done, round: t.round + 1 });
+  return startRound({ ...done, round: t.round + 1 }, nextEnv);
 }
 
 /** The player's game of the round ended. */
 export function reportPlayerResult(
   t: ActiveTournament,
   outcome: GameOutcome,
+  env?: PredictionEnvironment,
 ): ActiveTournament {
   if (t.status !== "playing") return t;
-  return completeRound(t, outcome === "win" ? 1 : outcome === "draw" ? 0.5 : 0);
+  return completeRound(
+    t,
+    outcome === "win" ? 1 : outcome === "draw" ? 0.5 : 0,
+    env,
+  );
 }
 
 export interface StandingRow {
@@ -372,6 +512,47 @@ export interface StandingRow {
 }
 
 export function standings(t: ActiveTournament): StandingRow[] {
+  if (t.details?.format === "round-robin-bo3") {
+    const scores = new Map(t.players.map((p) => [p.id, 0]));
+    const wins = new Map(t.players.map((p) => [p.id, 0]));
+    for (let start = 0; start < t.pairings.length; start += 3) {
+      const series = new Map<string, TournamentPairing[]>();
+      for (const p of t.pairings.slice(start, start + 3).flat()) {
+        if (p.black === "bye" || p.result === null) continue;
+        const key = [p.white, p.black].sort().join("|");
+        series.set(key, [...(series.get(key) ?? []), p]);
+      }
+      for (const games of series.values()) {
+        const a = games[0].white,
+          b = games[0].black;
+        const score = games.reduce(
+          (sum, g) => sum + (g.white === a ? g.result! : 1 - g.result!),
+          0,
+        );
+        if (games.length < 3 && score !== 2 && games.length - score !== 2)
+          continue;
+        const winner =
+          games.at(-1)?.tiebreakWinner ?? (score > games.length / 2 ? a : b);
+        scores.set(winner, scores.get(winner)! + 1);
+        wins.set(winner, wins.get(winner)! + 1);
+      }
+    }
+    return t.players
+      .map((player) => ({
+        player: { ...player, points: scores.get(player.id)! },
+        wins: wins.get(player.id)!,
+        buchholz: 0,
+        buchholzCut1: 0,
+        sonnebornBerger: 0,
+      }))
+      .sort(
+        (a, b) =>
+          b.player.points - a.player.points ||
+          b.player.elo - a.player.elo ||
+          a.player.id.localeCompare(b.player.id),
+      )
+      .map((r, i) => ({ ...r, rank: i + 1 }));
+  }
   const score = new Map(t.players.map((p) => [p.id, p.points]));
   const rows = t.players.map((p) => {
     let before = 0;
@@ -467,14 +648,18 @@ function finishTournament(t: ActiveTournament): ActiveTournament {
 }
 
 /** Leaving the event: every remaining game is lost by forfeit. */
-export function withdraw(t: ActiveTournament): ActiveTournament {
+export function withdraw(
+  t: ActiveTournament,
+  env?: PredictionEnvironment,
+): ActiveTournament {
   let cur: ActiveTournament = { ...t, withdrawn: true };
   let guard = 0;
-  while (cur.status === "playing" && guard++ < 50) {
+  while (cur.status === "playing" && guard++ <= t.rounds + 1) {
     const mine = playerPairing(cur);
     cur = completeRound(
       cur,
       mine && mine.black !== "bye" && mine.result === null ? 0 : null,
+      env,
     );
   }
   return { ...cur, prize: 0 };

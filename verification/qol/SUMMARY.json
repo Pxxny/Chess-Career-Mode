@@ -1,0 +1,73 @@
+{
+  "node": "24.22.1",
+  "npm": "11.9.0",
+  "browser": "Chromium 156",
+  "commands": [
+    {
+      "command": "npm run test:match",
+      "exit": 0,
+      "seconds": 222.75
+    },
+    {
+      "command": "npm run test:qol",
+      "exit": 0,
+      "seconds": 0.97
+    },
+    {
+      "command": "npm run test:complete",
+      "exit": 0,
+      "seconds": 1.37
+    },
+    {
+      "command": "npm run test:world",
+      "exit": 0,
+      "seconds": 1.75
+    },
+    {
+      "command": "npm run test:play",
+      "exit": 0,
+      "seconds": 5.04
+    },
+    {
+      "command": "npm run test:session",
+      "exit": 0,
+      "seconds": 0.37
+    },
+    {
+      "command": "npm run test:expansion",
+      "exit": 0,
+      "seconds": 0.82
+    },
+    {
+      "command": "npm run test:ages",
+      "exit": 0,
+      "seconds": 1.16
+    },
+    {
+      "command": "npm run test:characters",
+      "exit": 0,
+      "seconds": 0.29
+    },
+    {
+      "command": "npm run test:data",
+      "exit": 0,
+      "seconds": 0.49
+    },
+    {
+      "command": "npm run test:chess-cache",
+      "exit": 0,
+      "seconds": 0.24
+    },
+    {
+      "command": "npm run test:engine",
+      "exit": 0,
+      "seconds": 0.25
+    }
+  ],
+  "typecheck": "passed",
+  "build": "passed",
+  "browser_passed": 15,
+  "browser_failed": 0,
+  "final_fide_ui_rerun_passed": 1,
+  "note": "Durations refer to the timed suite; current logs include targeted reruns. Not tested on the user Termux phone."
+}

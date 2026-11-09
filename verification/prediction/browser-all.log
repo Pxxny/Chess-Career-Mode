@@ -1,0 +1,40 @@
+
+> chess-career-mode@0.1.0 test:e2e
+> playwright test
+
+[WebServer] (node:24853) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 27 tests using 1 worker
+
+(node:24871) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/app.spec.ts:53:1 › production app: real games, Stockfish, analysis, history and opening performance persist (19.7s)
+  ✓   2 tests/app.spec.ts:109:1 › PGN file/paste, exports, imported opening on Games-first refresh and source removal (4.7s)
+  ✓   3 tests/app.spec.ts:141:1 › missing Stockfish uses built-in engine and keeps playing (3.9s)
+  ✓   4 tests/app.spec.ts:153:1 › reload of an active game records resignation once; version 5 save upgrades in place (4.7s)
+  ✓   5 tests/circuit.spec.ts:40:1 › birth place: independent country/town in creation, confirmation, profile and reload (2.8s)
+  ✓   6 tests/circuit.spec.ts:94:1 › tournament finder, official organizer, real full state and invitation-only acceptance survive reload (6.4s)
+  ✓   7 tests/circuit.spec.ts:226:1 › analysis board: ?? and !! highlight the selected move, clear at start and use local SVG pieces (3.8s)
+  ✓   8 tests/circuit.spec.ts:339:1 › Android and iOS emulation use identical loaded piece assets with a square mobile board (6.4s)
+  ✓   9 tests/complete.spec.ts:39:1 › Complete: six menus, registration, paid plan/repertoire/scout, reload and a real Swiss round on mobile (6.5s)
+  ✓  10 tests/complete.spec.ts:175:1 › 2024 Candidates uses verified dates and venue while career rules are labelled as simulated (3.1s)
+  ✓  11 tests/complete.spec.ts:208:1 › national team participation requires registration and consumes the entry once (4.7s)
+  ✓  12 tests/esports.spec.ts:57:1 › Official/Unofficial finder, rotating 3/7-day schedules and exact-day registration (5.7s)
+  ✓  13 tests/esports.spec.ts:139:1 › Free Agent qualifier: real game, separate progression, reload and once-only team results (9.7s)
+  ✓  14 tests/esports.spec.ts:225:1 › create a Trio, recruit with refusals/cooldown, persist focus, and keep both circuits accessible (4.6s)
+  ✓  15 tests/expansion.spec.ts:28:1 › expanded look, federation, coaching, team entry guard, tournament entrants and annual population persist (25.0s)
+  ✓  16 tests/match-clock.spec.ts:27:1 › Complete clocks update independently and live/review boards keep eight rows on phones (8.8s)
+  ✓  17 tests/mobile.spec.ts:16:1 › mobile layouts keep the board, opening details and performance within the viewport (6.2s)
+  ✓  18 tests/prediction.spec.ts:73:1 › calculator works before character creation, obeys Elo and handles mobile/invalid/extreme ratings (1.3s)
+  ✓  19 tests/prediction.spec.ts:114:1 › a real friendly game persists its forecast before move one and scores only once in Career and History (7.7s)
+  ✓  20 tests/prediction.spec.ts:188:1 › Swiss, Home and Prepare show forecasts; completed NPC boards populate calibration without rewriting their original forecasts (7.5s)
+  ✓  21 tests/prediction.spec.ts:266:1 › practice reload preserves the pre-game snapshot, records one loss and excludes interruption from draw learning (4.7s)
+  ✓  22 tests/prediction.spec.ts:304:1 › model settings persist, all career statistics start empty, and calculator/upset panels remain readable on small phones (4.1s)
+  ✓  23 tests/qol.spec.ts:264:1 › QoL: date, work income, abroad/FIDE filters, diverse repertoire and chosen training to the next event (4.9s)
+  ✓  24 tests/qol.spec.ts:381:1 › QoL: favorite opening and tournament player histories scope outcomes and open actual replays (4.3s)
+  ✓  25 tests/qol.spec.ts:460:1 › QoL: federation processing, calendar cancellation and additive legacy NPC upgrade persist (8.0s)
+  ✓  26 tests/slots.spec.ts:34:1 › date of birth, then two characters side by side in separate slots (4.8s)
+  ✓  27 tests/slots.spec.ts:89:1 › a date of birth that does not fit the start year blocks the start year step (3.1s)
+
+  27 passed (3.0m)

@@ -1,0 +1,32 @@
+
+> chess-career-mode@0.1.0 test:e2e
+> playwright test
+
+[WebServer] (node:9386) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 19 tests using 1 worker
+
+(node:9404) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/app.spec.ts:53:1 › production app: real games, Stockfish, analysis, history and opening performance persist (24.2s)
+  ✓   2 tests/app.spec.ts:109:1 › PGN file/paste, exports, imported opening on Games-first refresh and source removal (4.9s)
+  ✓   3 tests/app.spec.ts:141:1 › missing Stockfish uses built-in engine and keeps playing (3.8s)
+  ✓   4 tests/app.spec.ts:153:1 › reload of an active game records resignation once; version 5 save upgrades in place (4.7s)
+  ✓   5 tests/circuit.spec.ts:40:1 › birth place: independent country/town in creation, confirmation, profile and reload (3.3s)
+  ✓   6 tests/circuit.spec.ts:94:1 › tournament finder, official organizer, real full state and invitation-only acceptance survive reload (5.8s)
+  ✓   7 tests/circuit.spec.ts:226:1 › analysis board: ?? and !! highlight the selected move, clear at start and use local SVG pieces (3.6s)
+  ✓   8 tests/circuit.spec.ts:339:1 › Android and iOS emulation use identical loaded piece assets with a square mobile board (6.0s)
+  ✓   9 tests/complete.spec.ts:36:1 › Complete: six menus, registration, paid plan/repertoire/scout, reload and a real Swiss round on mobile (6.3s)
+  ✓  10 tests/complete.spec.ts:169:1 › 2024 Candidates uses verified dates and venue while career rules are labelled as simulated (2.7s)
+  ✓  11 tests/complete.spec.ts:202:1 › national team participation requires registration and consumes the entry once (4.5s)
+  ✓  12 tests/expansion.spec.ts:28:1 › expanded look, federation, coaching, team entry guard, tournament entrants and annual population persist (25.4s)
+  ✓  13 tests/match-clock.spec.ts:27:1 › Complete clocks update independently and live/review boards keep eight rows on phones (7.3s)
+  ✓  14 tests/mobile.spec.ts:16:1 › mobile layouts keep the board, opening details and performance within the viewport (6.1s)
+  ✓  15 tests/qol.spec.ts:264:1 › QoL: date, work income, abroad/FIDE filters, diverse repertoire and chosen training to the next event (4.5s)
+  ✓  16 tests/qol.spec.ts:377:1 › QoL: favorite opening and tournament player histories scope outcomes and open actual replays (4.1s)
+  ✓  17 tests/qol.spec.ts:456:1 › QoL: federation processing, calendar cancellation and additive legacy NPC upgrade persist (7.8s)
+  ✓  18 tests/slots.spec.ts:34:1 › date of birth, then two characters side by side in separate slots (5.1s)
+  ✓  19 tests/slots.spec.ts:89:1 › a date of birth that does not fit the start year blocks the start year step (3.2s)
+
+  19 passed (2.3m)

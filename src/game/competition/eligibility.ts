@@ -2,6 +2,11 @@ import type { ScheduledEvent } from "@/game/world/schedule";
 import type { ChessTitle, GameSave, SkillTier } from "@/types";
 import { competitionOf } from "./preparation";
 import { stampIndex } from "./catalog";
+import { registrationCount } from "./entries";
+import { showcaseSelection } from "./showcase";
+import type { Npc } from "@/types";
+import { bookingConflict } from "@/game/esports/core";
+import { bookedStart, bookedEnd, reservedUntil } from "./agenda";
 const titles: ChessTitle[] = ["none", "CM", "FM", "IM", "GM"];
 const leagues: SkillTier[] = [
   "beginner",
@@ -49,8 +54,11 @@ export function eligibilityIssues(
 export function registrationIssue(
   save: GameSave,
   event: ScheduledEvent,
+  npcs?: Npc[],
 ): string | null {
   if (
+    !Number.isFinite(event.details?.travelCost ?? 0) ||
+    (event.details?.travelCost ?? 0) < 0 ||
     !Number.isFinite(event.entryFee) ||
     event.entryFee < 0 ||
     !Number.isInteger(event.fieldSize) ||
@@ -72,12 +80,28 @@ export function registrationIssue(
     save.history.tournaments.some((t) => t.tournamentId === event.id)
   )
     return "You are already registered or have played this event.";
-  if (save.registrations.some((r) => stampIndex(r) === stampIndex(event)))
+  if (
+    save.registrations.some(
+      (r) =>
+        stampIndex(r) === stampIndex(event) &&
+        (!r.details?.agenda?.exactStart || !event.details?.agenda?.exactStart),
+    )
+  )
     return "You already entered another competition starting this week.";
+  if (bookingConflict(save, bookedStart(event), reservedUntil(event)))
+    return "Schedule conflict with another traditional or esports event.";
+  if (event.details?.showcase) {
+    if (!npcs || !showcaseSelection(save, event, npcs).invited)
+      return "Invitation only: the organizer has not selected you.";
+  } else if (
+    event.details?.format !== "team" &&
+    registrationCount(save, event, npcs) >= event.fieldSize
+  )
+    return "This tournament is full.";
   const issues = eligibilityIssues(save, event);
   if (issues.length) return `Requires ${issues.join(", ")}.`;
-  if (save.player.money < event.entryFee)
-    return "You cannot afford the entry fee.";
+  if (save.player.money < event.entryFee + (event.details?.travelCost ?? 0))
+    return "You cannot afford the entry fee and travel.";
   return null;
 }
 export const requirementsText = (e: ScheduledEvent): string =>

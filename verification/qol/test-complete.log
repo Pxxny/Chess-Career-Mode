@@ -1,0 +1,15 @@
+
+> chess-career-mode@0.1.0 test:complete
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-complete.ts
+
+PASS registration: real date, duplicate, negative fee, capacity, advance start, title, qualification, nationality, league
+PASS Swiss: 750 graphs vs exhaustive oracle, greedy trap, 9/16/48/128-player events (438.3 ms total)
+PASS formats: single/double round-robin, odd fields, match tiebreak, knockout byes/elimination, withdrawal
+PASS preparation: AP/money/hours/fatigue, snapshots, repertoire book moves, search budget, scout duplicates, migration, early draw, qualification/archive, prize idempotency
+Complete verification passed (933.1 ms).
+PASS MatchSession integration: 20-ply equal-position draw agreement; exclusive career match leases
+PASS round-robin zero-point rest rounds and championship clinch after eight wins
+PASS calendar: overdue event forfeits exactly once, without prize or qualification
+PASS verified 2024 Candidates dates/venue/format; simulated career fields remain labelled
+PASS response overrides general black repertoire; backup follows off-primary move sequence
+PASS Swiss bye priority across 100 adversarial odd fields

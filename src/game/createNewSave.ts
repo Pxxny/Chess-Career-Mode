@@ -1,3 +1,6 @@
+import { emptyPredictionState } from "./prediction/statistics";
+import { emptyQol } from "./qol/career";
+import { emptyEsports } from "./esports/core";
 import { emptyCompetition } from "./competition/preparation";
 import { emptyExpansion } from "./career/expansion";
 import { GAME_CONFIG } from "@/data/config";
@@ -17,6 +20,10 @@ export function createNewSave(
 ): GameSave {
   return {
     version: GAME_CONFIG.saveVersion,
+    prediction: emptyPredictionState(),
+    esports: emptyEsports(career.startYear * 364),
+    npcNameVersion: 1,
+    qol: emptyQol(career.countryCode),
     expansion: emptyExpansion(),
     competition: emptyCompetition(),
     career,

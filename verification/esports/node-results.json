@@ -1,0 +1,79 @@
+[
+  {
+    "command": "npm run test:play",
+    "exitCode": 0,
+    "seconds": 5.43
+  },
+  {
+    "command": "npm run test:ages",
+    "exitCode": 0,
+    "seconds": 1.75
+  },
+  {
+    "command": "npm run test:characters",
+    "exitCode": 0,
+    "seconds": 0.34
+  },
+  {
+    "command": "npm run test:data",
+    "exitCode": 0,
+    "seconds": 0.53
+  },
+  {
+    "command": "npm run test:chess-cache",
+    "exitCode": 0,
+    "seconds": 0.24
+  },
+  {
+    "command": "npm run test:engine",
+    "exitCode": 0,
+    "seconds": 0.26
+  },
+  {
+    "command": "npm run test:circuit",
+    "exitCode": 0,
+    "seconds": 1.33
+  },
+  {
+    "command": "npm run test:world",
+    "exitCode": 0,
+    "seconds": 3.28
+  },
+  {
+    "command": "npm run test:session",
+    "exitCode": 0,
+    "seconds": 0.49
+  },
+  {
+    "command": "npm run test:match",
+    "exitCode": 0,
+    "seconds": null,
+    "note": "Final retry passed; see raw command log. Duration was not separately re-timed."
+  },
+  {
+    "command": "npm run typecheck",
+    "exitCode": 0,
+    "seconds": 12.32
+  },
+  {
+    "command": "npm run test:esports",
+    "exitCode": 0,
+    "seconds": null,
+    "note": "Final retry passed; see raw command log. Duration was not separately re-timed."
+  },
+  {
+    "command": "npm run test:complete",
+    "exitCode": 0,
+    "seconds": 2.53
+  },
+  {
+    "command": "npm run test:expansion",
+    "exitCode": 0,
+    "seconds": 1.71
+  },
+  {
+    "command": "npm run test:qol",
+    "exitCode": 0,
+    "seconds": 1.89
+  }
+]

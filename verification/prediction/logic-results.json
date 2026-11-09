@@ -1,0 +1,77 @@
+[
+  {
+    "script": "typecheck",
+    "exitCode": 0,
+    "seconds": 6.625
+  },
+  {
+    "script": "test:prediction",
+    "exitCode": 0,
+    "seconds": 1.404
+  },
+  {
+    "script": "test:world",
+    "exitCode": 0,
+    "seconds": 6.356
+  },
+  {
+    "script": "test:play",
+    "exitCode": 0,
+    "seconds": 7.206
+  },
+  {
+    "script": "test:session",
+    "exitCode": 0,
+    "seconds": 0.736
+  },
+  {
+    "script": "test:engine",
+    "exitCode": 0,
+    "seconds": 0.483
+  },
+  {
+    "script": "test:chess-cache",
+    "exitCode": 0,
+    "seconds": 0.482
+  },
+  {
+    "script": "test:characters",
+    "exitCode": 0,
+    "seconds": 0.614
+  },
+  {
+    "script": "test:ages",
+    "exitCode": 0,
+    "seconds": 2.66
+  },
+  {
+    "script": "test:data",
+    "exitCode": 0,
+    "seconds": 0.948
+  },
+  {
+    "script": "test:expansion",
+    "exitCode": 0,
+    "seconds": 1.529
+  },
+  {
+    "script": "test:complete",
+    "exitCode": 0,
+    "seconds": 1.859
+  },
+  {
+    "script": "test:qol",
+    "exitCode": 0,
+    "seconds": 2.033
+  },
+  {
+    "script": "test:circuit",
+    "exitCode": 0,
+    "seconds": 1.565
+  },
+  {
+    "script": "test:esports",
+    "exitCode": 0,
+    "seconds": 0.899
+  }
+]
