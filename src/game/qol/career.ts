@@ -1,7 +1,15 @@
 import { getLanguage } from "@/i18n/language";
 import type { GameSave } from "@/types";
 import { getCountry } from "@/data/world/countries";
-import { performSession } from "@/game/training/engine";
+import {
+  performSession,
+  previewSession,
+  restBlock,
+  restInfo,
+  takeRest,
+  type RestKind,
+} from "@/game/training/engine";
+import { GAME_CONFIG } from "@/data/config";
 import { TRAINING_SESSIONS } from "@/data/trainingSessions";
 export const careerDay = (save: GameSave): number =>
   (save.world.date.year * 52 + save.world.date.week - 1) * 7 +
@@ -292,6 +300,19 @@ export interface TrainingDay {
   completed: string[];
   skipped: { name: string; reason: string }[];
 }
+/** Rest steps that can be placed in a daily plan next to the training sessions. */
+export const AUTO_REST: { id: string; kind: RestKind }[] = [
+  { id: "rest-nap", kind: "nap" },
+  { id: "rest-break", kind: "break" },
+];
+const restOnce = (save: GameSave): { save: GameSave; label: string } | null => {
+  for (const kind of ["nap", "break"] as const) {
+    if (restBlock(save, kind)) continue;
+    const r = takeRest(save, kind);
+    if (r.ok) return { save: r.save, label: restInfo(kind).label };
+  }
+  return null;
+};
 export function plannedTrainingDay(
   save: GameSave,
   ids: readonly string[],
@@ -300,6 +321,15 @@ export function plannedTrainingDay(
   const completed: string[] = [],
     skipped: TrainingDay["skipped"] = [];
   for (const id of [...new Set(ids)]) {
+    const rest = AUTO_REST.find((r) => r.id === id);
+    if (rest) {
+      const r = takeRest(next, rest.kind);
+      if (r.ok) {
+        next = r.save;
+        completed.push(restInfo(rest.kind).label);
+      } else skipped.push({ name: restInfo(rest.kind).label, reason: r.error });
+      continue;
+    }
     const def = AUTO_TRAINING.find((d) => d.id === id);
     if (!def) {
       skipped.push({
@@ -308,11 +338,27 @@ export function plannedTrainingDay(
       });
       continue;
     }
+    // Too exhausted to train: rest on its own (a nap, then breaks) and try again.
+    while (
+      previewSession(next, def).blocks.some((b) => b.reason === "exhausted")
+    ) {
+      const rested = restOnce(next);
+      if (!rested) break;
+      next = rested.save;
+      completed.push(`${rested.label} (automatic)`);
+    }
     const result = performSession(next, id);
     if (result.ok) {
       next = result.save;
       completed.push(def.name);
     } else skipped.push({ name: def.name, reason: result.error });
+  }
+  // Spend leftover hours recovering instead of wasting them.
+  while (next.training.fatigue > GAME_CONFIG.sessions.maxFatigue * 0.15) {
+    const rested = restOnce(next);
+    if (!rested) break;
+    next = rested.save;
+    completed.push(`${rested.label} (automatic)`);
   }
   return { save: next, completed, skipped };
 }

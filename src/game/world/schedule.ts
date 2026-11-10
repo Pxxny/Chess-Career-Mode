@@ -6,7 +6,7 @@ import { careerEvents } from "@/game/competition/catalog";
 import type { EventDetails } from "@/game/competition/types";
 import {
   EVENT_FIELD_SIZE,
-  EVENT_PATTERNS,
+  EVENT_STYLES,
   type EventLevel,
 } from "@/data/chess/tournaments";
 import type { GameStamp } from "@/types";
@@ -105,22 +105,8 @@ export function getSchedule(
     for (let abs = first; abs <= start + horizon; abs += rule.every) {
       const when = normalize(Math.floor(abs / 52), (abs % 52) + 1);
       const seed = hashString(`${careerId}:${level}:${abs}`);
-      let name: string;
-      name = fill(
-        EVENT_PATTERNS[level][seed % EVENT_PATTERNS[level].length],
-        region,
-      ).replace(/Junior/g, "Community");
-      name =
-        [
-          "Founders Cup",
-          "The Chess Collective",
-          "Rising Knights",
-          "Heritage Trophy",
-          "Rookhouse Open",
-          "Grandboard Challenge",
-          "Chess Guild Series",
-          "The Players Open",
-        ][seed % 8] + ` · ${when.year}/${when.week}`;
+      const style = EVENT_STYLES[level][seed % EVENT_STYLES[level].length];
+      const name = `${fill(style.pattern, region)} · ${when.year}/${when.week}`;
       const [minField, maxField] = EVENT_FIELD_SIZE[level];
       const deadline = normalize(when.year, when.week - rule.deadlineWeeks);
       events.push({
@@ -136,7 +122,9 @@ export function getSchedule(
         weeksUntilStart: weeksBetween(now, when),
         weeksUntilDeadline: weeksBetween(now, deadline),
         details: {
-          category: "Open Tournaments",
+          category:
+            style.kind === "junior" ? "Junior Tournaments" : "Open Tournaments",
+          ...(style.maxAge !== undefined ? { maxAge: style.maxAge } : {}),
           location: region.city,
           country: region.countryCode,
           end: when,
@@ -166,7 +154,8 @@ export function getSchedule(
                   category: "classical",
                 },
           prize: rule.fee * (minField + (seed % (maxField - minField + 1))),
-          prestige: level === "local" ? 10 : 30,
+          prestige:
+            (level === "local" ? 10 : 30) + (style.kind === "championship" ? 10 : 0),
           provenance: "fictional",
         },
         invitational: level === "international" || level === "elite",

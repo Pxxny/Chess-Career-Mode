@@ -3,7 +3,9 @@ import { useState } from "react";
 import { Button, Card, CardTitle, Modal } from "@/components/ui";
 import { useSave } from "@/hooks/useGame";
 import { useGameStore } from "@/store/gameStore";
+import { restInfo } from "@/game/training/engine";
 import {
+  AUTO_REST,
   AUTO_TRAINING,
   CAREER_JOBS,
   careerDay,
@@ -184,12 +186,21 @@ export function AdvanceToEvent({
           <p className="mb-3 text-sm text-ink-muted">
             Choose sessions to attempt once each day, in the order below. Normal
             costs, requirements and fatigue apply. Blocked sessions are skipped;
-            the rest of the day is used for recovery. Leave every box empty to
-            rest. Stops for your earliest registered event so you do not miss
+            you also rest on your own when too exhausted and with any hours
+            left over. Leave every box empty to rest. Stops for your earliest registered event so you do not miss
             it.
           </p>
           <div className="max-h-72 space-y-2 overflow-auto">
-            {AUTO_TRAINING.map((d) => (
+            {[
+              ...AUTO_REST.map((r) => ({
+                id: r.id,
+                name: restInfo(r.kind).label,
+                hours: restInfo(r.kind).hours,
+                ap: 0,
+                money: 0,
+              })),
+              ...AUTO_TRAINING,
+            ].map((d) => (
               <label
                 key={d.id}
                 className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg bg-navy-900 p-3 text-sm text-ink"
@@ -220,9 +231,9 @@ export function AdvanceToEvent({
               onClick={async () => {
                 setOpen(false);
                 setReport(null);
-                const chosen = AUTO_TRAINING.filter((d) =>
-                  ids.includes(d.id),
-                ).map((d) => d.id);
+                const chosen = [...AUTO_REST, ...AUTO_TRAINING]
+                  .filter((d) => ids.includes(d.id))
+                  .map((d) => d.id);
                 const r = await advance(eventId, chosen);
                 if (r.ok) {
                   setReport(r.report);

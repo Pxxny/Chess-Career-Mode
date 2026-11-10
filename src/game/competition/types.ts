@@ -1,3 +1,4 @@
+import type { TeamEventInfo } from "@/data/chess/nationalTeamEvents";
 import type {
   ActiveTournament,
   ChessTitle,
@@ -60,6 +61,10 @@ export interface EventDetails {
   nationality?: string;
   minimumLeague?: SkillTier;
   federation?: boolean;
+  /** Oldest age allowed to enter (junior events); absent for open events */
+  maxAge?: number;
+  /** Concrete national-team edition (teams, boards, reserves) for team events */
+  teamEvent?: TeamEventInfo;
 }
 export type Approach =
   | "Rock Solid"

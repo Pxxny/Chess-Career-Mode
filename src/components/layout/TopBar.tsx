@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { Volume2, VolumeX } from "lucide-react";
+import { setSoundEnabled, useSoundEnabled } from "@/audio/sound";
 import { LanguageSelector } from "@/i18n/LanguageSelector";
 import { ApMeter } from "@/components/game/ApMeter";
 import { MoneyChip } from "@/components/game/MoneyChip";
@@ -8,6 +10,7 @@ import { usePlayer } from "@/hooks/useGame";
 
 export function TopBar() {
   const player = usePlayer();
+  const sound = useSoundEnabled();
 
   return (
     <header className="sticky top-0 z-30 border-b border-white/5 bg-navy-950/90 pt-[env(safe-area-inset-top)] backdrop-blur">
@@ -30,7 +33,16 @@ export function TopBar() {
           <ApMeter ap={player.ap} />
           <MoneyChip amount={player.money} />
         </div>
-        <div className="col-start-2 row-start-1">
+        <div className="col-start-2 row-start-1 flex items-center gap-2">
+          <button
+            type="button"
+            aria-label={sound ? "Turn sound off" : "Turn sound on"}
+            aria-pressed={sound}
+            onClick={() => setSoundEnabled(!sound)}
+            className="flex h-11 w-11 items-center justify-center rounded-lg border border-white/15 text-ink-muted hover:text-ink"
+          >
+            {sound ? <Volume2 size={18} /> : <VolumeX size={18} />}
+          </button>
           <LanguageSelector compact />
         </div>
       </div>

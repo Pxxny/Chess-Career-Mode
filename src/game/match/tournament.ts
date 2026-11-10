@@ -74,7 +74,8 @@ export function pickEventField(
   const eligible = npcs.filter(
     (n) =>
       (n.careerStatus === "active" || n.careerStatus === "semi-retired") &&
-      (!d?.nationality || n.nationality === d.nationality),
+      (!d?.nationality || n.nationality === d.nationality) &&
+      (d?.maxAge === undefined || n.age <= d.maxAge),
   );
   if (d?.nationality)
     return pickField(eligible, playerRating, event.level, count, rng);

@@ -11,6 +11,8 @@ import { LastResultSection } from "@/features/home/LastResultSection";
 import { MoraleSection } from "@/features/home/MoraleSection";
 import { NewsSection } from "@/features/home/NewsSection";
 import { RatingsSection } from "@/features/home/RatingsSection";
+import { InstallCard } from "@/features/home/InstallCard";
+import { RankingsSection } from "@/features/home/RankingsSection";
 import { RecentFormSection } from "@/features/home/RecentFormSection";
 import { TitlesSection } from "@/features/home/TitlesSection";
 import { useDashboard } from "@/features/home/useDashboard";
@@ -73,6 +75,7 @@ export function HomePage() {
         Work & income →
       </Link>
       <RatingsSection player={player} rankings={rankings} progress={progress} />
+      <RankingsSection player={player} ranked={ranked} onSelect={setSelected} />
       <TitlesSection titles={titles} />
       <CompetitionsSection
         player={player}
@@ -117,6 +120,7 @@ export function HomePage() {
         <CardTitle>Top players in the world</CardTitle>
         <NpcTable npcs={ranked.slice(0, 5)} showRank onSelect={setSelected} />
       </Card>
+      <InstallCard />
       <NpcProfileModal npc={selected} onClose={() => setSelected(null)} />
     </>
   );

@@ -3,6 +3,8 @@ import { Bot, User } from "lucide-react";
 import { formatClockText } from "@/game/match/timeControls";
 import type { MatchSide, PieceColor } from "@/types";
 import { cn } from "@/utils/cn";
+import { useEffect, useRef } from "react";
+import { playSound } from "@/audio/sound";
 
 interface Props {
   side: MatchSide;
@@ -26,6 +28,16 @@ export function PlayerPanel({
   ratingChange,
 }: Props) {
   const low = Number.isFinite(remaining) && remaining < 20000;
+  // A tick every second for the human side's last ten seconds.
+  const lastTick = useRef<number | null>(null);
+  useEffect(() => {
+    if (!active || controller !== "human" || !Number.isFinite(remaining))
+      return;
+    const second = Math.ceil(remaining / 1000);
+    if (remaining <= 0 || second > 10 || lastTick.current === second) return;
+    lastTick.current = second;
+    playSound("lowtime");
+  }, [active, controller, remaining]);
   const title = side.title !== "none" ? side.title : "";
   return (
     <div

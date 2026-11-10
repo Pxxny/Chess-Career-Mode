@@ -30,6 +30,7 @@
     "test:circuit": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-circuit.ts",
     "test:esports": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-esports.ts",
     "test:prediction": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-prediction.ts",
+    "test:team-events": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-team-events.ts",
     "test:language": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-language.ts"
   },
   "dependencies": {

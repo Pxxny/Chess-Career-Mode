@@ -72,6 +72,7 @@ export function NpcProfileModal({
         {npc.title !== "none" && <Badge tone="gold">{npc.title}</Badge>}
         <Badge>{STATUS_LABELS[npc.careerStatus]}</Badge>
         {npc.kind === "legend" && <Badge>Historical legend</Badge>}
+        {npc.kind === "legend" && <Badge tone="gold">Real player</Badge>}
       </div>
 
       <NpcSocialPanel npc={npc} onPlayAccepted={onClose} />

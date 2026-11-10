@@ -11,7 +11,9 @@ import {
   eventAgenda,
 } from "@/game/competition/agenda";
 import { registrationIssue } from "@/game/competition/eligibility";
-import { playTeamCup, federationTeams } from "@/game/career/expansion";
+import { playTeamCup } from "@/game/career/expansion";
+import { buildEventTeams } from "@/game/competition/teamEvents";
+import { teamInfoOf } from "@/data/chess/nationalTeamEvents";
 import { news } from "@/game/career/expansion";
 import { pickEventField } from "./tournament";
 import { createRng, mixSeed } from "@/game/rng";
@@ -119,12 +121,12 @@ export function previewEntrants(
   if (event.details?.showcase)
     return showcaseSelection(save, event, npcs).entrants;
   if (event.details?.format === "team") {
-    const teams = federationTeams(save, npcs),
-      home = teams.find((t) => t.country === save.player.country),
-      chosen = home
-        ? [home, ...teams.filter((t) => t !== home).slice(0, 7)]
-        : teams.slice(0, 8);
-    const ids = new Set(chosen.flatMap((t) => t.players.map((p) => p.id)));
+    const teams = buildEventTeams(save, npcs, teamInfoOf(event.details)),
+      ids = new Set(
+        teams.flatMap((t) =>
+          [...t.players, ...(t.reserves ?? [])].map((p) => p.id),
+        ),
+      );
     return npcs.filter((n) => ids.has(n.id));
   }
   return announcedField(save, event, npcs).slice(
@@ -151,7 +153,7 @@ export function registerForEvent(
   if (
     event.details?.format === "team" &&
     npcs &&
-    !federationTeams(save, npcs)
+    !buildEventTeams(save, npcs, teamInfoOf(event.details))
       .find((t) => t.country === save.player.country)
       ?.players.some((p) => p.id === "player")
   )
@@ -248,6 +250,7 @@ export function startRegisteredTournament(
       reg.entrantIds
         ? npcs.filter((n) => reg.entrantIds!.includes(n.id))
         : npcs,
+      { eventId },
     );
     return result.ok
       ? {

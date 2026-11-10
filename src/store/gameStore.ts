@@ -160,7 +160,7 @@ interface GameStore {
   ) => { ok: true } | { ok: false; error: string };
   cancelCoach: () => void;
   joinFederation: () => { ok: true } | { ok: false; error: string };
-  playTeamCup: () => { ok: true } | { ok: false; error: string };
+  playTeamCup: (key?: string) => { ok: true } | { ok: false; error: string };
   populationNews: (
     careerId: string,
     year: number,
@@ -453,10 +453,14 @@ export const useGameStore = create<GameStore>()(
         if (r.ok) set({ save: r.save });
         return r.ok ? { ok: true } : r;
       },
-      playTeamCup: () => {
+      playTeamCup: (key) => {
         const save = get().save;
         if (!save) return { ok: false, error: "No career." };
-        const r = playTeamCup(save, useNpcStore.getState().npcs);
+        const r = playTeamCup(
+          save,
+          useNpcStore.getState().npcs,
+          key ? { key } : {},
+        );
         if (r.ok) set({ save: r.save });
         return r.ok ? { ok: true } : r;
       },

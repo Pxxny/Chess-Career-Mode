@@ -42,6 +42,10 @@ const labelCaptures: Record<string, number[]> = {
   "{{0}} after {{1}} half-moves": [0],
   "Step {{0}} of {{1}}: {{2}}": [2],
   "{{0}} retained training sessions in the last 8 weeks{{1}}.": [1],
+  "Region: {{0}}": [0],
+  "{{0}} (automatic)": [0],
+  "Not eligible as a player: {{0}}.": [0],
+  "{{0}} teams, {{1}} board games. Your country finished #{{2}}. {{3}}": [3],
 };
 const templates = Object.entries(TH_MESSAGES)
   .filter(([key]) => key.includes("{{"))

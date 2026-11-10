@@ -10,10 +10,42 @@ import {
   COACHES,
   coachFee,
   dayIndex,
+  cupKey,
   federationTeams,
   stateOf,
   type CoachTerm,
 } from "@/game/career/expansion";
+import {
+  TEAM_EVENTS,
+  resolveTeamEvent,
+  teamInfoOf,
+  teamSpec,
+  type BoardSlot,
+} from "@/data/chess/nationalTeamEvents";
+import { buildEventTeams } from "@/game/competition/teamEvents";
+import { teamEntryIssues } from "@/game/competition/teamEligibility";
+
+const STANDINGS_SHOWN = 30;
+const SLOT_LABEL: Record<BoardSlot, string> = {
+  open: "Open boards",
+  woman: "Women's boards",
+  man: "Men's boards",
+  "boy-u20": "Junior boy boards (U20)",
+  "girl-u20": "Junior girl boards (U20)",
+};
+/** Quota text for mixed events, e.g. "Open boards: 2 · Women's boards: 2"; empty when every board is open. */
+function slotSummary(
+  slots: BoardSlot[] | undefined,
+  boards: number,
+): string[] {
+  if (!slots) return [];
+  const counts = new Map<BoardSlot, number>();
+  for (let i = 0; i < boards; i++) {
+    const slot = slots[i] ?? "open";
+    counts.set(slot, (counts.get(slot) ?? 0) + 1);
+  }
+  return [...counts].map(([slot, n]) => `${SLOT_LABEL[slot]}: ${n}`);
+}
 
 export function WorldHub({
   view,
@@ -27,6 +59,7 @@ export function WorldHub({
     play = useGameStore((s) => s.playTeamCup),
     hire = useGameStore((s) => s.hireCoach),
     cancel = useGameStore((s) => s.cancelCoach);
+  const [eventKey, setEventKey] = useState("olympiad");
   const [message, setMessage] = useState(""),
     [term, setTerm] = useState<CoachTerm>("game"),
     [search, setSearch] = useState("");
@@ -34,8 +67,31 @@ export function WorldHub({
     () => federationTeams(save, npcs),
     [save.player.country, save.player.name, save.player.rating, npcs],
   );
-  const home = teams.find((t) => t.country === save.player.country),
-    country = getCountry(save.player.country);
+  const country = getCountry(save.player.country);
+  const eventTeams = useMemo(
+    () =>
+      view === "teams"
+        ? buildEventTeams(
+            save,
+            npcs,
+            resolveTeamEvent(
+              teamSpec(eventKey) ?? TEAM_EVENTS[0],
+              save.world.date.year,
+            ),
+          )
+        : [],
+    [
+      view,
+      eventKey,
+      save.world.date.year,
+      save.player.country,
+      save.player.name,
+      save.player.rating,
+      save.player.gender,
+      save.player.age,
+      npcs,
+    ],
+  );
   const currentCoach = activeCoach(save);
   const act = (
     result: { ok: true } | { ok: false; error: string },
@@ -159,50 +215,115 @@ export function WorldHub({
       </div>
     );
   if (view === "teams") {
-    const cup = state.cups.find((c) => c.year === save.world.date.year) ?? null;
-    const selected = home?.players.some((p) => p.id === "player");
+    const year = save.world.date.year,
+      spec = teamSpec(eventKey) ?? TEAM_EVENTS[0],
+      info = resolveTeamEvent(spec, year);
+    const cup =
+      state.cups.find((c) => c.year === year && cupKey(c) === spec.key) ?? null;
+    const eventHome = eventTeams.find(
+      (t) => t.country === save.player.country,
+    );
+    const selected = !!eventHome?.players.some((p) => p.id === "player");
     const ready = save.registrations.some(
       (r) =>
         r.details?.format === "team" &&
-        r.year === save.world.date.year &&
+        teamInfoOf(r.details).key === spec.key &&
+        r.year === year &&
         r.week === save.world.date.week,
     );
+    const issues = teamEntryIssues(save, info);
+    const rules = [
+      spec.gender ? "Women only" : null,
+      spec.minAge !== undefined ? `Age ${spec.minAge}+` : null,
+      spec.maxAge !== undefined ? `Age ${spec.maxAge} or younger` : null,
+      ...slotSummary(spec.slots, info.boards),
+    ].filter(Boolean);
+    const region = spec.continents
+      ? `Region: ${spec.continents.join(" · ")}`
+      : spec.countries
+        ? `Invited federations: ${spec.countries.length}`
+        : "Region: Worldwide";
     return (
       <div className="space-y-4">
         <Card>
-          <CardTitle>National Team Cup · {save.world.date.year}</CardTitle>
+          <CardTitle>National team events · {year}</CardTitle>
           <p className="text-sm text-ink-muted">
-            Four boards per team. Your federation and up to seven leading
-            nations play a simulated round robin once per year. Teams select
-            their four highest-rated active players; you represent your country
-            when selected. Individual Elo is unchanged. Vacant boards lose by
-            forfeit, so small federations can still take part.
+            Twenty national team competitions run each game year. Teams select
+            their highest-rated eligible players for the boards; you represent
+            your country when selected. Individual Elo is unchanged. Vacant
+            boards lose by forfeit, so small federations can still take part.
           </p>
-          <p className="mt-2 text-ink">
+          <label className="mt-3 block text-sm text-ink-muted">
+            National team event
+            <select
+              aria-label="National team event"
+              value={spec.key}
+              onChange={(e) => {
+                setEventKey(e.target.value);
+                setMessage("");
+              }}
+              className="mt-1 w-full rounded-lg bg-navy-900 p-3 text-ink"
+            >
+              {TEAM_EVENTS.map((e) => (
+                <option key={e.key} value={e.key}>
+                  {e.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p className="mt-3 text-ink">
             {country?.flag} {country?.federation.name}
           </p>
-          <ul className="my-3 space-y-1">
-            {home?.players.map((p, i) => (
-              <li key={p.id} className="text-sm text-ink-muted">
-                Board {i + 1}: <span translate="no">{p.name}</span> · {p.elo}
-                {p.id === "player" ? " · YOU" : ""}
-              </li>
+          <ul className="my-3 space-y-1 text-sm text-ink-muted">
+            <li>
+              {`Teams this year: ${info.teams} (usual field ${spec.teams[0]}–${spec.teams[1]})`}
+            </li>
+            <li>{`Boards per match: ${info.boards} · Reserves: ${info.reserves}`}</li>
+            <li>
+              {info.teams <= 12
+                ? "Format: round robin"
+                : `Format: Swiss system, ${spec.rounds} rounds`}
+            </li>
+            <li>{region}</li>
+            {rules.map((rule) => (
+              <li key={rule}>{rule}</li>
             ))}
           </ul>
-          {!home && (
-            <p className="text-ink-muted">
-              Your federation has no eligible players.
+          {issues.length > 0 && (
+            <p className="mb-2 text-sm text-ink-muted">
+              {`Not eligible as a player: ${issues.join("; ")}.`}
             </p>
           )}
+          {eventHome ? (
+            <ul className="my-3 space-y-1">
+              {eventHome.players.map((p, i) => (
+                <li key={p.id} className="text-sm text-ink-muted">
+                  Board {i + 1}: <span translate="no">{p.name}</span> · {p.elo}
+                  {p.id === "player" ? " · YOU" : ""}
+                </li>
+              ))}
+              {(eventHome.reserves ?? []).map((p) => (
+                <li key={p.id} className="text-sm text-ink-muted">
+                  Reserve: <span translate="no">{p.name}</span> · {p.elo}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-ink-muted">
+              Your federation has no eligible players for this event.
+            </p>
+          )}
+          <p className="mb-1 text-xs text-ink-muted">
+            {`Selected players spend 2 AP and earn up to $${spec.prize} appearance/prize money, scaled by finishing position.`}
+          </p>
           <p className="mb-3 text-xs text-ink-muted">
-            Selected players spend 2 AP and earn $20–160 appearance/prize money.
-            Selected players must register in Tournament before the deadline and
-            play in the event week. Unselected members can follow the simulated
-            exhibition free. Membership is required.
+            Selected players must register in Tournament before the deadline
+            and play in the event week. Unselected members can follow the
+            simulated exhibition free. Membership is required.
           </p>
           <Button
-            disabled={!!cup || !home || (selected && !ready)}
-            onClick={() => act(play(), "National team cup completed.")}
+            disabled={!!cup || (selected && !ready)}
+            onClick={() => act(play(spec.key), "National team cup completed.")}
           >
             {cup
               ? "Cup finished this year"
@@ -220,6 +341,14 @@ export function WorldHub({
           <>
             <Card>
               <CardTitle>Final standings</CardTitle>
+              <p className="mb-2 flex flex-wrap gap-x-3 text-xs text-ink-muted">
+                <span>{`Teams: ${cup.teamCount ?? cup.teams.length}`}</span>
+                <span>
+                  {cup.format === "swiss"
+                    ? `Swiss, ${cup.rounds} rounds`
+                    : "Round robin"}
+                </span>
+              </p>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
                   <thead>
@@ -231,7 +360,7 @@ export function WorldHub({
                     </tr>
                   </thead>
                   <tbody>
-                    {cup.teams.map((t, i) => (
+                    {cup.teams.slice(0, STANDINGS_SHOWN).map((t, i) => (
                       <tr key={t.country} className="border-t border-white/10">
                         <td className="py-2">{i + 1}</td>
                         <td>
@@ -242,9 +371,31 @@ export function WorldHub({
                         <td>{t.boardPoints}</td>
                       </tr>
                     ))}
+                    {(() => {
+                      const at = cup.teams.findIndex(
+                        (t) => t.country === save.player.country,
+                      );
+                      const t = cup.teams[at];
+                      return at >= STANDINGS_SHOWN && t ? (
+                        <tr className="border-t border-white/10">
+                          <td className="py-2">{at + 1}</td>
+                          <td>
+                            {getCountry(t.country)?.flag}{" "}
+                            {getCountry(t.country)?.name ?? t.country}
+                          </td>
+                          <td>{t.points}</td>
+                          <td>{t.boardPoints}</td>
+                        </tr>
+                      ) : null;
+                    })()}
                   </tbody>
                 </table>
               </div>
+              {cup.teams.length > STANDINGS_SHOWN && (
+                <p className="mt-2 text-xs text-ink-muted">
+                  {`Showing the top ${STANDINGS_SHOWN} of ${cup.teams.length} teams, plus your federation.`}
+                </p>
+              )}
               <p className="mt-3 text-sm text-ink-muted">
                 {cup.represented
                   ? "You represented your country."
@@ -254,6 +405,11 @@ export function WorldHub({
             </Card>
             <Card>
               <CardTitle>Board results</CardTitle>
+              {cup.teams.length > 12 && (
+                <p className="mb-2 text-xs text-ink-muted">
+                  Board results show your federation&apos;s matches.
+                </p>
+              )}
               <div className="max-h-96 space-y-2 overflow-auto">
                 {cup.boards.map((b, i) => (
                   <p key={i} className="text-sm text-ink-muted">

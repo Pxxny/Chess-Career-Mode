@@ -163,7 +163,7 @@ const teamEvent = getSchedule(
   { city: "Bangkok", countryCode: "TH", demonym: "Thai", continent: "Asia" },
   strong.career.id,
   52,
-).find((e) => e.details?.format === "team")!;
+).find((e) => e.details?.teamEvent?.key === "olympiad")!;
 const teamEntry = registerForEvent(strong, teamEvent, world);
 assert(teamEntry.ok);
 const teamReady = {

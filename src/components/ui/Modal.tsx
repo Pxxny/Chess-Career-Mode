@@ -41,7 +41,8 @@ export function Modal({
           'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]',
         ),
       ].filter((e) => e.getClientRects().length > 0);
-    (focusable()[0] ?? el).focus();
+    // Focus the dialog itself: focusing the first control (the language <select>) opens its native picker on iOS/Android/iPad.
+    el.focus({ preventScroll: true });
     const key = (event: KeyboardEvent) => {
       if (modalStack.at(-1) !== el) return;
       if (event.key === "Escape") {

@@ -2,6 +2,7 @@ import type { EventLevel } from "@/data/chess/tournaments";
 import type { EventDetails } from "./types";
 import type { Region, ScheduledEvent } from "@/game/world/schedule";
 import type { GameStamp } from "@/types";
+import { TEAM_EVENTS, resolveTeamEvent } from "@/data/chess/nationalTeamEvents";
 export const stampIndex = (d: GameStamp): number => d.year * 52 + d.week - 1;
 export const stampFromIndex = (i: number): GameStamp => ({
   year: Math.floor(i / 52),
@@ -36,6 +37,33 @@ interface Template {
   details: Omit<EventDetails, "end" | "location" | "country">;
 }
 const classical = tc(90, 30, "classical");
+/** National team competitions come from the data catalog; each edition resolves its own team count and boards. */
+const teamTemplates = (year: number): Template[] =>
+  TEAM_EVENTS.map((spec) => {
+    const info = resolveTeamEvent(spec, year);
+    return {
+      key: spec.key,
+      name: spec.name,
+      week: spec.week,
+      deadline: spec.deadline,
+      level: "international",
+      count: info.teams,
+      fee: 0,
+      elo: spec.minElo,
+      rep: spec.minReputation,
+      details: {
+        category: spec.category,
+        format: "team",
+        rounds: info.teams <= 12 ? info.teams - 1 : spec.rounds,
+        timeControl: spec.timeControl === "rapid" ? tc(15, 10, "rapid") : classical,
+        prize: spec.prize,
+        prestige: spec.prestige,
+        provenance: "inspired",
+        federation: true,
+        teamEvent: info,
+      },
+    };
+  });
 const templates: Template[] = [
   {
     key: "national",
@@ -119,27 +147,6 @@ const templates: Template[] = [
       prestige: 50,
       provenance: "fictional",
       minimumTitle: "FM",
-    },
-  },
-  {
-    key: "olympiad",
-    name: "National Teams Olympiad",
-    week: 28,
-    deadline: 4,
-    level: "international",
-    count: 8,
-    fee: 0,
-    elo: 1800,
-    rep: 10,
-    details: {
-      category: "Chess Olympiad",
-      format: "team",
-      rounds: 7,
-      timeControl: classical,
-      prize: 160,
-      prestige: 80,
-      provenance: "inspired",
-      federation: true,
     },
   },
   {
@@ -282,7 +289,7 @@ export function careerEvents(
     year <= stampFromIndex(stampIndex(now) + horizon).year;
     year++
   ) {
-    for (const t of templates) {
+    for (const t of [...templates, ...teamTemplates(year)]) {
       const verified = year === 2024 && t.key === "candidates";
       const start = { year, week: verified ? 14 : t.week };
       const gap = stampIndex(start) - stampIndex(now);

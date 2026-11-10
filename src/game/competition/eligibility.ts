@@ -1,6 +1,7 @@
 import type { ScheduledEvent } from "@/game/world/schedule";
 import type { ChessTitle, GameSave, SkillTier } from "@/types";
 import { competitionOf } from "./preparation";
+import { teamEntryIssues } from "./teamEligibility";
 import { stampIndex } from "./catalog";
 import { registrationCount } from "./entries";
 import { showcaseSelection } from "./showcase";
@@ -42,6 +43,9 @@ export function eligibilityIssues(
     issues.push(`${d.nationality} nationality`);
   if (d?.federation && save.expansion?.membershipYear !== save.world.date.year)
     issues.push("Current federation membership");
+  issues.push(...teamEntryIssues(save, d?.teamEvent));
+  if (d?.maxAge !== undefined && save.player.age > d.maxAge)
+    issues.push(`Age ${d.maxAge} or younger`);
   if (
     d?.qualification &&
     !competitionOf(save).qualifications.some(

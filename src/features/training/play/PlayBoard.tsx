@@ -19,6 +19,7 @@ import {
 } from "@/game/chess/board";
 import { moveToUci } from "@/game/chess/rules";
 import { cn } from "@/utils/cn";
+import { useBoardSounds } from "@/audio/useBoardSounds";
 
 const NAMES: Record<string, string> = {
   K: "king",
@@ -60,6 +61,7 @@ export function PlayBoard({
   hint,
   onMove,
 }: Props) {
+  useBoardSounds(position);
   const [selected, setSelected] = useState<number | null>(null);
   const [promotion, setPromotion] = useState<Move[] | null>(null);
   const [focus, setFocus] = useState<number>(perspective === "white" ? 60 : 4);
@@ -103,6 +105,24 @@ export function PlayBoard({
 
   const choose = (i: number) => {
     if (!canMove || playerColor === null) return;
+    if (selected !== null && selected !== i) {
+      // Castling shortcut: king and its rook, selected in either order.
+      const a = position.board[selected],
+        b = position.board[i];
+      if (a && b && colorOf(a) === colorOf(b)) {
+        const pair = `${a.toUpperCase()}${b.toUpperCase()}`;
+        if (
+          (pair === "KR" || pair === "RK") &&
+          Math.floor(selected / 8) === Math.floor(i / 8)
+        ) {
+          const king = pair === "KR" ? selected : i,
+            rook = pair === "KR" ? i : selected,
+            to = rook % 8 > king % 8 ? king + 2 : king - 2;
+          const castle = legal.find((m) => m.from === king && m.to === to);
+          if (castle && mine(king)) return onMove(castle);
+        }
+      }
+    }
     if (selected !== null) {
       const options = legal.filter((m) => m.from === selected && m.to === i);
       if (options.length === 1) return onMove(options[0]);

@@ -13,6 +13,7 @@ import {
 } from "react";
 import { squareName, type Position } from "@/game/chess/board";
 import { cn } from "@/utils/cn";
+import { useBoardSounds } from "@/audio/useBoardSounds";
 
 const NAMES: Record<string, string> = {
   K: "king",
@@ -70,6 +71,7 @@ export function MatchBoard({
   mateSquare = -1,
   drawSquares = [],
 }: MatchBoardProps) {
+  useBoardSounds(position);
   const [selected, setSelected] = useState<number | null>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
   const [promotion, setPromotion] = useState<{
@@ -130,8 +132,40 @@ export function MatchBoard({
     return true;
   };
 
+  /** Castling shortcut: the king and the rook it castles with, selected in either order. */
+  const castleMove = (a: number, b: number): { from: number; to: number } | null => {
+    const pa = position.board[a],
+      pb = position.board[b];
+    if (!pa || !pb) return null;
+    let king = a,
+      rook = b;
+    if (pa.toUpperCase() === "R" && pb.toUpperCase() === "K") {
+      king = b;
+      rook = a;
+    } else if (!(pa.toUpperCase() === "K" && pb.toUpperCase() === "R"))
+      return null;
+    if (
+      colorOf(pa) !== colorOf(pb) ||
+      Math.floor(king / 8) !== Math.floor(rook / 8) ||
+      !canPick(king)
+    )
+      return null;
+    const to = rook % 8 > king % 8 ? king + 2 : king - 2;
+    return legalTargets(squareName(king)).includes(squareName(to))
+      ? { from: king, to }
+      : null;
+  };
+
   /** Click or keyboard selection of a square. */
   const choose = (i: number) => {
+    if (selected !== null && selected !== i) {
+      const castle = castleMove(selected, i);
+      if (castle) {
+        attempt(castle.from, castle.to);
+        setSelected(null);
+        return;
+      }
+    }
     if (selected !== null && selected !== i && attempt(selected, i)) {
       setSelected(null);
       return;
@@ -147,6 +181,15 @@ export function MatchBoard({
     if (selected !== null && selected !== i && targets.includes(i)) {
       choose(i);
       return;
+    }
+    if (selected !== null && selected !== i) {
+      const castle = castleMove(selected, i);
+      if (castle) {
+        attempt(castle.from, castle.to);
+        setSelected(null);
+        event.preventDefault();
+        return;
+      }
     }
     if (canPick(i)) {
       setSelected(i);
