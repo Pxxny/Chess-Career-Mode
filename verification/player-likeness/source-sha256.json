@@ -1,0 +1,12 @@
+{
+  "CHANGELOG.md": "006620dcda2c4fe6e8ef513e2951876b433fdf3ff96a536097efb3cedf92894f",
+  "README.md": "9853c91c3ab3b8c9fcee5e4f084fdc114071dc8212948a851ef6e58e9e287172",
+  "artifacts/npc-portrait-profile-mobile.png": "0c9d1a1ea14dedd1650a482983f918ae6d370949b065ddc9c27c7940110ffc32",
+  "artifacts/npc-portraits-rankings-mobile.png": "94e301de1674db1342902e1a28eb2b928ba94235cd4de2255b3fe5757476bfd4",
+  "scripts/verify-npc-portraits.ts": "27f128e9b4cfcae391900cfa1238a9fa6a04f27a9477b8cdf1b46684cda2e0a3",
+  "src/game/appearance/npcAppearance.ts": "f54ee65a96c1197a790ca7dd804b15f6426fcdf49ff90d752e7d7289902b4c71",
+  "src/data/chess/legendAppearances.ts": "7cbf5703571253a335d317dbaa1e4da232d8c8a63f292b6c081e24629403a6a0",
+  "public/portraits/REFERENCES.json": "1e33413a852f94115b6046edc0e2dd53717ebc0e748bb7904a61754401e9a75d",
+  "scripts/render-legend-portraits.ts": "dc5155c9c02ad3515e10e98b64907b83a029dfb7850706157c79b67555f0aee0",
+  "tests/real-player-likeness.spec.ts": "f4059b75d04c8ad7171df5dbc55eadb3271c2e8398025376e71e0eb60db84eb2"
+}

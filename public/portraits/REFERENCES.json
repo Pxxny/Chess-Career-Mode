@@ -1,0 +1,248 @@
+{
+  "description": "Public photo references inspected while authoring the game's cartoon likeness presets. No reference photographs are shipped or fetched by the game. Hair, glasses and facial-hair choices are simplified art direction, not a claim of photorealism or current appearance.",
+  "modernPortraits": [
+    {
+      "slug": "anatoly-karpov",
+      "url": "https://ratings.fide.com/profile/4100026",
+      "pageTitle": "Karpov, Anatoly FIDE Profile"
+    },
+    {
+      "slug": "garry-kasparov",
+      "url": "https://ratings.fide.com/profile/4100018",
+      "pageTitle": "Kasparov, Garry FIDE Profile"
+    },
+    {
+      "slug": "vladimir-kramnik",
+      "url": "https://ratings.fide.com/profile/4101588",
+      "pageTitle": "Kramnik, Vladimir FIDE Profile"
+    },
+    {
+      "slug": "veselin-topalov",
+      "url": "https://ratings.fide.com/profile/2900084",
+      "pageTitle": "Topalov, Veselin FIDE Profile"
+    },
+    {
+      "slug": "viswanathan-anand",
+      "url": "https://ratings.fide.com/profile/5000017",
+      "pageTitle": "Anand, Viswanathan FIDE Profile"
+    },
+    {
+      "slug": "magnus-carlsen",
+      "url": "https://ratings.fide.com/profile/1503014",
+      "pageTitle": "Carlsen, Magnus FIDE Profile"
+    },
+    {
+      "slug": "judit-polgar",
+      "url": "https://ratings.fide.com/profile/700070",
+      "pageTitle": "Polgar, Judit FIDE Profile"
+    },
+    {
+      "slug": "susan-polgar",
+      "url": "https://ratings.fide.com/profile/700088",
+      "pageTitle": "Polgar, Susan FIDE Profile"
+    },
+    {
+      "slug": "xie-jun",
+      "url": "https://ratings.fide.com/profile/8600147",
+      "pageTitle": "Xie, Jun FIDE Profile"
+    },
+    {
+      "slug": "hikaru-nakamura",
+      "url": "https://ratings.fide.com/profile/2016192",
+      "pageTitle": "Nakamura, Hikaru FIDE Profile"
+    },
+    {
+      "slug": "fabiano-caruana",
+      "url": "https://ratings.fide.com/profile/2020009",
+      "pageTitle": "Caruana, Fabiano FIDE Profile"
+    },
+    {
+      "slug": "ding-liren",
+      "url": "https://ratings.fide.com/profile/8603677",
+      "pageTitle": "Ding, Liren FIDE Profile"
+    },
+    {
+      "slug": "ian-nepomniachtchi",
+      "url": "https://ratings.fide.com/profile/4168119",
+      "pageTitle": "Nepomniachtchi, Ian FIDE Profile"
+    },
+    {
+      "slug": "levon-aronian",
+      "url": "https://ratings.fide.com/profile/13300474",
+      "pageTitle": "Aronian, Levon FIDE Profile"
+    },
+    {
+      "slug": "anish-giri",
+      "url": "https://ratings.fide.com/profile/24116068",
+      "pageTitle": "Giri, Anish FIDE Profile"
+    },
+    {
+      "slug": "wesley-so",
+      "url": "https://ratings.fide.com/profile/5202213",
+      "pageTitle": "So, Wesley FIDE Profile"
+    },
+    {
+      "slug": "maxime-vachier-lagrave",
+      "url": "https://ratings.fide.com/profile/623539",
+      "pageTitle": "Vachier-Lagrave, Maxime FIDE Profile"
+    },
+    {
+      "slug": "alexander-grischuk",
+      "url": "https://ratings.fide.com/profile/4126025",
+      "pageTitle": "Grischuk, Alexander FIDE Profile"
+    },
+    {
+      "slug": "shakhriyar-mamedyarov",
+      "url": "https://ratings.fide.com/profile/13401319",
+      "pageTitle": "Mamedyarov, Shakhriyar FIDE Profile"
+    },
+    {
+      "slug": "teimour-radjabov",
+      "url": "https://ratings.fide.com/profile/13400924",
+      "pageTitle": "Radjabov, Teimour FIDE Profile"
+    },
+    {
+      "slug": "sergey-karjakin",
+      "url": "https://ratings.fide.com/profile/14109603",
+      "pageTitle": "Karjakin, Sergey FIDE Profile"
+    },
+    {
+      "slug": "richard-rapport",
+      "url": "https://ratings.fide.com/profile/738590",
+      "pageTitle": "Rapport, Richard FIDE Profile"
+    },
+    {
+      "slug": "jan-krzysztof-duda",
+      "url": "https://ratings.fide.com/profile/1170546",
+      "pageTitle": "Duda, Jan-Krzysztof FIDE Profile"
+    },
+    {
+      "slug": "le-quang-liem",
+      "url": "https://ratings.fide.com/profile/12401137",
+      "pageTitle": "Le, Quang Liem FIDE Profile"
+    },
+    {
+      "slug": "yu-yangyi",
+      "url": "https://ratings.fide.com/profile/8603820",
+      "pageTitle": "Yu, Yangyi FIDE Profile"
+    },
+    {
+      "slug": "wei-yi",
+      "url": "https://ratings.fide.com/profile/8603405",
+      "pageTitle": "Wei, Yi FIDE Profile"
+    },
+    {
+      "slug": "wang-hao",
+      "url": "https://ratings.fide.com/profile/8602883",
+      "pageTitle": "Wang, Hao FIDE Profile"
+    },
+    {
+      "slug": "nodirbek-abdusattorov",
+      "url": "https://ratings.fide.com/profile/14204118",
+      "pageTitle": "Abdusattorov, Nodirbek FIDE Profile"
+    },
+    {
+      "slug": "nihal-sarin",
+      "url": "https://ratings.fide.com/profile/25092340",
+      "pageTitle": "Nihal Sarin FIDE Profile"
+    },
+    {
+      "slug": "vincent-keymer",
+      "url": "https://ratings.fide.com/profile/12940690",
+      "pageTitle": "Keymer, Vincent FIDE Profile"
+    },
+    {
+      "slug": "javokhir-sindarov",
+      "url": "https://ratings.fide.com/profile/14205483",
+      "pageTitle": "Sindarov, Javokhir FIDE Profile"
+    },
+    {
+      "slug": "yagiz-kaan-erdogmus",
+      "url": "https://ratings.fide.com/profile/44599790",
+      "pageTitle": "Erdogmus, Yagiz Kaan FIDE Profile"
+    },
+    {
+      "slug": "ju-wenjun",
+      "url": "https://ratings.fide.com/profile/8603006",
+      "pageTitle": "Ju, Wenjun FIDE Profile"
+    },
+    {
+      "slug": "tan-zhongyi",
+      "url": "https://ratings.fide.com/profile/8603642",
+      "pageTitle": "Tan, Zhongyi FIDE Profile"
+    },
+    {
+      "slug": "lei-tingjie",
+      "url": "https://ratings.fide.com/profile/8605114",
+      "pageTitle": "Lei, Tingjie FIDE Profile"
+    },
+    {
+      "slug": "harika-dronavalli",
+      "url": "https://ratings.fide.com/profile/5015197",
+      "pageTitle": "Dronavalli, Harika FIDE Profile"
+    },
+    {
+      "slug": "r-vaishali",
+      "url": "https://ratings.fide.com/profile/5091756",
+      "pageTitle": "Vaishali, Rameshbabu FIDE Profile"
+    },
+    {
+      "slug": "anna-muzychuk",
+      "url": "https://ratings.fide.com/profile/14111330",
+      "pageTitle": "Muzychuk, Anna FIDE Profile"
+    },
+    {
+      "slug": "mariya-muzychuk",
+      "url": "https://ratings.fide.com/profile/14114550",
+      "pageTitle": "Muzychuk, Mariya FIDE Profile"
+    },
+    {
+      "slug": "aleksandra-goryachkina",
+      "url": "https://ratings.fide.com/profile/4147103",
+      "pageTitle": "Goryachkina, Aleksandra FIDE Profile"
+    },
+    {
+      "slug": "arjun-erigaisi",
+      "url": "https://ratings.fide.com/profile/35009192",
+      "pageTitle": "Erigaisi Arjun FIDE Profile"
+    },
+    {
+      "slug": "r-praggnanandhaa",
+      "url": "https://ratings.fide.com/profile/25059530",
+      "pageTitle": "Praggnanandhaa R FIDE Profile"
+    },
+    {
+      "slug": "koneru-humpy",
+      "url": "https://ratings.fide.com/profile/5008123",
+      "pageTitle": "Koneru, Humpy FIDE Profile"
+    },
+    {
+      "slug": "alexandra-kosteniuk",
+      "url": "https://ratings.fide.com/profile/4128125",
+      "pageTitle": "Kosteniuk, Alexandra FIDE Profile"
+    }
+  ],
+  "additionalArchivalReferences": [
+    {
+      "name": "Aron Nimzowitsch",
+      "url": "https://playchessgate.com/",
+      "imageReference": "https://playchessgate.com/portraits/nimzowitsch.jpg"
+    },
+    {
+      "name": "Akiba Rubinstein",
+      "url": "https://commons.wikimedia.org/wiki/File:Akiba_Rubinstein_(1880–1961)_©_Wilhelm_Willinger_(1879–1943)_OeNB_14648920.jpg"
+    },
+    {
+      "name": "Siegbert Tarrasch",
+      "url": "https://commons.wikimedia.org/wiki/File:Tarrasch_72.jpg"
+    },
+    {
+      "name": "Vera Menchik",
+      "url": "https://www.chess.com/blog/HenryUrbanek2011/the-terrible-tragedies"
+    },
+    {
+      "name": "Savielly Tartakower",
+      "url": "https://es.chessbase.com/post/savielly-tartakower-inigualable"
+    }
+  ]
+}

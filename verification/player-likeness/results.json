@@ -1,0 +1,32 @@
+{
+  "verifiedAt": "2026-11-10T04:05:04.767296+00:00",
+  "baseProject": "Chess-Career-Mode-NPC-Portraits-Full.zip",
+  "change": "Curated cartoon likenesses for all 82 real-player identities, using existing SVG character art.",
+  "realPlayerProfiles": 82,
+  "referenceMaterial": "Public FIDE tournament portraits and archival references; links in public/portraits/REFERENCES.json. Reference photographs are not bundled or fetched at runtime.",
+  "identity": "Canonical legend IDs; independent of Elo/rank/age/name/federation.",
+  "saveSchema": "unchanged; old saves supported",
+  "fictionalNpcAppearance": "exact prior procedural appearance preserved",
+  "playerAppearance": "unchanged",
+  "recordedBoardSounds": "preserved",
+  "buildAndTypecheck": "passed",
+  "unitTest": "test:npc-portraits passed: 82 real-player presets plus all 4082 NPC identities, valid fields, stable profiles, unmodified saves, unchanged fictional appearances",
+  "browser": {
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0
+  },
+  "mobileWidths": [
+    320,
+    390
+  ],
+  "baseFilesRetained": 661,
+  "updatedExistingFiles": [
+    "CHANGELOG.md",
+    "README.md",
+    "artifacts/npc-portrait-profile-mobile.png",
+    "artifacts/npc-portraits-rankings-mobile.png",
+    "scripts/verify-npc-portraits.ts",
+    "src/game/appearance/npcAppearance.ts"
+  ]
+}

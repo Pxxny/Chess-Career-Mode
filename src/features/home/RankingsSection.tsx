@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Button, Card, CardTitle } from "@/components/ui";
+import { Avatar, Button, Card, CardTitle } from "@/components/ui";
+import { NpcAvatar } from "@/components/game/NpcAvatar";
 import { getCountry } from "@/data/world/countries";
 import type { Npc, Player } from "@/types";
 
@@ -56,34 +57,47 @@ export function RankingsSection({ player, ranked, onSelect }: Props) {
           : "border-b border-white/5 bg-gold-500/10 last:border-0"
       }
     >
-      <td className="w-12 py-2.5 pr-2 tabular-nums text-ink-muted">{rank}</td>
+      <td className="w-10 py-2.5 pr-2 tabular-nums text-ink-muted">{rank}</td>
       <td className="py-2.5 pr-2 font-semibold text-ink">
-        {r.npc ? (
-          <button
-            type="button"
-            onClick={() => onSelect(r.npc!)}
-            className="text-left underline-offset-2 hover:text-gold-300 hover:underline"
-          >
-            <span translate="no">{r.npc.name}</span>
-          </button>
-        ) : (
-          <span translate="no">{player.name}</span>
-        )}
-        {r.npc && r.npc.title !== "none" && (
-          <span className="ml-2 text-xs font-medium text-gold-500">
-            {r.npc.title}
-          </span>
-        )}
-        {!r.npc && (
-          <span className="ml-2 text-xs font-medium text-gold-300">YOU</span>
-        )}
-        {r.npc?.kind === "legend" && (
-          <span className="ml-2 text-xs font-medium text-ink-faint">
-            Real player
-          </span>
-        )}
+        <div className="flex min-w-0 items-center gap-2">
+          {r.npc ? (
+            <NpcAvatar npc={r.npc} decorative />
+          ) : (
+            <span aria-hidden="true" className="shrink-0">
+              <Avatar
+                name={player.name}
+                seed={player.avatarSeed}
+                appearance={player.appearance}
+                size="sm"
+              />
+            </span>
+          )}
+          <div className="min-w-0 [overflow-wrap:anywhere]">
+            {r.npc ? (
+              <button
+                type="button"
+                onClick={() => onSelect(r.npc!)}
+                className="text-left underline-offset-2 hover:text-gold-300 hover:underline"
+              >
+                <span translate="no">{r.npc.name}</span>
+              </button>
+            ) : (
+              <span translate="no">{player.name}</span>
+            )}
+            {r.npc && r.npc.title !== "none" && (
+              <span className="ml-2 text-xs font-medium text-gold-500">
+                {r.npc.title}
+              </span>
+            )}
+            {!r.npc && (
+              <span className="ml-2 text-xs font-medium text-gold-300">
+                YOU
+              </span>
+            )}
+          </div>
+        </div>
       </td>
-      <td className="py-2.5 pr-2 text-ink-muted">
+      <td className="py-2.5 pr-2 text-ink-muted [overflow-wrap:anywhere]">
         {r.npc ? (
           <>
             <span aria-hidden>{getCountry(r.npc.nationality)?.flag}</span>{" "}
@@ -104,7 +118,11 @@ export function RankingsSection({ player, ranked, onSelect }: Props) {
   return (
     <Card className="mb-4">
       <CardTitle>Rankings</CardTitle>
-      <div role="tablist" aria-label="Ranking scope" className="mb-3 flex gap-2">
+      <div
+        role="tablist"
+        aria-label="Ranking scope"
+        className="mb-3 flex gap-2"
+      >
         {SCOPES.map((s) => (
           <Button
             key={s.id}
@@ -121,13 +139,13 @@ export function RankingsSection({ player, ranked, onSelect }: Props) {
         ))}
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
+        <table className="w-full table-fixed text-left text-sm">
           <thead className="text-ink-faint">
             <tr className="border-b border-white/5">
-              <th className="w-12 py-2 pr-2 font-medium">Rank</th>
+              <th className="w-10 py-2 pr-2 font-medium">Rank</th>
               <th className="py-2 pr-2 font-medium">Player</th>
-              <th className="py-2 pr-2 font-medium">Country</th>
-              <th className="py-2 text-right font-medium">Elo</th>
+              <th className="w-1/4 py-2 pr-2 font-medium">Country</th>
+              <th className="w-12 py-2 text-right font-medium">Elo</th>
             </tr>
           </thead>
           <tbody>

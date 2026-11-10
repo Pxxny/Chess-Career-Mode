@@ -1,0 +1,25 @@
+{
+  "verifiedAt": "2026-11-10T03:15:18.922365+00:00",
+  "sourceArchive": "Chess-Career-Mode-Update.zip",
+  "recording": "https://freesound.org/people/simone_ds/sounds/366065/",
+  "creator": "simone_ds",
+  "license": "CC0-1.0",
+  "assets": "Three unpitched recorded placements and a capture made from two real placements. Bundled mono PCM16 WAV; no third-party runtime requests.",
+  "build": "passed (includes TypeScript check)",
+  "unitTest": "npm run test:audio: passed",
+  "productionBrowser": {
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0
+  },
+  "originalProjectFilesRetained": 635,
+  "saveSchema": "unchanged",
+  "existingMutePreferenceKey": "chess-career-sound",
+  "updatedExistingFiles": [
+    "CHANGELOG.md",
+    "README.md",
+    "package.json",
+    "public/sw.js",
+    "src/audio/sound.ts"
+  ]
+}

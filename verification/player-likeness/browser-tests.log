@@ -1,0 +1,13 @@
+[WebServer] (node:4097) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:4115) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/npc-portraits.spec.ts:15:1 › phone rankings show character faces for every NPC and the saved player, stable across scopes and reload (4.3s)
+  ✓  2 tests/npc-portraits.spec.ts:66:1 › ranking, directory and NPC profile use the same face and preserve name buttons and player appearance (3.4s)
+  ✓  3 tests/real-player-likeness.spec.ts:4:1 › all real-player character likenesses render in the offline preview gallery (876ms)
+  ✓  4 tests/social.spec.ts:90:1 › mobile directory includes the saved player and an actual detailed player profile (6.2s)
+
+  4 passed (16.2s)

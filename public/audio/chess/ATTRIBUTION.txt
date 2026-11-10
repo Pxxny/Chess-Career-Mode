@@ -1,0 +1,18 @@
+Recorded chessboard sounds
+
+Original recording: "chess pieces.wav" by simone_ds (31 October 2016).
+Source: https://freesound.org/people/simone_ds/sounds/366065/
+Public high-quality preview: https://cdn.freesound.org/previews/366/366065_6040409-hq.mp3
+License: CC0 1.0 Universal (public-domain dedication).
+License details: https://creativecommons.org/publicdomain/zero/1.0/
+
+The creator describes chess pieces being moved and placed on a real board.
+The game's move-1.wav, move-2.wav and move-3.wav contain different placements.
+The game's capture.wav combines two placements 120 milliseconds apart.
+Edits: excerpts, mono mix, 44.1 kHz PCM16, short edge fades and level adjustment.
+Pitch and playback speed are unchanged; no synthesized tones or noise layers.
+See sources.json for exact source intervals and file hashes.
+
+These recordings are bundled locally; the application does not contact Freesound
+or a third-party audio CDN while playing. No credit or signup is required by CC0;
+this notice is retained for provenance.

@@ -31,7 +31,9 @@
     "test:esports": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-esports.ts",
     "test:prediction": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-prediction.ts",
     "test:team-events": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-team-events.ts",
-    "test:language": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-language.ts"
+    "test:language": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-language.ts",
+    "test:audio": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-audio.ts",
+    "test:npc-portraits": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-npc-portraits.ts"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.3.0",

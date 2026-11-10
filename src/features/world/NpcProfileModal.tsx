@@ -1,4 +1,5 @@
 import { Badge, Modal, ProgressBar } from "@/components/ui";
+import { NpcAvatar } from "@/components/game/NpcAvatar";
 import { getLegendCareerStage } from "@/game/npc/legends";
 import { useGameStore } from "@/store/gameStore";
 import { useNpcStore } from "@/store/npcStore";
@@ -67,12 +68,14 @@ export function NpcProfileModal({
       onClose={onClose}
       size="lg"
     >
-      <div className="mb-4 flex flex-wrap gap-2">
-        <Badge tone="gold">{tierLabel(npc.tier)}</Badge>
-        {npc.title !== "none" && <Badge tone="gold">{npc.title}</Badge>}
-        <Badge>{STATUS_LABELS[npc.careerStatus]}</Badge>
-        {npc.kind === "legend" && <Badge>Historical legend</Badge>}
-        {npc.kind === "legend" && <Badge tone="gold">Real player</Badge>}
+      <div className="mb-4 flex items-center gap-3">
+        <NpcAvatar npc={npc} size="lg" />
+        <div className="flex min-w-0 flex-wrap gap-2">
+          <Badge tone="gold">{tierLabel(npc.tier)}</Badge>
+          {npc.title !== "none" && <Badge tone="gold">{npc.title}</Badge>}
+          <Badge>{STATUS_LABELS[npc.careerStatus]}</Badge>
+          {npc.kind === "legend" && <Badge>Historical legend</Badge>}
+        </div>
       </div>
 
       <NpcSocialPanel npc={npc} onPlayAccepted={onClose} />

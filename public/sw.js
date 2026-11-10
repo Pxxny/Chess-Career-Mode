@@ -1,11 +1,23 @@
 /* Offline support: the app shell and every same-origin file it loads are cached as you play. */
-const VERSION = "v1";
+const VERSION = "v2-recorded-board";
 const CACHE = `chess-career-${VERSION}`;
-const SHELL = ["/", "/manifest.webmanifest", "/favicon.svg", "/icon-192.png"];
+const SHELL = [
+  "/",
+  "/manifest.webmanifest",
+  "/favicon.svg",
+  "/icon-192.png",
+  "/audio/chess/move-1.wav",
+  "/audio/chess/move-2.wav",
+  "/audio/chess/move-3.wav",
+  "/audio/chess/capture.wav",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()),
+    caches
+      .open(CACHE)
+      .then((cache) => cache.addAll(SHELL))
+      .then(() => self.skipWaiting()),
   );
 });
 
@@ -13,7 +25,11 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) =>
+        Promise.all(
+          keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)),
+        ),
+      )
       .then(() => self.clients.claim()),
   );
 });

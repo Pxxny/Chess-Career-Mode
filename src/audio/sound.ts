@@ -1,7 +1,13 @@
 import { useSyncExternalStore } from "react";
 
-/** Synthesised board sounds (Web Audio): no audio files to download or cache. */
+/** Real board recordings are bundled locally. The low-clock alert stays a short tone. */
 export type SoundKind = "move" | "capture" | "lowtime";
+export const BOARD_SOUND_FILES = [
+  "/audio/chess/move-1.wav",
+  "/audio/chess/move-2.wav",
+  "/audio/chess/move-3.wav",
+  "/audio/chess/capture.wav",
+] as const;
 const KEY = "chess-career-sound";
 const listeners = new Set<() => void>();
 let enabled = true;
@@ -11,16 +17,33 @@ try {
   /* storage can be blocked; the choice then lasts for this session only */
 }
 let ctx: AudioContext | null = null;
+let generation = 0;
+let moveIndex = 0;
+const buffers = new Map<string, Promise<AudioBuffer | null>>();
+const active = new Set<AudioScheduledSourceNode>();
 
 export const soundEnabled = (): boolean => enabled;
 export function setSoundEnabled(on: boolean): void {
   enabled = on;
+  // Cancel sounds still loading, including when the user immediately turns sound back on.
+  generation++;
+  if (!on) {
+    for (const source of active) {
+      try {
+        source.stop();
+      } catch {
+        /* already ended */
+      }
+    }
+    active.clear();
+  }
   try {
     localStorage.setItem(KEY, on ? "on" : "off");
   } catch {
     /* ignore */
   }
   listeners.forEach((l) => l());
+  if (on) void prepareSounds();
 }
 export const useSoundEnabled = (): boolean =>
   useSyncExternalStore(
@@ -33,7 +56,7 @@ export const useSoundEnabled = (): boolean =>
   );
 
 function context(): AudioContext | null {
-  if (ctx) return ctx;
+  if (ctx && ctx.state !== "closed") return ctx;
   const Ctor =
     typeof window === "undefined"
       ? undefined
@@ -43,68 +66,136 @@ function context(): AudioContext | null {
   if (!Ctor) return null;
   try {
     ctx = new Ctor();
+    buffers.clear();
   } catch {
     return null;
   }
   return ctx;
 }
+async function resume(c: AudioContext): Promise<boolean> {
+  try {
+    // Includes suspended/interrupted audio after a mobile app returns from the background.
+    if (c.state !== "running") await c.resume();
+    return c.state === "running";
+  } catch {
+    return false;
+  }
+}
+function sample(c: AudioContext, url: string): Promise<AudioBuffer | null> {
+  const cached = buffers.get(url);
+  if (cached) return cached;
+  const loading = (async () => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Audio unavailable");
+      return await c.decodeAudioData(await response.arrayBuffer());
+    } catch {
+      // A network/decoder failure must not interrupt the game. Allow a later retry.
+      buffers.delete(url);
+      return null;
+    }
+  })();
+  buffers.set(url, loading);
+  return loading;
+}
 
-/** Browsers only start audio after a touch or click; unlock it on the first one. */
+/** Warm the small recording cache during a user gesture, before the first game move. */
+export async function prepareSounds(): Promise<void> {
+  if (!enabled) return;
+  const c = context();
+  if (!c) return;
+  await Promise.all([
+    resume(c),
+    ...BOARD_SOUND_FILES.map((url) => sample(c, url)),
+  ]);
+}
+
 if (typeof window !== "undefined") {
   const unlock = () => {
-    void context()?.resume();
-    window.removeEventListener("pointerdown", unlock);
-    window.removeEventListener("keydown", unlock);
+    if (!enabled) return;
+    void prepareSounds().then(() => {
+      if (ctx?.state === "running") {
+        window.removeEventListener("pointerdown", unlock);
+        window.removeEventListener("keydown", unlock);
+      }
+    });
   };
-  window.addEventListener("pointerdown", unlock);
+  window.addEventListener("pointerdown", unlock, { passive: true });
   window.addEventListener("keydown", unlock);
 }
 
-function thump(c: AudioContext, at: number, freq: number, volume: number) {
+function connect(
+  c: AudioContext,
+  source: AudioScheduledSourceNode,
+  gain: GainNode,
+): void {
+  // Bound overlapping playback when rapidly stepping through a replay.
+  if (active.size >= 4) {
+    const oldest = active.values().next().value;
+    try {
+      oldest?.stop();
+    } catch {
+      /* already ended */
+    }
+    if (oldest) active.delete(oldest);
+  }
+  source.connect(gain).connect(c.destination);
+  active.add(source);
+  source.onended = () => {
+    active.delete(source);
+    source.disconnect();
+    gain.disconnect();
+  };
+}
+function lowTime(c: AudioContext): void {
   const osc = c.createOscillator(),
-    gain = c.createGain();
-  osc.type = "triangle";
-  osc.frequency.setValueAtTime(freq, at);
-  osc.frequency.exponentialRampToValueAtTime(freq * 0.5, at + 0.07);
-  gain.gain.setValueAtTime(volume, at);
-  gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.09);
-  osc.connect(gain).connect(c.destination);
-  osc.start(at);
-  osc.stop(at + 0.1);
-  // A short noise burst gives the wooden "click".
-  const length = Math.floor(c.sampleRate * 0.025),
-    buffer = c.createBuffer(1, length, c.sampleRate),
-    data = buffer.getChannelData(0);
-  for (let i = 0; i < length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / length);
-  const noise = c.createBufferSource(),
-    noiseGain = c.createGain();
-  noise.buffer = buffer;
-  noiseGain.gain.value = volume * 0.5;
-  noise.connect(noiseGain).connect(c.destination);
-  noise.start(at);
+    gain = c.createGain(),
+    now = c.currentTime;
+  osc.type = "sine";
+  osc.frequency.value = 880;
+  gain.gain.setValueAtTime(0.25, now);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+  connect(c, osc, gain);
+  osc.start(now);
+  osc.stop(now + 0.13);
 }
 
 export function playSound(kind: SoundKind): void {
   if (!enabled) return;
   const c = context();
-  if (!c || c.state === "suspended") {
-    void c?.resume();
-    if (!c || c.state !== "running") return;
+  if (!c) return;
+  const requestGeneration = generation,
+    requestedAt = Date.now();
+  const current = () =>
+    enabled &&
+    generation === requestGeneration &&
+    ctx === c &&
+    c.state === "running" &&
+    Date.now() - requestedAt < 1000;
+  if (kind === "lowtime") {
+    void resume(c)
+      .then((ready) => {
+        if (ready && current()) lowTime(c);
+      })
+      .catch(() => {});
+    return;
   }
-  const now = c.currentTime;
-  if (kind === "move") thump(c, now, 220, 0.35);
-  else if (kind === "capture") {
-    thump(c, now, 170, 0.5);
-    thump(c, now + 0.055, 120, 0.4);
-  } else {
-    const osc = c.createOscillator(),
-      gain = c.createGain();
-    osc.type = "sine";
-    osc.frequency.value = 880;
-    gain.gain.setValueAtTime(0.25, now);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
-    osc.connect(gain).connect(c.destination);
-    osc.start(now);
-    osc.stop(now + 0.13);
-  }
+  const url =
+    kind === "capture"
+      ? BOARD_SOUND_FILES[3]
+      : BOARD_SOUND_FILES[moveIndex++ % 3];
+  void Promise.all([resume(c), sample(c, url)])
+    .then(([ready, buffer]) => {
+      if (!ready || !buffer || !current()) return;
+      const source = c.createBufferSource(),
+        gain = c.createGain();
+      source.buffer = buffer;
+      // Original recording, at its original speed and pitch; no synthetic layer.
+      gain.gain.value = 1;
+      connect(c, source, gain);
+      source.start(c.currentTime);
+    })
+    .catch(() => {
+      /* Audio is optional; keep legal moves and clocks working. */
+    });
 }

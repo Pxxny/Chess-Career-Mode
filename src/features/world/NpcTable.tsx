@@ -1,4 +1,5 @@
 import { getCountry } from "@/data/world/countries";
+import { NpcAvatar } from "@/components/game/NpcAvatar";
 import type { Npc } from "@/types";
 import { useSave } from "@/hooks/useGame";
 import { useNpcs } from "@/hooks/useNpcs";
@@ -37,22 +38,27 @@ export function NpcTable({ npcs, showRank = false, onSelect }: NpcTableProps) {
                 </td>
               )}
               <td className="py-2.5 pr-2 font-semibold text-ink">
-                {onSelect ? (
-                  <button
-                    type="button"
-                    onClick={() => onSelect(npc)}
-                    className="text-left underline-offset-2 hover:text-gold-300 hover:underline"
-                  >
-                    <span translate="no">{npc.name}</span>
-                  </button>
-                ) : (
-                  npc.name
-                )}
-                {npc.title !== "none" && (
-                  <span className="ml-2 text-xs font-medium text-gold-500">
-                    {npc.title}
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  <NpcAvatar npc={npc} decorative />
+                  <div className="min-w-0">
+                    {onSelect ? (
+                      <button
+                        type="button"
+                        onClick={() => onSelect(npc)}
+                        className="text-left underline-offset-2 hover:text-gold-300 hover:underline"
+                      >
+                        <span translate="no">{npc.name}</span>
+                      </button>
+                    ) : (
+                      <span translate="no">{npc.name}</span>
+                    )}
+                    {npc.title !== "none" && (
+                      <span className="ml-2 text-xs font-medium text-gold-500">
+                        {npc.title}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </td>
               <td className="py-2.5 pr-2 text-ink-muted">
                 <span aria-hidden>{getCountry(npc.nationality)?.flag}</span>{" "}

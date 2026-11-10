@@ -1,0 +1,65 @@
+{
+  "title": "chess pieces.wav",
+  "creator": "simone_ds",
+  "source": "https://freesound.org/people/simone_ds/sounds/366065/",
+  "download": "https://cdn.freesound.org/previews/366/366065_6040409-hq.mp3",
+  "sourceSha256": "4ea4585c3a13884cca243660f1fc2796809a2b5f2f02a8921bf21d9bc0f0d187",
+  "license": "CC0-1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "processing": "Decoded the public high-quality preview to mono 44.1 kHz PCM16; selected actual piece placements; 1 ms fade-in, 6 ms fade-out, peak normalized to 0.48. Capture combines two recorded placements 120 ms apart. Original pitch and speed; no synthesized layers.",
+  "files": [
+    {
+      "file": "move-1.wav",
+      "seconds": 0.31002267573696146,
+      "sha256": "8b13e5bb87cd090029edbce59abb8774cf4f00aa38b77c84740083d2ac41b4bb",
+      "sourceSegments": [
+        {
+          "start": 1.105,
+          "end": 1.415,
+          "offset": 0
+        }
+      ]
+    },
+    {
+      "file": "move-2.wav",
+      "seconds": 0.31,
+      "sha256": "9734ff3d988899df575fee8f0902c139c0aab7c16c4eef4d62338d99d1e6fa5b",
+      "sourceSegments": [
+        {
+          "start": 2.535,
+          "end": 2.845,
+          "offset": 0
+        }
+      ]
+    },
+    {
+      "file": "move-3.wav",
+      "seconds": 0.31,
+      "sha256": "91867c3a5c9200ab0274277752b43528c902e9cb1d3a50814ac15e551b4a0ea2",
+      "sourceSegments": [
+        {
+          "start": 8.085,
+          "end": 8.395,
+          "offset": 0
+        }
+      ]
+    },
+    {
+      "file": "capture.wav",
+      "seconds": 0.39,
+      "sha256": "7d3edce1a3aa1dbd1f007c4096f1037bf4c9e4ece2e23487cbf63243e26dfdf6",
+      "sourceSegments": [
+        {
+          "start": 12.175,
+          "end": 12.335,
+          "offset": 0
+        },
+        {
+          "start": 18.685,
+          "end": 18.955,
+          "offset": 0.12
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Badge, Button } from "@/components/ui";
+import { Avatar, Badge, Button } from "@/components/ui";
+import { NpcAvatar } from "@/components/game/NpcAvatar";
 import { TIERS } from "@/data/chess/tiers";
 import { getCountry } from "@/data/world/countries";
 import { useNpcs } from "@/hooks/useNpcs";
@@ -131,25 +132,41 @@ export function NpcDirectory() {
                   {n.worldRank ?? "–"}
                 </td>
                 <td className="py-2.5 pr-2 font-semibold text-ink">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      n.kind === "player"
-                        ? setShowPlayer(true)
-                        : setSelected(n.npc)
-                    }
-                    className="text-left underline-offset-2 hover:text-gold-300 hover:underline"
-                  >
-                    <span translate="no">{n.name}</span>
-                  </button>
-                  {n.kind === "player" && (
-                    <span className="ml-2 text-xs text-gold-400">You</span>
-                  )}
-                  {n.title !== "none" && (
-                    <span className="ml-2 text-xs text-gold-500">
-                      {n.title}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {n.kind === "npc" ? (
+                      <NpcAvatar npc={n.npc} decorative />
+                    ) : (
+                      <span aria-hidden="true" className="shrink-0">
+                        <Avatar
+                          name={save.player.name}
+                          seed={save.player.avatarSeed}
+                          appearance={save.player.appearance}
+                          size="sm"
+                        />
+                      </span>
+                    )}
+                    <div className="min-w-0">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          n.kind === "player"
+                            ? setShowPlayer(true)
+                            : setSelected(n.npc)
+                        }
+                        className="text-left underline-offset-2 hover:text-gold-300 hover:underline"
+                      >
+                        <span translate="no">{n.name}</span>
+                      </button>
+                      {n.kind === "player" && (
+                        <span className="ml-2 text-xs text-gold-400">You</span>
+                      )}
+                      {n.title !== "none" && (
+                        <span className="ml-2 text-xs text-gold-500">
+                          {n.title}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </td>
                 <td className="py-2.5 pr-2 text-ink-muted">
                   <span aria-hidden>{getCountry(n.nationality)?.flag}</span>{" "}

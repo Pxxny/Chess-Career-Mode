@@ -1,0 +1,15 @@
+{
+  "CHANGELOG.md": "c7a610773b2042fffee5d9f4d164393a8ed2d251ebe75bf30bdcfcaa552ddb40",
+  "README.md": "7571c9c52fc2225c737941498f6948affb013e60d2dcb27286ee00950760096b",
+  "package.json": "b93b0465d2017c117893f7320d82502122333c4296dea59351ebfc261b4cb748",
+  "public/audio/chess/ATTRIBUTION.txt": "abaec603e3ad54e1004391b983c5734581611ef17ea0e24c8cbf0bc4dbde4a29",
+  "public/audio/chess/capture.wav": "7d3edce1a3aa1dbd1f007c4096f1037bf4c9e4ece2e23487cbf63243e26dfdf6",
+  "public/audio/chess/move-1.wav": "8b13e5bb87cd090029edbce59abb8774cf4f00aa38b77c84740083d2ac41b4bb",
+  "public/audio/chess/move-2.wav": "9734ff3d988899df575fee8f0902c139c0aab7c16c4eef4d62338d99d1e6fa5b",
+  "public/audio/chess/move-3.wav": "91867c3a5c9200ab0274277752b43528c902e9cb1d3a50814ac15e551b4a0ea2",
+  "public/audio/chess/sources.json": "80fa9ce04e81a0e69748964c484448b079d2574dd36240481c7c9afb9ae3e9ff",
+  "public/sw.js": "f868c75565c61950da75df69f5e63c0fd9fe24d56447813620e12f9c4084ad43",
+  "scripts/verify-audio.ts": "42f87bc437a961884a5a7419238e62b5bd558cbb1acf0f8e076328e98622184b",
+  "src/audio/sound.ts": "a3613af2b010a93f988cbc26e15790e62d44c14c5eabacff33adffa1f9685fa6",
+  "tests/audio.spec.ts": "95b2854c52013a558787342667341bde44759bd7a5ecb3049dc83c0158a00211"
+}

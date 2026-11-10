@@ -1,0 +1,36 @@
+{
+  "verifiedAt": "2026-11-10T03:30:18.938577+00:00",
+  "baseProject": "Chess-Career-Mode-Real-Chess-Sounds-Full.zip",
+  "change": "Replace Real player badges with stable in-game NPC character portraits using the player portrait renderer.",
+  "screens": [
+    "Home rankings: World/National/City",
+    "NPC tables",
+    "Player directory",
+    "NPC profiles"
+  ],
+  "appearanceIdentity": "Stable NPC ID and gender; independent of Elo, rank, age, name and federation.",
+  "saveSchema": "unchanged; compatible with existing saves",
+  "savedPlayerAppearance": "preserved",
+  "recordedBoardAudio": "preserved",
+  "typecheckAndBuild": "passed",
+  "unit": "npm run test:npc-portraits passed for 4082 NPC identities",
+  "mobileWidths": [
+    320,
+    390
+  ],
+  "browser": {
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0
+  },
+  "baseProjectFilesRetained": 649,
+  "changedExistingFiles": [
+    "CHANGELOG.md",
+    "README.md",
+    "package.json",
+    "src/features/home/RankingsSection.tsx",
+    "src/features/world/NpcDirectory.tsx",
+    "src/features/world/NpcProfileModal.tsx",
+    "src/features/world/NpcTable.tsx"
+  ]
+}

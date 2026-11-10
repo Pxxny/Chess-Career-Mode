@@ -6,7 +6,7 @@
 
 - **สร้างตัวละคร** เลือกประเทศ เมืองเกิด ลักษณะนักเล่น หน้าตา และปีเริ่มต้น 1950–2026 (โลก NPC และตำนานหมากรุกตัวจริงปรับตามปีนั้น)
 - **ฝึกซ้อม** 19 กิจกรรม ชั่วโมง/AP/ความล้า พักผ่อน และวางแผนหลายวันอัตโนมัติ (พักเองเมื่อเหนื่อย)
-- **เล่นหมากรุกจริง** กระดานลากวาง/แตะ, เข้าป้อมโดยแตะคิงแล้วแตะเบี้ยเรือ (หรือแตะเรือแล้วแตะคิง) หรือแตะช่องปลายทางแบบเดิมก็ได้, นาฬิกา, เสียงเดินหมาก/กินหมาก/ใกล้หมดเวลา (ปิดได้จากปุ่มลำโพงบนแถบด้านบน), วิเคราะห์ด้วย Stockfish
+- **เล่นหมากรุกจริง** กระดานลากวาง/แตะ, เข้าป้อมโดยแตะคิงแล้วแตะเบี้ยเรือ (หรือแตะเรือแล้วแตะคิง) หรือแตะช่องปลายทางแบบเดิมก็ได้, นาฬิกา, เสียงเดินหมาก/กินหมากจากบันทึกเสียงกระดานจริง และเสียงเตือนใกล้หมดเวลา (ปิดได้จากปุ่มลำโพงบนแถบด้านบน), วิเคราะห์ด้วย Stockfish
 - **ทัวร์นาเมนต์** ทัวร์เมือง/ประเทศ/นานาชาติ ทั้งแบบ Open (ทุกเพศทุกวัย), Junior (จำกัดอายุ U12/U14/U17) และ Championship, Swiss, Round Robin หลายวัน, Esports
 - **ทีมชาติ 20 รายการ** Olympiad, World/European/Asian Team Championship, Asian Games, SEA Games ฯลฯ มีจำนวนทีม ตัวจริง/ตัวสำรอง และโควตากระดานตามมาตรฐาน FIDE
 - **อันดับ** อันดับโลก/ประเทศ/เมือง พร้อมรายชื่อ NPC กดดูโปรไฟล์ได้ นักหมากรุกตัวจริงมีป้าย “Real player”
@@ -39,6 +39,8 @@ npm run build     # typecheck + build ไปที่ dist/
 
 ```sh
 npm run typecheck
+npm run test:npc-portraits                 # รูป NPC คงเดิมและไม่แก้ข้อมูลเซฟ
+npm run test:audio                         # ไฟล์เสียงจริง, โหลด/แคช, ปิดเสียง, ออฟไลน์
 npm run test:world test:play test:data     # รันทีละคำสั่ง
 npm run test:team-events                   # ทีมชาติ 20 รายการ
 npm run test:expansion test:prediction test:language
@@ -56,7 +58,7 @@ npm run test:e2e                           # Playwright ต้อง build ก�
 | `src/features`, `src/pages`, `src/components` | หน้าจอและคอมโพเนนต์ |
 | `src/store` | Zustand + IndexedDB (เซฟ 3 ช่อง, โลก NPC แยกต่อตัวละคร) |
 | `src/i18n` | ภาษาอังกฤษ/ไทย (ข้อความอังกฤษเป็นต้นฉบับ, `th.ts` เป็นคำแปล) |
-| `src/audio` | เสียงสังเคราะห์ด้วย Web Audio |
+| `src/audio` | เล่นไฟล์บันทึกเสียงหมากจริงผ่าน Web Audio และเสียงเตือนเวลา |
 | `public` | Stockfish, ข้อมูลเมือง (สร้างตอน `npm ci`), ตัวหมาก SVG, manifest + service worker |
 
 จุดที่ปรับเกมบ่อย: `src/data/config.ts` (ค่าพื้นฐาน), `src/data/trainingSessions.ts`, `src/data/chess/tournaments.ts` (ชนิดทัวร์), `src/data/chess/nationalTeamEvents.ts` (ทีมชาติ)
@@ -91,3 +93,17 @@ git add -A && git commit -m "Update" && git pull --rebase origin main && git pus
 - Stockfish 16 (GPLv3) ประกาศและลิงก์ซอร์สอยู่ข้างไฟล์เอนจินใน `public/engine/`
 - ข้อมูลเปิดหมาก ECO จาก lichess-org/chess-openings (CC0), ข้อมูลประเทศจาก `world-countries`, เมืองจาก GeoNames (`all-the-cities`)
 - ฟอนต์ Manrope, Fraunces, Noto Sans Thai ผ่าน Fontsource (ไม่เรียก Google Fonts ตอนรัน)
+
+## เสียงกระดานจริง
+
+เสียงเดินและกินหมากใช้บันทึกเสียง **chess pieces.wav** โดย **simone_ds** จาก [Freesound](https://freesound.org/people/simone_ds/sounds/366065/) ภายใต้ [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) ตัดช่วงเงียบและปรับระดับเสียง โดยไม่เปลี่ยนความเร็วหรือระดับเสียงสูงต่ำ มีเสียงเดิน 3 ตัวอย่างสลับกัน ส่วนเสียงกินหมากประกอบด้วยการวางหมากจริงสองครั้งห่างกัน 120 มิลลิวินาที ไม่มีเสียงโทนหรือ noise สังเคราะห์ผสมกับเสียงหมาก
+
+ไฟล์ WAV อยู่ที่ `public/audio/chess/` พร้อมเครดิตและรายละเอียดช่วงเสียงใน `ATTRIBUTION.txt` และ `sources.json` โหลดจากโดเมนเกมและแคชสำหรับ PWA ออฟไลน์ ไม่เรียก Freesound ขณะเล่น ปุ่มลำโพงเดิมปิดเสียงได้และจำค่าไว้ เสียงเตือนนาฬิกายังคงเป็นโทนสั้นเพื่อแยกจากเสียงเดินหมาก
+
+## รูปหน้าตัวละคร NPC
+
+อันดับบน Home (World / National / City), ตาราง NPC, Player directory และโปรไฟล์ NPC แสดงรูปตัวละคร SVG แบบเดียวกับผู้เล่น แทนป้าย “Real player” ใช้ได้ทั้ง NPC ทั่วไปและนักหมากรุกจากประวัติศาสตร์ นักหมากรุกตัวจริงทั้ง 82 คนใช้ลักษณะที่กำหนดเป็นรายบุคคลจากภาพอ้างอิง เช่น ผมหยิก/ทรงผม แว่นตา หนวดเครา รูปหน้า และสีผม ส่วน NPC สมมติกำหนดจาก ID และเพศ รูปจึงคงเดิมเมื่อรีโหลด เปลี่ยนอันดับ/Elo อายุ ชื่อ หรือสหพันธ์ ไม่ต้องเริ่มเซฟใหม่ รูปผู้เล่นยังใช้รูปลักษณ์ที่เลือกไว้ รูป NPC เป็นภาพตัวละครในเกม
+
+ลักษณะของนักหมากรุกตัวจริงอยู่ใน `src/data/chess/legendAppearances.ts` เช่น Caruana (ผมหยิก/แว่น), Carlsen (ผมสีน้ำตาล/เคราสั้น), Nakamura และ Gukesh (หนวดเครา), Anand และ Giri (แว่น) ใช้ภาพอ้างอิงจาก [โปรไฟล์ FIDE](https://ratings.fide.com/) และภาพประวัติศาสตร์ โดยบันทึกลิงก์ที่ตรวจไว้ใน `public/portraits/REFERENCES.json` ตัวเกมวาดเป็น SVG แบบเดิมในเครื่อง ไม่โหลดรูปถ่ายจากเว็บขณะเล่น รูปแสดงลักษณะเด่นในช่วงหนึ่งของอาชีพและคงรูปแบบการ์ตูนของเกม
+
+สร้างแกลเลอรีตรวจรูปทั้ง 82 คนได้ด้วย `node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/render-legend-portraits.ts`

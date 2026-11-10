@@ -1,0 +1,13 @@
+{
+  "CHANGELOG.md": "cfcc71d501d2cef6de964e61890675502785ff3dc97afc4c49e54b7fd18589ac",
+  "README.md": "80c38e1ae55ceb00d0fd3e2aa73d1e4b2daf6d9a023689ee644a698215c9fe37",
+  "package.json": "58b4709fd545d8842ea957e4b6c308890b3ded0dc6fd5344bf7cf6919780bb74",
+  "scripts/verify-npc-portraits.ts": "8b5b793db62596c5b306d19dd43b7ead993623b80fe414e85b4308e8232c356c",
+  "src/components/game/NpcAvatar.tsx": "c2fee85c33c188592fe145bd80f84ac15ccde1a7282b8e7cb92ff41cef5c91b6",
+  "src/features/home/RankingsSection.tsx": "3355e9877b5e042fc71dd4adac4e80a1a0b5696718be651d74aaef024d761806",
+  "src/features/world/NpcDirectory.tsx": "dd6f1c4e6fbb2f7aa60b8cf21b5602bf3c59a725147e2d77a8bc618aad57f0ad",
+  "src/features/world/NpcProfileModal.tsx": "67303bb21de67b083f441a2d223fd44c4cc2e9092622cbae718a4cab62245551",
+  "src/features/world/NpcTable.tsx": "048922b0058dd4b2d8935e08ead0ba11f97a4e55fc8ce5ac812417a3fefbe685",
+  "src/game/appearance/npcAppearance.ts": "b3f9c92feeb813b81724222d6443042702b35563d998cb48a7e537f0ef0720d1",
+  "tests/npc-portraits.spec.ts": "10b50fae4744a1e2f1a60e99f141602e5cd9c43c15c1d1954c487dc7c0d7ec99"
+}
