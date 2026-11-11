@@ -1,0 +1,14 @@
+[WebServer] (node:2011) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 5 tests using 1 worker
+
+(node:2029) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/install-popup.spec.ts:4:1 › native browser install event is retained on slots and requires the install button (6.1s)
+  ✓  2 tests/install-popup.spec.ts:45:1 › later is remembered for seven days; permanent opt out suppresses future automatic popups (21.9s)
+  ✓  3 tests/install-popup.spec.ts:80:1 › Thai iPhone instructions appear during playtest on Home and fit a narrow phone (7.6s)
+  ✓  4 tests/install-popup.spec.ts:124:1 › already installed standalone app never shows the suggestion (5.9s)
+  ✓  5 tests/install-popup.spec.ts:147:1 › creation is uninterrupted and an unavailable native prompt falls back to browser instructions (11.1s)
+
+  5 passed (53.9s)

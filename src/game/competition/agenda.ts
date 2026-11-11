@@ -82,6 +82,26 @@ export function eventAgenda(
     ...d?.agenda,
   };
 }
+/** Main games only; byes, withdrawals and early BO3 clinches can reduce the total. */
+export function maximumPlayerGames(
+  event: Pick<ScheduledEvent, "details" | "fieldSize">,
+): number {
+  const opponents = Math.max(0, event.fieldSize - 1);
+  switch (event.details?.format) {
+    case "round-robin":
+      return opponents;
+    case "double-round-robin":
+      return opponents * 2;
+    case "round-robin-bo3":
+      return opponents * 3;
+    case "knockout":
+      return Math.ceil(Math.log2(Math.max(1, event.fieldSize)));
+    case "match":
+      return 14;
+    default:
+      return Math.max(1, Math.min(event.details?.rounds ?? 7, opponents));
+  }
+}
 export function bookedStart(
   event: Pick<ScheduledEvent, "year" | "week" | "details">,
 ) {
@@ -162,7 +182,10 @@ export function rotatingEvents(
         if (at < from || at > until) continue;
         const stamp = dayStamp(at),
           days = i === 0 ? 3 : 7,
-          count = i === 1 ? 8 : 6,
+          // Expanded editions keep their existing dates/formats; shorter editions
+          // remain available throughout the year. Stored registrations keep their snapshot.
+          expanded = i === 0 ? month % 2 === 1 : month % 3 === 2,
+          count = expanded ? [12, 24, 12][i] : i === 1 ? 8 : 6,
           bo3 = i === 2;
         const slots = 40,
           end = dayStamp(at + days - 1),

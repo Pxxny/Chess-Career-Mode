@@ -1,3 +1,4 @@
+import { InstallSuggestion } from "@/features/install/InstallSuggestion";
 import { useCallback, useEffect, useState } from "react";
 import { LanguageSelector } from "@/i18n/LanguageSelector";
 import { CharacterPortrait } from "@/components/game/CharacterPortrait";
@@ -65,6 +66,7 @@ export function SaveSlotsPage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-8">
+      <InstallSuggestion />
       <div className="mb-4 flex justify-end">
         <LanguageSelector />
       </div>

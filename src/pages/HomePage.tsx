@@ -1,3 +1,4 @@
+import { InstallSuggestion } from "@/features/install/InstallSuggestion";
 import { EsportsHomeCard } from "@/features/esports/EsportsPanel";
 import { calendarLabel, calendarDate } from "@/game/qol/career";
 import { ArrowRight, Dumbbell, Swords, TrendingUp } from "lucide-react";
@@ -54,6 +55,7 @@ export function HomePage() {
 
   return (
     <>
+      <InstallSuggestion />
       <PageHeader
         title={`Welcome, ${player.name}`}
         description="Your career at a glance."

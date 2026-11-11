@@ -1,0 +1,92 @@
+{
+  "verifiedAt": "2026-11-11T05:18:44.985958+00:00",
+  "base": "Chess-Career-Mode-Install-Popup-Full.zip",
+  "scope": "Increase selected multi-day tournament editions; keep short editions and booked/active snapshots.",
+  "buildAndTypecheck": "passed",
+  "expandedTournamentSimulation": "passed: 36 editions, full win/draw RR and BO3 completion, daily windows, non-overlap, all pairings, saved checkpoints, old snapshots and underfilled fields",
+  "esportsAndTournamentRegression": "passed",
+  "browser": {
+    "passed": 2,
+    "failed": 0,
+    "checks": [
+      "selected editions and daily counts in English and Thai",
+      "actual registration, human move, round result, reload and round-count persistence"
+    ]
+  },
+  "editions": [
+    {
+      "name": "Open Board Rotation",
+      "months": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12
+      ],
+      "days": 3,
+      "players": 12,
+      "maximumMainGamesPerPlayer": 11,
+      "previousPlayers": 6,
+      "previousMaximumMainGames": 5
+    },
+    {
+      "name": "Seven Days Masters",
+      "months": [
+        3,
+        6,
+        9,
+        12
+      ],
+      "days": 7,
+      "players": 24,
+      "maximumMainGamesPerPlayer": 23,
+      "previousPlayers": 8,
+      "previousMaximumMainGames": 7
+    },
+    {
+      "name": "Triple Crown Series",
+      "months": [
+        3,
+        6,
+        9,
+        12
+      ],
+      "days": 7,
+      "players": 12,
+      "maximumMainGamesPerPlayer": 33,
+      "previousPlayers": 6,
+      "previousMaximumMainGames": 15,
+      "note": "22 games if every BO3 finishes 2-0; 33 if every series plays 3 main games; tiebreak games extra"
+    }
+  ],
+  "savedBookingsAndActiveEvents": "retain stored field size and details; no save migration",
+  "preserved": [
+    "recorded board sounds",
+    "real-player cartoon likenesses",
+    "install popup",
+    "Vercel rewrites",
+    "save schema v15"
+  ],
+  "limits": [
+    "Chromium browser playtest at mobile viewport, not actual Termux or Safari hardware",
+    "Actual entrant counts, byes, withdrawals and decided BO3 series can lower the total; tiebreak games are additional"
+  ],
+  "baseFilesRetained": 681,
+  "changedExistingFiles": [
+    "CHANGELOG.md",
+    "README.md",
+    "package.json",
+    "src/features/match/TournamentTimetable.tsx",
+    "src/game/competition/agenda.ts",
+    "src/i18n/th.ts"
+  ],
+  "screenshots": [
+    "artifacts/expanded-tournament-3day-11games.png",
+    "artifacts/expanded-tournament-7day-23games.png",
+    "artifacts/expanded-tournament-7day-33games.png",
+    "artifacts/expanded-tournament-after-round.png",
+    "artifacts/expanded-tournament-live-playtest.png",
+    "artifacts/expanded-tournament-thai.png"
+  ]
+}

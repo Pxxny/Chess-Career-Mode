@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
+import { InstallProvider } from "./features/install/InstallProvider";
 import { LanguageProvider } from "./i18n/LanguageProvider";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import "@fontsource-variable/manrope";
@@ -13,7 +14,9 @@ createRoot(document.getElementById("root")!).render(
     <LanguageProvider>
       <BrowserRouter>
         <ErrorBoundary scope="app">
-          <App />
+          <InstallProvider>
+            <App />
+          </InstallProvider>
         </ErrorBoundary>
       </BrowserRouter>
     </LanguageProvider>

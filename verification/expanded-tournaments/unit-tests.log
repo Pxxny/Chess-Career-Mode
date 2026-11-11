@@ -1,0 +1,11 @@
+
+> chess-career-mode@0.1.0 test:expanded-tournaments
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-expanded-tournaments.ts
+
+PASS rotation-2026-2-0: 12 players, 11 player games (win), saved checkpoints, all pairings, finished standings.
+PASS rotation-2026-2-0: 12 players, 11 player games (draw), saved checkpoints, all pairings, finished standings.
+PASS rotation-2026-3-1: 24 players, 23 player games (win), saved checkpoints, all pairings, finished standings.
+PASS rotation-2026-3-1: 24 players, 23 player games (draw), saved checkpoints, all pairings, finished standings.
+PASS rotation-2026-3-2: 12 players, 22 player games (win), saved checkpoints, all pairings, finished standings.
+PASS rotation-2026-3-2: 12 players, 33 player games (draw), saved checkpoints, all pairings, finished standings.
+Expanded tournament checks passed: 36 selected/short editions, full RR/BO3 completion, date windows, daily slots, non-overlap, unchanged old snapshots and underfilled fields.

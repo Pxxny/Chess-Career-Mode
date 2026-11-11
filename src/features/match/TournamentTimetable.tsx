@@ -6,6 +6,7 @@ import {
   eventAgenda,
   gameDay,
   hhmm,
+  maximumPlayerGames,
   roundSlot,
   tournamentSlot,
 } from "@/game/competition/agenda";
@@ -44,48 +45,71 @@ export function TournamentTimetable({
     };
   });
   return (
-    <details
-      className="mt-3 rounded-lg border border-white/10 p-3 text-xs"
-      data-testid="daily-timetable"
-    >
-      <summary className="cursor-pointer font-semibold text-ink">
-        {a.days === 1 ? "Single day" : `${a.days} days`} · daily games & times
-        {data.details?.format === "round-robin-bo3"
-          ? " · BO3 per opponent"
-          : data.details?.format?.includes("round-robin")
-            ? " · all-player rotation"
-            : ""}
-      </summary>
-      <p className="my-2 text-ink-muted">
-        Maximum scheduled games per player; byes and a decided BO3 reduce the
-        total. Slots include a break and are separate from each game's chess
-        clock.
-      </p>
-      <div className="max-h-72 overflow-auto">
-        <table className="w-full text-left text-ink-muted">
-          <thead>
-            <tr>
-              <th className="py-2">Day</th>
-              <th>Max games / player</th>
-              <th>Scheduled times</th>
-            </tr>
-          </thead>
-          <tbody>
-            {days.map((d) => (
-              <tr key={d.day}>
-                <td className="py-1">{d.day}</td>
-                <td>{d.games}</td>
-                <td>
-                  {d.from === undefined || d.to === undefined
-                    ? "Rest day"
-                    : `${hhmm(d.from)}–${hhmm(d.to)}`}
-                </td>
+    <>
+      {data.details?.format !== "team" && (
+        <div
+          data-testid="tournament-game-count"
+          className="mt-3 rounded-lg border border-gold-500/25 bg-gold-500/5 p-3 text-sm"
+        >
+          <p translate="no" className="mb-1 text-xs text-ink-muted">
+            {tournament?.name ?? event?.name}
+          </p>
+          <p className="font-semibold text-ink">
+            Up to {maximumPlayerGames(data)} scheduled games per player
+          </p>
+          <p className="mt-1 text-xs text-ink-muted">
+            {tournament ? "Based on actual entrants" : "At full capacity"} ·{" "}
+            {data.fieldSize} players
+          </p>
+          <p className="mt-1 text-xs text-ink-muted">
+            Byes, withdrawals and decided BO3 series can reduce the total.
+            Tiebreak games are additional.
+          </p>
+        </div>
+      )}
+      <details
+        className="mt-3 rounded-lg border border-white/10 p-3 text-xs"
+        data-testid="daily-timetable"
+      >
+        <summary className="cursor-pointer font-semibold text-ink">
+          {a.days === 1 ? "Single day" : `${a.days} days`} · daily games & times
+          {data.details?.format === "round-robin-bo3"
+            ? " · BO3 per opponent"
+            : data.details?.format?.includes("round-robin")
+              ? " · all-player rotation"
+              : ""}
+        </summary>
+        <p className="my-2 text-ink-muted">
+          Maximum scheduled games per player; byes and a decided BO3 reduce the
+          total. Slots include a break and are separate from each game's chess
+          clock.
+        </p>
+        <div className="max-h-72 overflow-auto">
+          <table className="w-full text-left text-ink-muted">
+            <thead>
+              <tr>
+                <th className="py-2">Day</th>
+                <th>Max games / player</th>
+                <th>Scheduled times</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </details>
+            </thead>
+            <tbody>
+              {days.map((d) => (
+                <tr key={d.day}>
+                  <td className="py-1">{d.day}</td>
+                  <td>{d.games}</td>
+                  <td>
+                    {d.from === undefined || d.to === undefined
+                      ? "Rest day"
+                      : `${hhmm(d.from)}–${hhmm(d.to)}`}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </>
   );
 }
 export function TournamentDayClock({

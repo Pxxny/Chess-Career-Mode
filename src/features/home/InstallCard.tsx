@@ -1,68 +1,41 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button, Card, CardTitle } from "@/components/ui";
+import { useInstall } from "@/features/install/InstallProvider";
+import { InstallInstructions } from "@/features/install/InstallSuggestion";
 
-interface InstallPrompt extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
-
-const standalone = (): boolean =>
-  window.matchMedia("(display-mode: standalone)").matches ||
-  (navigator as unknown as { standalone?: boolean }).standalone === true;
-const apple = (): boolean =>
-  /iphone|ipad|ipod/i.test(navigator.userAgent) ||
-  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-
-/** Installs the game on the device (home screen / desktop) so it also runs offline. */
+/** Always available after dismissing the suggestion; shares the early install event. */
 export function InstallCard() {
-  const [prompt, setPrompt] = useState<InstallPrompt | null>(null);
-  const [installed, setInstalled] = useState(false);
-  useEffect(() => {
-    setInstalled(standalone());
-    const before = (e: Event) => {
-      e.preventDefault();
-      setPrompt(e as InstallPrompt);
-    };
-    const done = () => {
-      setInstalled(true);
-      setPrompt(null);
-    };
-    window.addEventListener("beforeinstallprompt", before);
-    window.addEventListener("appinstalled", done);
-    return () => {
-      window.removeEventListener("beforeinstallprompt", before);
-      window.removeEventListener("appinstalled", done);
-    };
-  }, []);
+  const { installed, available, busy, install } = useInstall();
+  const [guide, setGuide] = useState(false);
   if (installed) return null;
   return (
     <Card className="mt-4">
       <CardTitle>Install on this device</CardTitle>
       <p className="mb-3 text-sm text-ink-muted">
-        Install Chess Career Mode like an app. It opens full screen and keeps
-        working without internet after the first load. Your saves stay on this
-        device.
+        Add the game to your home screen for quick access and a separate app
+        window.
       </p>
-      {prompt ? (
+      <p className="mb-3 text-sm text-ink-muted">
+        Loaded game files can be used offline. Your saves stay on this device.
+      </p>
+      {available || busy ? (
         <Button
+          disabled={busy}
           onClick={async () => {
-            await prompt.prompt();
-            const choice = await prompt.userChoice;
-            if (choice.outcome === "accepted") setInstalled(true);
-            setPrompt(null);
+            if ((await install()) === "manual") setGuide(true);
           }}
         >
-          Install app
+          {busy ? "Opening installer…" : "Install app"}
         </Button>
-      ) : apple() ? (
-        <p className="text-sm text-ink">
-          In Safari, tap the Share button, then “Add to Home Screen”.
-        </p>
       ) : (
-        <p className="text-sm text-ink">
-          Open your browser menu and choose “Install app” or “Add to Home
-          screen”.
-        </p>
+        <Button variant="secondary" onClick={() => setGuide(!guide)}>
+          How to install
+        </Button>
+      )}
+      {guide && (
+        <div className="mt-3">
+          <InstallInstructions />
+        </div>
       )}
     </Card>
   );

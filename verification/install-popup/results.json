@@ -1,0 +1,44 @@
+{
+  "verifiedAt": "2026-11-11T00:32:36.476014+00:00",
+  "base": "Chess-Career-Mode-Real-Player-Likeness-Full.zip",
+  "scope": "Browser installation suggestion popup prioritized by the latest request.",
+  "buildAndTypecheck": "passed",
+  "browser": {
+    "passed": 5,
+    "failed": 0
+  },
+  "screenshots": [
+    "artifacts/install-popup-android-en.png",
+    "artifacts/install-popup-iphone-th.png"
+  ],
+  "testLimits": "Native install event and iPhone UA are simulated in Chromium; actual OS installation remains controlled by the browser.",
+  "behaviour": [
+    "Slots/Home suggestion after 4.5 seconds",
+    "Early browser install event retained",
+    "Native prompt only from user button",
+    "Native install loading state",
+    "Safari/manual browser guide",
+    "Seven-day snooze and permanent opt-out",
+    "Hidden in standalone app",
+    "No interruption during character creation",
+    "Thai/English",
+    "Home card remains available"
+  ],
+  "saveSchema": "unchanged",
+  "realPlayerPortraitsAndRecordedAudio": "preserved",
+  "baseFilesRetained": 672,
+  "changedExistingFiles": [
+    "CHANGELOG.md",
+    "README.md",
+    "src/features/home/InstallCard.tsx",
+    "src/i18n/th.ts",
+    "src/main.tsx",
+    "src/pages/HomePage.tsx",
+    "src/pages/SaveSlotsPage.tsx"
+  ],
+  "remainingEarlierRequests": [
+    "Stage 1: backups/import, lifetime statistics and navigation",
+    "Tournament explanations and registration/capacity information",
+    "Selected larger multi-day fields and more games"
+  ]
+}

@@ -3662,95 +3662,97 @@ export const TH_MESSAGES: Record<string, string> = {
   dynamic: "พลิกแพลง",
   solid: "มั่นคง",
   prophylactic: "ป้องกันแผนคู่แข่ง",
-  "National team events":
-    "รายการทีมชาติ",
-  "National team event":
-    "รายการทีมชาติ",
+  "National team events": "รายการทีมชาติ",
+  "National team event": "รายการทีมชาติ",
   "Twenty national team competitions run each game year. Teams select their highest-rated eligible players for the boards; you represent your country when selected. Individual Elo is unchanged. Vacant boards lose by forfeit, so small federations can still take part.":
     "ปีเกมละ 20 รายการทีมชาติ ทีมเลือกผู้เล่นที่ผ่านเกณฑ์และ Elo สูงสุดลงแต่ละกระดาน คุณจะเป็นตัวแทนประเทศเมื่อได้รับเลือก โดยไม่เปลี่ยน Elo รายบุคคล กระดานที่ว่างนับเป็นแพ้บายเพื่อให้สหพันธ์ขนาดเล็กเข้าร่วมได้",
   "Teams this year: {{0}} (usual field {{1}}–{{2}})":
     "จำนวนทีมปีนี้: {{0}} (ปกติ {{1}}–{{2}} ทีม)",
   "Boards per match: {{0}} · Reserves: {{1}}":
     "กระดานต่อแมตช์: {{0}} · ตัวสำรอง: {{1}}",
-  "Format: round robin":
-    "รูปแบบ: พบกันหมด",
-  "Format: Swiss system, {{0}} rounds":
-    "รูปแบบ: ระบบสวิส {{0}} รอบ",
-  "Region: {{0}}":
-    "ภูมิภาค: {{0}}",
-  "Region: Worldwide":
-    "ภูมิภาค: ทั่วโลก",
-  "Invited federations: {{0}}":
-    "สหพันธ์ที่ได้รับเชิญ: {{0}} ประเทศ",
-  "Women only":
-    "เฉพาะผู้หญิง",
-  "Age {{0}}+":
-    "อายุ {{0}} ปีขึ้นไป",
-  "Age {{0}} or younger":
-    "อายุไม่เกิน {{0}} ปี",
-  "Open boards: {{0}}":
-    "กระดานเปิด: {{0}}",
-  "Women's boards: {{0}}":
-    "กระดานหญิง: {{0}}",
-  "Men's boards: {{0}}":
-    "กระดานชาย: {{0}}",
-  "Junior boy boards (U20): {{0}}":
-    "กระดานเยาวชนชาย (U20): {{0}}",
-  "Junior girl boards (U20): {{0}}":
-    "กระดานเยาวชนหญิง (U20): {{0}}",
-  "Not eligible as a player: {{0}}.":
-    "ไม่ผ่านเกณฑ์ลงเล่นในฐานะผู้เล่น: {{0}}",
+  "Format: round robin": "รูปแบบ: พบกันหมด",
+  "Format: Swiss system, {{0}} rounds": "รูปแบบ: ระบบสวิส {{0}} รอบ",
+  "Region: {{0}}": "ภูมิภาค: {{0}}",
+  "Region: Worldwide": "ภูมิภาค: ทั่วโลก",
+  "Invited federations: {{0}}": "สหพันธ์ที่ได้รับเชิญ: {{0}} ประเทศ",
+  "Women only": "เฉพาะผู้หญิง",
+  "Age {{0}}+": "อายุ {{0}} ปีขึ้นไป",
+  "Age {{0}} or younger": "อายุไม่เกิน {{0}} ปี",
+  "Open boards: {{0}}": "กระดานเปิด: {{0}}",
+  "Women's boards: {{0}}": "กระดานหญิง: {{0}}",
+  "Men's boards: {{0}}": "กระดานชาย: {{0}}",
+  "Junior boy boards (U20): {{0}}": "กระดานเยาวชนชาย (U20): {{0}}",
+  "Junior girl boards (U20): {{0}}": "กระดานเยาวชนหญิง (U20): {{0}}",
+  "Not eligible as a player: {{0}}.": "ไม่ผ่านเกณฑ์ลงเล่นในฐานะผู้เล่น: {{0}}",
   "Disability classification (not modelled)":
     "การจำแนกประเภทผู้พิการ (เกมยังไม่รองรับ)",
-  "A federation taking part in this event":
-    "สหพันธ์ที่เข้าร่วมรายการนี้",
-  "Women's section eligibility":
-    "สิทธิ์ลงสนามประเภทหญิง",
-  "Reserve:":
-    "ตัวสำรอง:",
+  "A federation taking part in this event": "สหพันธ์ที่เข้าร่วมรายการนี้",
+  "Women's section eligibility": "สิทธิ์ลงสนามประเภทหญิง",
+  "Reserve:": "ตัวสำรอง:",
   "Your federation has no eligible players for this event.":
     "สหพันธ์ของคุณไม่มีผู้เล่นที่ผ่านเกณฑ์สำหรับรายการนี้",
   "Selected players spend 2 AP and earn up to ${{0}} appearance/prize money, scaled by finishing position.":
     "ผู้ได้รับเลือกใช้ 2 AP และได้รับค่าเข้าร่วมหรือเงินรางวัลสูงสุด ${{0}} ตามอันดับที่จบ",
   "Selected players must register in Tournament before the deadline and play in the event week. Unselected members can follow the simulated exhibition free. Membership is required.":
     "ผู้ได้รับเลือกต้องสมัครในหน้าการแข่งขันก่อนกำหนดและเล่นในสัปดาห์ของรายการ สมาชิกที่ไม่ได้รับเลือกติดตามการจำลองได้ฟรี โดยต้องเป็นสมาชิกสหพันธ์",
-  "Teams: {{0}}":
-    "จำนวนทีม: {{0}}",
-  "Swiss, {{0}} rounds":
-    "ระบบสวิส {{0}} รอบ",
-  "Round robin":
-    "พบกันหมด",
+  "Teams: {{0}}": "จำนวนทีม: {{0}}",
+  "Swiss, {{0}} rounds": "ระบบสวิส {{0}} รอบ",
+  "Round robin": "พบกันหมด",
   "Showing the top {{0}} of {{1}} teams, plus your federation.":
     "แสดง {{0}} ทีมแรกจากทั้งหมด {{1}} ทีม พร้อมสหพันธ์ของคุณ",
   "Board results show your federation's matches.":
     "ผลกระดานแสดงเฉพาะแมตช์ของสหพันธ์คุณ",
-  "You played on the national team.":
-    "คุณลงเล่นในทีมชาติ",
-  "Your country did not take part.":
-    "ประเทศของคุณไม่ได้เข้าร่วม",
-  "{{0}} wins the {{1}}":
-    "{{0}} ชนะ {{1}}",
-  "Unknown national team event.":
-    "ไม่พบรายการทีมชาตินี้",
+  "You played on the national team.": "คุณลงเล่นในทีมชาติ",
+  "Your country did not take part.": "ประเทศของคุณไม่ได้เข้าร่วม",
+  "{{0}} wins the {{1}}": "{{0}} ชนะ {{1}}",
+  "Unknown national team event.": "ไม่พบรายการทีมชาตินี้",
   "Turn sound off": "ปิดเสียง",
   "Turn sound on": "เปิดเสียง",
   "{{0}} (automatic)": "{{0}} (อัตโนมัติ)",
   "Junior Tournaments": "ทัวร์เยาวชน",
   "Open Championship": "แชมป์เปี้ยนชิพเปิด",
   "Ranking scope": "ขอบเขตอันดับ",
-  "World": "โลก",
-  "National": "ประเทศ",
+  World: "โลก",
+  National: "ประเทศ",
   "Show more": "ดูเพิ่ม",
   "Real player": "นักหมากรุกตัวจริง",
-  "YOU": "คุณ",
-  "Install on this device":
-    "ติดตั้งลงเครื่องนี้",
+  YOU: "คุณ",
+  "Install on this device": "ติดตั้งลงเครื่องนี้",
   "Install Chess Career Mode like an app. It opens full screen and keeps working without internet after the first load. Your saves stay on this device.":
     "ติดตั้ง Chess Career Mode เป็นแอป เปิดเต็มจอและเล่นได้โดยไม่ต้องใช้อินเทอร์เน็ตหลังโหลดครั้งแรก เซฟของคุณเก็บอยู่ในเครื่องนี้",
-  "Install app":
-    "ติดตั้งแอป",
+  "Install app": "ติดตั้งแอป",
   "In Safari, tap the Share button, then “Add to Home Screen”.":
     "ใน Safari แตะปุ่มแชร์ แล้วเลือก “เพิ่มไปยังหน้าจอโฮม”",
   "Open your browser menu and choose “Install app” or “Add to Home screen”.":
     "เปิดเมนูของเบราว์เซอร์ แล้วเลือก “ติดตั้งแอป” หรือ “เพิ่มลงหน้าจอหลัก”",
+  "Install Chess Career Mode": "ติดตั้ง Chess Career Mode",
+  "Add the game to your home screen for quick access and a separate app window.":
+    "เพิ่มเกมไว้บนหน้าจอโฮม เพื่อเปิดเล่นได้สะดวกในหน้าต่างแอปแยก",
+  "Loaded game files can be used offline. Your saves stay on this device.":
+    "ไฟล์เกมที่โหลดไว้แล้วใช้แบบออฟไลน์ได้ เซฟของคุณยังอยู่ในอุปกรณ์นี้",
+  "On iPhone or iPad": "สำหรับ iPhone หรือ iPad",
+  "Open this game in Safari.": "เปิดเกมนี้ด้วย Safari",
+  "Tap Share, then Add to Home Screen. If needed, open the More menu first.":
+    "แตะปุ่มแชร์ แล้วเลือก เพิ่มไปยังหน้าจอโฮม หากยังไม่เห็นปุ่มแชร์ ให้เปิดเมนูเพิ่มเติมก่อน",
+  "Confirm Add, then open the game icon from your home screen.":
+    "ยืนยันเพิ่ม แล้วเปิดเกมจากไอคอนบนหน้าจอโฮม",
+  "Install from your browser": "ติดตั้งผ่านเบราว์เซอร์",
+  "Open this game in Chrome, Edge or another browser that supports installed web apps.":
+    "เปิดเกมใน Chrome, Edge หรือเบราว์เซอร์ที่รองรับการติดตั้งแอปจากเว็บ",
+  "Open the browser menu and choose Install app or Add to Home screen.":
+    "เปิดเมนูเบราว์เซอร์ แล้วเลือก ติดตั้งแอป หรือ เพิ่มไปยังหน้าจอโฮม",
+  "If no install option is shown, keep playing in this browser.":
+    "หากไม่มีตัวเลือกติดตั้ง คุณยังเล่นในเบราว์เซอร์นี้ต่อได้",
+  "This installs the web app. It does not download an APK or require an app store.":
+    "ติดตั้งเป็นแอปจากเว็บได้ โดยไม่ต้องผ่าน App Store หรือดาวน์โหลดไฟล์ APK",
+  "Opening installer…": "กำลังเปิดหน้าติดตั้ง…",
+  "How to install": "วิธีติดตั้ง",
+  "Not now": "ไว้ภายหลัง",
+  "Do not show again": "ไม่แสดงอีก",
+  "Up to {{0}} scheduled games per player":
+    "สูงสุด {{0}} เกมตามตารางต่อผู้เล่น",
+  "Based on actual entrants": "ตามจำนวนผู้เข้าร่วมจริง",
+  "At full capacity": "เมื่อมีผู้เข้าร่วมเต็มจำนวน",
+  "Byes, withdrawals and decided BO3 series can reduce the total. Tiebreak games are additional.":
+    "บาย การถอนตัว และซีรีส์ BO3 ที่ตัดสินแล้วอาจทำให้เล่นน้อยลง เกมไทเบรกนับเพิ่มเติม",
 };
