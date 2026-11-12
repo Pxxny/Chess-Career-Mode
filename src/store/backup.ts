@@ -1,3 +1,6 @@
+import { z } from "zod";
+import { highlightsSchema } from "@/game/career/highlights";
+import { readMatchArchive, mergeMatches, matchKey } from "./matchArchive";
 import { seasonOf } from "@/game/career/seasonSimulation";
 import { readEventArchive, archiveKey } from "./tournamentArchive";
 import {
@@ -7,7 +10,7 @@ import {
 import { GAME_CONFIG } from "@/data/config";
 import { validDatabaseSize } from "@/game/npc/playerDatabase";
 import { upgradeSave } from "@/game/training/migrate";
-import type { GameSave, Npc } from "@/types";
+import type { GameSave, Npc, MatchRecord } from "@/types";
 import { openDb, STORES } from "@/utils/idb";
 import { metaFor } from "./npcRepository";
 
@@ -16,7 +19,12 @@ export interface CareerBackup {
   format: "chess-career-mode-backup";
   version: 1;
   exportedAt: string;
-  payload: { save: GameSave; npcs: Npc[]; tournamentArchive?: ArchivedEvent[] };
+  payload: {
+    save: GameSave;
+    npcs: Npc[];
+    tournamentArchive?: ArchivedEvent[];
+    matchArchive?: MatchRecord[];
+  };
   checksum: string;
 }
 const fail = (): never => {
@@ -42,12 +50,18 @@ export async function createBackup(
   if (!npcs.length)
     throw new Error("Wait for the NPC world to finish loading.");
   const archived = await readEventArchive(save.career.id);
+  const matches = mergeMatches(
+    await readMatchArchive(save.career.id),
+    save.matchArchivePending ?? [],
+    save.matches,
+  );
   const archive = new Map(
     [...archived, ...retainedArchives(save)].map((e) => [e.id, e]),
   );
   const payload = structuredClone({
     save,
     npcs,
+    ...(matches.length ? { matchArchive: matches } : {}),
     ...(archive.size ? { tournamentArchive: [...archive.values()] } : {}),
   });
   return {
@@ -76,7 +90,24 @@ export async function parseBackup(raw: string): Promise<CareerBackup> {
     !text(value.checksum)
   )
     fail();
+  if (!z.object({ format: z.literal("chess-career-mode-backup"), version: z.literal(1),
+    payload: z.object({ save: z.object({}).passthrough(), npcs: z.array(z.unknown()) }).passthrough(),
+    checksum: z.string().min(1) }).passthrough().safeParse(value).success) fail();
   const { save, npcs } = value.payload;
+  if (save.highlights !== undefined && !highlightsSchema.safeParse(save.highlights).success) fail();
+  if (
+    value.payload.matchArchive !== undefined &&
+    (!Array.isArray(value.payload.matchArchive) ||
+      value.payload.matchArchive.some(
+        (m: unknown) =>
+          !object(m) ||
+          !text(m.id) ||
+          !Array.isArray(m.moves) ||
+          !object(m.setup) ||
+          !text(m.result),
+      ))
+  )
+    fail();
   if (save?.seasonSimulation !== undefined && !seasonOf(save)) fail();
   if (
     save?.career?.playerDatabase !== undefined &&
@@ -204,7 +235,13 @@ export async function restoreBackup(
   const db = await openDb();
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(
-      [STORES.keyval, STORES.careerNpcs, STORES.meta, STORES.tournamentArchive],
+      [
+        STORES.keyval,
+        STORES.careerNpcs,
+        STORES.meta,
+        STORES.tournamentArchive,
+        STORES.matchArchive,
+      ],
       "readwrite",
     );
     let issue: Error | null = null;
@@ -220,6 +257,15 @@ export async function restoreBackup(
         JSON.stringify({ state: { save }, version: GAME_CONFIG.saveVersion }),
         key,
       );
+      for (const match of mergeMatches(
+        validated.payload.matchArchive ?? [],
+        save.matchArchivePending ?? [],
+        save.matches,
+      ))
+        tx.objectStore(STORES.matchArchive).put({
+          key: matchKey(id, match.id),
+          match,
+        });
       for (const npc of validated.payload.npcs)
         tx.objectStore(STORES.careerNpcs).put({ key: `${id}|${npc.id}`, npc });
       tx.objectStore(STORES.meta).put(metaFor(save.career), `npc-db:${id}`);

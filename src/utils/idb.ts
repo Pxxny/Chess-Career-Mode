@@ -1,9 +1,10 @@
 import { beginMeasurement } from "@/diagnostics/performance";
 const DB_NAME = "chess-career-mode";
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 
 export const STORES = {
   keyval: "keyval",
+  matchArchive: "matchArchive",
   npcs: "npcs",
   meta: "meta",
   openingData: "openingData",
@@ -28,11 +29,19 @@ export function openDb(): Promise<IDBDatabase> {
         db.createObjectStore(STORES.openingData);
       if (!db.objectStoreNames.contains(STORES.tournamentArchive))
         db.createObjectStore(STORES.tournamentArchive, { keyPath: "key" });
+      if (!db.objectStoreNames.contains(STORES.matchArchive))
+        db.createObjectStore(STORES.matchArchive, { keyPath: "key" });
       // One NPC world per character: records are keyed `<career id>|<npc id>`.
       if (!db.objectStoreNames.contains(STORES.careerNpcs))
         db.createObjectStore(STORES.careerNpcs, { keyPath: "key" });
     };
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => {
+      request.result.onversionchange = () => {
+        request.result.close();
+        dbPromise = null;
+      };
+      resolve(request.result);
+    };
     request.onerror = () => {
       dbPromise = null;
       reject(request.error);

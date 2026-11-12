@@ -1,3 +1,4 @@
+import { openSectionTab } from "./navigation";
 import { test, expect, devices, type Page } from "@playwright/test";
 import { createCareer } from "./helpers";
 import { getSchedule } from "../src/game/world/schedule";
@@ -301,7 +302,7 @@ test("analysis board: ?? and !! highlight the selected move, clear at start and 
   });
   await page.reload();
   await complete(page);
-  await page.getByRole("tab", { name: "History", exact: true }).click();
+  await openSectionTab(page, "History");
   await page
     .getByRole("button", { name: /vs Rival/ })
     .first()
@@ -355,7 +356,7 @@ test("Android and iOS emulation use identical loaded piece assets with a square 
     try {
       const page = await context.newPage();
       await createCareer(page);
-      await page.getByRole("tab", { name: "Games", exact: true }).click();
+      await openSectionTab(page, "Games");
       await page.getByRole("button", { name: /^Game vs the Engine/ }).click();
       await page
         .getByRole("button", { name: "Start game", exact: true })

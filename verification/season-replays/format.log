@@ -1,0 +1,17 @@
+src/game/career/seasonGame.ts 151ms
+src/game/career/seasonGame.worker.ts 10ms
+src/store/seasonGameClient.ts 11ms
+src/store/matchArchive.ts 24ms
+src/hooks/useMatchRecords.ts 7ms
+src/types/match.ts 34ms
+src/store/backup.ts 35ms
+src/game/match/aftermath.ts 37ms
+src/features/match/MatchHistory.tsx 68ms
+src/features/qol/HistoryDialogs.tsx 27ms
+src/game/qol/history.ts 30ms
+src/game/career/seasonSimulation.ts 75ms
+src/store/gameStore.ts 207ms
+src/features/career/SimulateSeason.tsx 17ms
+src/game/match/pgn.ts 10ms
+src/utils/idb.ts 9ms
+src/types/game.ts 5ms (unchanged)

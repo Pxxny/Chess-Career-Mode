@@ -1,3 +1,4 @@
+import { useMatchRecords } from "@/hooks/useMatchRecords";
 import { PredictionSummary } from "@/features/prediction/PredictionPanel";
 import { useState } from "react";
 import { Modal, Button } from "@/components/ui";
@@ -14,7 +15,8 @@ export function OpeningHistoryDialog({
   onClose: () => void;
 }) {
   const save = useSave(),
-    rows = openingGames(save, name);
+    matches = useMatchRecords(),
+    rows = openingGames({ ...save, matches }, name);
   const [match, setMatch] = useState<MatchRecord | null>(null);
   return (
     <Modal open title={`${name} · Game history`} onClose={onClose} size="lg">
@@ -70,8 +72,9 @@ export function TournamentHistoryDialog({
   onClose: () => void;
 }) {
   const save = useSave(),
+    matches = useMatchRecords(),
     player = t.players.find((p) => p.id === playerId),
-    rows = tournamentGames(t, playerId, save.matches);
+    rows = tournamentGames(t, playerId, matches);
   const [match, setMatch] = useState<MatchRecord | null>(null);
   return (
     <Modal

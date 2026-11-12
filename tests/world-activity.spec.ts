@@ -1,3 +1,4 @@
+import { openSectionTab } from "./navigation";
 import { expect, test, type Page } from "@playwright/test";
 import { createCareer } from "./helpers";
 import {
@@ -130,7 +131,7 @@ test("finished player event appears in NPC profiles, survives reload, and Magnus
   );
   await writeCareer(page, finished);
   await page.getByRole("link", { name: "Tournament", exact: true }).click();
-  await page.getByRole("tab", { name: "Rankings", exact: true }).click();
+  await openSectionTab(page, "Rankings");
   const profileName = (await readCareer(page)).npcs.find(
     (n) => n.id === npc.id,
   )!.name;
@@ -168,7 +169,7 @@ test("finished player event appears in NPC profiles, survives reload, and Magnus
     )
     .toBeGreaterThan(0);
   await page.getByRole("link", { name: "Tournament", exact: true }).click();
-  await page.getByRole("tab", { name: "Rankings", exact: true }).click();
+  await openSectionTab(page, "Rankings");
   await page
     .getByRole("searchbox", { name: "Search players by name, city or country" })
     .fill("Magnus Carlsen");

@@ -1,3 +1,4 @@
+import { openSectionTab } from "./navigation";
 import { test, expect, type Page } from "@playwright/test";
 import { createCareer } from "./helpers";
 
@@ -45,17 +46,11 @@ test("Complete: six menus, registration, paid plan/repertoire/scout, reload and 
   await createCareer(page);
   await page.getByRole("link", { name: "Tournament", exact: true }).click();
   const tabs = page.getByRole("tablist", { name: "Tournament sections" });
-  await expect(tabs.getByRole("tab")).toHaveText([
-    "Tournament",
-    "Annual calendar",
-    "Tournament history",
-    "Swiss",
-    "Prepare",
-    "Rankings",
-    "League",
-    "History",
+  await expect(tabs.getByRole("tab")).toHaveText(["Tournament", "Annual calendar"]);
+  await expect(page.getByLabel("Tournament sections: more sections").locator("option")).toHaveText([
+    "More sections", "Tournament history", "Swiss", "Prepare", "Rankings", "League", "History",
   ]);
-  await tabs.getByRole("tab", { name: "Swiss", exact: true }).click();
+  await openSectionTab(tabs, "Swiss");
   const before = await stored(page);
   await page
     .locator('button[data-testid="register"]:enabled')
@@ -73,14 +68,14 @@ test("Complete: six menus, registration, paid plan/repertoire/scout, reload and 
       paid.registrations[0].entryFee -
       (paid.registrations[0].travelCost ?? 0),
   );
-  await tabs.getByRole("tab", { name: "Prepare", exact: true }).click();
-  await page.getByRole("tab", { name: "Game Plan", exact: true }).click();
+  await openSectionTab(tabs, "Prepare");
+  await openSectionTab(page, "Game Plan");
   await page
     .getByRole("button", { name: "All Out Attacks", exact: true })
     .click();
   await page.getByRole("button", { name: "Think Deeply", exact: true }).click();
   await page.getByRole("switch", { name: "Accept Early Draw" }).check();
-  await page.getByRole("tab", { name: "Repertoire", exact: true }).click();
+  await openSectionTab(page, "Repertoire");
   await page.getByLabel("Search preparation openings").fill("Italian");
   const white = page.getByLabel("Add White repertoire", { exact: true });
   await white.selectOption(
@@ -91,7 +86,7 @@ test("Complete: six menus, registration, paid plan/repertoire/scout, reload and 
   await black.selectOption(
     (await black.locator("option").nth(1).getAttribute("value")) as string,
   );
-  await page.getByRole("tab", { name: "Preparation", exact: true }).click();
+  await openSectionTab(page, "Preparation");
   await page
     .getByRole("button", { name: "Prepare for tournament", exact: true })
     .click();
@@ -102,7 +97,7 @@ test("Complete: six menus, registration, paid plan/repertoire/scout, reload and 
   expect(prepared.training.hoursUsedToday).toBe(3);
   expect(prepared.competition.prepared.repertoire.white).toHaveLength(1);
   expect(prepared.competition.prepared.repertoire["vs-e4"]).toHaveLength(1);
-  await page.getByRole("tab", { name: "Scout Opponent", exact: true }).click();
+  await openSectionTab(page, "Scout Opponent");
   await page.getByRole("button", { name: /Investigate opponent/ }).click();
   await expect(
     page.getByText("Report available", { exact: true }),
@@ -112,11 +107,11 @@ test("Complete: six menus, registration, paid plan/repertoire/scout, reload and 
   expect(scouted.training.hoursUsedToday).toBe(4);
   expect(scouted.competition.scouts).toHaveLength(1);
   await page.reload();
-  await page.getByRole("tab", { name: "Prepare", exact: true }).click();
+  await openSectionTab(page, "Prepare");
   await expect(
     page.getByText("Prepared snapshot available", { exact: true }),
   ).toBeVisible();
-  await page.getByRole("tab", { name: "Game Plan", exact: true }).click();
+  await openSectionTab(page, "Game Plan");
   await page.screenshot({
     path: "artifacts/complete-prepare-mobile.png",
     fullPage: true,
@@ -139,7 +134,7 @@ test("Complete: six menus, registration, paid plan/repertoire/scout, reload and 
   await page.reload();
   await page.getByTestId("start-event").click();
   await expect(page.getByTestId("standings")).toBeVisible();
-  await page.getByRole("tab", { name: "Swiss", exact: true }).click();
+  await openSectionTab(page, "Swiss");
   await expect(
     page.getByText("Pairings & history", { exact: true }),
   ).toBeVisible();
@@ -204,7 +199,7 @@ test("2024 Candidates uses verified dates and venue while career rules are label
     }),
   ).toHaveAttribute("href", /fide.com/);
   await expect(
-    events.getByRole("button", { name: "Not eligible", exact: true }),
+    events.getByRole("button", { name: /^(Not eligible|Not open yet)$/ }),
   ).toBeDisabled();
 });
 
@@ -230,6 +225,9 @@ test("national team participation requires registration and consumes the entry o
           s.player.peakRating = 3000;
           s.player.reputation = 100;
           s.player.league = "legendary";
+          // Olympiad entries open 35–63 days before their week-24 deadline.
+          s.world.date.week = 20;
+          s.world.day = 1;
           s.expansion.membershipYear = s.world.date.year;
           store.put(JSON.stringify(state), "chess-career-mode-save-slot-1");
         };

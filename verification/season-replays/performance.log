@@ -1,0 +1,5 @@
+
+> chess-career-mode@0.1.0 test:performance
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-performance.ts
+
+PASS opt-in only, monotonic/idempotent spans, clear/pause invalidate in-flight samples, bounded 100/200 retention, correct percentile/mean, metadata allowlist, immutable reports, original engine request/budget and identical legal match/result with diagnostics on/off.

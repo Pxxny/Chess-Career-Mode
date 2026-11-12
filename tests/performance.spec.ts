@@ -1,3 +1,4 @@
+import { openSectionTab } from "./navigation";
 import { test, expect, type Page } from "@playwright/test";
 import { readFile, writeFile } from "node:fs/promises";
 import { createCareer } from "./helpers";
@@ -81,7 +82,7 @@ test("secret gesture, keyboard and URL entry; real city download/cache/filter me
     page.getByRole("listbox", { name: "City", exact: true }),
   ).toHaveAttribute("data-total-options", "2687");
   menu = await openMenu(page);
-  await menu.getByRole("tab", { name: "Timings", exact: true }).click();
+  await openSectionTab(menu, "Timings");
   await expect(menu.locator('[data-metric="city.load"]')).toBeVisible();
   await expect(menu.locator('[data-metric="city.parse"]')).toBeVisible();
   const before = await report(page);
@@ -126,7 +127,7 @@ test("secret gesture, keyboard and URL entry; real city download/cache/filter me
   expect(
     cached.metrics.find((m: any) => m.id === "city.load").last.tags.source,
   ).toBe("memory");
-  await menu.getByRole("tab", { name: "Timings", exact: true }).click();
+  await openSectionTab(menu, "Timings");
   await menu.screenshot({
     path: "artifacts/performance-city-timings-en.png",
     ...capture,
@@ -175,7 +176,7 @@ test("mobile real career: AP gesture leaves save unchanged; calendar fast-forwar
   });
   await expect(menu).toBeVisible();
   expect(await save(page)).toBe(original);
-  await menu.getByRole("tab", { name: "Overview", exact: true }).click();
+  await openSectionTab(menu, "Overview");
   await expect
     .poll(async () => (await report(page)).runtime.fps)
     .not.toBeNull();
@@ -264,7 +265,7 @@ test("mobile real career: AP gesture leaves save unchanged; calendar fast-forwar
   expect(
     data.metrics.find((m: any) => m.id === "engine.search").last.tags.budgetMs,
   ).toBeGreaterThan(0);
-  await menu.getByRole("tab", { name: "Timings", exact: true }).click();
+  await openSectionTab(menu, "Timings");
   await menu.screenshot({
     path: "artifacts/performance-game-timings-en.png",
     ...capture,
@@ -289,7 +290,7 @@ test("mobile real career: AP gesture leaves save unchanged; calendar fast-forwar
     ...capture,
   });
   await page.setViewportSize({ width: 390, height: 844 });
-  await menu.getByRole("tab", { name: "ตัวอย่างล่าสุด", exact: true }).click();
+  await openSectionTab(menu, "ตัวอย่างล่าสุด");
   await menu.screenshot({
     path: "artifacts/performance-recent-th.png",
     ...capture,

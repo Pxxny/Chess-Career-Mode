@@ -29,6 +29,8 @@ export function Tabs<T extends string>({
 }: TabsProps<T>) {
   const id = useId();
   const refs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const compact = tabs.length > 4;
+  const visibleTabs = compact ? tabs.filter((tab, index) => index < 2 || tab.id === active) : tabs;
 
   useEffect(() => {
     const el = refs.current[active],
@@ -51,18 +53,19 @@ export function Tabs<T extends string>({
     else return;
     event.preventDefault();
     onChange(tabs[next].id);
-    refs.current[tabs[next].id]?.focus();
+    requestAnimationFrame(() => refs.current[tabs[next].id]?.focus());
   };
 
   return (
     <div>
+      <div className="mb-6 flex items-center gap-2 rounded-xl border border-white/[0.07] bg-navy-900/70 p-1.5">
       <div
         role="tablist"
         aria-label={label}
         onKeyDown={onKeyDown}
-        className="mb-5 flex gap-1 overflow-x-auto border-b border-white/15"
+        className="flex min-w-0 flex-1 gap-1 overflow-x-auto"
       >
-        {tabs.map((tab) => (
+        {visibleTabs.map((tab) => (
           <button
             key={tab.id}
             ref={(el) => {
@@ -80,6 +83,11 @@ export function Tabs<T extends string>({
             {tab.label}
           </button>
         ))}
+      </div>
+      {compact && <select data-section-overflow value="" aria-label={`${label}: more sections`} onChange={(event) => onChange(event.target.value as T)} className="min-h-11 w-28 shrink-0 rounded-lg border border-white/10 bg-navy-800 px-2 text-xs font-semibold text-ink-muted sm:w-36 sm:text-sm">
+        <option value="" disabled>More sections</option>
+        {tabs.slice(2).map((tab) => <option key={tab.id} value={tab.id}>{tab.label}</option>)}
+      </select>}
       </div>
       <div
         role="tabpanel"

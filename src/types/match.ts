@@ -141,8 +141,26 @@ export interface ControlChange {
   to: "human" | "auto";
 }
 
+/** Real moves and virtual chess-clock times recorded by season self-play. */
+export interface RecordedSeasonGame {
+  version: 1;
+  engine: string;
+  ucis: string[];
+  finalClocks: { white: number | null; black: number | null };
+  roundTripMs?: number;
+  rulesWarnings: number;
+  clocks: Array<{ white: number | null; black: number | null }>;
+  finalFen: string;
+  wallMs: number;
+  searchMs: number;
+  searches: number;
+  gameTimeMs: number | null;
+}
+
 /** A finished match as stored in the career save. */
 export interface MatchRecord {
+  day?: number;
+  recording?: RecordedSeasonGame;
   id: string;
   year: number;
   week: number;

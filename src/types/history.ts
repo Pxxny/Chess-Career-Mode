@@ -10,6 +10,8 @@ export type PieceColor = "white" | "black";
 export interface GameStamp {
   year: number;
   week: number;
+  /** Older saves only retained the week; those dates use the start of that week. */
+  day?: number;
 }
 
 /** One rated game played by the player. */

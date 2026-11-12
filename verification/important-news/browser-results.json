@@ -1,0 +1,103 @@
+{
+  "total": 18,
+  "passed": 18,
+  "failed": 0,
+  "scope": "Focused browser regression tests; latest result per test across the main run and targeted reruns.",
+  "sourceReports": [
+    "browser-main.json",
+    "browser-rerun.json",
+    "browser-yearend.json"
+  ],
+  "cases": [
+    {
+      "file": "app.spec.ts",
+      "title": "production app: real games, Stockfish, analysis, history and opening performance persist",
+      "status": "passed"
+    },
+    {
+      "file": "app.spec.ts",
+      "title": "PGN file/paste, exports, imported opening on Games-first refresh and source removal",
+      "status": "passed"
+    },
+    {
+      "file": "app.spec.ts",
+      "title": "missing Stockfish uses built-in engine and keeps playing",
+      "status": "passed"
+    },
+    {
+      "file": "app.spec.ts",
+      "title": "reload of an active game records resignation once; version 5 save upgrades in place",
+      "status": "passed"
+    },
+    {
+      "file": "complete.spec.ts",
+      "title": "Complete: six menus, registration, paid plan/repertoire/scout, reload and a real Swiss round on mobile",
+      "status": "passed"
+    },
+    {
+      "file": "complete.spec.ts",
+      "title": "2024 Candidates uses verified dates and venue while career rules are labelled as simulated",
+      "status": "passed"
+    },
+    {
+      "file": "complete.spec.ts",
+      "title": "national team participation requires registration and consumes the entry once",
+      "status": "passed"
+    },
+    {
+      "file": "important-news.spec.ts",
+      "title": "registered national starting roster pauses simulation before play; read state persists and resume plays the cup once",
+      "status": "passed"
+    },
+    {
+      "file": "important-news.spec.ts",
+      "title": "victory news has a cover, headline and body; mobile uses a drawer, Thai translation and archive remain usable",
+      "status": "passed"
+    },
+    {
+      "file": "important-news.spec.ts",
+      "title": "FullCalendar shows annual events and opens existing tournament details; Sonner confirms backup export",
+      "status": "passed"
+    },
+    {
+      "file": "important-news.spec.ts",
+      "title": "Joyride skip is permanent across reload and a second character",
+      "status": "passed"
+    },
+    {
+      "file": "important-news.spec.ts",
+      "title": "Joyride close is permanent across reload and a second character",
+      "status": "passed"
+    },
+    {
+      "file": "mobile.spec.ts",
+      "title": "mobile layouts keep the board, opening details and performance within the viewport",
+      "status": "passed"
+    },
+    {
+      "file": "ui-learning-elo.spec.ts",
+      "title": "real learning season: select priorities, pause/reload/resume, view Elo in three periods, Thai/mobile and live board",
+      "status": "passed"
+    },
+    {
+      "file": "ui-learning-elo.spec.ts",
+      "title": "wake lock releases on hide/exit, reacquires on return, recovers after system release without duplicates",
+      "status": "passed"
+    },
+    {
+      "file": "ui-learning-elo.spec.ts",
+      "title": "wake lock reject does not block play",
+      "status": "passed"
+    },
+    {
+      "file": "ui-learning-elo.spec.ts",
+      "title": "wake lock unsupported does not block play",
+      "status": "passed"
+    },
+    {
+      "file": "important-news.spec.ts",
+      "title": "important news takes priority over year review and completed seasons do not restart",
+      "status": "passed"
+    }
+  ]
+}

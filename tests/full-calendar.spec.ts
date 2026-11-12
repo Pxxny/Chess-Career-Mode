@@ -1,3 +1,4 @@
+import { openSectionTab } from "./navigation";
 import { test, expect, type Page } from "@playwright/test";
 import { createCareer } from "./helpers";
 const capture = {
@@ -51,9 +52,7 @@ test("history shows all calendar tournaments from day one; national standings in
 }) => {
   await start(page);
   await page.getByRole("link", { name: "Tournament", exact: true }).click();
-  await page
-    .getByRole("tab", { name: "Tournament history", exact: true })
-    .click();
+  await openSectionTab(page, "Tournament history");
   const history = page.getByTestId("annual-history");
   await expect(history.getByLabel("Tournament results filter")).toHaveValue(
     "all",
@@ -86,7 +85,7 @@ test("history shows all calendar tournaments from day one; national standings in
     .getByRole("button", { name: "View tournament", exact: true })
     .click();
   const modal = page.getByRole("dialog");
-  await modal.getByRole("tab", { name: "Standings", exact: true }).click();
+  await openSectionTab(modal, "Standings");
   await expect(modal.getByTestId("standing-participant").first()).toBeVisible();
   const roster = modal.locator("details").first();
   await roster.getByText("Team roster", { exact: true }).click();
@@ -132,9 +131,7 @@ test("unentered calendar event has entrants and live NPC boards, then real named
 }) => {
   await start(page);
   await page.getByRole("link", { name: "Tournament", exact: true }).click();
-  await page
-    .getByRole("tab", { name: "Tournament history", exact: true })
-    .click();
+  await openSectionTab(page, "Tournament history");
   const history = page.getByTestId("annual-history");
   await history
     .getByLabel("Search annual tournaments")
@@ -144,7 +141,7 @@ test("unentered calendar event has entrants and live NPC boards, then real named
     .getByRole("button", { name: "View tournament", exact: true })
     .click();
   let modal = page.getByRole("dialog");
-  await modal.getByRole("tab", { name: "Standings", exact: true }).click();
+  await openSectionTab(modal, "Standings");
   await expect(modal.getByTestId("standing-participant")).not.toHaveCount(0);
   await expect(modal).toContainText("Announced entrants");
   await modal
@@ -152,9 +149,7 @@ test("unentered calendar event has entrants and live NPC boards, then real named
     .click();
   await endDays(page, 3);
   await page.getByRole("link", { name: "Tournament", exact: true }).click();
-  await page
-    .getByRole("tab", { name: "Tournament history", exact: true })
-    .click();
+  await openSectionTab(page, "Tournament history");
   await history
     .getByLabel("Search annual tournaments")
     .fill("Open Board Rotation · 2026/1");
@@ -163,11 +158,9 @@ test("unentered calendar event has entrants and live NPC boards, then real named
     .getByRole("button", { name: "Open tournament / watch games", exact: true })
     .click();
   modal = page.getByRole("dialog");
-  await modal.getByRole("tab", { name: "Standings", exact: true }).click();
+  await openSectionTab(modal, "Standings");
   await expect(modal.getByTestId("standing-participant")).not.toHaveCount(0);
-  await modal
-    .getByRole("tab", { name: "Pairings & live boards", exact: true })
-    .click();
+  await openSectionTab(modal, "Pairings & live boards");
   await modal
     .getByRole("button", { name: "Watch live board", exact: true })
     .first()
@@ -234,9 +227,7 @@ test("unentered calendar event has entrants and live NPC boards, then real named
         .tournamentHistory.filter((h: any) => h.eventId === result.id),
     ).toHaveLength(1);
   await page.getByRole("link", { name: "Tournament", exact: true }).click();
-  await page
-    .getByRole("tab", { name: "Tournament history", exact: true })
-    .click();
+  await openSectionTab(page, "Tournament history");
   await history
     .getByLabel("Search annual tournaments")
     .fill("Open Board Rotation · 2026/1");
@@ -245,7 +236,7 @@ test("unentered calendar event has entrants and live NPC boards, then real named
     .getByRole("button", { name: "View tournament", exact: true })
     .click();
   modal = page.getByRole("dialog");
-  await modal.getByRole("tab", { name: "Standings", exact: true }).click();
+  await openSectionTab(modal, "Standings");
   for (const participant of result.players)
     await expect(
       modal.getByText(participant.name, { exact: true }),

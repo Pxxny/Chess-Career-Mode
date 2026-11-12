@@ -1,0 +1,775 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/Chess-Career-Mode/node_modules/.bin/playwright",
+      "test",
+      "tests/important-news.spec.ts",
+      "tests/ui-learning-elo.spec.ts",
+      "tests/app.spec.ts",
+      "tests/mobile.spec.ts",
+      "tests/complete.spec.ts",
+      "--reporter=list,json"
+    ],
+    "configFile": "/workspace/Chess-Career-Mode/playwright.config.ts",
+    "rootDir": "/workspace/Chess-Career-Mode/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/workspace/Chess-Career-Mode/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/workspace/Chess-Career-Mode/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/workspace/Chess-Career-Mode/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "/workspace/Chess-Career-Mode/tests",
+        "snapshotDir": "/workspace/Chess-Career-Mode/tests",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 120000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4173",
+          "actionTimeout": 10000,
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          },
+          "launchOptions": {
+            "executablePath": "/usr/bin/chromium"
+          },
+          "screenshot": "only-on-failure",
+          "trace": "retain-on-failure"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.0",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run preview -- --host 127.0.0.1 --port 4173 --strictPort",
+      "url": "http://127.0.0.1:4173",
+      "reuseExistingServer": true
+    }
+  },
+  "suites": [
+    {
+      "title": "app.spec.ts",
+      "file": "app.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "production app: real games, Stockfish, analysis, history and opening performance persist",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 22347,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T15:20:55.579Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c31ff144dc4fee3acd0a-2338331b7f92cb7ec102",
+          "file": "app.spec.ts",
+          "line": 56,
+          "column": 1
+        },
+        {
+          "title": "PGN file/paste, exports, imported opening on Games-first refresh and source removal",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6623,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T15:21:18.410Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c31ff144dc4fee3acd0a-17a693b1bb99940e1e56",
+          "file": "app.spec.ts",
+          "line": 112,
+          "column": 1
+        },
+        {
+          "title": "missing Stockfish uses built-in engine and keeps playing",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4888,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T15:21:25.051Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c31ff144dc4fee3acd0a-254d2259f6d8a6307dda",
+          "file": "app.spec.ts",
+          "line": 144,
+          "column": 1
+        },
+        {
+          "title": "reload of an active game records resignation once; version 5 save upgrades in place",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6565,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T15:21:29.960Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c31ff144dc4fee3acd0a-fac95ebb8d3bfdeb077a",
+          "file": "app.spec.ts",
+          "line": 156,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "complete.spec.ts",
+      "file": "complete.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Complete: six menus, registration, paid plan/repertoire/scout, reload and a real Swiss round on mobile",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11048,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T15:21:36.551Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "149244adffe00fe17d0d-4467bdf2dbc4b8e47680",
+          "file": "complete.spec.ts",
+          "line": 40,
+          "column": 1
+        },
+        {
+          "title": "2024 Candidates uses verified dates and venue while career rules are labelled as simulated",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 24498,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeDisabled\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('open-events').getByRole('button', { name: 'Not eligible', exact: true })\nExpected: disabled\nTimeout: 20000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeDisabled\" getByTestId('open-events').getByRole('button', { name: 'Not eligible', exact: true }) with timeout 20000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('open-events').getByRole('button', { name: 'Not eligible', exact: true })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeDisabled\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('open-events').getByRole('button', { name: 'Not eligible', exact: true })\nExpected: disabled\nTimeout: 20000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeDisabled\" getByTestId('open-events').getByRole('button', { name: 'Not eligible', exact: true }) with timeout 20000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('open-events').getByRole('button', { name: 'Not eligible', exact: true })\u001b[22m\n\n    at /workspace/Chess-Career-Mode/tests/complete.spec.ts:203:5",
+                    "location": {
+                      "file": "/workspace/Chess-Career-Mode/tests/complete.spec.ts",
+                      "column": 5,
+                      "line": 203
+                    },
+                    "snippet": " \u001b[90m 201 |\u001b[39m   \u001b[36mawait\u001b[39m expect(\n \u001b[90m 202 |\u001b[39m     events\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"button\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"Not eligible\"\u001b[39m\u001b[33m,\u001b[39m exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m,\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 203 |\u001b[39m   )\u001b[33m.\u001b[39mtoBeDisabled()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 204 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 205 |\u001b[39m\n \u001b[90m 206 |\u001b[39m test(\u001b[32m\"national team participation requires registration and consumes the entry once\"\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/Chess-Career-Mode/tests/complete.spec.ts",
+                        "column": 5,
+                        "line": 203
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeDisabled\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('open-events').getByRole('button', { name: 'Not eligible', exact: true })\nExpected: disabled\nTimeout: 20000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeDisabled\" getByTestId('open-events').getByRole('button', { name: 'Not eligible', exact: true }) with timeout 20000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('open-events').getByRole('button', { name: 'Not eligible', exact: true })\u001b[22m\n\n\n  201 |   await expect(\n  202 |     events.getByRole(\"button\", { name: \"Not eligible\", exact: true }),\n> 203 |   ).toBeDisabled();\n      |     ^\n  204 | });\n  205 |\n  206 | test(\"national team participation requires registration and consumes the entry once\", async ({\n    at /workspace/Chess-Career-Mode/tests/complete.spec.ts:203:5"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T15:21:47.615Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/workspace/Chess-Career-Mode/test-results/complete-2024-Candidates-u-de91c-s-are-labelled-as-simulated/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/Chess-Career-Mode/test-results/complete-2024-Candidates-u-de91c-s-are-labelled-as-simulated/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/workspace/Chess-Career-Mode/test-results/complete-2024-Candidates-u-de91c-s-are-labelled-as-simulated/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/Chess-Career-Mode/tests/complete.spec.ts",
+                    "column": 5,
+                    "line": 203
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "149244adffe00fe17d0d-0324a6c350f4262f50c7",
+          "file": "complete.spec.ts",
+          "line": 172,
+          "column": 1
+        },
+        {
+          "title": "national team participation requires registration and consumes the entry once",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6915,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T15:22:12.929Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "149244adffe00fe17d0d-56d0b1b9fc90c76b7ba5",
+          "file": "complete.spec.ts",
+          "line": 206,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "important-news.spec.ts",
+      "file": "important-news.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "registered national starting roster pauses simulation before play; read state persists and resume plays the cup once",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7547,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T15:22:20.288Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3c07914760b385b35d5d-958ff70dfb3f55bca21e",
+          "file": "important-news.spec.ts",
+          "line": 28,
+          "column": 1
+        },
+        {
+          "title": "victory news has a cover, headline and body; mobile uses a drawer, Thai translation and archive remain usable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2737,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T15:22:27.858Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3c07914760b385b35d5d-38840d02fc0032ccf592",
+          "file": "important-news.spec.ts",
+          "line": 65,
+          "column": 1
+        },
+        {
+          "title": "FullCalendar shows annual events and opens existing tournament details; Sonner confirms backup export",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4260,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T15:22:30.617Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3c07914760b385b35d5d-5a409e224d0227675b09",
+          "file": "important-news.spec.ts",
+          "line": 90,
+          "column": 1
+        },
+        {
+          "title": "Joyride skip is permanent across reload and a second character",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9683,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T15:22:34.894Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3c07914760b385b35d5d-09594c3ab480f6ad4200",
+          "file": "important-news.spec.ts",
+          "line": 130,
+          "column": 50
+        },
+        {
+          "title": "Joyride close is permanent across reload and a second character",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10362,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T15:22:44.600Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3c07914760b385b35d5d-68b0e8dd9de8a66e9e8d",
+          "file": "important-news.spec.ts",
+          "line": 130,
+          "column": 50
+        }
+      ]
+    },
+    {
+      "title": "mobile.spec.ts",
+      "file": "mobile.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "mobile layouts keep the board, opening details and performance within the viewport",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8785,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T15:22:54.995Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e79c838550b25e92508e-bd28fb9c154479862f93",
+          "file": "mobile.spec.ts",
+          "line": 17,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "ui-learning-elo.spec.ts",
+      "file": "ui-learning-elo.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "real learning season: select priorities, pause/reload/resume, view Elo in three periods, Thai/mobile and live board",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 600000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 149242,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T15:23:03.811Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7ca243268a4cf220650c-0482ebcdd703a6ab7a1d",
+          "file": "ui-learning-elo.spec.ts",
+          "line": 66,
+          "column": 1
+        },
+        {
+          "title": "wake lock releases on hide/exit, reacquires on return, recovers after system release without duplicates",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3426,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T15:25:33.090Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7ca243268a4cf220650c-a2dcaa62ab7a1ea1206e",
+          "file": "ui-learning-elo.spec.ts",
+          "line": 184,
+          "column": 1
+        },
+        {
+          "title": "wake lock reject does not block play",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3423,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T15:25:36.549Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7ca243268a4cf220650c-c7a1c182a8b913a130ac",
+          "file": "ui-learning-elo.spec.ts",
+          "line": 211,
+          "column": 56
+        },
+        {
+          "title": "wake lock unsupported does not block play",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3027,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-12T15:25:39.986Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7ca243268a4cf220650c-1304a334c2db00eb6591",
+          "file": "ui-learning-elo.spec.ts",
+          "line": 211,
+          "column": 56
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-12T15:20:54.601Z",
+    "duration": 288593.504,
+    "expected": 16,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

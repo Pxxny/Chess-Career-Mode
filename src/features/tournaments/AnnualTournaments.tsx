@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Button, Card, CardTitle } from "@/components/ui";
 import { useSave } from "@/hooks/useGame";
 import { useNpcs } from "@/hooks/useNpcs";
@@ -25,7 +25,9 @@ import {
 } from "@/game/competition/agenda";
 import { TournamentDetail } from "./TournamentDetail";
 import { annualEvents } from "@/game/competition/worldCalendar";
+const SeasonCalendar = lazy(() => import("./SeasonCalendar"));
 export function AnnualTournaments({ history = false }: { history?: boolean }) {
+  const [calendarView, setCalendarView] = useState(false);
   const save = useSave(),
     npcs = useNpcs(),
     [year, setYear] = useState(save.world.date.year),
@@ -209,6 +211,10 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
             </select>
           )}
         </div>
+        <div role="group" aria-label="Calendar display" className="mt-4 flex gap-2">
+          <Button variant={calendarView ? "secondary" : "primary"} aria-pressed={!calendarView} onClick={() => setCalendarView(false)}>List view</Button>
+          <Button variant={calendarView ? "primary" : "secondary"} aria-pressed={calendarView} onClick={() => setCalendarView(true)}>Calendar view</Button>
+        </div>
         <p className="mt-3 text-xs text-ink-muted">{filtered.length} events</p>
         {error && (
           <p role="alert" className="mt-3 text-red-300">
@@ -216,7 +222,9 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
           </p>
         )}
       </Card>
-      {filtered.length ? (
+      {calendarView ? <Suspense fallback={<Card>Loading calendar…</Card>}><SeasonCalendar year={selectedYear}
+        events={filtered.map((r) => ({ id: r.id, name: r.name, start: r.record?.startDay ?? bookedStart(r.event!), end: r.record?.endDay ?? bookedEnd(r.event!) }))}
+        onSelect={(id) => { const row = filtered.find((r) => r.id === id); if (row) setSelected({ event: row.event, record: row.record }); }} /></Suspense> : filtered.length ? (
         <ul className="space-y-3">
           {filtered.slice(0, limit).map((row) => {
             const { event: e, record: r } = row,
@@ -298,7 +306,7 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
           </p>
         </Card>
       )}
-      {filtered.length > limit && (
+      {!calendarView && filtered.length > limit && (
         <Button variant="secondary" onClick={() => setLimit((n) => n + 20)}>
           Show more events
         </Button>

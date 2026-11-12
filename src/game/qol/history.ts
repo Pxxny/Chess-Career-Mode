@@ -4,6 +4,7 @@ import type {
   GameSave,
   MatchRecord,
   PieceColor,
+  GameResult,
 } from "@/types";
 export interface TournamentGameRow {
   round: number;
@@ -87,9 +88,45 @@ export function tournamentGames(
   });
 }
 export function openingGames(save: GameSave, name: string) {
-  return [...save.history.games]
+  const games = new Map(save.history.games.map((g) => [g.id, g]));
+  for (const m of save.matches) {
+    if (!m.gameResultId || games.has(m.gameResultId) || m.openingName !== name)
+      continue;
+    const opp = m.setup.playerColor === "white" ? m.setup.black : m.setup.white;
+    const game: GameResult = {
+      id: m.gameResultId,
+      year: m.year,
+      week: m.week,
+      opponentId: opp.id,
+      opponentName: opp.name,
+      opponentElo: opp.elo,
+      outcome: m.outcome,
+      color: m.setup.playerColor,
+      tournamentId: m.setup.tournament?.id ?? null,
+      tournamentName: m.setup.tournament?.name ?? null,
+      ratingBefore: m.ratingBefore ?? m.setup[m.setup.playerColor].elo,
+      ratingAfter: m.ratingAfter ?? m.setup[m.setup.playerColor].elo,
+      accuracy: m.analysis
+        ? Math.min(
+            100,
+            (m.setup.playerColor === "white"
+              ? m.analysis.whiteAccuracy
+              : m.analysis.blackAccuracy) + m.setup.accuracyBonus,
+          )
+        : 0,
+      analyzed: !!m.analysis,
+      opening: m.openingName,
+    };
+    games.set(game.id, game);
+  }
+  return [...games.values()]
     .filter((g) => g.opening === name)
-    .reverse()
+    .sort(
+      (a, b) =>
+        b.year - a.year ||
+        b.week - a.week ||
+        b.id.localeCompare(a.id, undefined, { numeric: true }),
+    )
     .map((game) => ({
       game,
       match: save.matches.find((m) => m.gameResultId === game.id) ?? null,

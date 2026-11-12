@@ -1,0 +1,23 @@
+
+> chess-career-mode@0.1.0 test:simulate-season
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-simulate-season.ts
+
+PASS: legal real games, board-derived results, clocks/increments/timeouts, actual openings/ECO, PGN re-import, all-match retention beyond cache, opening/tournament lookup, full backup, rich-data merge, deterministic pause/reload and no duplicate results.
+{
+  "environment": "Node cloud; not a phone speed estimate",
+  "database": "Small",
+  "days": 364,
+  "games": 164,
+  "seasonWallMs": 66743.236699,
+  "totalGameMs": 63201.05075600002,
+  "meanGameMs": 385.3722607073172,
+  "p50GameMs": 353.4379800000024,
+  "p95GameMs": 730.8146510000006,
+  "maxGameMs": 1416.7743929999997,
+  "totalPlies": 12308,
+  "openings": 68,
+  "wins": 70,
+  "draws": 6,
+  "losses": 88,
+  "backupMatches": 164
+}

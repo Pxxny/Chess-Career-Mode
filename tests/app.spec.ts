@@ -1,6 +1,9 @@
+import { openSectionTab } from "./navigation";
 import { test, expect, type Page } from '@playwright/test';
 import { createCareer } from './helpers';
 import { GAME_CONFIG } from '../src/data/config';
+// Network interception for the engine fallback must bypass the app's offline cache.
+test.use({ serviceWorkers: 'block' });
 
 
 async function readSave(page: Page): Promise<any> {
@@ -41,12 +44,12 @@ async function finishByResignation(page: Page) {
 }
 
 async function gamesTab(page: Page, mode: RegExp) {
-  await page.getByRole('tab', { name: 'Games', exact: true }).click();
+  await openSectionTab(page, 'Games');
   await page.getByRole('button', { name: mode }).click();
 }
 
 async function openingsTab(page: Page, view: string) {
-  await page.getByRole('tab', { name: 'Openings', exact: true }).click();
+  await openSectionTab(page, 'Openings');
   await page.getByRole('button', { name: view, exact: true }).click();
 }
 

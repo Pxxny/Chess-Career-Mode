@@ -1,3 +1,4 @@
+import { openSectionTab, openCareerManagement } from "./navigation";
 import { test, expect, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 async function yearStep(page: Page) {
@@ -115,6 +116,7 @@ test("Small selection, real Worker generation, domestic pool, stable reload and 
   await expect.poll(async () => (await state(page)).count).toBe(912);
   await page.getByRole("link", { name: "Career", exact: true }).click();
   const downloading = page.waitForEvent("download");
+  await openCareerManagement(page);
   await page
     .getByRole("button", { name: "Export backup", exact: true })
     .click();
@@ -236,7 +238,7 @@ test("Real FIDE roster stays real after reload and displays source/date/year-onl
   ).toBeVisible();
   await expect.poll(async () => (await state(page)).count).toBe(20000);
   await page.getByRole("link", { name: "Tournament", exact: true }).click();
-  await page.getByRole("tab", { name: "Rankings", exact: true }).click();
+  await openSectionTab(page, "Rankings");
   await page
     .getByRole("searchbox", {
       name: "Search players by name, city or country",

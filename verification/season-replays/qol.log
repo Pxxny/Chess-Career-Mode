@@ -1,0 +1,11 @@
+
+> chess-career-mode@0.1.0 test:qol
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-qol.ts
+
+PASS world/calendar: 4162 NPCs, 80 home competitors, 336 events, 60 FIDE references / 11 countries, local quotas, travel/refunds
+PASS jobs/transfers/training: daily caps, AP/hours/fatigue, once-only ledger and processing fee, eligibility, 30-day delay, refunds, birthplace, cooldown, migration
+PASS history/repertoire: scoped tournament outcomes for both sides, replay linkage, opening filter, all ECO letters and accessible variations
+PASS store integration: additive NPC upgrade, preserved evolved identities, idempotent local cohort, daily calendar simulation, cancellation, earlier-event stop and cross-career isolation
+Measured on Node/Cloud, not Termux: {"buildWorld":743.8973940000001,"calendar":4.987834000000021,"advance14Days":285.8504359999997}
+QoL checks passed.
+PASS optional full-day training camps and analysis of a retained game use normal requirements and costs

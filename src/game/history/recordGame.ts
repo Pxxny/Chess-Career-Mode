@@ -111,7 +111,7 @@ export function withGameAccuracy(
  */
 export function recordGame(save: GameSave, input: GameInput): GameSave {
   const { player, world } = save;
-  const stamp: GameStamp = { ...world.date };
+  const stamp: GameStamp = { ...world.date, day: world.day };
   const history: CareerHistory = {
     ...save.history,
     games: [...save.history.games],

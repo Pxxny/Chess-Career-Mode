@@ -1,3 +1,4 @@
+import { openSectionTab } from "./navigation";
 import { expect, test, type Page } from "@playwright/test";
 import { createCareer } from "./helpers";
 
@@ -20,6 +21,7 @@ test("phone rankings show character faces for every NPC and the saved player, st
   await page.setViewportSize({ width: 390, height: 844 });
   await createCareer(page);
   await page.getByRole("link", { name: "Home", exact: true }).click();
+  await page.getByText("Rankings & world players", { exact: true }).click();
   const ranking = ranks(page);
   await expect(ranking.locator("[data-npc-portrait]")).toHaveCount(20);
   await expect(ranking.getByText("Real player", { exact: true })).toHaveCount(
@@ -69,6 +71,7 @@ test("ranking, directory and NPC profile use the same face and preserve name but
   await page.setViewportSize({ width: 390, height: 844 });
   await createCareer(page);
   await page.getByRole("link", { name: "Home", exact: true }).click();
+  await page.getByText("Rankings & world players", { exact: true }).click();
   const ranking = ranks(page);
   const portrait = ranking.locator("[data-npc-portrait]").first();
   const id = await portrait.getAttribute("data-npc-portrait");
@@ -91,7 +94,7 @@ test("ranking, directory and NPC profile use the same face and preserve name but
     .getByRole("button", { name: "Close dialog", exact: true })
     .click();
   await page.getByRole("link", { name: "Tournament", exact: true }).click();
-  await page.getByRole("tab", { name: "Rankings", exact: true }).click();
+  await openSectionTab(page, "Rankings");
   await page
     .getByRole("searchbox", {
       name: "Search players by name, city or country",

@@ -1,0 +1,15 @@
+[Event "First Rank Blitz · 2026/04 Club"]
+[Site "Chess Career Mode"]
+[Date "2026.01.22"]
+[Round "1"]
+[White "Nattawut Rattanawong"]
+[Black "Replay QA"]
+[Result "0-1"]
+[WhiteElo "1366"]
+[BlackElo "1000"]
+[TimeControl "180+2"]
+[Termination "resignation"]
+[ECO "B00"]
+[Opening "Pirc Defense"]
+
+1. e4 {[%clk 0:03:01]} d6 {[%clk 0:02:57]} 2. Ne2 {[%clk 0:02:59]} Be6 {[%clk 0:02:52]} 3. Nbc3 {[%clk 0:02:56]} Nc6 {[%clk 0:02:52]} 4. a3 {[%clk 0:02:56]} Nh6 {[%clk 0:02:48]} 5. Ng3 {[%clk 0:02:50]} Nd4 {[%clk 0:02:44]} 6. Bd3 {[%clk 0:02:49]} Rg8 {[%clk 0:02:35]} 7. Rb1 {[%clk 0:02:43]} Rh8 {[%clk 0:02:33]} 8. O-O {[%clk 0:02:37]} Qd7 {[%clk 0:02:27]} 9. Ra1 {[%clk 0:02:29]} Rc8 {[%clk 0:02:15]} 10. Qe1 {[%clk 0:02:20]} Qc6 {[%clk 0:02:05]} 11. Nb1 {[%clk 0:02:10]} Rd8 {[%clk 0:01:55]} 12. Qd1 {[%clk 0:02:05]} a5 {[%clk 0:01:45]} 13. Qe1 {[%clk 0:01:53]} Ng4 {[%clk 0:01:33]} 14. Qd1 {[%clk 0:01:45]} Nxf2 {[%clk 0:01:21]} 15. Kxf2 {[%clk 0:01:36]} Qb6 {[%clk 0:01:19]} 16. Nc3 {[%clk 0:01:25]} Nc6+ {[%clk 0:01:12]} 17. Ke2 {[%clk 0:01:19]} Nd4+ {[%clk 0:01:01]} 18. Kf2 {[%clk 0:01:11]} Nb5+ {[%clk 0:00:55]} 19. Ke2 {[%clk 0:01:09]} Bg4+ {[%clk 0:00:44]} 20. Rf3 {[%clk 0:01:07]} Na7 {[%clk 0:00:38]} 21. Bb5+ {[%clk 0:01:00]} c6 {[%clk 0:00:36]} 22. Bxc6+ {[%clk 0:00:55]} Nxc6 {[%clk 0:00:35]} 23. Nf5 {[%clk 0:00:48]} Bxf3+ {[%clk 0:00:35]} 24. Kxf3 {[%clk 0:00:45]} Ne5+ {[%clk 0:00:33]} 25. Kg3 {[%clk 0:00:42]} e6 {[%clk 0:00:30]} 26. Nh4 {[%clk 0:00:37]} Qc5 {[%clk 0:00:29]} 27. Ne2 {[%clk 0:00:31]} Qc4 {[%clk 0:00:26]} 28. d3 {[%clk 0:00:26]} Qc5 {[%clk 0:00:20]} 29. Bf4 {[%clk 0:00:24]} Nd7 {[%clk 0:00:18]} 30. Nf3 {[%clk 0:00:20]} Qb6 {[%clk 0:00:14]} 31. Kh3 {[%clk 0:00:21]} Qxb2 {[%clk 0:00:14]} 32. Bxd6 {[%clk 0:00:17]} Bxd6 {[%clk 0:00:15]} 33. d4 {[%clk 0:00:18]} Qb5 {[%clk 0:00:12]} 34. Nc3 {[%clk 0:00:18]} Qc4 {[%clk 0:00:12]} 35. Nb1 {[%clk 0:00:19]} Qc6 {[%clk 0:00:13]} 36. Nbd2 {[%clk 0:00:19]} Nf6 {[%clk 0:00:10]} 37. Qe2 {[%clk 0:00:19]} Qxc2 {[%clk 0:00:09]} 38. Qb5+ {[%clk 0:00:20]} Kf8 {[%clk 0:00:11]} 39. Nf1 {[%clk 0:00:19]} Kg8 {[%clk 0:00:09]} 40. Qxb7 {[%clk 0:00:15]} Qe2 {[%clk 0:00:10]} 41. Ne3 {[%clk 0:00:15]} Qxe3 {[%clk 0:00:08]} 42. d5 {[%clk 0:00:12]} Nxe4 {[%clk 0:00:09]} 0-1

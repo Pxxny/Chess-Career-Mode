@@ -1,0 +1,11 @@
+[WebServer] (node:20505) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:20530) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/season-archive-analysis.spec.ts:7:1 › archived-only game: cancellation, actual engine analysis, persisted accuracy, and opening-history replay (9.5s)
+  ✓  2 tests/simulate-season.spec.ts:261:1 › pause, reload, resume, pause again and checksum backup keep the exact checkpoint (14.4s)
+
+  2 passed (26.3s)

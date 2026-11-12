@@ -1,0 +1,6 @@
+{
+  "fixture": "Known legal four-ply checkmate, archived-only record",
+  "wallMs": 1857,
+  "engine": "Stockfish",
+  "moves": 4
+}

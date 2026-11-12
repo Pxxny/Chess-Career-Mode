@@ -1,0 +1,10 @@
+[WebServer] (node:20949) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:20977) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/season-archive-analysis.spec.ts:179:1 › fresh recorded season game has working clocks and clean English/Thai replay screenshots on mobile (8.3s)
+
+  1 passed (10.6s)

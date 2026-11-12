@@ -7,6 +7,7 @@ interface ModalProps {
   translateTitle?: boolean;
   onClose: () => void;
   children: ReactNode;
+  footer?: ReactNode;
   size?: "md" | "lg" | "game";
 }
 const modalStack: HTMLElement[] = [];
@@ -17,6 +18,7 @@ export function Modal({
   translateTitle = true,
   onClose,
   children,
+  footer,
   size = "md",
 }: ModalProps) {
   const titleId = useId(),
@@ -90,7 +92,8 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={titleId}
         className={cn(
-          "max-h-[88dvh] w-full overflow-y-auto rounded-xl border border-white/15 bg-navy-800 p-4 shadow-xl sm:p-6",
+          "max-h-[88dvh] w-full rounded-2xl border border-white/15 bg-navy-800 p-4 shadow-xl sm:p-6",
+          footer ? "flex flex-col overflow-hidden" : "overflow-y-auto",
           size === "game"
             ? "max-w-5xl"
             : size === "lg"
@@ -99,7 +102,7 @@ export function Modal({
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex shrink-0 items-start justify-between gap-3">
           <h2
             id={titleId}
             translate={translateTitle ? undefined : "no"}
@@ -119,7 +122,8 @@ export function Modal({
             </button>
           </div>
         </div>
-        <div className="mt-3">{children}</div>
+        <div className={cn("mt-3", !!footer && "min-h-0 overflow-y-auto pr-1")}>{children}</div>
+        {footer && <div className="mt-3 shrink-0 border-t border-white/10 pt-4">{footer}</div>}
       </div>
     </div>
   );

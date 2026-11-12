@@ -1,0 +1,11 @@
+[WebServer] (node:21206) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:21224) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/match-archive-storage.spec.ts:3:1 › version-5 IndexedDB upgrades to the match archive without losing existing stores or records (1.4s)
+  ✓  2 tests/match-archive-storage.spec.ts:12:1 › deleting one character removes only that career match archive (7.0s)
+
+  2 passed (10.4s)

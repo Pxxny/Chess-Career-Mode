@@ -1,3 +1,4 @@
+import { highlightsOf } from "@/game/career/highlights";
 import { useState } from "react";
 import { Badge, Card, CardTitle, Modal } from "@/components/ui";
 import { useGameStore } from "@/store/gameStore";
@@ -86,11 +87,12 @@ function ReviewDetails({ review: r }: { review: YearReview }) {
   );
 }
 export function YearReviewDialog() {
+  const importantNews = useGameStore((s) => s.save ? highlightsOf(s.save).unread.length : 0);
   const state = useGameStore((s) => s.save?.yearReview);
   const running = useGameStore((s) => s.calendarProgress);
   const dismiss = useGameStore((s) => s.dismissYearReview);
   const review = state?.reviews.find((r) => state.unread.includes(r.year));
-  if (!review || running) return null;
+  if (!review || running || importantNews) return null;
   return (
     <Modal
       open

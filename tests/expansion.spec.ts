@@ -1,3 +1,4 @@
+import { openSectionTab } from "./navigation";
 import { expect, test, type Page } from "@playwright/test";
 
 async function snapshot(page: Page) {
@@ -83,13 +84,13 @@ test("expanded look, federation, coaching, team entry guard, tournament entrants
   await expect(
     page.getByText(/Thailand Chess Federation/).first(),
   ).toBeVisible();
-  await page.getByRole("tab", { name: "Prepare", exact: true }).click();
+  await openSectionTab(page, "Prepare");
   await page.getByText("Coach contracts", { exact: true }).click();
   await page.getByLabel("Coaching contract").selectOption("week");
   await page.getByRole("button", { name: /^Hire Mira Chen/ }).click();
   await expect(page.getByText(/Your coach: Mira Chen/)).toBeVisible();
   expect((await snapshot(page)).save.player.money).toBe(161);
-  await page.getByRole("tab", { name: "Tournament", exact: true }).click();
+  await openSectionTab(page, "Tournament");
   await page.getByText("Federation & national teams", { exact: true }).click();
   // The enlarged local pool keeps this beginner outside the national top four; spectator access stays available.
   await expect(
@@ -99,7 +100,7 @@ test("expanded look, federation, coaching, team entry guard, tournament entrants
     }),
   ).toBeEnabled();
   expect((await snapshot(page)).save.expansion.cups).toHaveLength(0);
-  await page.getByRole("tab", { name: "Tournament", exact: true }).click();
+  await openSectionTab(page, "Tournament");
   await page
     .getByTestId("open-events")
     .locator("summary")
@@ -181,7 +182,7 @@ test("expanded look, federation, coaching, team entry guard, tournament entrants
   ).toBeVisible();
   expect((await snapshot(page)).npcs.length).toBe(after.npcs.length);
   await page.getByRole("link", { name: "Tournament", exact: true }).click();
-  await page.getByRole("tab", { name: "History", exact: true }).click();
+  await openSectionTab(page, "History");
   await expect(page.getByText(/new players enter the circuit/)).toBeVisible();
   await expect(page.getByText(/wins World Circuit Open/)).toBeVisible();
   await page.screenshot({

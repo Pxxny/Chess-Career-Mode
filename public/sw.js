@@ -1,7 +1,8 @@
 /* Offline support: the app shell and every same-origin file it loads are cached as you play. */
-const VERSION = "v2-recorded-board";
+const VERSION = "v4-news-libraries-tour";
 const CACHE = `chess-career-${VERSION}`;
 const SHELL = [
+  "/news/trophy.svg", "/news/national.svg", "/news/title.svg", "/news/qualification.svg",
   "/",
   "/manifest.webmanifest",
   "/favicon.svg",

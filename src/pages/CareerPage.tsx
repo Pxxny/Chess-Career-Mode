@@ -91,8 +91,7 @@ export function CareerPage() {
         description={`Year ${date.year}, week ${date.week}. Every title on the road to World Champion.`}
       />
 
-      <SimulateSeason />
-      <BackupPanel />
+      {view === "plan" && <SimulateSeason />}
       <Tabs
         label="Career sections"
         active={view}
@@ -362,6 +361,10 @@ export function CareerPage() {
           </>
         )}
       </Tabs>
+      <details className="dashboard-disclosure mt-6">
+        <summary>Save & character management</summary>
+        <div className="disclosure-body"><BackupPanel /></div>
+      </details>
     </>
   );
 }

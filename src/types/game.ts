@@ -26,6 +26,8 @@ export interface CareerRecord {
 }
 
 export interface GameSave {
+  highlights?: import("@/game/career/highlights").CareerHighlights;
+  matchArchivePending?: MatchRecord[];
   seasonSimulation?: import("@/game/career/seasonSimulation").SeasonSimulation;
   calendarTournaments?: import("@/game/competition/worldCalendar").CalendarTournamentState;
   tournamentArchivePending?: import("@/game/competition/archive").ArchivedEvent[];

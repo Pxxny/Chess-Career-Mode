@@ -1,0 +1,84 @@
+{
+  "status": "passed",
+  "build": "TypeScript + Vite production build passed; existing large bundle warning remains.",
+  "engine": "Dedicated two-ply season engine plays actual legal moves in a Web Worker; ordinary engine/search budgets and strength profiles preserved.",
+  "recordedData": [
+    "SAN",
+    "UCI",
+    "actual board/clock result and termination",
+    "opponents/colors/date/event/round",
+    "Elo before/after",
+    "actual opening name and ECO",
+    "per-ply virtual chess clocks and final clocks",
+    "final FEN",
+    "actual game/search/season processing times"
+  ],
+  "storage": "Permanent per-career match archive, with pending-write outbox and richer-record merge. Latest 60 are a cache. All newly recorded matches are included in backup/restore; deletion is isolated per career.",
+  "legacy": "Previously abstract season results keep only their original recorded data. No retrospective moves or openings are invented. National team cups retain their separate team-board result system.",
+  "ui": [
+    "Search and oldest/newest ordering",
+    "Replay board and moves",
+    "Recorded clocks",
+    "PGN with clock comments",
+    "Optional actual Stockfish analysis with progress/cancel and persisted report",
+    "Opening/tournament history uses archived matches"
+  ],
+  "unitSuites": 11,
+  "browserDistinctCases": 7,
+  "browserCases": [
+    "Full year with real NPC calendar, generated games and all-match retention beyond 60",
+    "Oldest match after reload and full backup/restore, opening/ECO and PGN re-import",
+    "Pause/reload/manual calendar advance/resume and backup",
+    "Thai late-year rollover/AP recovery",
+    "Archived-only actual Stockfish analysis, cancellation, saved accuracy and opening-history replay",
+    "Fresh real recorded game with clocks and English/mobile Thai replay",
+    "Version-5 schema upgrade preserving records and per-career archive deletion isolation"
+  ],
+  "rechecks": "The optional prediction ID path was made robust for legacy/fixture matches; paused manual end-day test explicitly accepts the existing forfeiture confirmation. Both rechecks passed.",
+  "timings": {
+    "browser": {
+      "environment": "Cloud Chromium, Small database, real UI including NPC calendar and storage",
+      "wallMs": 163568,
+      "persistedTiming": {
+        "games": 154,
+        "gameMs": 66090.80000004172,
+        "searchMs": 52603.700000561774,
+        "lastGameMs": 455.1000000014901,
+        "runMs": 163208.1000000015
+      },
+      "games": 154,
+      "tournaments": 22,
+      "totalPlies": 10267,
+      "p50GameMs": 404.09999999403954,
+      "p95GameMs": 891,
+      "maxGameMs": 1109.8000000044703,
+      "meanGameMs": 429.1610389613099,
+      "openings": 52
+    },
+    "node": {
+      "environment": "Node cloud; not a phone speed estimate",
+      "database": "Small",
+      "days": 364,
+      "games": 164,
+      "seasonWallMs": 66743.236699,
+      "totalGameMs": 63201.05075600002,
+      "meanGameMs": 385.3722607073172,
+      "p50GameMs": 353.4379800000024,
+      "p95GameMs": 730.8146510000006,
+      "maxGameMs": 1416.7743929999997,
+      "totalPlies": 12308,
+      "openings": 68,
+      "wins": 70,
+      "draws": 6,
+      "losses": 88,
+      "backupMatches": 164
+    },
+    "analysisFixture": {
+      "fixture": "Known legal four-ply checkmate, archived-only record",
+      "wallMs": 1857,
+      "engine": "Stockfish",
+      "moves": 4
+    }
+  },
+  "timeMeaning": "Chess clocks are virtual player thinking time with increment. Processing times are measured wall durations. Browser season duration includes NPC calendar, training and storage; these cloud results are not phone performance guarantees."
+}

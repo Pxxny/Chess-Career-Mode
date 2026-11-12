@@ -1,0 +1,38 @@
+{
+  "base": "Chess-Career-Mode-Simulate-Season-Full.zip",
+  "previousFileCount": 945,
+  "missing": [],
+  "protectedByteIdentical": {
+    "src/game/engine/": 7,
+    "src/game/match/session.ts": 1,
+    "src/game/match/npcProfile.ts": 1,
+    "src/game/training/engine.ts": 1,
+    "src/game/qol/career.ts": 1,
+    "public/audio/": 6,
+    "public/pieces/": 14,
+    "public/data/fide/": 2,
+    "src/data/world/": 7,
+    "src/data/chess/legendAppearances.ts": 1,
+    "vercel.json": 1
+  },
+  "changedExistingFiles": [
+    "CHANGELOG.md",
+    "README.md",
+    "artifacts/simulate-season-options-th.png",
+    "scripts/verify-simulate-season.ts",
+    "src/features/career/SimulateSeason.tsx",
+    "src/features/match/MatchHistory.tsx",
+    "src/features/qol/HistoryDialogs.tsx",
+    "src/game/career/seasonSimulation.ts",
+    "src/game/match/aftermath.ts",
+    "src/game/qol/history.ts",
+    "src/i18n/th.ts",
+    "src/store/backup.ts",
+    "src/store/gameStore.ts",
+    "src/store/npcRepository.ts",
+    "src/types/game.ts",
+    "src/types/match.ts",
+    "src/utils/idb.ts",
+    "tests/simulate-season.spec.ts"
+  ]
+}

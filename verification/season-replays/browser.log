@@ -1,0 +1,50 @@
+[WebServer] (node:19371) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:19389) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/simulate-season.spec.ts:74:1 › full season records real games, retained replays/openings/clocks/PGN, complete backup and measured times (3.4m)
+  ✘  2 tests/simulate-season.spec.ts:263:1 › pause, reload, resume, pause again and checksum backup keep the exact checkpoint (33.2s)
+(node:19902) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 tests/simulate-season.spec.ts:320:1 › mobile Thai setup and late-season rollover recover exhausted AP and stop after the remaining days (6.0s)
+
+
+  1) tests/simulate-season.spec.ts:263:1 › pause, reload, resume, pause again and checksum backup keep the exact checkpoint 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 8
+    Received: 7
+
+    Call Log:
+    - Timeout 20000ms exceeded while waiting on the predicate
+
+      287 |   await expect
+      288 |     .poll(async () => (await state(page)).save.seasonSimulation.days)
+    > 289 |     .toBe(checkpoint.seasonSimulation.days + 1);
+          |      ^
+      290 |   await page.getByRole("link", { name: "Home", exact: true }).click();
+      291 |   await page
+      292 |     .getByRole("button", { name: "Resume season simulation", exact: true })
+        at /workspace/chess-career-season-replays/Chess-Career-Mode/tests/simulate-season.spec.ts:289:6
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/simulate-season-pause-relo-6f083-p-keep-the-exact-checkpoint/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/simulate-season-pause-relo-6f083-p-keep-the-exact-checkpoint/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/simulate-season-pause-relo-6f083-p-keep-the-exact-checkpoint/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/simulate-season-pause-relo-6f083-p-keep-the-exact-checkpoint/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests/simulate-season.spec.ts:263:1 › pause, reload, resume, pause again and checksum backup keep the exact checkpoint 
+  2 passed (4.1m)

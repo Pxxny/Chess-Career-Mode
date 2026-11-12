@@ -1,3 +1,4 @@
+import { openSectionTab } from "./navigation";
 import { test, expect, type Page } from "@playwright/test";
 import { createCareer } from "./helpers";
 
@@ -19,7 +20,7 @@ test("mobile layouts keep the board, opening details and performance within the 
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await createCareer(page);
-  await page.getByRole("tab", { name: "Games", exact: true }).click();
+  await openSectionTab(page, "Games");
   // Use a completed real game: a detached full simulation may still be running when statistics are opened.
   await page.getByRole("button", { name: /^Game vs the Engine/ }).click();
   await page.getByRole("button", { name: "Start game", exact: true }).click();
@@ -46,7 +47,7 @@ test("mobile layouts keep the board, opening details and performance within the 
 
   for (const width of [320, 390, 768]) {
     await page.setViewportSize({ width, height: 844 });
-    await page.getByRole("tab", { name: "Games", exact: true }).click();
+    await openSectionTab(page, "Games");
     await assertFits(page, width);
     await page.getByRole("button", { name: /^Online Blitz/ }).click();
     await expect(page.getByText(/It is not real multiplayer/)).toBeVisible();
@@ -60,7 +61,7 @@ test("mobile layouts keep the board, opening details and performance within the 
     await page.getByRole("button", { name: /^History/ }).click();
     await assertFits(page, width);
 
-    await page.getByRole("tab", { name: "Openings", exact: true }).click();
+    await openSectionTab(page, "Openings");
     await assertFits(page, width);
     await page
       .getByRole("tabpanel", { name: "Openings", exact: true })

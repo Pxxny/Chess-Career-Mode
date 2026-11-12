@@ -26,7 +26,7 @@ export function SectionMenu<T extends string>({
     <div
       role="group"
       aria-label={label}
-      className="mb-4 flex gap-1 overflow-x-auto border-b border-white/15"
+      className="mb-4 flex gap-1 overflow-x-auto rounded-xl bg-navy-900/60 p-1"
     >
       {items.map((item) => (
         <button

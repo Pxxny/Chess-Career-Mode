@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { OpeningHistoryDialog } from "@/features/qol/HistoryDialogs";
 import { Card, CardTitle, EmptyState } from "@/components/ui";
 import { computeStats, type Record3 } from "@/game/history/stats";
@@ -7,6 +7,7 @@ import { useSave } from "@/hooks/useGame";
 const fmt = (r: Record3): string =>
   r.games ? `${r.wins}W ${r.draws}D ${r.losses}L` : "No games";
 const pct = (v: number | null): string => (v === null ? "–" : `${v}%`);
+const EloChart = lazy(() => import("@/features/profile/EloChart").then((module) => ({ default: module.EloChart })));
 
 export function StatsTab() {
   const { player, history } = useSave();
@@ -29,6 +30,7 @@ export function StatsTab() {
 
   return (
     <>
+      <Suspense fallback={<Card className="mb-5 min-h-64" aria-busy="true">Loading rating chart…</Card>}><EloChart /></Suspense>
       {opening && (
         <OpeningHistoryDialog name={opening} onClose={() => setOpening(null)} />
       )}
@@ -92,12 +94,12 @@ export function StatsTab() {
             {stats.favoriteOpenings.map((o) => (
               <li
                 key={o.name}
-                className="flex items-center justify-between py-2.5"
+                className="flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-1 py-3"
               >
                 <button
                   type="button"
                   onClick={() => setOpening(o.name)}
-                  className="min-h-11 text-left font-semibold text-gold-300 underline decoration-gold-500/30 underline-offset-4"
+                  className="min-h-11 min-w-0 max-w-full break-words text-left font-semibold text-gold-300 underline decoration-gold-500/30 underline-offset-4"
                   aria-label={`View games with ${o.name}`}
                 >
                   {o.name}

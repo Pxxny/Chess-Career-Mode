@@ -1,9 +1,18 @@
+import { analyzeMatch } from "@/game/match/review";
+import { engineManager } from "@/game/engine/manager";
+import { getBaseOpeningDatabase } from "@/game/openings/database";
+import { acquireMatch, releaseMatch } from "@/store/matchLocks";
+import { useGameStore } from "@/store/gameStore";
+import type { MatchAnalysisReport } from "@/types";
+import { translateUI } from "@/i18n/translate";
+import { useMatchRecords } from "@/hooks/useMatchRecords";
+import { downloadPgn } from "@/game/match/pgn";
 import {
   PredictionPanel,
   PredictionSummary,
 } from "@/features/prediction/PredictionPanel";
 import { boardAnnotation } from "@/components/game/MoveAnnotation";
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import { Card, CardTitle, EmptyState } from "@/components/ui";
 import { ResultBadge } from "@/components/game/ResultBadge";
 import { useSave } from "@/hooks/useGame";
@@ -35,7 +44,69 @@ export function Replay({
   const king = inCheck(position)
     ? position.board.findIndex((p) => p === (position.turn === "w" ? "K" : "k"))
     : -1;
-  const report = match.analysis;
+  const recordedClock = match.recording
+    ? view === null
+      ? match.recording.finalClocks
+      : match.recording.clocks[ply]
+    : undefined;
+  const careerId = useSave().career.id;
+  const [analysis, setAnalysis] = useState<MatchAnalysisReport | null>(null),
+    [analyzing, setAnalyzing] = useState(false),
+    [analysisProgress, setAnalysisProgress] = useState(""),
+    [analysisError, setAnalysisError] = useState("");
+  const cancelled = useRef(false),
+    alive = useRef(true),
+    token = useRef(Symbol("saved-game-analysis"));
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+      cancelled.current = true;
+    };
+  }, []);
+  const analyze = async () => {
+    if (
+      useGameStore.getState().calendarProgress ||
+      !acquireMatch(careerId, token.current)
+    ) {
+      setAnalysisError("Finish the running activity first.");
+      return;
+    }
+    cancelled.current = false;
+    setAnalyzing(true);
+    setAnalysisError("");
+    try {
+      const report = await analyzeMatch(
+        engineManager,
+        {
+          game,
+          depth: 12,
+          isCancelled: () => cancelled.current,
+          onProgress: (done, total) => {
+            if (alive.current) setAnalysisProgress(`${done} / ${total}`);
+          },
+        },
+        getBaseOpeningDatabase(),
+      );
+      if (
+        cancelled.current ||
+        !alive.current ||
+        useGameStore.getState().save?.career.id !== careerId
+      )
+        return;
+      useGameStore.getState().attachMatchAnalysis(match.id, report, match);
+      setAnalysis(report);
+    } catch (error) {
+      if (!cancelled.current && alive.current)
+        setAnalysisError(
+          "Analysis could not be completed. Your saved game is kept.",
+        );
+    } finally {
+      releaseMatch(careerId, token.current);
+      if (alive.current) setAnalyzing(false);
+    }
+  };
+  const report = analysis ?? match.analysis;
   const live = report
     ? {
         cp: report.evals[ply] ?? 0,
@@ -47,7 +118,7 @@ export function Replay({
         ply,
       }
     : null;
-  if (match.setup.simulation === "season")
+  if (match.setup.simulation === "season" && !match.moves.length)
     return (
       <div className="space-y-3" data-testid="season-game-result">
         <button
@@ -80,6 +151,53 @@ export function Replay({
       >
         ← Back to the list
       </button>
+      <div
+        data-testid="recorded-game-details"
+        className="rounded-lg bg-navy-900 p-3 text-sm space-y-2"
+      >
+        <p translate="no">
+          {match.setup.white.name} — {match.setup.black.name}
+        </p>
+        <p>
+          {match.year} · W{match.week} · {match.setup.tournament?.name} · Round{" "}
+          {match.setup.tournament?.round}
+        </p>
+        <p>
+          <ResultBadge outcome={match.outcome} /> ·{" "}
+          {translateUI(match.termination)} ·{" "}
+          {describeTimeControl(match.setup.timeControl)}
+        </p>
+        <p>
+          <span translate="no">
+            {match.openingName ?? translateUI("Unknown opening")}{" "}
+            {match.openingEco ?? ""}
+          </span>{" "}
+          · {translateUI(`${match.moves.length} plies`)}
+        </p>
+        <p>
+          Elo {match.ratingBefore} → {match.ratingAfter}
+        </p>
+        {match.recording && (
+          <>
+            <p>
+              {match.recording.engine} · Recorded chess clocks are simulated
+              game time.
+            </p>
+            <p>
+              Simulation processing:{" "}
+              {(match.recording.wallMs / 1000).toFixed(2)} s · Game time:{" "}
+              {((match.recording.gameTimeMs ?? 0) / 60000).toFixed(1)} min
+            </p>
+          </>
+        )}
+        <button
+          type="button"
+          onClick={() => downloadPgn(match)}
+          className="text-gold-300 underline"
+        >
+          Download PGN
+        </button>
+      </div>
       {match.setup.prediction ? (
         <PredictionPanel
           prediction={match.setup.prediction}
@@ -95,7 +213,7 @@ export function Replay({
           <PlayerPanel
             side={match.setup[top]}
             color={top}
-            remaining={Infinity}
+            remaining={recordedClock?.[top] ?? Infinity}
             active={false}
             controller="auto"
             thinking={false}
@@ -121,7 +239,7 @@ export function Replay({
           <PlayerPanel
             side={match.setup[bottom]}
             color={bottom}
-            remaining={Infinity}
+            remaining={recordedClock?.[bottom] ?? Infinity}
             active={false}
             controller="auto"
             thinking={false}
@@ -147,9 +265,31 @@ export function Replay({
       ) : (
         <Card>
           <p className="text-sm text-ink-muted">
-            This game has no analysis (it was closed before the engine
-            finished).
+            This game is saved. Engine analysis has not been requested.
           </p>
+          {analyzing ? (
+            <>
+              <p role="status">Analyzing saved game: {analysisProgress}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  cancelled.current = true;
+                }}
+                className="mt-2 text-gold-300 underline"
+              >
+                Cancel analysis
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => void analyze()}
+              className="mt-2 text-gold-300 underline"
+            >
+              Analyze saved game
+            </button>
+          )}
+          {analysisError && <p role="alert">{translateUI(analysisError)}</p>}
         </Card>
       )}
     </div>
@@ -160,12 +300,58 @@ export function Replay({
 export function MatchHistory() {
   const save = useSave();
   const [open, setOpen] = useState<string | null>(null);
-  const matches = [...save.matches].reverse();
+  const records = useMatchRecords();
+  const [limit, setLimit] = useState(60);
+  const [query, setQuery] = useState(""),
+    [order, setOrder] = useState("newest");
+  const filtered = records.filter((m) =>
+    `${m.setup.white.name} ${m.setup.black.name} ${m.setup.tournament?.name ?? ""} ${m.openingName ?? ""} ${m.openingEco ?? ""} ${m.year}`
+      .toLowerCase()
+      .includes(query.toLowerCase()),
+  );
+  const matches = order === "oldest" ? filtered : [...filtered].reverse();
   const match = matches.find((m) => m.id === open);
   if (match) return <Replay match={match} onClose={() => setOpen(null)} />;
   return (
     <Card>
       <CardTitle>Match history</CardTitle>
+      <div className="mb-3 flex flex-wrap gap-2">
+        <input
+          type="search"
+          aria-label="Search saved matches"
+          placeholder="Player, tournament, opening or year"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setLimit(60);
+          }}
+          className="min-w-0 flex-1 rounded-lg bg-navy-900 p-3"
+        />
+        <select
+          aria-label="Match order"
+          value={order}
+          onChange={(e) => setOrder(e.target.value)}
+          className="rounded-lg bg-navy-900 p-3"
+        >
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+        </select>
+      </div>
+      <p
+        data-testid="archived-match-count"
+        className="mb-3 text-sm text-ink-muted"
+      >
+        {matches.length} saved matches
+      </p>
+      {matches.length > limit && (
+        <button
+          type="button"
+          onClick={() => setLimit((n) => n + 60)}
+          className="mb-3 text-gold-300 underline"
+        >
+          Show more saved matches
+        </button>
+      )}
       {matches.length === 0 ? (
         <EmptyState
           title="No games yet"
@@ -176,7 +362,7 @@ export function MatchHistory() {
           className="divide-y divide-white/[0.06]"
           data-testid="match-history"
         >
-          {matches.map((m) => {
+          {matches.slice(0, limit).map((m) => {
             const opp =
               m.setup.playerColor === "white" ? m.setup.black : m.setup.white;
             return (

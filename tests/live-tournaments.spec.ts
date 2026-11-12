@@ -1,3 +1,4 @@
+import { openSectionTab, openCareerManagement } from "./navigation";
 import { test, expect, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { createCareer } from "./helpers";
@@ -44,7 +45,7 @@ test("annual calendar is a real tab, shows the complete current year and filters
   await expect(
     page.getByTestId("open-events").locator('[data-event-kind="regular"]'),
   ).toHaveCount(0);
-  await page.getByRole("tab", { name: "Annual calendar", exact: true }).click();
+  await openSectionTab(page, "Annual calendar");
   const calendar = page.getByTestId("annual-calendar");
   await expect(
     calendar.getByLabel("Tournament year").locator("option"),
@@ -99,9 +100,7 @@ test("annual calendar is a real tab, shows the complete current year and filters
   await page
     .getByRole("combobox", { name: "Language / ภาษา", exact: true })
     .selectOption("en");
-  await page
-    .getByRole("tab", { name: "Tournament history", exact: true })
-    .click();
+  await openSectionTab(page, "Tournament history");
   const history = page.getByTestId("annual-history");
   await history.getByLabel("Tournament year").selectOption("2025");
   await expect(history.locator("[data-annual-event]")).not.toHaveCount(0);
@@ -260,9 +259,7 @@ test("NPC live board plays real moves, pauses and reloads without spending playe
     db.close();
     return row;
   });
-  await page
-    .getByRole("tab", { name: "Tournament history", exact: true })
-    .click();
+  await openSectionTab(page, "Tournament history");
   const history = page.getByTestId("annual-history");
   await expect(history.locator("[data-annual-event]")).not.toHaveCount(0);
   await expect
@@ -303,7 +300,7 @@ test("NPC live board plays real moves, pauses and reloads without spending playe
     .getByRole("button", { name: "View tournament", exact: true })
     .click();
   const archive = page.getByRole("dialog");
-  await archive.getByRole("tab", { name: "Standings", exact: true }).click();
+  await openSectionTab(archive, "Standings");
   await expect(archive.locator("tbody tr")).not.toHaveCount(0);
   await archive.screenshot({
     path: "artifacts/tournament-history-result-en.png",
@@ -318,6 +315,7 @@ test("NPC live board plays real moves, pauses and reloads without spending playe
   });
   await page.getByRole("link", { name: "Career", exact: true }).click();
   const downloadEvent = page.waitForEvent("download");
+  await openCareerManagement(page);
   await page
     .getByRole("button", { name: "Export backup", exact: true })
     .click();

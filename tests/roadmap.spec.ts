@@ -1,3 +1,4 @@
+import { openSectionTab, openCareerManagement } from "./navigation";
 import { makeRoadmapFixtures } from "./roadmapFixtures";
 import { test, expect, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
@@ -62,7 +63,7 @@ test("new career: actual training, visible skill effects, season focus, recommen
   await page
     .getByRole("button", { name: "Train: Tactics Puzzle", exact: true })
     .click();
-  await page.getByRole("tab", { name: "Skill effects", exact: true }).click();
+  await openSectionTab(page, "Skill effects");
   await expect(page.getByTestId("skill-effects")).toContainText(
     "Training does not directly add rated Elo.",
   );
@@ -92,7 +93,7 @@ test("new career: actual training, visible skill effects, season focus, recommen
     .getByRole("combobox", { name: "Language / ภาษา", exact: true })
     .selectOption("en");
   await page.getByRole("link", { name: "Career", exact: true }).click();
-  await page.getByRole("tab", { name: "Season plan", exact: true }).click();
+  await openSectionTab(page, "Season plan");
   await page
     .getByLabel("Annual focus", { exact: true })
     .selectOption("competition");
@@ -127,7 +128,7 @@ test("new career: actual training, visible skill effects, season focus, recommen
     "Simulate until tournament",
   );
   await page.getByRole("link", { name: "Career", exact: true }).click();
-  await page.getByRole("tab", { name: "Season plan", exact: true }).click();
+  await openSectionTab(page, "Season plan");
   await expect(page.getByTestId("career-calendar")).not.toContainText(
     "No booked tournaments",
   );
@@ -152,9 +153,7 @@ test("veteran fixture: championship requirements, a real recorded rivalry and du
   );
   await importFixture(page, "/tmp/chess-roadmap-veteran-backup.json");
   await page.getByRole("link", { name: "Career", exact: true }).click();
-  await page
-    .getByRole("tab", { name: "Championship path", exact: true })
-    .click();
+  await openSectionTab(page, "Championship path");
   await expect(page.getByTestId("title-requirements")).toContainText(
     "Peak Elo 2500 + 50 rated games + 3 GM norms",
   );
@@ -167,9 +166,7 @@ test("veteran fixture: championship requirements, a real recorded rivalry and du
       path: "artifacts/roadmap-4-championship-en.png",
       style: "header.sticky, nav.fixed { visibility: hidden !important; }",
     });
-  await page
-    .getByRole("tab", { name: "People & stories", exact: true })
-    .click();
+  await openSectionTab(page, "People & stories");
   await expect(page.getByTestId("people-stories")).toContainText(
     "Emerging rivalry",
   );
@@ -211,9 +208,7 @@ test("veteran due-payment fixture: actual day advancement pays sponsor once, leg
 }) => {
   await importFixture(page, "/tmp/chess-roadmap-sponsor-due-backup.json");
   await page.getByRole("link", { name: "Career", exact: true }).click();
-  await page
-    .getByRole("tab", { name: "Sponsors & legacy", exact: true })
-    .click();
+  await openSectionTab(page, "Sponsors & legacy");
   await expect(page.getByTestId("sponsorship-panel")).toContainText(
     "Rated games: 6 / 6",
   );
@@ -228,9 +223,7 @@ test("veteran due-payment fixture: actual day advancement pays sponsor once, leg
   const paid = await saved(page);
   expect(paid.player.money).toBe(before.player.money + 40);
   await page.getByRole("link", { name: "Career", exact: true }).click();
-  await page
-    .getByRole("tab", { name: "Sponsors & legacy", exact: true })
-    .click();
+  await openSectionTab(page, "Sponsors & legacy");
   await expect(page.getByTestId("sponsorship-panel")).toContainText("Paid $40");
   const legacy = page.getByTestId("legacy-panel");
   await legacy.getByRole("button", { name: "Mentor", exact: true }).click();
@@ -272,6 +265,7 @@ test("veteran due-payment fixture: actual day advancement pays sponsor once, leg
     .getByRole("combobox", { name: "Language / ภาษา", exact: true })
     .selectOption("en");
   const event = page.waitForEvent("download");
+  await openCareerManagement(page);
   await page
     .getByRole("button", { name: "Export backup", exact: true })
     .click();

@@ -1,3 +1,4 @@
+import { openSectionTab, openCareerManagement } from "./navigation";
 import { test, expect, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { createCareer } from "./helpers";
@@ -27,7 +28,7 @@ async function finder(page: Page) {
 test("annual calendar replaces inline guides and shows regional hosts and registration dates", async ({page})=>{
  await start(page);
  await page.getByRole("link",{name:"Tournament",exact:true}).click();
- await page.getByRole("tab",{name:"Annual calendar",exact:true}).click();
+ await openSectionTab(page, "Annual calendar");
  await page.getByLabel("Search annual tournaments").fill("African Games");
  await page.locator('[data-annual-event="career-african-games-2026"]').getByRole("button").first().click();
  const modal=page.getByRole("dialog",{name:"African Games (Mixed Team) 2026",exact:true});
@@ -44,6 +45,7 @@ test("export complete career and NPC world, reject corrupt input and occupied sl
 }) => {
   await start(page);
   await page.getByRole("link", { name: "Career", exact: true }).click();
+  await openCareerManagement(page);
   const exporting = page.getByRole("button", {
     name: "Export backup",
     exact: true,
@@ -166,6 +168,7 @@ test("export complete career and NPC world, reject corrupt input and occupied sl
     page.getByRole("link", { name: /Open profile for Browser Test Player/ }),
   ).toBeVisible();
   await page.getByRole("link", { name: "Career", exact: true }).click();
+  await openCareerManagement(page);
   await expect(
     page.getByRole("button", { name: "Export backup", exact: true }),
   ).toBeEnabled();

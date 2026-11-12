@@ -1,3 +1,5 @@
+import { toast } from "sonner";
+import { translateUI } from "@/i18n/translate";
 import { useState } from "react";
 import { Button, Card, CardTitle } from "@/components/ui";
 import { useGameStore } from "@/store/gameStore";
@@ -27,7 +29,9 @@ export function BackupPanel() {
       )
         throw new Error("Wait for the NPC world to finish loading.");
       downloadBackup(await createBackup(current, world.npcs));
+      toast.success(translateUI("Career backup prepared"));
     } catch (e) {
+      toast.error(translateUI("The backup could not be exported."));
       setError(
         e instanceof Error ? e.message : "The backup could not be exported.",
       );

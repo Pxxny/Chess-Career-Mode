@@ -1,0 +1,42 @@
+[WebServer] (node:20109) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:20143) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 tests/season-archive-analysis.spec.ts:7:1 › archived-only game: cancellation, actual engine analysis, persisted accuracy, and opening-history replay (4.2s)
+
+
+  1) tests/season-archive-analysis.spec.ts:7:1 › archived-only game: cancellation, actual engine analysis, persisted accuracy, and opening-history replay 
+
+    TypeError: Cannot read properties of undefined (reading 'id')
+
+       at ../src/game/match/aftermath.ts:110
+
+      108 |   const matchId =
+      109 |     setup.simulation === "season" && finish.moves.length
+    > 110 |       ? `season-game:${setup.prediction!.id}`
+          |                                          ^
+      111 |       : `m${save.matches.length + 1}-${stamp.year}-${stamp.week}-${save.history.games.length}`;
+      112 |
+      113 |   let next = save;
+        at applyFinishedMatch (/workspace/chess-career-season-replays/Chess-Career-Mode/src/game/match/aftermath.ts:110:42)
+        at /workspace/chess-career-season-replays/Chess-Career-Mode/tests/season-archive-analysis.spec.ts:12:15
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/season-archive-analysis-ar-7074a--and-opening-history-replay/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/season-archive-analysis-ar-7074a--and-opening-history-replay/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/season-archive-analysis-ar-7074a--and-opening-history-replay/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/season-archive-analysis-ar-7074a--and-opening-history-replay/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests/season-archive-analysis.spec.ts:7:1 › archived-only game: cancellation, actual engine analysis, persisted accuracy, and opening-history replay 

@@ -1,0 +1,18 @@
+{
+  "environment": "Node cloud; not a phone speed estimate",
+  "database": "Small",
+  "days": 364,
+  "games": 164,
+  "seasonWallMs": 51606.899814,
+  "totalGameMs": 48892.12373599999,
+  "meanGameMs": 298.122705707317,
+  "p50GameMs": 272.9040160000004,
+  "p95GameMs": 652.074063,
+  "maxGameMs": 969.9132960000002,
+  "totalPlies": 12308,
+  "openings": 68,
+  "wins": 70,
+  "draws": 6,
+  "losses": 88,
+  "backupMatches": 164
+}

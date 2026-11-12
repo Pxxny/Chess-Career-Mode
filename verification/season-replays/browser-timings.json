@@ -1,0 +1,19 @@
+{
+  "environment": "Cloud Chromium, Small database, real UI including NPC calendar and storage",
+  "wallMs": 163568,
+  "persistedTiming": {
+    "games": 154,
+    "gameMs": 66090.80000004172,
+    "searchMs": 52603.700000561774,
+    "lastGameMs": 455.1000000014901,
+    "runMs": 163208.1000000015
+  },
+  "games": 154,
+  "tournaments": 22,
+  "totalPlies": 10267,
+  "p50GameMs": 404.09999999403954,
+  "p95GameMs": 891,
+  "maxGameMs": 1109.8000000044703,
+  "meanGameMs": 429.1610389613099,
+  "openings": 52
+}

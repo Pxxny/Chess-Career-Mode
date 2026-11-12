@@ -12,6 +12,7 @@
     font-feature-settings: "ss01" on;
     --accent: #a4ba99;
     --surface: #282d28;
+    background-image: radial-gradient(ellipse at 80% 0%, rgba(164,186,153,0.045), transparent 55%);
   }
   h1,
   h2,
@@ -58,6 +59,7 @@
 
 .page-enter {
   animation: page-in 180ms ease-out;
+  overflow-wrap: anywhere;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -71,10 +73,27 @@
 
 @layer components {
   .section-tab {
-    @apply min-h-11 shrink-0 border-b-2 border-transparent px-4 py-3 text-sm font-semibold text-ink-muted transition-colors hover:text-ink;
+    @apply min-h-11 shrink-0 rounded-lg border border-transparent px-4 py-2.5 text-sm font-semibold text-ink-muted transition-colors hover:bg-white/5 hover:text-ink;
   }
   .section-tab[aria-selected="true"],
   .section-tab[aria-pressed="true"] {
-    @apply border-gold-500 text-gold-300;
+    @apply border-gold-500/15 bg-gold-500/10 text-gold-300;
   }
+  .surface-card { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .season-card { background: linear-gradient(135deg, #29382b, #222d26 75%); }
+  .dashboard-disclosure {
+    @apply mb-4 rounded-2xl border border-white/[0.07] bg-navy-800;
+  }
+  .dashboard-disclosure > summary {
+    @apply cursor-pointer px-5 py-5 text-sm font-semibold text-ink sm:px-6;
+  }
+  .dashboard-disclosure[open] > summary { @apply text-gold-300; }
+  .dashboard-disclosure > .disclosure-body { @apply px-3 pb-3 sm:px-4; }
 }
+
+.career-calendar { --fc-border-color: #ffffff14; --fc-page-bg-color: #222d26; --fc-neutral-bg-color: #1a231e; --fc-today-bg-color: #afc99512; --fc-event-bg-color: #42533b; --fc-event-border-color: #637b55; --fc-event-text-color: #eeeae1; --fc-button-bg-color: #2b382f; --fc-button-border-color: #3b4b3e; --fc-button-hover-bg-color: #3b4b3e; --fc-button-active-bg-color: #42533b; }
+.career-calendar .fc-toolbar-title { font-size: 1.15rem; }
+.career-calendar .fc-daygrid-event { cursor: pointer; padding: 2px 4px; }
+.career-calendar .fc-daygrid-day-number { font-size: .8rem; }
+.career-calendar .fc-col-header-cell-cushion { font-size: .75rem; }
+@media(max-width: 480px) { .career-calendar .fc-daygrid-day-frame { min-height: 68px; } .career-calendar .fc-event-title { font-size: .65rem; } }

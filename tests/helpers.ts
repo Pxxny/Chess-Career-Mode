@@ -1,6 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 
 export async function createCareer(page: Page, year?: number) {
+  await page.addInitScript(() => localStorage.setItem("chess-career-tour-dismissed", "yes"));
   await page.goto("/");
   // A fresh browser opens the character slots; the first empty slot starts character creation.
   await page

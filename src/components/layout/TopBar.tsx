@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Volume2, VolumeX } from "lucide-react";
+import { MonitorCheck, Monitor, Volume2, VolumeX } from "lucide-react";
+import type { ScreenWakeStatus } from "@/hooks/useScreenWakeLock";
 import { setSoundEnabled, useSoundEnabled } from "@/audio/sound";
 import { LanguageSelector } from "@/i18n/LanguageSelector";
 import { ApMeter } from "@/components/game/ApMeter";
@@ -8,13 +9,13 @@ import { Avatar } from "@/components/ui";
 import { ROUTES } from "@/data/navigation";
 import { usePlayer } from "@/hooks/useGame";
 
-export function TopBar() {
+export function TopBar({ wakeStatus }: { wakeStatus: ScreenWakeStatus }) {
   const player = usePlayer();
   const sound = useSoundEnabled();
 
   return (
-    <header className="sticky top-0 z-30 border-b border-white/5 bg-navy-950/90 pt-[env(safe-area-inset-top)] backdrop-blur">
-      <div className="mx-auto grid max-w-5xl grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-4 py-2 sm:flex sm:h-16 sm:justify-between sm:py-0">
+    <header className="sticky top-0 z-30 border-b border-white/[0.07] bg-navy-950/90 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
+      <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-4 py-2 sm:flex sm:h-20 sm:justify-between sm:px-7 sm:py-0">
         <Link
           to={ROUTES.profile}
           aria-label={`Open profile for ${player.name}`}
@@ -37,6 +38,11 @@ export function TopBar() {
           <MoneyChip amount={player.money} />
         </div>
         <div className="col-start-2 row-start-1 flex items-center gap-2">
+          <span data-testid="screen-wake-status" data-status={wakeStatus} role="img" aria-label={wakeStatus === "active" ? "Screen stays awake" : wakeStatus === "unavailable" ? "Screen wake lock is unavailable in this browser" : "Screen wake lock is waiting for the browser"}
+            title={wakeStatus === "active" ? "Screen stays awake" : wakeStatus === "unavailable" ? "Screen wake lock is unavailable in this browser" : "Screen wake lock is waiting for the browser"}
+            className={`flex items-center gap-2 text-xs ${wakeStatus === "active" ? "text-gold-400" : "text-ink-faint"}`}>
+            {wakeStatus === "active" ? <MonitorCheck size={17} /> : <Monitor size={17} />}
+          </span>
           <button
             type="button"
             aria-label={sound ? "Turn sound off" : "Turn sound on"}

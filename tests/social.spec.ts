@@ -1,3 +1,4 @@
+import { openSectionTab } from "./navigation";
 import { expect, test, type Page } from "@playwright/test";
 import { Chess } from "chess.js";
 import { createCareer } from "./helpers";
@@ -62,7 +63,7 @@ async function writeCareer(page: Page, save: GameSave) {
 }
 async function openDirectory(page: Page) {
   await page.getByRole("link", { name: "Tournament", exact: true }).click();
-  await page.getByRole("tab", { name: "Rankings", exact: true }).click();
+  await openSectionTab(page, "Rankings");
 }
 async function openNpc(page: Page, npc: Npc) {
   await openDirectory(page);
@@ -138,7 +139,7 @@ test("mobile directory includes the saved player and an actual detailed player p
     player: { ...save.player, name: "Renamed Directory Player" },
   };
   await writeCareer(page, renamed);
-  await page.getByRole("tab", { name: "Rankings", exact: true }).click();
+  await openSectionTab(page, "Rankings");
   await page
     .getByRole("button", { name: "Open your directory profile", exact: true })
     .click();

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Avatar, Card, PageHeader, Tabs } from "@/components/ui";
 import { getCountry } from "@/data/world/countries";
 import { ProfileTab } from "@/features/profile/tabs/ProfileTab";
@@ -19,7 +19,9 @@ type TabId = (typeof TABS)[number]["id"];
 export function ProfilePage() {
   const player = usePlayer();
   const country = getCountry(player.country);
-  const [tab, setTab] = useState<TabId>("profile");
+  const [params, setParams] = useSearchParams();
+  const tab: TabId = TABS.find((t) => t.id === params.get("tab"))?.id ?? "profile";
+  const setTab = (next: TabId) => setParams(next === "profile" ? {} : { tab: next });
 
   return (
     <>

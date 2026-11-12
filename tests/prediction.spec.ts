@@ -1,3 +1,4 @@
+import { openSectionTab } from "./navigation";
 import { test, expect, type Page, type Locator } from "@playwright/test";
 import { createCareer } from "./helpers";
 import type { GameSave } from "../src/types";
@@ -116,9 +117,7 @@ test("a real friendly game persists its forecast before move one and scores only
     10,
   );
   await page.getByRole("link", { name: "Career", exact: true }).click();
-  await page
-    .getByRole("tab", { name: "Match predictions", exact: true })
-    .click();
+  await openSectionTab(page, "Match predictions");
   await expect(page.getByTestId("prediction-statistics")).toContainText(
     "1 completed predictions",
   );
@@ -133,7 +132,7 @@ test("a real friendly game persists its forecast before move one and scores only
     fullPage: false,
   });
   await page.getByRole("link", { name: "Tournament", exact: true }).click();
-  await page.getByRole("tab", { name: "History", exact: true }).click();
+  await openSectionTab(page, "History");
   await expect(page.getByTestId("prediction-summary")).toContainText(
     "Actual: loss",
   );
@@ -151,12 +150,12 @@ test("Swiss, Home and Prepare show forecasts; completed NPC boards populate cali
   page.on("pageerror", (e) => errors.push(e.message));
   await createCareer(page);
   await page.getByRole("link", { name: "Tournament", exact: true }).click();
-  await page.getByRole("tab", { name: "Swiss", exact: true }).click();
+  await openSectionTab(page, "Swiss");
   await page.locator('button[data-testid="register"]:enabled').first().click();
   await expect(
     page.getByTestId("registrations").locator(":scope > li"),
   ).toHaveCount(1);
-  await page.getByRole("tab", { name: "Prepare", exact: true }).click();
+  await openSectionTab(page, "Prepare");
   await odds(page.getByTestId("match-prediction"));
   await page.getByLabel("Prediction preview colour").selectOption("white");
   const before = await odds(page.getByTestId("match-prediction"));
@@ -164,7 +163,7 @@ test("Swiss, Home and Prepare show forecasts; completed NPC boards populate cali
   expect((await odds(page.getByTestId("match-prediction")))[0]).toBeLessThan(
     before[0],
   );
-  await page.getByRole("tab", { name: "Scout Opponent", exact: true }).click();
+  await openSectionTab(page, "Scout Opponent");
   await expect(page.getByTestId("match-prediction")).toBeVisible();
   await page.getByRole("button", { name: /Investigate opponent/ }).click();
   await expect(
@@ -212,9 +211,7 @@ test("Swiss, Home and Prepare show forecasts; completed NPC boards populate cali
       .every((p) => p.prediction && p.result === null),
   ).toBe(true);
   await page.getByRole("link", { name: "Career", exact: true }).click();
-  await page
-    .getByRole("tab", { name: "Match predictions", exact: true })
-    .click();
+  await openSectionTab(page, "Match predictions");
   await page.getByLabel("Prediction game sample").selectOption("npc");
   await expect(page.getByTestId("prediction-statistics")).toContainText(
     "abstract",
@@ -226,7 +223,7 @@ test("practice reload preserves the pre-game snapshot, records one loss and excl
   page,
 }) => {
   await createCareer(page);
-  await page.getByRole("tab", { name: "Games", exact: true }).click();
+  await openSectionTab(page, "Games");
   await page.getByRole("button", { name: /^Training Game/ }).click();
   await page.getByRole("radio", { name: "White", exact: true }).click();
   await page.getByRole("button", { name: "Start game", exact: true }).click();
@@ -265,7 +262,7 @@ test("model settings persist, all career statistics start empty, and upset panel
 }) => {
   await createCareer(page);
   await page.getByRole("link", { name: "Tournament", exact: true }).click();
-  await page.getByRole("tab", { name: "Prepare", exact: true }).click();
+  await openSectionTab(page, "Prepare");
   await expect(
     page.getByRole("heading", { name: "Tournament preparation", exact: true }),
   ).toBeVisible();
@@ -273,18 +270,16 @@ test("model settings persist, all career statistics start empty, and upset panel
     page.getByText("Coach contracts", { exact: true }),
   ).toBeVisible();
   await page.getByRole("link", { name: "Career", exact: true }).click();
-  await page
-    .getByRole("tab", { name: "Match predictions", exact: true })
-    .click();
+  await openSectionTab(page, "Match predictions");
   const stats = page.getByTestId("prediction-statistics");
   await expect(stats).toContainText("0 completed predictions");
-  await stats.getByRole("tab", { name: "Model settings", exact: true }).click();
+  await openSectionTab(stats, "Model settings");
   await page.getByLabel("Maximum context adjustment (Elo)").fill("60");
   await expect
     .poll(async () => (await stored(page)).prediction?.config.maxAdjustment)
     .toBe(60);
   await page.reload();
-  await stats.getByRole("tab", { name: "Model settings", exact: true }).click();
+  await openSectionTab(stats, "Model settings");
   await expect(page.getByLabel("Maximum context adjustment (Elo)")).toHaveValue(
     "60",
   );
@@ -300,7 +295,7 @@ test("model settings persist, all career statistics start empty, and upset panel
     .getByRole("button", { name: "Reset prediction settings", exact: true })
     .click();
   expect((await stored(page)).prediction?.config.maxAdjustment).toBe(100);
-  await stats.getByRole("tab", { name: "Upsets", exact: true }).click();
+  await openSectionTab(stats, "Upsets");
   await expect(stats).toContainText("Biggest career upset");
   await expect(
     stats.getByRole("tab", { name: "Elo calculator", exact: true }),

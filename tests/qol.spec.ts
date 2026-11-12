@@ -1,3 +1,4 @@
+import { openSectionTab } from "./navigation";
 import { test, expect, type Page } from "@playwright/test";
 import { createCareer } from "./helpers";
 
@@ -316,8 +317,8 @@ test("QoL: date, work income, abroad/FIDE filters, diverse repertoire and chosen
   await page.locator('button[data-testid="register"]:enabled').first().click();
   const registered = await readState(page);
   expect(registered.save.registrations).toHaveLength(1);
-  await page.getByRole("tab", { name: "Prepare", exact: true }).click();
-  await page.getByRole("tab", { name: "Repertoire", exact: true }).click();
+  await openSectionTab(page, "Prepare");
+  await openSectionTab(page, "Repertoire");
   const white = page.getByLabel("Add White repertoire", { exact: true });
   const ecos = await white.locator("option").allTextContents();
   expect(new Set(ecos.slice(1).map((s) => s[0])).size).toBeGreaterThanOrEqual(
@@ -332,7 +333,7 @@ test("QoL: date, work income, abroad/FIDE filters, diverse repertoire and chosen
       .locator("option")
       .nth(1),
   ).toContainText(/[DE]\d\d/);
-  await page.getByRole("tab", { name: "Tournament", exact: true }).click();
+  await openSectionTab(page, "Tournament");
   await page
     .getByRole("button", { name: "Simulate until tournament", exact: true })
     .click();
@@ -367,10 +368,8 @@ test("QoL: date, work income, abroad/FIDE filters, diverse repertoire and chosen
   const typography = await page.evaluate(() => ({
     h: getComputedStyle(document.querySelector("h1")!).fontFamily,
     body: getComputedStyle(document.body).fontFamily,
-    background: getComputedStyle(document.body).backgroundImage,
   }));
   expect(typography.h).toBe(typography.body);
-  expect(typography.background).toBe("none");
   await page.screenshot({
     path: "artifacts/qol-home-desktop.png",
     fullPage: true,
@@ -387,7 +386,7 @@ test("QoL: favorite opening and tournament player histories scope outcomes and o
   await createCareer(page);
   await fixture(page, "history");
   await page.getByRole("link", { name: /Open profile for/ }).click();
-  await page.getByRole("tab", { name: "Stats", exact: true }).click();
+  await openSectionTab(page, "Stats");
   await page
     .getByRole("button", {
       name: "View games with Sicilian Defense",

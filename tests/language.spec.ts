@@ -1,3 +1,4 @@
+import { openSectionTab } from "./navigation";
 import { expect, test, type Page } from "@playwright/test";
 import { createCareer } from "./helpers";
 import { approachNpc } from "../src/game/social/relationships";
@@ -204,7 +205,7 @@ test("existing careers, navigation and an open player profile switch live withou
   await expect(page.getByTestId("home-date")).toContainText("Week");
   await language(page).selectOption("th");
   await page.getByRole("link", { name: "ทัวร์นาเมนต์", exact: true }).click();
-  await page.getByRole("tab", { name: "อันดับ", exact: true }).click();
+  await openSectionTab(page, "อันดับ");
   await page
     .getByRole("searchbox", {
       name: "ค้นหาผู้เล่นด้วยชื่อ เมือง หรือประเทศ",
@@ -268,7 +269,7 @@ test("NPC actions and a running friendly board retain their state when switching
   )!;
   expect(npc).toBeTruthy();
   await page.getByRole("link", { name: "Tournament", exact: true }).click();
-  await page.getByRole("tab", { name: "Rankings", exact: true }).click();
+  await openSectionTab(page, "Rankings");
   await page
     .getByRole("searchbox", {
       name: "Search players by name, city or country",

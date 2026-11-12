@@ -1,3 +1,7 @@
+import { acknowledgeArticle, highlightsOf } from "@/game/career/highlights";
+import { createSeasonGameClient } from "./seasonGameClient";
+import type { LearningFocus } from "@/game/career/learningFocus";
+import { queueMatchRecords, writeMatchArchive } from "./matchArchive";
 import {
   newSeason,
   runSeason,
@@ -142,9 +146,11 @@ let calendarOwned = false;
 let calendarDaySave: GameSave | null = null;
 let calendarSync: Promise<unknown> = Promise.resolve();
 interface GameStore {
+  readArticle: (id: string) => void;
   seasonRunning: boolean;
   simulateSeason: (
     focus?: AnnualFocus,
+    learningFocus?: LearningFocus[],
   ) => Promise<{ ok: true } | { ok: false; error: string }>;
   broadcastCheckpoint: (
     context: BroadcastContext,
@@ -255,7 +261,11 @@ interface GameStore {
   ) => { ok: true } | { ok: false; error: string };
   finishMatch: (finish: MatchFinish, db: OpeningDatabase) => MatchRecord | null;
   /** Stores the engine analysis of a match and sets the accuracy of its rated game. */
-  attachMatchAnalysis: (matchId: string, report: MatchAnalysisReport) => void;
+  attachMatchAnalysis: (
+    matchId: string,
+    report: MatchAnalysisReport,
+    archived?: MatchRecord,
+  ) => void;
   checkpointMatch: (pending: PendingMatch | null) => void;
   /** A game left open by a closed page is recorded as abandoned. */
   recoverMatch: (db: OpeningDatabase) => void;
@@ -302,9 +312,13 @@ function migrateSave(
 export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
+      readArticle: (id) => {
+        const save = get().save;
+        if (save && !get().seasonRunning) set({ save: acknowledgeArticle(save, id) });
+      },
       save: null,
       seasonRunning: false,
-      simulateSeason: async (focus) => {
+      simulateSeason: async (focus, learningFocus) => {
         const start = get().save,
           world = useNpcStore.getState();
         if (
@@ -322,11 +336,20 @@ export const useGameStore = create<GameStore>()(
             ok: false,
             error: "Wait for the NPC world to finish loading.",
           };
+        if (highlightsOf(start).unread.length)
+          return { ok: false, error: "Read the important career news before resuming." };
         const old = seasonOf(start),
           state =
             old?.status === "paused" && old.year === start.world.date.year
               ? { ...old, notes: [] }
-              : newSeason(start, focus);
+              : newSeason(start, focus, learningFocus);
+        state.timing ??= {
+          games: 0,
+          gameMs: 0,
+          searchMs: 0,
+          lastGameMs: 0,
+          runMs: 0,
+        };
         calendarCancelled = false;
         const progress = (save: GameSave) => ({
           days: Math.max(0, gameDay(save) - state.startDay),
@@ -338,9 +361,32 @@ export const useGameStore = create<GameStore>()(
           seasonRunning: true,
           calendarProgress: progress(start),
         });
+        const client = createSeasonGameClient();
+        const runStarted = performance.now();
+        const pastRunMs = state.timing?.runMs ?? 0;
         try {
           const db = getBaseOpeningDatabase();
           await runSeason({
+            play: async (input) => {
+              const finish = await client.play(input);
+              const current = get().save;
+              if (current?.career.id === start.career.id) {
+                const timing = seasonOf(current)?.timing;
+                set({
+                  save: updateSeason(current, {
+                    timing: {
+                      games: (timing?.games ?? 0) + 1,
+                      gameMs: (timing?.gameMs ?? 0) + finish.recording.wallMs,
+                      searchMs:
+                        (timing?.searchMs ?? 0) + finish.recording.searchMs,
+                      lastGameMs: finish.recording.wallMs,
+                      runMs: pastRunMs + performance.now() - runStarted,
+                    },
+                  }),
+                });
+              }
+              return finish;
+            },
             read: () => get().save,
             npcs: () => useNpcStore.getState().npcs,
             cancelled: () =>
@@ -379,6 +425,20 @@ export const useGameStore = create<GameStore>()(
             });
           return { ok: false, error: message };
         } finally {
+          client.dispose();
+          const current = get().save;
+          if (current?.career.id === start.career.id) {
+            const s = seasonOf(current);
+            if (s?.timing)
+              set({
+                save: updateSeason(current, {
+                  timing: {
+                    ...s.timing,
+                    runMs: pastRunMs + performance.now() - runStarted,
+                  },
+                }),
+              });
+          }
           set({ seasonRunning: false, calendarProgress: null });
         }
       },
@@ -1051,9 +1111,10 @@ export const useGameStore = create<GameStore>()(
         return applied.record;
       },
 
-      attachMatchAnalysis: (matchId, report) => {
+      attachMatchAnalysis: (matchId, report, archived) => {
         const { save } = get();
-        if (save) set({ save: attachMatchAnalysis(save, matchId, report) });
+        if (save)
+          set({ save: attachMatchAnalysis(save, matchId, report, archived) });
       },
 
       checkpointMatch: (pending) => {
@@ -1290,4 +1351,57 @@ useGameStore.subscribe((state, previous) => {
       previous.save?.tournamentArchivePending
   )
     flushTournamentArchive();
+});
+
+const matchFlushes = new Set<string>();
+function flushMatches() {
+  const save = useGameStore.getState().save;
+  if (
+    !save ||
+    !save.matchArchivePending?.length ||
+    typeof indexedDB === "undefined" ||
+    matchFlushes.has(save.career.id)
+  )
+    return;
+  const id = save.career.id,
+    pending = save.matchArchivePending;
+  matchFlushes.add(id);
+  void writeMatchArchive(id, pending)
+    .then(() => {
+      const current = useGameStore.getState().save;
+      if (current?.career.id !== id) return;
+      const written = new Map(pending.map((m) => [m.id, m]));
+      useGameStore.setState({
+        save: {
+          ...current,
+          matchArchivePending: current.matchArchivePending?.filter(
+            (m) => written.get(m.id) !== m,
+          ),
+        },
+      });
+    })
+    .catch(() => {})
+    .finally(() => {
+      matchFlushes.delete(id);
+      const current = useGameStore.getState().save;
+      if (
+        current?.career.id === id &&
+        current.matchArchivePending?.some((m) => !pending.includes(m))
+      )
+        flushMatches();
+    });
+}
+useGameStore.subscribe((state, previous) => {
+  if (typeof indexedDB === "undefined" || !state.save) return;
+  if (
+    state.save.career.id !== previous.save?.career.id &&
+    state.save.matches.length
+  ) {
+    useGameStore.setState({
+      save: queueMatchRecords(state.save, state.save.matches),
+    });
+    return;
+  }
+  if (state.save.matchArchivePending !== previous.save?.matchArchivePending)
+    flushMatches();
 });

@@ -1,3 +1,4 @@
+import { queueMatchRecords } from "@/store/matchArchive";
 import {
   finishSocialGame,
   cancelSocialInvitation,
@@ -104,7 +105,10 @@ export function applyFinishedMatch(
   const opponent = playerColor === "white" ? setup.black : setup.white;
   const hit = db.classify(finish.moves);
   const stamp = save.world.date;
-  const matchId = `m${save.matches.length + 1}-${stamp.year}-${stamp.week}-${save.history.games.length}`;
+  const matchId =
+    setup.simulation === "season" && finish.moves.length && setup.prediction
+      ? `season-game:${setup.prediction.id}`
+      : `m${save.matches.length + 1}-${stamp.year}-${stamp.week}-${save.history.games.length}`;
 
   let next = save;
   let gameResultId: string | null = null;
@@ -140,7 +144,7 @@ export function applyFinishedMatch(
   }
 
   // Abstract results have no board to study and grant no analysis credit.
-  if (setup.simulation === "season")
+  if (setup.simulation === "season" && !finish.moves.length)
     next = {
       ...next,
       training: {
@@ -183,13 +187,14 @@ export function applyFinishedMatch(
         result: outcome,
         scope: "career",
         source:
-          setup.simulation === "season"
+          setup.simulation === "season" && !finish.moves.length
             ? "abstract"
             : finish.playerMoved
               ? "played"
               : "engine-simulated",
         eligible:
-          setup.simulation !== "season" && finish.termination !== "abandoned",
+          (setup.simulation !== "season" || !!finish.moves.length) &&
+          finish.termination !== "abandoned",
       },
     ]);
 
@@ -226,6 +231,20 @@ export function applyFinishedMatch(
 
   const record: MatchRecord = {
     id: matchId,
+    day: save.world.day,
+    ...((
+      finish as MatchFinish & {
+        recording?: import("@/types").RecordedSeasonGame;
+      }
+    ).recording
+      ? {
+          recording: (
+            finish as MatchFinish & {
+              recording?: import("@/types").RecordedSeasonGame;
+            }
+          ).recording,
+        }
+      : {}),
     ...stamp,
     setup,
     result: finish.result,
@@ -254,7 +273,11 @@ export function applyFinishedMatch(
         finish.playerMoved &&
         (finish.moves.length >= 12 || finish.termination === "checkmate"),
     );
-  return { save: next, record, tournamentFinished };
+  return {
+    save: queueMatchRecords(next, [record]),
+    record,
+    tournamentFinished,
+  };
 }
 
 /** Stores the analysis on its match and sets the accuracy of the rated game. */
@@ -262,8 +285,9 @@ export function attachMatchAnalysis(
   save: GameSave,
   matchId: string,
   report: MatchAnalysisReport,
+  archived?: MatchRecord,
 ): GameSave {
-  const match = save.matches.find((m) => m.id === matchId);
+  const match = save.matches.find((m) => m.id === matchId) ?? archived;
   if (!match) return save;
   let next: GameSave = {
     ...save,
@@ -283,7 +307,7 @@ export function attachMatchAnalysis(
       match.setup.accuracyBonus,
     );
   }
-  return next;
+  return queueMatchRecords(next, [{ ...match, analysis: report }]);
 }
 
 /** A checkpoint left by a previous page: the game was abandoned. Records it once and clears the checkpoint. */

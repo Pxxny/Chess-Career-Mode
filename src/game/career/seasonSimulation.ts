@@ -1,4 +1,7 @@
-import type { GameSave, Npc, MatchSetupLite, PieceColor } from "@/types";
+import { buildEventTeams } from "@/game/competition/teamEvents";
+import { teamInfoOf } from "@/data/chess/nationalTeamEvents";
+import { captureHighlights, highlightsOf } from "./highlights";
+import type { GameSave, Npc } from "@/types";
 import type { MatchFinish } from "@/game/match/session";
 import {
   gameDay,
@@ -7,6 +10,7 @@ import {
   tournamentSlot,
 } from "@/game/competition/agenda";
 import { careerSchedule, planningOf, type AnnualFocus } from "./planning";
+import { LEARNING_FOCUSES, normalizeLearningFocus, type LearningFocus } from "./learningFocus";
 import { yearReviewOf } from "./yearReview";
 import { registrationIssue } from "@/game/competition/eligibility";
 import {
@@ -18,13 +22,9 @@ import { playerOpponentId, completeRound } from "@/game/match/tournament";
 import { recordTournament } from "@/game/history/recordGame";
 import { archiveCompetition } from "@/game/competition/preparation";
 import {
-  careerPrediction,
   predictionEnvironment,
   recordTournamentPredictions,
 } from "@/game/prediction/adapters";
-import { sampleOutcome } from "@/game/prediction/model";
-import { sideForNpc, sideForPlayer } from "@/game/match/setup";
-import { DEFAULT_TIME_CONTROL } from "@/game/match/timeControls";
 import {
   recordSharedEvent,
   recordSharedContacts,
@@ -41,14 +41,19 @@ import {
   performSession,
   takeRest,
 } from "@/game/training/engine";
-import { createRng, mixSeed } from "@/game/rng";
-import { hashString } from "@/utils/format";
 import {
   esportsCommand,
   esportsRoundDay,
   nextEsportsGame,
 } from "@/game/esports/core";
 export interface SeasonSimulation {
+  timing?: {
+    games: number;
+    gameMs: number;
+    searchMs: number;
+    lastGameMs: number;
+    runMs: number;
+  };
   baseline: {
     wins: number;
     draws: number;
@@ -61,6 +66,8 @@ export interface SeasonSimulation {
   startDay: number;
   targetDay: number;
   focus: AnnualFocus;
+  /** Missing/empty on older saves means automatic training of weaker skills. */
+  learningFocus?: LearningFocus[];
   status: "paused" | "completed";
   phase: "choose" | "end-day";
   endRating?: number;
@@ -90,6 +97,9 @@ export function seasonOf(save: GameSave): SeasonSimulation | null {
     s.startDay >= s.year * 364 &&
     s.startDay < s.targetDay &&
     ["balanced", "rating", "competition", "learning"].includes(s.focus) &&
+    (s.learningFocus === undefined ||
+      (Array.isArray(s.learningFocus) && s.learningFocus.every((id) =>
+        LEARNING_FOCUSES.some((f) => f.id === id)))) &&
     ["paused", "completed"].includes(s.status) &&
     ["choose", "end-day"].includes(s.phase) &&
     typeof s.action === "string" &&
@@ -126,6 +136,7 @@ export function seasonOf(save: GameSave): SeasonSimulation | null {
 export function newSeason(
   save: GameSave,
   focus: AnnualFocus = planningOf(save).current.focus,
+  learningFocus: readonly LearningFocus[] = [],
 ): SeasonSimulation {
   const y = yearReviewOf(save).current;
   return {
@@ -139,6 +150,7 @@ export function newSeason(
     startDay: gameDay(save),
     targetDay: (save.world.date.year + 1) * 364,
     focus,
+    learningFocus: normalizeLearningFocus(learningFocus),
     status: "paused",
     phase: "choose",
     startRating: save.player.rating,
@@ -227,6 +239,11 @@ export function seasonTraining(save: GameSave): GameSave {
     if (r.ok) next = r.save;
   }
   for (let i = 0; i < limit; i++) {
+    // Rotate selected topics by the persisted session count, including after resume.
+    const priorities = s.focus === "learning" ? normalizeLearningFocus(s.learningFocus) : [];
+    const target = LEARNING_FOCUSES.find((f) =>
+      f.id === priorities[yearReviewOf(next).current.sessions % priorities.length]);
+    const targetStats: readonly string[] = target?.stats ?? [];
     const candidates = AUTO_TRAINING.filter(
       (d) => d.money === 0 && !previewSession(next, d).blocks.length,
     )
@@ -234,7 +251,8 @@ export function seasonTraining(save: GameSave): GameSave {
         d,
         score:
           (d.effects.reduce(
-            (sum, e) => sum + e.xp * (101 - getStat(next, e.stat)),
+            (sum, e) => sum + e.xp * (101 - getStat(next, e.stat)) *
+              (targetStats.includes(e.stat) ? 6 : 1),
             0,
           ) /
             Math.max(1, d.hours)) *
@@ -272,14 +290,15 @@ export function chooseSeasonEvent(save: GameSave, npcs: Npc[]) {
     s.focus === "competition" ? 14 : s.focus === "learning" ? 42 : 28;
   const candidates = careerSchedule(save, 8).filter(
     (e) =>
-      e.details?.format !== "team" &&
       !e.details?.showcase &&
       bookedStart(e) >= gameDay(save) &&
       reservedUntil(e) < s.targetDay &&
       bookedStart(e) >= s.lastEventDay + spacing &&
       e.entryFee + (e.details?.travelCost ?? 0) <=
         Math.max(0, save.player.money - 50) &&
-      registrationIssue(save, e, npcs) === null,
+      registrationIssue(save, e, npcs) === null &&
+      (e.details?.format !== "team" || buildEventTeams(save, npcs, teamInfoOf(e.details))
+        .find((team) => team.country === save.player.country)?.players.some((p) => p.id === "player")),
   );
   return (
     candidates.sort(
@@ -295,65 +314,13 @@ export function chooseSeasonEvent(save: GameSave, npcs: Npc[]) {
     )[0] ?? null
   );
 }
-function quickFinish(
-  save: GameSave,
-  npc: Npc,
-  color: PieceColor,
-  tournament: NonNullable<MatchSetupLite["tournament"]>,
-  esports?: MatchSetupLite["esports"],
-): MatchFinish {
-  const tc = esports
-    ? save.esports!.active!.event.timeControl
-    : (save.tournament?.details?.timeControl ?? DEFAULT_TIME_CONTROL);
-  const id = `season:${save.career.id}:${tournament.id}:${tournament.round}:${npc.id}`;
-  const prediction = careerPrediction(save, npc, {
-    id,
-    color,
-    timeControl: tc.category,
-    eventId: tournament.id,
-    eventName: tournament.name,
-    round: tournament.round,
-    rounds: tournament.rounds,
-    tournamentType: "season-simulation",
-  });
-  const outcome = sampleOutcome(
-    prediction.adjusted,
-    createRng(mixSeed(save.world.seed, hashString(id))).next(),
-  );
-  const player = sideForPlayer(save),
-    opponent = sideForNpc(npc);
-  return {
-    setup: {
-      simulation: "season",
-      prediction,
-      white: color === "white" ? player : opponent,
-      black: color === "black" ? player : opponent,
-      playerColor: color,
-      timeControl: tc,
-      rated: true,
-      tournament,
-      accuracyBonus: 0,
-      ...(esports ? { esports } : {}),
-    },
-    result:
-      outcome === "draw"
-        ? "draw"
-        : outcome === "win"
-          ? color
-          : color === "white"
-            ? "black"
-            : "white",
-    termination: "simulation",
-    moves: [],
-    ucis: [],
-    controlLog: [],
-    playerMoved: false,
-  };
-}
 export interface SeasonPort {
   read: () => GameSave | null;
   npcs: () => Npc[];
   commit: (save: GameSave) => void;
+  play: (
+    input: import("./seasonGame").SeasonGameInput,
+  ) => Promise<import("./seasonGame").SeasonGameFinish>;
   finish: (finish: MatchFinish) => boolean;
   advanceDay: () => Promise<void>;
   cancelled: () => boolean;
@@ -370,6 +337,9 @@ export async function runSeason(port: SeasonPort): Promise<void> {
     if (!save || save.career.id !== id) return;
     const s = seasonOf(save);
     if (!s) return;
+    const checkpoint = captureHighlights(save, save, port.npcs());
+    if (checkpoint !== save) port.commit(checkpoint);
+    if (highlightsOf(checkpoint).unread.length) return;
     if (gameDay(save) >= target) {
       port.commit(
         updateSeason(save, { status: "completed", action: "Season complete" }),
@@ -441,13 +411,19 @@ export async function runSeason(port: SeasonPort): Promise<void> {
         if (pairing) {
           const npc = port.npcs().find((n) => n.id === pairing.id);
           if (!npc) throw new Error("The tournament opponent is unavailable.");
-          const finish = quickFinish(save, npc, pairing.color, {
-            id: t.eventId,
-            name: t.name,
-            level: t.level,
-            round: t.round,
-            rounds: t.rounds,
+          const finish = await port.play({
+            save,
+            npc,
+            color: pairing.color,
+            tournament: {
+              id: t.eventId,
+              name: t.name,
+              level: t.level,
+              round: t.round,
+              rounds: t.rounds,
+            },
           });
+          if (port.read()?.career.id !== id) return;
           if (!port.finish(finish))
             throw new Error("The simulated game could not be recorded.");
           const next = port.read()!;
@@ -507,13 +483,14 @@ export async function runSeason(port: SeasonPort): Promise<void> {
           throw new Error(
             "The esports event needs attention before simulation can continue.",
           );
-        const finish = quickFinish(
+        const finish = await port.play({
           save,
           npc,
-          game.color,
-          game.tournament,
-          game.context,
-        );
+          color: game.color,
+          tournament: game.tournament,
+          esports: game.context,
+        });
+        if (port.read()?.career.id !== id) return;
         if (!port.finish(finish))
           throw new Error("The simulated game could not be recorded.");
         const next = port.read()!,
@@ -593,6 +570,11 @@ export async function runSeason(port: SeasonPort): Promise<void> {
         } else port.commit(seasonTraining(save));
       }
     }
+    const current = port.read();
+    if (!current || current.career.id !== id) return;
+    const checked = captureHighlights(save, current, port.npcs());
+    if (checked !== current) port.commit(checked);
+    if (highlightsOf(checked).unread.length) return;
     await port.yield();
   }
 }
