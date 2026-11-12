@@ -1,0 +1,26 @@
+
+> chess-career-mode@0.1.0 typecheck
+> tsc --noEmit
+
+src/diagnostics/performance.ts(70,5): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(entries: Iterable<readonly [PropertyKey, any]>): { [k: string]: any; }', gave the following error.
+    Argument of type 'unknown[]' is not assignable to parameter of type 'Iterable<readonly [PropertyKey, any]>'.
+      The types returned by '[Symbol.iterator]().next(...)' are incompatible between these types.
+        Type 'IteratorResult<unknown, undefined>' is not assignable to type 'IteratorResult<readonly [PropertyKey, any], any>'.
+          Type 'IteratorYieldResult<unknown>' is not assignable to type 'IteratorResult<readonly [PropertyKey, any], any>'.
+            Type 'IteratorYieldResult<unknown>' is not assignable to type 'IteratorYieldResult<readonly [PropertyKey, any]>'.
+              Type 'unknown' is not assignable to type 'readonly [PropertyKey, any]'.
+  Overload 2 of 2, '(entries: Iterable<readonly any[]>): any', gave the following error.
+    Argument of type 'unknown[]' is not assignable to parameter of type 'Iterable<readonly any[]>'.
+      The types returned by '[Symbol.iterator]().next(...)' are incompatible between these types.
+        Type 'IteratorResult<unknown, undefined>' is not assignable to type 'IteratorResult<readonly any[], any>'.
+          Type 'IteratorYieldResult<unknown>' is not assignable to type 'IteratorResult<readonly any[], any>'.
+            Type 'IteratorYieldResult<unknown>' is not assignable to type 'IteratorYieldResult<readonly any[]>'.
+              Type 'unknown' is not assignable to type 'readonly any[]'.
+src/diagnostics/performance.ts(71,7): error TS2322: Type '[] | [[string, string]] | [[string, number | boolean]]' is not assignable to type '[string, string] | readonly [string, string][]'.
+  Type '[[string, number | boolean]]' is not assignable to type '[string, string] | readonly [string, string][]'.
+    Type '[[string, number | boolean]]' is not assignable to type 'readonly [string, string][]'.
+      Type '[string, number | boolean]' is not assignable to type '[string, string]'.
+        Type at position 1 in source is not compatible with type at position 1 in target.
+          Type 'number | boolean' is not assignable to type 'string'.
+            Type 'number' is not assignable to type 'string'.

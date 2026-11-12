@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
+import { PerformanceMenu } from "./features/diagnostics/PerformanceMenu";
 import { InstallProvider } from "./features/install/InstallProvider";
 import { LanguageProvider } from "./i18n/LanguageProvider";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -16,6 +17,7 @@ createRoot(document.getElementById("root")!).render(
         <ErrorBoundary scope="app">
           <InstallProvider>
             <App />
+            <PerformanceMenu />
           </InstallProvider>
         </ErrorBoundary>
       </BrowserRouter>

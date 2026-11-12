@@ -71,7 +71,10 @@ export function SaveSlotsPage() {
       <div className="mb-4 flex justify-end">
         <LanguageSelector />
       </div>
-      <p className="font-display text-3xl font-bold text-gold-400">
+      <p
+        data-performance-trigger
+        className="touch-manipulation select-none font-display text-3xl font-bold text-gold-400"
+      >
         {GAME_CONFIG.appName}
       </p>
       <h1 className="mt-1 font-display text-2xl font-bold text-ink">

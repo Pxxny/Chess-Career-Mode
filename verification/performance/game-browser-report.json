@@ -1,0 +1,1913 @@
+{
+  "format": "chess-career-performance",
+  "version": 1,
+  "exportedAt": "2026-11-12T08:20:03.088Z",
+  "recording": true,
+  "sessionMs": 16122.19999999553,
+  "metrics": [
+    {
+      "id": "ui.long-task",
+      "count": 32,
+      "meanMs": 137.34375,
+      "minMs": 51,
+      "maxMs": 334,
+      "last": {
+        "id": "ui.long-task",
+        "ms": 63,
+        "atMs": 13801.5,
+        "tags": {}
+      },
+      "p95Ms": 294,
+      "sampleCount": 32
+    },
+    {
+      "id": "storage.write",
+      "count": 120,
+      "meanMs": 842.2383333333457,
+      "minMs": 16.399999998509884,
+      "maxMs": 1875.3000000044703,
+      "last": {
+        "id": "storage.write",
+        "ms": 17.5,
+        "atMs": 15942.89999999851,
+        "tags": {
+          "stores": "keyval",
+          "status": "ok"
+        }
+      },
+      "p95Ms": 1548.1000000014901,
+      "sampleCount": 100
+    },
+    {
+      "id": "calendar.events",
+      "count": 33,
+      "meanMs": 38.80303030235298,
+      "minMs": 1.8999999985098839,
+      "maxMs": 181.79999999701977,
+      "last": {
+        "id": "calendar.events",
+        "ms": 3,
+        "atMs": 12334.5,
+        "tags": {
+          "npcs": 0
+        }
+      },
+      "p95Ms": 179.39999999850988,
+      "sampleCount": 33
+    },
+    {
+      "id": "calendar.day",
+      "count": 33,
+      "meanMs": 61.518181818904296,
+      "minMs": 10.300000004470348,
+      "maxMs": 227.40000000596046,
+      "last": {
+        "id": "calendar.day",
+        "ms": 11.900000005960464,
+        "atMs": 12342.5,
+        "tags": {
+          "newWeek": false,
+          "days": 1
+        }
+      },
+      "p95Ms": 193.70000000298023,
+      "sampleCount": 33
+    },
+    {
+      "id": "calendar.circuit",
+      "count": 4,
+      "meanMs": 29.875,
+      "minMs": 22.399999998509884,
+      "maxMs": 37.5,
+      "last": {
+        "id": "calendar.circuit",
+        "ms": 22.399999998509884,
+        "atMs": 11448.79999999702,
+        "tags": {
+          "npcs": 491
+        }
+      },
+      "p95Ms": 37.5,
+      "sampleCount": 4
+    },
+    {
+      "id": "calendar.advance",
+      "count": 1,
+      "meanMs": 5266.39999999851,
+      "minMs": 5266.39999999851,
+      "maxMs": 5266.39999999851,
+      "last": {
+        "id": "calendar.advance",
+        "ms": 5266.39999999851,
+        "atMs": 12364.39999999851,
+        "tags": {
+          "days": 33,
+          "status": "ok"
+        }
+      },
+      "p95Ms": 5266.39999999851,
+      "sampleCount": 1
+    },
+    {
+      "id": "match.auto-move",
+      "count": 13,
+      "meanMs": 172.6307692315716,
+      "minMs": 40.5,
+      "maxMs": 266.6000000014901,
+      "last": {
+        "id": "match.auto-move",
+        "ms": 217.20000000298023,
+        "atMs": 15771.89999999851,
+        "tags": {
+          "speed": "max",
+          "book": false,
+          "status": "ok"
+        }
+      },
+      "p95Ms": 266.6000000014901,
+      "sampleCount": 13
+    },
+    {
+      "id": "engine.load",
+      "count": 1,
+      "meanMs": 519.2999999970198,
+      "minMs": 519.2999999970198,
+      "maxMs": 519.2999999970198,
+      "last": {
+        "id": "engine.load",
+        "ms": 519.2999999970198,
+        "atMs": 13802.09999999404,
+        "tags": {
+          "engine": "stockfish",
+          "status": "ok"
+        }
+      },
+      "p95Ms": 519.2999999970198,
+      "sampleCount": 1
+    },
+    {
+      "id": "engine.search",
+      "count": 10,
+      "meanMs": 211.43999999985098,
+      "minMs": 161.39999999850988,
+      "maxMs": 254.5,
+      "last": {
+        "id": "engine.search",
+        "ms": 207,
+        "atMs": 15978.79999999702,
+        "tags": {
+          "engine": "stockfish",
+          "budgetMs": 60,
+          "depth": 5,
+          "status": "ok"
+        }
+      },
+      "p95Ms": 254.5,
+      "sampleCount": 10
+    }
+  ],
+  "recent": [
+    {
+      "id": "storage.write",
+      "ms": 740.3999999985099,
+      "atMs": 8532.39999999851,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "calendar.events",
+      "ms": 26.299999997019768,
+      "atMs": 8569.69999999553,
+      "tags": {
+        "npcs": 55
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 47.80000000447035,
+      "atMs": 8590.5,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "calendar.events",
+      "ms": 1.8999999985098839,
+      "atMs": 8698.79999999702,
+      "tags": {
+        "npcs": 0
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 16.399999998509884,
+      "atMs": 8712.59999999404,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 142,
+      "atMs": 8747.39999999851,
+      "tags": {}
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 51,
+      "atMs": 8747.39999999851,
+      "tags": {}
+    },
+    {
+      "id": "calendar.events",
+      "ms": 18,
+      "atMs": 8782.59999999404,
+      "tags": {
+        "npcs": 52
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 35.29999999701977,
+      "atMs": 8799.09999999404,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1078.2999999970198,
+      "atMs": 8874.59999999404,
+      "tags": {
+        "stores": "careerNpcs",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "calendar.events",
+      "ms": 4.5,
+      "atMs": 8880.09999999404,
+      "tags": {
+        "npcs": 0
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 20.700000002980232,
+      "atMs": 8895.39999999851,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 109,
+      "atMs": 8932,
+      "tags": {}
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 57,
+      "atMs": 8932,
+      "tags": {}
+    },
+    {
+      "id": "storage.write",
+      "ms": 1127.2999999970198,
+      "atMs": 8934.19999999553,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "calendar.events",
+      "ms": 1.8999999985098839,
+      "atMs": 8957.09999999404,
+      "tags": {
+        "npcs": 0
+      }
+    },
+    {
+      "id": "calendar.circuit",
+      "ms": 22.80000000447035,
+      "atMs": 8980,
+      "tags": {
+        "npcs": 498
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 61.600000001490116,
+      "atMs": 9001.69999999553,
+      "tags": {
+        "newWeek": true,
+        "days": 1
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1072.5999999940395,
+      "atMs": 9172.09999999404,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 230,
+      "atMs": 9172.19999999553,
+      "tags": {}
+    },
+    {
+      "id": "storage.write",
+      "ms": 1061.7999999970198,
+      "atMs": 9174.09999999404,
+      "tags": {
+        "stores": "tournamentArchive",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 56,
+      "atMs": 9235.59999999404,
+      "tags": {}
+    },
+    {
+      "id": "storage.write",
+      "ms": 996.7000000029802,
+      "atMs": 9308.79999999702,
+      "tags": {
+        "stores": "careerNpcs",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 989.5,
+      "atMs": 9312.19999999553,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 978.6000000014901,
+      "atMs": 9315.5,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 835,
+      "atMs": 9319.59999999404,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 821.6999999955297,
+      "atMs": 9323.09999999404,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 806.2000000029802,
+      "atMs": 9379.89999999851,
+      "tags": {
+        "stores": "careerNpcs",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 792.5999999940395,
+      "atMs": 9383.09999999404,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 779.8999999985099,
+      "atMs": 9386.29999999702,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 676.3000000044703,
+      "atMs": 9388.89999999851,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 667,
+      "atMs": 9391.69999999553,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 684.2999999970198,
+      "atMs": 9469.69999999553,
+      "tags": {
+        "stores": "careerNpcs",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 673.7000000029802,
+      "atMs": 9472.79999999702,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 661.8999999985099,
+      "atMs": 9475.69999999553,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 583.2999999970198,
+      "atMs": 9478.69999999553,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 572.1000000014901,
+      "atMs": 9482,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 527.5,
+      "atMs": 9482.39999999851,
+      "tags": {
+        "stores": "careerNpcs",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "calendar.events",
+      "ms": 160.10000000149012,
+      "atMs": 9643.69999999553,
+      "tags": {
+        "npcs": 112
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 175.69999999552965,
+      "atMs": 9658.19999999553,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "calendar.events",
+      "ms": 30,
+      "atMs": 9748.79999999702,
+      "tags": {
+        "npcs": 0
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 42.5,
+      "atMs": 9760.29999999702,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 233,
+      "atMs": 9789.59999999404,
+      "tags": {}
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 71,
+      "atMs": 9789.59999999404,
+      "tags": {}
+    },
+    {
+      "id": "calendar.events",
+      "ms": 18.5,
+      "atMs": 9810.69999999553,
+      "tags": {
+        "npcs": 64
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 28.600000001490116,
+      "atMs": 9820,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 889.1000000014901,
+      "atMs": 9887.29999999702,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "calendar.events",
+      "ms": 4,
+      "atMs": 9894.69999999553,
+      "tags": {
+        "npcs": 5
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 15.700000002980232,
+      "atMs": 9905.79999999702,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 94,
+      "atMs": 9960.69999999553,
+      "tags": {}
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 70,
+      "atMs": 9960.69999999553,
+      "tags": {}
+    },
+    {
+      "id": "calendar.events",
+      "ms": 3,
+      "atMs": 9986.19999999553,
+      "tags": {
+        "npcs": 0
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 14.5,
+      "atMs": 9996.5,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "calendar.events",
+      "ms": 2.2000000029802322,
+      "atMs": 10028.5,
+      "tags": {
+        "npcs": 0
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 39.899999998509884,
+      "atMs": 10065.39999999851,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 78,
+      "atMs": 10109.59999999404,
+      "tags": {}
+    },
+    {
+      "id": "calendar.events",
+      "ms": 5.799999997019768,
+      "atMs": 10130.59999999404,
+      "tags": {
+        "npcs": 0
+      }
+    },
+    {
+      "id": "calendar.circuit",
+      "ms": 37.5,
+      "atMs": 10168.09999999404,
+      "tags": {
+        "npcs": 508
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 71,
+      "atMs": 10181.19999999553,
+      "tags": {
+        "newWeek": true,
+        "days": 1
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1345,
+      "atMs": 10346.69999999553,
+      "tags": {
+        "stores": "careerNpcs",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 234,
+      "atMs": 10346.79999999702,
+      "tags": {}
+    },
+    {
+      "id": "storage.write",
+      "ms": 1333.5,
+      "atMs": 10348.5,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1162.5999999940395,
+      "atMs": 10354.59999999404,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1136.3999999985099,
+      "atMs": 10360.79999999702,
+      "tags": {
+        "stores": "tournamentArchive",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 822.3999999985099,
+      "atMs": 10471.29999999702,
+      "tags": {
+        "stores": "careerNpcs",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 817.5,
+      "atMs": 10475.69999999553,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 812.7000000029802,
+      "atMs": 10479.5,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 723.7999999970198,
+      "atMs": 10484.09999999404,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 724.5,
+      "atMs": 10499.39999999851,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 778.5,
+      "atMs": 10591.09999999404,
+      "tags": {
+        "stores": "careerNpcs",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 779.8999999985099,
+      "atMs": 10599.89999999851,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 773.5,
+      "atMs": 10600.79999999702,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 715.3000000044703,
+      "atMs": 10612.39999999851,
+      "tags": {
+        "stores": "careerNpcs",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 710,
+      "atMs": 10615.79999999702,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 702.8000000044703,
+      "atMs": 10618.89999999851,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 625.3999999985099,
+      "atMs": 10621.89999999851,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 620.9000000059605,
+      "atMs": 10625,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 562.6999999955297,
+      "atMs": 10628.09999999404,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 551,
+      "atMs": 10631.19999999553,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 507,
+      "atMs": 10631.59999999404,
+      "tags": {
+        "stores": "careerNpcs",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "calendar.events",
+      "ms": 157,
+      "atMs": 10789.69999999553,
+      "tags": {
+        "npcs": 42
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 173.10000000149012,
+      "atMs": 10804.79999999702,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "calendar.events",
+      "ms": 47.19999999552965,
+      "atMs": 10913.79999999702,
+      "tags": {
+        "npcs": 0
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 63.70000000298023,
+      "atMs": 10928.29999999702,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 231,
+      "atMs": 10956.09999999404,
+      "tags": {}
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 91,
+      "atMs": 10956.09999999404,
+      "tags": {}
+    },
+    {
+      "id": "calendar.events",
+      "ms": 39.099999994039536,
+      "atMs": 10998.09999999404,
+      "tags": {
+        "npcs": 132
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 50.5,
+      "atMs": 11008.89999999851,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 921.1000000014901,
+      "atMs": 11098.89999999851,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "calendar.events",
+      "ms": 5,
+      "atMs": 11106.69999999553,
+      "tags": {
+        "npcs": 0
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 15.100000001490116,
+      "atMs": 11115.89999999851,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 139,
+      "atMs": 11169,
+      "tags": {}
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 68,
+      "atMs": 11169.09999999404,
+      "tags": {}
+    },
+    {
+      "id": "calendar.events",
+      "ms": 9.200000002980232,
+      "atMs": 11197.39999999851,
+      "tags": {
+        "npcs": 50
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 32.19999999552965,
+      "atMs": 11219.59999999404,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "calendar.events",
+      "ms": 5.5,
+      "atMs": 11303.09999999404,
+      "tags": {
+        "npcs": 6
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 21.400000005960464,
+      "atMs": 11318.5,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 104,
+      "atMs": 11395.69999999553,
+      "tags": {}
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 96,
+      "atMs": 11396.29999999702,
+      "tags": {}
+    },
+    {
+      "id": "calendar.events",
+      "ms": 2.3000000044703484,
+      "atMs": 11426.39999999851,
+      "tags": {
+        "npcs": 0
+      }
+    },
+    {
+      "id": "calendar.circuit",
+      "ms": 22.399999998509884,
+      "atMs": 11448.79999999702,
+      "tags": {
+        "npcs": 491
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 56.100000001490116,
+      "atMs": 11465.79999999702,
+      "tags": {
+        "newWeek": true,
+        "days": 1
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1450.5,
+      "atMs": 11631.69999999553,
+      "tags": {
+        "stores": "careerNpcs",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 220,
+      "atMs": 11631.69999999553,
+      "tags": {}
+    },
+    {
+      "id": "calendar.events",
+      "ms": 181.79999999701977,
+      "atMs": 11816.59999999404,
+      "tags": {
+        "npcs": 44
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 227.40000000596046,
+      "atMs": 11861.59999999404,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1774,
+      "atMs": 11970.19999999553,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 334,
+      "atMs": 11972.29999999702,
+      "tags": {}
+    },
+    {
+      "id": "calendar.events",
+      "ms": 68.10000000149012,
+      "atMs": 12042,
+      "tags": {
+        "npcs": 82
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 88.89999999850988,
+      "atMs": 12061.89999999851,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1747.5,
+      "atMs": 12129.29999999702,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 154,
+      "atMs": 12137.59999999404,
+      "tags": {}
+    },
+    {
+      "id": "calendar.events",
+      "ms": 34,
+      "atMs": 12173.29999999702,
+      "tags": {
+        "npcs": 88
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 49.79999999701977,
+      "atMs": 12188.29999999702,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1875.3000000044703,
+      "atMs": 12274.89999999851,
+      "tags": {
+        "stores": "tournamentArchive",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 135,
+      "atMs": 12296.09999999404,
+      "tags": {}
+    },
+    {
+      "id": "calendar.events",
+      "ms": 1.8999999985098839,
+      "atMs": 12302.69999999553,
+      "tags": {
+        "npcs": 0
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 10.300000004470348,
+      "atMs": 12310,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1535.6999999955297,
+      "atMs": 12328.09999999404,
+      "tags": {
+        "stores": "careerNpcs",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "calendar.events",
+      "ms": 3,
+      "atMs": 12334.5,
+      "tags": {
+        "npcs": 0
+      }
+    },
+    {
+      "id": "calendar.day",
+      "ms": 11.900000005960464,
+      "atMs": 12342.5,
+      "tags": {
+        "newWeek": false,
+        "days": 1
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1555.6000000014901,
+      "atMs": 12360.39999999851,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "calendar.advance",
+      "ms": 5266.39999999851,
+      "atMs": 12364.39999999851,
+      "tags": {
+        "days": 33,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1560.3000000044703,
+      "atMs": 12377,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1456.5,
+      "atMs": 12384.79999999702,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1450.6999999955297,
+      "atMs": 12393.19999999553,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1548.1000000014901,
+      "atMs": 12548.29999999702,
+      "tags": {
+        "stores": "careerNpcs",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1544,
+      "atMs": 12552.89999999851,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1539.5,
+      "atMs": 12556.09999999404,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1443.6999999955297,
+      "atMs": 12559.59999999404,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1436.2000000029802,
+      "atMs": 12563.5,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1395.6999999955297,
+      "atMs": 12595.79999999702,
+      "tags": {
+        "stores": "careerNpcs",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1379.8000000044703,
+      "atMs": 12599.39999999851,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1366.7000000029802,
+      "atMs": 12602.79999999702,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1316.8999999985099,
+      "atMs": 12621.69999999553,
+      "tags": {
+        "stores": "careerNpcs",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1306.5999999940395,
+      "atMs": 12625.09999999404,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1296.6000000014901,
+      "atMs": 12628.39999999851,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1168.7999999970198,
+      "atMs": 12631.79999999702,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1395.5,
+      "atMs": 12861.29999999702,
+      "tags": {
+        "stores": "careerNpcs",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1383.9000000059605,
+      "atMs": 12863.5,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1166.6999999955297,
+      "atMs": 12985.69999999553,
+      "tags": {
+        "stores": "careerNpcs",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1151.2999999970198,
+      "atMs": 13012.79999999702,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1135.7000000029802,
+      "atMs": 13026.79999999702,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1075.5,
+      "atMs": 13119.39999999851,
+      "tags": {
+        "stores": "careerNpcs",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1066.6999999955297,
+      "atMs": 13128.69999999553,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1100.1000000014901,
+      "atMs": 13173.39999999851,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 98,
+      "atMs": 13377.59999999404,
+      "tags": {}
+    },
+    {
+      "id": "storage.write",
+      "ms": 1222.5,
+      "atMs": 13399.09999999404,
+      "tags": {
+        "stores": "careerNpcs",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1226.2000000029802,
+      "atMs": 13414.5,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1258.6999999955297,
+      "atMs": 13456.59999999404,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1177.2000000029802,
+      "atMs": 13460.5,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1187.2000000029802,
+      "atMs": 13477.79999999702,
+      "tags": {
+        "stores": "tournamentArchive",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1198.8999999985099,
+      "atMs": 13508.89999999851,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1213.7000000029802,
+      "atMs": 13529.79999999702,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "match.auto-move",
+      "ms": 40.5,
+      "atMs": 13571.5,
+      "tags": {
+        "speed": "max",
+        "book": true,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "match.auto-move",
+      "ms": 47.70000000298023,
+      "atMs": 13618.79999999702,
+      "tags": {
+        "speed": "max",
+        "book": true,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1294,
+      "atMs": 13636.5,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 56,
+      "atMs": 13636.59999999404,
+      "tags": {}
+    },
+    {
+      "id": "match.auto-move",
+      "ms": 72.5,
+      "atMs": 13690.89999999851,
+      "tags": {
+        "speed": "max",
+        "book": true,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1362,
+      "atMs": 13711.59999999404,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "match.auto-move",
+      "ms": 69.09999999403954,
+      "atMs": 13759.59999999404,
+      "tags": {
+        "speed": "max",
+        "book": true,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "ui.long-task",
+      "ms": 63,
+      "atMs": 13801.5,
+      "tags": {}
+    },
+    {
+      "id": "storage.write",
+      "ms": 1427.5,
+      "atMs": 13801.89999999851,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "engine.load",
+      "ms": 519.2999999970198,
+      "atMs": 13802.09999999404,
+      "tags": {
+        "engine": "stockfish",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 1075.6000000014901,
+      "atMs": 13810.69999999553,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 519.7999999970198,
+      "atMs": 13824.29999999702,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 377.6000000014901,
+      "atMs": 13864.5,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 301.40000000596046,
+      "atMs": 13872.5,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 261.6000000014901,
+      "atMs": 13880,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 189.79999999701977,
+      "atMs": 13880.29999999702,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 126.39999999850988,
+      "atMs": 13885.09999999404,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "engine.search",
+      "ms": 254.5,
+      "atMs": 14014,
+      "tags": {
+        "engine": "stockfish",
+        "budgetMs": 129,
+        "depth": 5,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "match.auto-move",
+      "ms": 266.6000000014901,
+      "atMs": 14025.29999999702,
+      "tags": {
+        "speed": "max",
+        "book": false,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 20.30000000447035,
+      "atMs": 14045.39999999851,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "engine.search",
+      "ms": 228.39999999850988,
+      "atMs": 14253.59999999404,
+      "tags": {
+        "engine": "stockfish",
+        "budgetMs": 60,
+        "depth": 5,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "match.auto-move",
+      "ms": 238.20000000298023,
+      "atMs": 14263.29999999702,
+      "tags": {
+        "speed": "max",
+        "book": false,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 19.200000002980232,
+      "atMs": 14282.29999999702,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "engine.search",
+      "ms": 161.39999999850988,
+      "atMs": 14424.69999999553,
+      "tags": {
+        "engine": "stockfish",
+        "budgetMs": 129,
+        "depth": 4,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "match.auto-move",
+      "ms": 172.60000000149012,
+      "atMs": 14435.69999999553,
+      "tags": {
+        "speed": "max",
+        "book": false,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 16.69999999552965,
+      "atMs": 14452.19999999553,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "engine.search",
+      "ms": 247,
+      "atMs": 14682.69999999553,
+      "tags": {
+        "engine": "stockfish",
+        "budgetMs": 60,
+        "depth": 5,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "match.auto-move",
+      "ms": 264.1000000014901,
+      "atMs": 14699.69999999553,
+      "tags": {
+        "speed": "max",
+        "book": false,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 34.5,
+      "atMs": 14733.89999999851,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "engine.search",
+      "ms": 190.10000000149012,
+      "atMs": 14889.79999999702,
+      "tags": {
+        "engine": "stockfish",
+        "budgetMs": 129,
+        "depth": 5,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "match.auto-move",
+      "ms": 201,
+      "atMs": 14900.39999999851,
+      "tags": {
+        "speed": "max",
+        "book": false,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 20.30000000447035,
+      "atMs": 14920.5,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "engine.search",
+      "ms": 189.10000000149012,
+      "atMs": 15089.5,
+      "tags": {
+        "engine": "stockfish",
+        "budgetMs": 60,
+        "depth": 4,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "match.auto-move",
+      "ms": 203.5,
+      "atMs": 15103.69999999553,
+      "tags": {
+        "speed": "max",
+        "book": false,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 17.100000001490116,
+      "atMs": 15120.69999999553,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "engine.search",
+      "ms": 211.39999999850988,
+      "atMs": 15315.09999999404,
+      "tags": {
+        "engine": "stockfish",
+        "budgetMs": 129,
+        "depth": 5,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "match.auto-move",
+      "ms": 220.10000000149012,
+      "atMs": 15323.79999999702,
+      "tags": {
+        "speed": "max",
+        "book": false,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 16.399999998509884,
+      "atMs": 15340.09999999404,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "engine.search",
+      "ms": 218.79999999701977,
+      "atMs": 15542.59999999404,
+      "tags": {
+        "engine": "stockfish",
+        "budgetMs": 60,
+        "depth": 4,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "match.auto-move",
+      "ms": 231.10000000149012,
+      "atMs": 15554.79999999702,
+      "tags": {
+        "speed": "max",
+        "book": false,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 19.899999998509884,
+      "atMs": 15574.59999999404,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "engine.search",
+      "ms": 206.70000000298023,
+      "atMs": 15761.5,
+      "tags": {
+        "engine": "stockfish",
+        "budgetMs": 129,
+        "depth": 6,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "match.auto-move",
+      "ms": 217.20000000298023,
+      "atMs": 15771.89999999851,
+      "tags": {
+        "speed": "max",
+        "book": false,
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 32.100000001490116,
+      "atMs": 15802.79999999702,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "storage.write",
+      "ms": 17.5,
+      "atMs": 15942.89999999851,
+      "tags": {
+        "stores": "keyval",
+        "status": "ok"
+      }
+    },
+    {
+      "id": "engine.search",
+      "ms": 207,
+      "atMs": 15978.79999999702,
+      "tags": {
+        "engine": "stockfish",
+        "budgetMs": 60,
+        "depth": 5,
+        "status": "ok"
+      }
+    }
+  ],
+  "runtime": {
+    "fps": 60,
+    "lagMs": 0.8999999985098839,
+    "longTasks": true,
+    "visible": true
+  },
+  "engine": {
+    "status": "stockfish",
+    "label": "Stockfish"
+  },
+  "heapUsedMB": 40.99852180480957
+}

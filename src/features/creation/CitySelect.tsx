@@ -8,6 +8,7 @@ import {
 import { useCities } from "@/features/world/useCities";
 import type { City, Country, PlayerCity } from "@/types";
 import { formatNumber } from "@/utils/format";
+import { beginMeasurement } from "@/diagnostics/performance";
 
 const CUSTOM_PREFIX = "custom:";
 
@@ -34,6 +35,7 @@ export function CitySelect({ country, value, onChange }: CitySelectProps) {
   const trimmed = query.trim();
 
   const options = useMemo(() => {
+    const measured = beginMeasurement("city.filter");
     const found = trimmed
       ? searchCities(cities, trimmed)
       : getMajorCities(cities);
@@ -45,6 +47,12 @@ export function CitySelect({ country, value, onChange }: CitySelectProps) {
         description: "Add as a custom city",
       });
     }
+    measured({
+      country: country?.code,
+      items: cities.length,
+      matches: found.length,
+      source: trimmed ? "search" : "browse",
+    });
     return list;
   }, [cities, trimmed]);
 

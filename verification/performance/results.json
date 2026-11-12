@@ -1,0 +1,167 @@
+{
+  "release": "2026-11-12",
+  "base": "Chess-Career-Mode-All-Cities-Full.zip",
+  "baseFilesRetained": 847,
+  "changedBaseFiles": [
+    "CHANGELOG.md",
+    "README.md",
+    "package.json",
+    "src/components/layout/TopBar.tsx",
+    "src/features/creation/CharacterWizard.tsx",
+    "src/features/creation/CitySelect.tsx",
+    "src/features/creation/startCareer.ts",
+    "src/features/world/cityService.ts",
+    "src/game/engine/manager.ts",
+    "src/game/match/session.ts",
+    "src/i18n/th.ts",
+    "src/main.tsx",
+    "src/pages/SaveSlotsPage.tsx",
+    "src/store/gameStore.ts",
+    "src/utils/idb.ts"
+  ],
+  "entryMethods": [
+    "Tap AP/money strip 7 times within 4 seconds while a career is open.",
+    "Tap Chess Career Mode title 7 times within 4 seconds on slots/creation screen.",
+    "Ctrl+Shift+D.",
+    "Append ?perf=1 (or &perf=1) to the deployed game URL."
+  ],
+  "behavior": [
+    "Disabled by default. Unlock stays in sessionStorage for this tab, while samples stay only in memory. Reload starts a new report.",
+    "Closing the panel retains the Diagnostics button and collection; Hide diagnostics removes URL/session flag, stops sampling, clears data and hides button.",
+    "Actual timed activities: city file/parse/cache/filter, engine startup/search/budget, simulated move speed/book source, day/world/circuit/advance, IndexedDB commit, career/NPC creation. No synthetic activity is triggered by opening the menu.",
+    "FPS and event-loop lag sampled only while page is visible; optional JS heap and long-task support reported truthfully.",
+    "Count/mean/min/max since clear, P95 of latest 100 per group, last 200 recent entries; UI shows last 30 and report includes retained 200. Tags are allowlisted and bounded. No save, player name, query text, FEN or PGN included.",
+    "Mobile timing table supports horizontal scrolling; panel can open above another modal."
+  ],
+  "checks": [
+    {
+      "command": "npm run test:engine",
+      "result": "passed",
+      "log": "engine-regression.log"
+    },
+    {
+      "command": "npm run test:session",
+      "result": "passed",
+      "log": "session-regression.log"
+    },
+    {
+      "command": "npm run test:live-tournaments",
+      "result": "passed",
+      "log": "live-tournaments-regression.log"
+    },
+    {
+      "command": "npm run test:complete",
+      "result": "passed",
+      "log": "complete-regression.log"
+    },
+    {
+      "command": "npm run test:city-search",
+      "result": "passed",
+      "log": "city-search-regression.log"
+    },
+    {
+      "command": "npm run test:language",
+      "result": "passed",
+      "log": "language-regression.log"
+    },
+    {
+      "command": "npm run test:qol",
+      "result": "passed",
+      "log": "qol-regression.log"
+    },
+    {
+      "command": "npm run test:backup-lifetime",
+      "result": "passed",
+      "log": "backup-lifetime-regression.log"
+    },
+    {
+      "command": "npm run test:esports",
+      "result": "passed",
+      "log": "esports-regression.log"
+    },
+    {
+      "command": "npm run test:performance",
+      "result": "passed",
+      "log": "logic.log",
+      "coverage": "opt-in/no-op, exact durations/percentiles, clear/pause in-flight guards, bounded memory, tag allowlist, report copies, original engine request and legal match/result unchanged with diagnostics on/off"
+    },
+    {
+      "command": "npm run build",
+      "result": "passed, including typecheck",
+      "log": "build.log"
+    },
+    {
+      "command": "CHROMIUM_PATH=/usr/bin/chromium npx playwright test tests/performance.spec.ts --workers=1",
+      "result": "2 passed on final build",
+      "log": "browser-final-tests.log",
+      "json": "browser-final-results.json"
+    },
+    {
+      "command": "CHROMIUM_PATH=/usr/bin/chromium npx playwright test tests/performance.spec.ts tests/all-cities.spec.ts --workers=1",
+      "result": "all three existing city scenarios and first diagnostics scenario passed on initial build; second diagnostics test locator corrected for translated dialog name, then final suite passed",
+      "log": "browser-tests.log",
+      "json": "browser-results.json"
+    }
+  ],
+  "browserCoverage": [
+    "Secret default hidden, six taps insufficient/seventh opens, keyboard and URL entry, export/hide/unlock reset.",
+    "Actual RU city file, 4301 choices, 2687 query matches, memory-cache source on country return, pause holds counters and clear removes old data.",
+    "Create actual career through UI; seven AP taps, opening/export/hiding diagnostics does not mutate serialized save.",
+    "Actual calendar simulation 33 days, original weekly World Circuit and NPC calendar events, ongoing NPC engine board with Instant selected, engine budget and automatic move samples.",
+    "Current report is saved as game-browser-report.json; real engine reported stockfish.",
+    "Thai/English labels, desktop and 390x844 viewport, nested modal access and horizontal table; wide timing screenshot uses 1100x1000."
+  ],
+  "measuredSampleSummary": {
+    "calendarDays": 33,
+    "engine": {
+      "status": "stockfish",
+      "label": "Stockfish"
+    },
+    "metrics": [
+      {
+        "id": "ui.long-task",
+        "count": 32
+      },
+      {
+        "id": "storage.write",
+        "count": 120
+      },
+      {
+        "id": "calendar.events",
+        "count": 33
+      },
+      {
+        "id": "calendar.day",
+        "count": 33
+      },
+      {
+        "id": "calendar.circuit",
+        "count": 4
+      },
+      {
+        "id": "calendar.advance",
+        "count": 1
+      },
+      {
+        "id": "match.auto-move",
+        "count": 13
+      },
+      {
+        "id": "engine.load",
+        "count": 1
+      },
+      {
+        "id": "engine.search",
+        "count": 10
+      }
+    ]
+  },
+  "limits": [
+    "Timings may overlap. End-day samples measure synchronous processing/dispatch, while simulate-until includes async world-sync and event-loop yields. Database times include queue/commit latency. Do not sum nested rows.",
+    "Engine-search latency includes startup/queue and analyses, not just one move; budget is requested engine time, not a promise about elapsed time.",
+    "File fetch may be served by browser/PWA cache; memory source specifically means the in-process city cache.",
+    "FPS/lag/heap are browser observations. Profiling adds small overhead. Tested in managed Chromium/emulation, not physical Termux/Android/iOS, and Cloud numbers do not predict device performance.",
+    "Old initial typecheck diagnostics are retained as typecheck-initial.log; final production typecheck/build passes.",
+    "Existing large production bundle warning remains. No deployment or git push performed."
+  ]
+}

@@ -5,6 +5,7 @@ import {
 } from "@/game/competition/broadcast";
 import type { BroadcastGame } from "@/types";
 import { writeEventArchive } from "./tournamentArchive";
+import { beginMeasurement } from "@/diagnostics/performance";
 import { advanceCalendarTournaments } from "@/game/competition/worldCalendar";
 import { chooseAnnualFocus, type AnnualFocus } from "@/game/career/planning";
 import {
@@ -419,6 +420,7 @@ export const useGameStore = create<GameStore>()(
         const stop =
           bookings.find((r) => r.day >= now && r.day <= reg.day) ?? reg;
         const total = Math.max(0, stop.day - now);
+        const advanceMeasured = beginMeasurement("calendar.advance");
         const report: CalendarAdvanceReport = {
           days: 0,
           trained: 0,
@@ -471,6 +473,14 @@ export const useGameStore = create<GameStore>()(
                 : "Calendar advance failed. Completed days remain saved.",
           };
         } finally {
+          advanceMeasured({
+            days: report.days,
+            status: report.cancelled
+              ? "cancelled"
+              : report.days === total
+                ? "ok"
+                : "interrupted",
+          });
           calendarOwned = false;
           calendarDaySave = null;
           set({ calendarProgress: null });
@@ -680,6 +690,7 @@ export const useGameStore = create<GameStore>()(
           (save.pendingMatch || matchRunning(save.career.id))
         )
           return null;
+        const dayMeasured = beginMeasurement("calendar.day");
         const advanced = endDay(save);
         const next = advanceEsports(
             settleTransfer(expireCompetition(advanced.save)),
@@ -732,6 +743,7 @@ export const useGameStore = create<GameStore>()(
           if (completed.length)
             void useNpcStore.getState().updateNpcs(completed);
         }
+        const eventsMeasured = beginMeasurement("calendar.events");
         const calendar =
           useNpcStore.getState().careerId === save.career.id
             ? advanceCalendarTournaments(
@@ -740,17 +752,23 @@ export const useGameStore = create<GameStore>()(
                 useNpcStore.getState().npcs,
               )
             : { save: next, changed: [] };
+        eventsMeasured({ npcs: calendar.changed.length });
         if (calendar.changed.length)
           void useNpcStore.getState().updateNpcs(calendar.changed);
+        const circuitMeasured = report.newWeek
+          ? beginMeasurement("calendar.circuit")
+          : null;
         const bulletin = report.newWeek
           ? weeklyCircuit(calendar.save, useNpcStore.getState().npcs)
           : { save: calendar.save, changed: [] };
+        circuitMeasured?.({ npcs: bulletin.changed.length });
         set({ save: bulletin.save });
         if (
           bulletin.changed.length &&
           useNpcStore.getState().careerId === save.career.id
         )
           void useNpcStore.getState().updateNpcs(bulletin.changed);
+        dayMeasured({ newWeek: report.newWeek, days: 1 });
         return report;
       },
 

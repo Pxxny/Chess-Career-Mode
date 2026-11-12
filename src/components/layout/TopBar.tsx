@@ -29,7 +29,10 @@ export function TopBar() {
             {player.name}
           </span>
         </Link>
-        <div className="col-start-1 row-start-2 flex min-w-0 items-center gap-2 sm:ml-auto">
+        <div
+          data-performance-trigger
+          className="col-start-1 row-start-2 flex min-w-0 touch-manipulation select-none items-center gap-2 sm:ml-auto"
+        >
           <ApMeter ap={player.ap} />
           <MoneyChip amount={player.money} />
         </div>

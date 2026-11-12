@@ -1,3 +1,4 @@
+import { beginMeasurement } from "@/diagnostics/performance";
 const DB_NAME = "chess-career-mode";
 const DB_VERSION = 5;
 
@@ -46,12 +47,22 @@ export async function transact<T = undefined>(
   mode: IDBTransactionMode,
   work: (tx: IDBTransaction) => IDBRequest<T> | void,
 ): Promise<T | undefined> {
-  const db = await openDb();
-  return new Promise<T | undefined>((resolve, reject) => {
-    const tx = db.transaction(storeNames, mode);
-    const request = work(tx);
-    tx.oncomplete = () => resolve(request ? request.result : undefined);
-    tx.onerror = () => reject(tx.error);
-    tx.onabort = () => reject(tx.error);
-  });
+  const measured = beginMeasurement(
+    mode === "readonly" ? "storage.read" : "storage.write",
+  );
+  let status = "error";
+  try {
+    const db = await openDb();
+    const result = await new Promise<T | undefined>((resolve, reject) => {
+      const tx = db.transaction(storeNames, mode);
+      const request = work(tx);
+      tx.oncomplete = () => resolve(request ? request.result : undefined);
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error);
+    });
+    status = "ok";
+    return result;
+  } finally {
+    measured({ stores: storeNames.join(","), status });
+  }
 }

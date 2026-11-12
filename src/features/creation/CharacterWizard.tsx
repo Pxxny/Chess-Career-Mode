@@ -120,7 +120,10 @@ export function CharacterWizard({ slot }: { slot: number }) {
 
   return (
     <div>
-      <p className="font-display text-3xl font-bold text-gold-400">
+      <p
+        data-performance-trigger
+        className="touch-manipulation select-none font-display text-3xl font-bold text-gold-400"
+      >
         {GAME_CONFIG.appName}
       </p>
       <p className="mb-6 mt-1 text-ink-muted">

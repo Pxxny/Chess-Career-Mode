@@ -1,0 +1,9 @@
+
+> chess-career-mode@0.1.0 test:esports
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-esports.ts
+
+PASS 36 multi-day rotations/year, 3 per calendar month; exact dates, 3/7-day schedules, Official/duration filters, RR/BO3 pairing, early clinches and tied-series deciders
+PASS tier boundaries, monthly/weekly/qualifier calendars, unique Duo/Trio squads, booking conflicts in both directions, fixture results, prizes, refunds and duplicate guards
+PASS team creation costs, accept/decline and 14-day cooldown, complete rosters, rare elite offers, no reload rerolls, contract salary/expiry, focus freedom and migration
+PASS real store integration: shared calendar simulation, played-game progression/rating/history, once-only result, next match day and abandoned-game recovery
+PASS seven-day tournament actually advances six calendar days, restores daily AP and rejects future-round results

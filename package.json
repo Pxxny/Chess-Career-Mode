@@ -40,7 +40,8 @@
     "test:roadmap": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-roadmap.ts",
     "test:live-tournaments": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-live-tournaments.ts",
     "test:full-calendar": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-full-calendar.ts",
-    "test:city-search": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-city-search.ts"
+    "test:city-search": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-city-search.ts",
+    "test:performance": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-performance.ts"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.3.0",

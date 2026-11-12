@@ -1,4 +1,5 @@
 import { reasonableEarlyDraw } from "@/game/competition/preparation";
+import { beginMeasurement } from "@/diagnostics/performance";
 import { GAME_CONFIG } from "@/data/config";
 import {
   applyMove,
@@ -475,6 +476,8 @@ export class MatchSession {
   }
 
   private async runAuto(color: PieceColor, myEpoch: number): Promise<void> {
+    const measuredMove = beginMeasurement("match.auto-move");
+    const speedAtStart = this.speed;
     const profile = this.setup.profiles[color];
     const tc = this.setup.timeControl;
     const game = this.game;
@@ -611,7 +614,8 @@ export class MatchSession {
       else if (wait === 0) await this.sleep(0);
       if (stale()) return;
       this.thinking = null;
-      this.commit(uci, spent);
+      if (this.commit(uci, spent))
+        measuredMove({ speed: speedAtStart, book: fromBook, status: "ok" });
     } catch (error) {
       if (stale()) return;
       logWarn(
@@ -623,7 +627,8 @@ export class MatchSession {
       const any = legalMoves(pos)[0];
       if (any) {
         this.notice = "The engine had a problem. A fallback move was played.";
-        this.commit(moveToUci(any), undefined);
+        if (this.commit(moveToUci(any), undefined))
+          measuredMove({ speed: speedAtStart, status: "fallback" });
       }
     }
   }

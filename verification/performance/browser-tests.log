@@ -1,0 +1,54 @@
+[WebServer] (node:8813) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 5 tests using 1 worker
+
+(node:8831) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/all-cities.spec.ts:67:1 › Russia: all 4301 cities reachable by scrolling, every search match retained, keyboard and saved last-city selection work (33.1s)
+  ✓  2 tests/all-cities.spec.ts:177:3 › Touch city selection › mobile: Thai labels, city after index 3000, touch selection, country reset and custom input (2.3s)
+  ✓  3 tests/all-cities.spec.ts:219:1 › USA largest file and a late country response do not truncate or replace the new country list (2.0s)
+  ✓  4 tests/performance.spec.ts:41:1 › secret gesture, keyboard and URL entry; real city download/cache/filter metrics, pause, clear, report and hide (3.7s)
+  ✘  5 tests/performance.spec.ts:161:1 › mobile real career: AP gesture leaves save unchanged; calendar fast-forward and NPC engine moves appear in downloadable report (39.6s)
+
+
+  1) tests/performance.spec.ts:161:1 › mobile real career: AP gesture leaves save unchanged; calendar fast-forward and NPC engine moves appear in downloadable report 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('dialog', { name: 'Performance diagnostics', exact: true })
+    Expected substring: "เฉลี่ย"
+    Timeout: 20000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toContainText" getByRole('dialog', { name: 'Performance diagnostics', exact: true }) with timeout 20000ms
+      - waiting for getByRole('dialog', { name: 'Performance diagnostics', exact: true })
+
+
+      271 |     .getByRole("combobox", { name: "Language / ภาษา", exact: true })
+      272 |     .selectOption("th");
+    > 273 |   await expect(menu).toContainText("เฉลี่ย");
+          |                      ^
+      274 |   await menu.screenshot({
+      275 |     path: "artifacts/performance-game-timings-th.png",
+      276 |     ...capture,
+        at /workspace/chess-career-performance/Chess-Career-Mode/tests/performance.spec.ts:273:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/performance-mobile-real-ca-b1ce4-pear-in-downloadable-report/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/performance-mobile-real-ca-b1ce4-pear-in-downloadable-report/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/performance-mobile-real-ca-b1ce4-pear-in-downloadable-report/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/performance-mobile-real-ca-b1ce4-pear-in-downloadable-report/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests/performance.spec.ts:161:1 › mobile real career: AP gesture leaves save unchanged; calendar fast-forward and NPC engine moves appear in downloadable report 
+  4 passed (1.4m)
