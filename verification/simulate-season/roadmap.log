@@ -1,0 +1,10 @@
+
+> chess-career-mode@0.1.0 test:roadmap
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-roadmap.ts
+
+PASS stage 2: real session levels a skill without awarding Elo; shared simulator strength/book/clock/fatigue effects.
+PASS stage 3: selectable/locked annual focus, real results, calendar recommendations and once-only year rollover.
+PASS stage 4: Elo alone cannot award GM; three independently finished classical norms award it; rapid/withdrawal/duplicates excluded; old titles kept; champion earns defence.
+PASS stage 5: real head-to-head memories and rivalries without friendship inflation; world headlines use actual results and deduplicate.
+PASS stage 6: contract eligibility, non-stacking, paid/missed review, expiry/cancellation cooldown, no duplicate reload payment, legacy unlock/costs/weekly guard.
+PASS roadmap state and full NPC backup roundtrip; old saves still upgrade without invented achievements.

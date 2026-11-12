@@ -1,3 +1,4 @@
+import { seasonOf } from "@/game/career/seasonSimulation";
 import { readEventArchive, archiveKey } from "./tournamentArchive";
 import {
   retainedArchives,
@@ -76,6 +77,7 @@ export async function parseBackup(raw: string): Promise<CareerBackup> {
   )
     fail();
   const { save, npcs } = value.payload;
+  if (save?.seasonSimulation !== undefined && !seasonOf(save)) fail();
   if (
     save?.career?.playerDatabase !== undefined &&
     !validDatabaseSize(save.career.playerDatabase)

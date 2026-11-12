@@ -26,6 +26,7 @@ import { ReviewReport } from "./ReviewReport";
 import { useMatchSession } from "./useMatchSession";
 
 const TERMINATION: Record<MatchTermination, string> = {
+  simulation: "by season simulation",
   checkmate: "by checkmate",
   resignation: "by resignation",
   timeout: "on time",

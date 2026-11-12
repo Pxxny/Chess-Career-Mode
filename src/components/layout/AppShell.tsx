@@ -1,3 +1,4 @@
+import { SeasonProgressDialog } from "@/features/career/SimulateSeason";
 import { SocialGameDialog } from "@/features/world/SocialGameDialog";
 import { YearReviewDialog } from "@/features/career/YearReviews";
 import { CalendarProgressDialog } from "@/features/qol/CareerPanels";
@@ -18,6 +19,7 @@ export function AppShell() {
       </main>
       <BottomNav />
       <CalendarProgressDialog />
+      <SeasonProgressDialog />
       <YearReviewDialog />
       <SocialGameDialog />
     </div>

@@ -47,6 +47,27 @@ export function Replay({
         ply,
       }
     : null;
+  if (match.setup.simulation === "season")
+    return (
+      <div className="space-y-3" data-testid="season-game-result">
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-gold-300 underline"
+        >
+          ← Back to the list
+        </button>
+        <p className="font-semibold">Season simulation result</p>
+        <p translate="no">
+          {match.setup.white.name} — {match.setup.black.name}
+        </p>
+        <ResultBadge outcome={match.outcome} />
+        <p className="text-sm text-ink-muted">
+          This result was calculated by the season simulation model. No moves or
+          engine analysis were generated.
+        </p>
+      </div>
+    );
   const flipped = match.setup.playerColor === "black";
   const top = flipped ? "white" : "black";
   const bottom = flipped ? "black" : "white";

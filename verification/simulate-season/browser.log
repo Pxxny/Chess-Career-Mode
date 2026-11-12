@@ -1,0 +1,11 @@
+[WebServer] (node:16304) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:16334) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/simulate-season.spec.ts:20:1 › full year through real UI: automatic training/rest/AP/jobs/entries/games, annual review, NPC history, save and honest result view (1.9m)
+  ✓  2 tests/simulate-season.spec.ts:50:1 › pause, reload, resume, pause again and checksum backup keep the exact checkpoint (16.2s)
+
+  2 passed (2.2m)

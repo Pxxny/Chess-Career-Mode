@@ -1,0 +1,36 @@
+{
+  "status": "passed",
+  "feature": "Simulate Season from Home or Career, current day through the next calendar year boundary",
+  "core": "Normal training, naps/breaks/sleep/AP recovery, available jobs, budget/entry costs/eligibility, automatic individual entries, current tournament and pre-booked national/esports events, real career/NPC result settlement and year review.",
+  "checkpoint": "Persisted day phase and pairings; pauses on reload, can resume; manual days while paused stay in sync; cross-career guard; no repeated result or year overflow.",
+  "resultModel": "Abstract season results with win/draw/loss using Elo/skills/form/fatigue; no invented moves, accuracy or engine analysis; no analysis credits from abstract games.",
+  "unitSuites": [
+    "simulate-season",
+    "circuit",
+    "roadmap",
+    "qol",
+    "esports",
+    "performance",
+    "language",
+    "backup-lifetime",
+    "match",
+    "player-database",
+    "live-tournaments"
+  ],
+  "browser": {
+    "verifiedDistinctCases": 8,
+    "cases": [
+      "Full year with real NPC calendar, training, paid registration, completed events and annual review",
+      "Pause/reload/manual day/resume/pause and backup",
+      "Mobile Thai setup, exhausted AP and three-day remainder",
+      "QoL date/jobs/abroad filters/advance to booked event",
+      "QoL scoped tournament histories and replays",
+      "Federation processing/calendar cancellation/legacy world preservation",
+      "English default and language preference synchronization",
+      "Thai creation and canonical stored identities"
+    ],
+    "recheck": "Mobile text assertion was corrected to the existing translated cost text; recheck passed. Full-year and other seven cases passed."
+  },
+  "engine": "Engine implementation, move search budgets and strength profiles remain byte-identical to the prior project.",
+  "timing": "Full-season runtime depends on player database size, NPC calendar workload, device and browser. Cloud Playtest timings are not phone speed estimates."
+}

@@ -1,0 +1,59 @@
+[WebServer] (node:17583) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:17628) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/language.spec.ts:66:1 › English is the default even in a Thai browser; preference persists and synchronizes across tabs (3.7s)
+  ✓  2 tests/language.spec.ts:98:1 › Thai character creation searches both languages, retains input through a live switch and saves canonical identities (7.5s)
+  ✓  3 tests/qol.spec.ts:265:1 › QoL: date, work income, abroad/FIDE filters, diverse repertoire and chosen training to the next event (7.7s)
+  ✓  4 tests/qol.spec.ts:382:1 › QoL: favorite opening and tournament player histories scope outcomes and open actual replays (5.6s)
+  ✓  5 tests/qol.spec.ts:461:1 › QoL: federation processing, calendar cancellation and additive legacy NPC upgrade persist (17.5s)
+  ✓  6 tests/simulate-season.spec.ts:71:1 › full year through real UI: automatic training/rest/AP/jobs/entries/games, annual review, NPC history, save and honest result view (1.7m)
+  ✓  7 tests/simulate-season.spec.ts:186:1 › pause, reload, resume, pause again and checksum backup keep the exact checkpoint (14.9s)
+  ✘  8 tests/simulate-season.spec.ts:243:1 › mobile Thai setup and late-season rollover recover exhausted AP and stop after the remaining days (23.5s)
+
+
+  1) tests/simulate-season.spec.ts:243:1 › mobile Thai setup and late-season rollover recover exhausted AP and stop after the remaining days 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('dialog', { name: 'จำลองทั้งฤดูกาล', exact: true })
+    Expected substring: "ฟื้น AP"
+    Received string:    "จำลองทั้งฤดูกาลEnglishไทย×จำลองตั้งแต่ 2026-12-28 จนถึงต้นปี 2027ผลเกมคำนวณด้วยโมเดลจำลองฤดูกาล โดยใช้ Elo สกิล ฟอร์ม และความล้า ผลมีผลต่ออาชีพจริง ไม่มีการสร้างตาเดินหรือบทวิเคราะห์เอนจินใช้ AP ชั่วโมงฝึก ความล้า ค่าสมัคร และเงื่อนไขลงแข่งตามกติกาปกติ ระบบกันเงินไว้ $50 ทำงานที่ทำได้เมื่อเงินน้อย และเข้าแข่งรายการที่สมัครไว้ รายการที่สมัครใหม่นั้นเป็นรายการบุคคลที่จบภายในปีนี้แนวทางของฤดูกาลฤดูกาลสมดุลพัฒนาเรตประสบการณ์แข่งขันฤดูกาลแห่งการเรียนรู้กดพักหลังจบกิจกรรมปัจจุบันและกลับมาทำต่อได้ โหลดหน้าใหม่จะเก็บความก้าวหน้าไว้และรอให้กดจำลองต่อ ระหว่างจำลองให้เปิดแท็บนี้ไว้เริ่มจำลองฤดูกาลยกเลิก"
+    Timeout: 20000ms
+
+    Call log:
+      - Expect "toContainText" getByRole('dialog', { name: 'จำลองทั้งฤดูกาล', exact: true }) with timeout 20000ms
+      - waiting for getByRole('dialog', { name: 'จำลองทั้งฤดูกาล', exact: true })
+        42 × locator resolved to <div tabindex="-1" role="dialog" aria-modal="true" aria-labelledby=":r1:" class="max-h-[88dvh] w-full overflow-y-auto rounded-xl border border-white/15 bg-navy-800 p-4 shadow-xl sm:p-6 max-w-2xl">…</div>
+           - unexpected value "จำลองทั้งฤดูกาลEnglishไทย×จำลองตั้งแต่ 2026-12-28 จนถึงต้นปี 2027ผลเกมคำนวณด้วยโมเดลจำลองฤดูกาล โดยใช้ Elo สกิล ฟอร์ม และความล้า ผลมีผลต่ออาชีพจริง ไม่มีการสร้างตาเดินหรือบทวิเคราะห์เอนจินใช้ AP ชั่วโมงฝึก ความล้า ค่าสมัคร และเงื่อนไขลงแข่งตามกติกาปกติ ระบบกันเงินไว้ $50 ทำงานที่ทำได้เมื่อเงินน้อย และเข้าแข่งรายการที่สมัครไว้ รายการที่สมัครใหม่นั้นเป็นรายการบุคคลที่จบภายในปีนี้แนวทางของฤดูกาลฤดูกาลสมดุลพัฒนาเรตประสบการณ์แข่งขันฤดูกาลแห่งการเรียนรู้กดพักหลังจบกิจกรรมปัจจุบันและกลับมาทำต่อได้ โหลดหน้าใหม่จะเก็บความก้าวหน้าไว้และรอให้กดจำลองต่อ ระหว่างจำลองให้เปิดแท็บนี้ไว้เริ่มจำลองฤดูกาลยกเลิก"
+
+
+      281 |     exact: true,
+      282 |   });
+    > 283 |   await expect(options).toContainText("ใช้ AP");
+          |                         ^
+      284 |   await options.screenshot({
+      285 |     path: "artifacts/simulate-season-options-th.png",
+      286 |   });
+        at /workspace/chess-career-simulate-season/Chess-Career-Mode/tests/simulate-season.spec.ts:283:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/simulate-season-mobile-Tha-0811f-op-after-the-remaining-days/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/simulate-season-mobile-Tha-0811f-op-after-the-remaining-days/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/simulate-season-mobile-Tha-0811f-op-after-the-remaining-days/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/simulate-season-mobile-Tha-0811f-op-after-the-remaining-days/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests/simulate-season.spec.ts:243:1 › mobile Thai setup and late-season rollover recover exhausted AP and stop after the remaining days 
+  7 passed (3.1m)

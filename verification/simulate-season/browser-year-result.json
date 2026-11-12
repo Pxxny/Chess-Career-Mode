@@ -1,0 +1,128 @@
+{
+  "season": {
+    "baseline": {
+      "wins": 0,
+      "draws": 0,
+      "losses": 0,
+      "tournaments": 0,
+      "sessions": 0
+    },
+    "version": 1,
+    "year": 2026,
+    "startDay": 737464,
+    "targetDay": 737828,
+    "focus": "competition",
+    "status": "completed",
+    "phase": "choose",
+    "startRating": 1000,
+    "startMoney": 250,
+    "days": 364,
+    "sessions": 688,
+    "restDays": 20,
+    "workDays": 4,
+    "registrations": 25,
+    "tournaments": 25,
+    "games": 166,
+    "wins": 37,
+    "draws": 15,
+    "losses": 114,
+    "lastEventDay": 737807,
+    "action": "Season complete",
+    "notes": [],
+    "endRating": 885,
+    "endMoney": 120
+  },
+  "yearReview": {
+    "year": 2026,
+    "coverage": "complete",
+    "startRating": 1000,
+    "peakRating": 1022,
+    "startMoney": 250,
+    "startReputation": 0,
+    "startSkills": {
+      "opening": 12,
+      "middlegame": 12,
+      "endgame": 12,
+      "tactics": 12,
+      "calculation": 12,
+      "strategy": 12,
+      "timeManagement": 12,
+      "psychology": 12,
+      "patternRecognition": 11,
+      "visualization": 11,
+      "concentration": 11,
+      "openingPreparation": 11,
+      "positionalUnderstanding": 11,
+      "mentalStability": 11,
+      "stamina": 11,
+      "physicalFitness": 11,
+      "resilience": 11,
+      "pressure": 11
+    },
+    "rated": {
+      "wins": 37,
+      "draws": 15,
+      "losses": 114
+    },
+    "practice": {
+      "wins": 0,
+      "draws": 0,
+      "losses": 0
+    },
+    "tournaments": 25,
+    "esportsTournaments": 0,
+    "esportsWins": 0,
+    "esportsPodiums": 0,
+    "tournamentWins": 0,
+    "podiums": 0,
+    "sessions": 688,
+    "endRating": 885,
+    "endMoney": 120,
+    "endReputation": 37,
+    "trophies": 7,
+    "titles": [],
+    "improvements": [
+      {
+        "stat": "patternRecognition",
+        "change": 36
+      },
+      {
+        "stat": "tactics",
+        "change": 30
+      },
+      {
+        "stat": "timeManagement",
+        "change": 28
+      },
+      {
+        "stat": "concentration",
+        "change": 20
+      },
+      {
+        "stat": "visualization",
+        "change": 18
+      },
+      {
+        "stat": "pressure",
+        "change": 17
+      },
+      {
+        "stat": "mentalStability",
+        "change": 13
+      },
+      {
+        "stat": "opening",
+        "change": 8
+      },
+      {
+        "stat": "openingPreparation",
+        "change": 7
+      },
+      {
+        "stat": "calculation",
+        "change": 6
+      }
+    ]
+  },
+  "npcProfiles": 942
+}

@@ -5,6 +5,7 @@ import type { ChessTitle } from "./npc";
 export type MatchResultKind = "white" | "black" | "draw";
 
 export type MatchTermination =
+  | "simulation"
   | "checkmate"
   | "resignation"
   | "timeout"
@@ -51,6 +52,7 @@ export interface MatchTimeControl {
 
 /** A light description of a match that can be stored in the save (for recovery after a reload). */
 export interface MatchSetupLite {
+  simulation?: "season";
   social?: { requestId: string; npcId: string; careerId: string };
   prediction?: import("@/game/prediction/types").PredictionSnapshot;
   esports?: { eventId: string; round: number; opponentId: string };

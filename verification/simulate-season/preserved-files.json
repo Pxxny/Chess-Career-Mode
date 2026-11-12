@@ -1,0 +1,37 @@
+{
+  "base": "Chess-Career-Mode-Player-Database-Full.zip",
+  "missing": [],
+  "byteIdentical": {
+    "src/game/engine/": 7,
+    "src/game/match/session.ts": 1,
+    "src/game/match/npcProfile.ts": 1,
+    "src/game/training/engine.ts": 1,
+    "src/game/qol/career.ts": 1,
+    "public/audio/": 6,
+    "public/pieces/": 14,
+    "public/data/fide/": 2,
+    "src/data/chess/legendAppearances.ts": 1,
+    "vercel.json": 1
+  },
+  "changedExistingFiles": [
+    "CHANGELOG.md",
+    "README.md",
+    "artifacts/qol-foreign-mobile.png",
+    "artifacts/qol-home-desktop.png",
+    "artifacts/qol-tournament-history.png",
+    "package.json",
+    "src/components/layout/AppShell.tsx",
+    "src/features/match/MatchHistory.tsx",
+    "src/features/match/MatchViewer.tsx",
+    "src/features/qol/CareerPanels.tsx",
+    "src/game/match/aftermath.ts",
+    "src/game/match/headless.ts",
+    "src/i18n/th.ts",
+    "src/pages/CareerPage.tsx",
+    "src/pages/HomePage.tsx",
+    "src/store/backup.ts",
+    "src/store/gameStore.ts",
+    "src/types/game.ts",
+    "src/types/match.ts"
+  ]
+}

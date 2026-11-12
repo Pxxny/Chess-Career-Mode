@@ -1,0 +1,20 @@
+
+> chess-career-mode@0.1.0 test:simulate-season
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-simulate-season.ts
+
+PASS full year: normal training/rest/AP/jobs/budget/eligibility, automatic entries, player/NPC Elo and histories, draws, annual review, abstract results without invented moves/accuracy, existing booking, pause/reload deterministic continuation, checksum backup, cross-career guard, exact rollover and no duplicate results.
+{
+  "days": 364,
+  "games": 162,
+  "wins": 52,
+  "draws": 16,
+  "losses": 94,
+  "tournaments": 22,
+  "sessions": 664,
+  "entryCount": 22,
+  "steps": 956,
+  "ratingBefore": 1000,
+  "ratingAfter": 1176,
+  "moneyAfter": 115
+}
+PASS pre-booked esports qualifier played through normal fixtures and saved results.

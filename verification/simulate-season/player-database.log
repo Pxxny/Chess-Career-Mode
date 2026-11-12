@@ -1,0 +1,6 @@
+
+> chess-career-mode@0.1.0 test:player-database
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-player-database.ts
+
+PASS: all sizes/counts/progress, domestic diversity/fields, FIDE facts/identities, persistent ratings, real-only population, backup modes and device timing.
+Cloud generation-only timings (ms), not a phone speed guarantee: {"small":102,"medium":174,"large":269,"extra-large":1308}

@@ -1,0 +1,12 @@
+src/game/career/seasonSimulation.ts 232ms
+src/features/career/SimulateSeason.tsx 29ms
+src/store/gameStore.ts 223ms
+src/types/match.ts 11ms (unchanged)
+src/types/game.ts 4ms (unchanged)
+src/game/match/aftermath.ts 16ms
+src/features/match/MatchViewer.tsx 42ms (unchanged)
+src/features/match/MatchHistory.tsx 34ms
+src/components/layout/AppShell.tsx 3ms
+src/pages/HomePage.tsx 8ms
+src/pages/CareerPage.tsx 19ms
+src/store/backup.ts 57ms (unchanged)

@@ -1,3 +1,10 @@
+import {
+  newSeason,
+  runSeason,
+  seasonOf,
+  updateSeason,
+} from "@/game/career/seasonSimulation";
+import { getBaseOpeningDatabase } from "@/game/openings/database";
 import { retainedArchives, queueArchives } from "@/game/competition/archive";
 import {
   updateBroadcast,
@@ -135,6 +142,10 @@ let calendarOwned = false;
 let calendarDaySave: GameSave | null = null;
 let calendarSync: Promise<unknown> = Promise.resolve();
 interface GameStore {
+  seasonRunning: boolean;
+  simulateSeason: (
+    focus?: AnnualFocus,
+  ) => Promise<{ ok: true } | { ok: false; error: string }>;
   broadcastCheckpoint: (
     context: BroadcastContext,
     state: BroadcastGame,
@@ -292,6 +303,85 @@ export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
       save: null,
+      seasonRunning: false,
+      simulateSeason: async (focus) => {
+        const start = get().save,
+          world = useNpcStore.getState();
+        if (
+          !start ||
+          get().calendarProgress ||
+          get().seasonRunning ||
+          start.pendingMatch ||
+          start.practice.pendingGame ||
+          start.social?.pending ||
+          matchRunning(start.career.id)
+        )
+          return { ok: false, error: "Finish the running activity first." };
+        if (world.status !== "ready" || world.careerId !== start.career.id)
+          return {
+            ok: false,
+            error: "Wait for the NPC world to finish loading.",
+          };
+        const old = seasonOf(start),
+          state =
+            old?.status === "paused" && old.year === start.world.date.year
+              ? { ...old, notes: [] }
+              : newSeason(start, focus);
+        calendarCancelled = false;
+        const progress = (save: GameSave) => ({
+          days: Math.max(0, gameDay(save) - state.startDay),
+          total: state.targetDay - state.startDay,
+          target: String(state.year),
+        });
+        set({
+          save: { ...start, seasonSimulation: state },
+          seasonRunning: true,
+          calendarProgress: progress(start),
+        });
+        try {
+          const db = getBaseOpeningDatabase();
+          await runSeason({
+            read: () => get().save,
+            npcs: () => useNpcStore.getState().npcs,
+            cancelled: () =>
+              calendarCancelled ||
+              useNpcStore.getState().careerId !== start.career.id,
+            commit: (save) => {
+              if (get().save?.career.id === start.career.id)
+                set({ save, calendarProgress: progress(save) });
+            },
+            finish: (finish) => !!get().finishMatch(finish, db),
+            advanceDay: async () => {
+              calendarOwned = true;
+              calendarDaySave = null;
+              try {
+                get().endDay();
+              } finally {
+                calendarOwned = false;
+              }
+              await calendarSync;
+            },
+            yield: () => new Promise<void>((r) => setTimeout(r, 0)),
+          });
+          return { ok: true };
+        } catch (error) {
+          const message =
+            error instanceof Error
+              ? error.message
+              : "Season simulation stopped. Your completed progress is saved.";
+          const current = get().save;
+          if (current?.career.id === start.career.id)
+            set({
+              save: updateSeason(current, {
+                action: "Simulation paused",
+                notes: [message],
+              }),
+            });
+          return { ok: false, error: message };
+        } finally {
+          set({ seasonRunning: false, calendarProgress: null });
+        }
+      },
       broadcastCheckpoint: (context, state) => {
         const save = get().save;
         if (
@@ -762,7 +852,15 @@ export const useGameStore = create<GameStore>()(
           ? weeklyCircuit(calendar.save, useNpcStore.getState().npcs)
           : { save: calendar.save, changed: [] };
         circuitMeasured?.({ npcs: bulletin.changed.length });
-        set({ save: bulletin.save });
+        const season = seasonOf(bulletin.save);
+        const published =
+          season?.status === "paused"
+            ? updateSeason(bulletin.save, {
+                phase: "choose",
+                days: gameDay(bulletin.save) - season.startDay,
+              })
+            : bulletin.save;
+        set({ save: published });
         if (
           bulletin.changed.length &&
           useNpcStore.getState().careerId === save.career.id

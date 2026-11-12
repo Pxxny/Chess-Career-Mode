@@ -1,3 +1,4 @@
+import { SimulateSeason } from "@/features/career/SimulateSeason";
 import { InstallSuggestion } from "@/features/install/InstallSuggestion";
 import { EsportsHomeCard } from "@/features/esports/EsportsPanel";
 import { calendarLabel, calendarDate } from "@/game/qol/career";
@@ -60,6 +61,7 @@ export function HomePage() {
         title={`Welcome, ${player.name}`}
         description="Your career at a glance."
       />
+      <SimulateSeason />
       <Card className="mb-4">
         <CardTitle>Plan your career</CardTitle>
         <div className="flex flex-wrap gap-3 text-sm">

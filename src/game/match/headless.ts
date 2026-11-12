@@ -10,7 +10,7 @@ export interface SimulatedPlay {
   ucis: string[];
   /** From the player's point of view */
   outcome: GameOutcome;
-  termination: MatchFinish["termination"];
+  termination: Exclude<MatchFinish["termination"], "simulation">;
 }
 
 export interface SimulateInput {
@@ -67,6 +67,11 @@ export function playSimulatedGame(
       autoAnalyze: false,
       liveEval: false,
       onFinish: (f) => {
+        // This helper plays moves; abstract season results never enter it.
+        if (f.termination === "simulation") {
+          finishWith(null);
+          return;
+        }
         const outcome: GameOutcome =
           f.result === "draw"
             ? "draw"

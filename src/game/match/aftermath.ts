@@ -139,6 +139,16 @@ export function applyFinishedMatch(
     ratingAfter = game.ratingAfter;
   }
 
+  // Abstract results have no board to study and grant no analysis credit.
+  if (setup.simulation === "season")
+    next = {
+      ...next,
+      training: {
+        ...next.training,
+        unanalyzedGames: save.training.unanalyzedGames,
+      },
+    };
+
   // Tiredness and mood. A friendly costs half as much and does not move morale.
   const tc = setup.timeControl.category;
   const factor = setup.rated ? 1 : 0.5;
@@ -172,8 +182,14 @@ export function applyFinishedMatch(
         prediction: setup.prediction,
         result: outcome,
         scope: "career",
-        source: finish.playerMoved ? "played" : "engine-simulated",
-        eligible: finish.termination !== "abandoned",
+        source:
+          setup.simulation === "season"
+            ? "abstract"
+            : finish.playerMoved
+              ? "played"
+              : "engine-simulated",
+        eligible:
+          setup.simulation !== "season" && finish.termination !== "abandoned",
       },
     ]);
 

@@ -1,3 +1,4 @@
+import { SimulateSeason } from "@/features/career/SimulateSeason";
 import { SeasonPlan } from "@/features/career/SeasonPlan";
 import { ChampionshipPath } from "@/features/career/ChampionshipPath";
 import { PeopleStories } from "@/features/career/PeopleStories";
@@ -90,6 +91,7 @@ export function CareerPage() {
         description={`Year ${date.year}, week ${date.week}. Every title on the road to World Champion.`}
       />
 
+      <SimulateSeason />
       <BackupPanel />
       <Tabs
         label="Career sections"

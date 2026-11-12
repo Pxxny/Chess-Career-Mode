@@ -270,7 +270,8 @@ export function AdvanceToEvent({
 export function CalendarProgressDialog() {
   const progress = useGameStore((s) => s.calendarProgress),
     cancel = useGameStore((s) => s.cancelCalendar);
-  if (!progress) return null;
+  const seasonRunning=useGameStore(s=>s.seasonRunning);
+  if (!progress || seasonRunning) return null;
   return (
     <Modal open title="Advancing your calendar" onClose={cancel}>
       <p role="status" aria-live="polite" className="text-sm text-ink">
