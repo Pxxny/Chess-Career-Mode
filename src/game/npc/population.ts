@@ -8,10 +8,18 @@ import { tierForElo, titleForPeak } from "@/data/chess/tiers";
 import { generateFictionalNpcs } from "./fictional";
 import type { Npc } from "@/types";
 export const RETIREMENT_AGE = 65;
-export function recruitForYear(year: number): Npc[] {
+export function recruitForYear(
+  year: number,
+  baseCount: number = GAME_CONFIG.world.fictionalNpcCount,
+): Npc[] {
   const seed = mixSeed(GAME_CONFIG.world.seed, year ^ 0xa771),
     rng = createRng(seed),
-    count = rng.int(100, 250);
+    count = Math.max(
+      1,
+      Math.round(
+        (rng.int(100, 250) * baseCount) / GAME_CONFIG.world.fictionalNpcCount,
+      ),
+    );
   const generated = generateFictionalNpcs({
     seed,
     startYear: year,
@@ -54,6 +62,7 @@ export function advancePopulation(
   npcs: Npc[],
   startYear: number,
   year: number,
+  baseCount: number = GAME_CONFIG.world.fictionalNpcCount,
 ): Npc[] {
   if (
     !Number.isInteger(startYear) ||
@@ -67,7 +76,7 @@ export function advancePopulation(
     added: Npc[] = [];
   for (let y = startYear + 1; y <= year; y++) {
     if (existing.has(`recruit-${y}-1`)) continue;
-    added.push(...recruitForYear(y));
+    added.push(...recruitForYear(y, baseCount));
   }
   return added.length ? upgradeNpcIdentities([...npcs, ...added]) : npcs;
 }

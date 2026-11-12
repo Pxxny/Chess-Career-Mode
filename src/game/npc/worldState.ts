@@ -65,6 +65,17 @@ export function applyWorldState(npcs: Npc[], clock: WorldClock): Npc[] {
         league: tierForElo(currentElo),
       };
     }
+    if (npc.kind === "real" && npc.realProfile)
+      return {
+        ...npc,
+        age: Math.max(0, clock.year - npc.realProfile.birthYear),
+        careerStatus:
+          clock.year > npc.realProfile.snapshotYear &&
+          clock.year - npc.realProfile.birthYear >= RETIREMENT_AGE
+            ? "retired"
+            : npc.careerStatus,
+        league: tierForElo(npc.currentElo),
+      };
     return {
       ...npc,
       age: ageOn(npc.dateOfBirth, clock.year, clock.week),

@@ -1,0 +1,15 @@
+{
+  "baseArchive": "Chess-Career-Mode-Performance-Menu-Full.zip",
+  "byteIdenticalGroups": {
+    "src/game/engine/": 7,
+    "src/game/match/npcProfile.ts": 1,
+    "src/game/match/session.ts": 1,
+    "public/audio/": 6,
+    "src/diagnostics/": 1,
+    "src/features/diagnostics/": 1,
+    "public/sw.js": 1,
+    "public/manifest.webmanifest": 1,
+    "vercel.json": 1
+  },
+  "mismatches": []
+}

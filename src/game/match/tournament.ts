@@ -80,23 +80,14 @@ export function pickEventField(
   if (d?.nationality)
     return pickField(eligible, playerRating, event.level, count, rng);
   const local = eligible.filter((n) => n.nationality === d?.country);
-  const city = local.filter((n) => n.city === d?.location);
+  if (event.level === "local" && d?.country)
+    return pickField(local, playerRating, event.level, count, rng);
   const share =
     d?.localShare ??
     (event.level === "local" ? 0.65 : event.level === "national" ? 0.8 : 0.25);
   const localCount = Math.min(local.length, Math.ceil(count * share));
-  const cityCount = Math.min(city.length, Math.ceil(localCount * 0.6));
-  const chosen = pickField(city, playerRating, event.level, cityCount, rng);
+  const chosen = pickField(local, playerRating, event.level, localCount, rng);
   const ids = new Set(chosen.map((n) => n.id));
-  const countryPlayers = pickField(
-    local.filter((n) => !ids.has(n.id)),
-    playerRating,
-    event.level,
-    localCount - chosen.length,
-    rng,
-  );
-  chosen.push(...countryPlayers);
-  countryPlayers.forEach((n) => ids.add(n.id));
   return [
     ...chosen,
     ...pickField(

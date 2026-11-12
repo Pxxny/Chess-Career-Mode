@@ -10,6 +10,8 @@ import { IdentityStep } from "./steps/IdentityStep";
 import { LookStep } from "./steps/LookStep";
 import { StartYearStep } from "./steps/StartYearStep";
 import { startCareer } from "./startCareer";
+import { type CreationProgress } from "@/game/npc/playerDatabase";
+import { creationEstimate, initialPlayerCount } from "./databaseEstimate";
 import { Stepper } from "./Stepper";
 import {
   isStepValid,
@@ -46,6 +48,17 @@ export function CharacterWizard({ slot }: { slot: number }) {
   const [reachable, setReachable] = useState(0);
   const creationLock = useRef(false);
   const [creating, setCreating] = useState(false);
+  const [progress, setProgress] = useState<CreationProgress | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!creating) return;
+    const at = performance.now(),
+      timer = setInterval(
+        () => setElapsed((performance.now() - at) / 1000),
+        250,
+      );
+    return () => clearInterval(timer);
+  }, [creating]);
   const [error, setError] = useState<string | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
@@ -65,10 +78,10 @@ export function CharacterWizard({ slot }: { slot: number }) {
   useEffect(() => headingRef.current?.focus(), [index]);
 
   const go = (i: number) => {
-    if (i <= jumpLimit) setIndex(i);
+    if (!creationLock.current && i <= jumpLimit) setIndex(i);
   };
   const next = () => {
-    if (!valid || isLast) return;
+    if (!valid || isLast || creationLock.current) return;
     setIndex(index + 1);
     setReachable((r) => Math.max(r, index + 1));
   };
@@ -84,6 +97,12 @@ export function CharacterWizard({ slot }: { slot: number }) {
       return;
     creationLock.current = true;
     setCreating(true);
+    setElapsed(0);
+    setProgress({
+      phase: "building",
+      done: 0,
+      total: initialPlayerCount(draft.playerDatabase, draft.startYear),
+    });
     setError(null);
     try {
       await startCareer(
@@ -96,6 +115,7 @@ export function CharacterWizard({ slot }: { slot: number }) {
           appearance: draft.appearance,
           startYear: draft.startYear,
           alternateHistory: draft.alternateHistory,
+          playerDatabase: draft.playerDatabase,
           dateOfBirth: toIsoDate(draft.birthDate),
           birthPlace: {
             countryCode: draft.separateBirthPlace
@@ -108,6 +128,7 @@ export function CharacterWizard({ slot }: { slot: number }) {
           },
         },
         slot,
+        setProgress,
       );
     } catch {
       setError(
@@ -138,7 +159,11 @@ export function CharacterWizard({ slot }: { slot: number }) {
           Back to character slots
         </button>
       </p>
-      <Stepper current={index} reachable={jumpLimit} onGo={go} />
+      <Stepper
+        current={index}
+        reachable={creating ? -1 : jumpLimit}
+        onGo={go}
+      />
 
       <Card>
         <h1
@@ -167,6 +192,42 @@ export function CharacterWizard({ slot }: { slot: number }) {
             {error}
           </p>
         )}
+        {creating && progress && (
+          <div
+            data-testid="creation-progress"
+            className="mt-4 rounded-xl border border-gold-500/30 bg-navy-900 p-4"
+          >
+            <p className="font-semibold">
+              {progress.phase === "saving"
+                ? "Saving player database…"
+                : "Building player database…"}
+            </p>
+            <p className="mt-2 text-sm">
+              Players prepared: {progress.done.toLocaleString("en-US")} /{" "}
+              {progress.total.toLocaleString("en-US")}
+            </p>
+            <progress
+              aria-label="Players prepared"
+              max={Math.max(1, progress.total)}
+              value={progress.done}
+              className="mt-2 w-full accent-[#d4a94a]"
+            />
+            <p className="mt-2 text-sm" role="status">
+              Elapsed: {elapsed.toFixed(1)} s
+            </p>
+            <p className="mt-1 text-xs text-ink-muted">
+              Estimated creation time:{" "}
+              {creationEstimate(draft.playerDatabase, draft.startYear).lower}–
+              {creationEstimate(draft.playerDatabase, draft.startYear).upper} s
+            </p>
+            {elapsed >
+              creationEstimate(draft.playerDatabase, draft.startYear).upper && (
+              <p className="mt-2 text-xs text-gold-300">
+                Taking longer than the estimate. Creation is still running.
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="mt-6 flex items-center justify-between gap-3 border-t border-white/5 pt-4">
           <Button
@@ -187,7 +248,7 @@ export function CharacterWizard({ slot }: { slot: number }) {
                 {creating ? "Building your world…" : "Create career"}
               </Button>
             ) : (
-              <Button onClick={next} disabled={!valid}>
+              <Button onClick={next} disabled={!valid || creating}>
                 Next
               </Button>
             )}

@@ -1,0 +1,63 @@
+[WebServer] (node:13197) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 19 tests using 1 worker
+
+(node:13242) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/all-cities.spec.ts:67:1 › Russia: all 4301 cities reachable by scrolling, every search match retained, keyboard and saved last-city selection work (34.3s)
+  ✓   2 tests/all-cities.spec.ts:177:3 › Touch city selection › mobile: Thai labels, city after index 3000, touch selection, country reset and custom input (2.0s)
+  ✓   3 tests/all-cities.spec.ts:219:1 › USA largest file and a late country response do not truncate or replace the new country list (1.7s)
+  ✓   4 tests/language.spec.ts:66:1 › English is the default even in a Thai browser; preference persists and synchronizes across tabs (2.8s)
+  ✓   5 tests/language.spec.ts:98:1 › Thai character creation searches both languages, retains input through a live switch and saves canonical identities (7.1s)
+  ✘   6 tests/language.spec.ts:175:1 › existing careers, navigation and an open player profile switch live without changing the save (19.5s)
+(node:13693) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   7 tests/language.spec.ts:255:1 › NPC actions and a running friendly board retain their state when switching languages (21.8s)
+  ✓   8 tests/language.spec.ts:317:1 › blocked preference storage keeps English default and allows an in-session Thai selection (1.2s)
+  ✓   9 tests/player-database.spec.ts:75:1 › Small selection, real Worker generation, domestic pool, stable reload and backup (3.4s)
+  ✓  10 tests/player-database.spec.ts:128:1 › Extra Large responsive creation progress, counts, learned estimate and Thai choice screen (13.5s)
+  ✓  11 tests/player-database.spec.ts:188:1 › Real FIDE roster stays real after reload and displays source/date/year-only data (6.3s)
+  ✓  12 tests/player-database.spec.ts:235:1 › historical Real Player creation uses historical real identities without current FIDE roster (2.2s)
+  ✓  13 tests/player-database.spec.ts:252:1 › different database sizes coexist in separate character slots and survive switching (6.5s)
+  ✓  14 tests/qol.spec.ts:265:1 › QoL: date, work income, abroad/FIDE filters, diverse repertoire and chosen training to the next event (7.5s)
+  ✓  15 tests/qol.spec.ts:382:1 › QoL: favorite opening and tournament player histories scope outcomes and open actual replays (5.6s)
+  ✓  16 tests/qol.spec.ts:461:1 › QoL: federation processing, calendar cancellation and additive legacy NPC upgrade persist (16.1s)
+  ✓  17 tests/real-player-likeness.spec.ts:4:1 › all real-player character likenesses render in the offline preview gallery (1.1s)
+  ✓  18 tests/slots.spec.ts:34:1 › date of birth, then two characters side by side in separate slots (6.6s)
+  ✓  19 tests/slots.spec.ts:89:1 › a date of birth that does not fit the start year blocks the start year step (3.8s)
+
+
+  1) tests/language.spec.ts:175:1 › existing careers, navigation and an open player profile switch live without changing the save 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for getByRole('link', { name: 'แข่งขัน', exact: true })
+
+
+      204 |   await expect(page.getByTestId("home-date")).toContainText("Week");
+      205 |   await language(page).selectOption("th");
+    > 206 |   await page.getByRole("link", { name: "แข่งขัน", exact: true }).click();
+          |                                                                  ^
+      207 |   await page.getByRole("tab", { name: "อันดับ", exact: true }).click();
+      208 |   await page
+      209 |     .getByRole("searchbox", {
+        at /workspace/chess-career-player-database/Chess-Career-Mode/tests/language.spec.ts:206:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/language-existing-careers--d1445-e-without-changing-the-save/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/language-existing-careers--d1445-e-without-changing-the-save/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/language-existing-careers--d1445-e-without-changing-the-save/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/language-existing-careers--d1445-e-without-changing-the-save/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests/language.spec.ts:175:1 › existing careers, navigation and an open player profile switch live without changing the save 
+  18 passed (2.8m)

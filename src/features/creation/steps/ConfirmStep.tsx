@@ -12,6 +12,8 @@ import { createStartingSkills } from "@/game/player/createPlayer";
 import { formatMoney } from "@/utils/format";
 import type { CharacterDraft } from "../useCharacterDraft";
 import { genderLabel } from "./IdentityStep";
+import { databaseChoice } from "@/game/npc/playerDatabase";
+import { initialPlayerCount, creationEstimate } from "../databaseEstimate";
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -94,6 +96,21 @@ export function ConfirmStep({ draft }: { draft: CharacterDraft }) {
           </Row>
           <Row label="Alternate history">
             {draft.alternateHistory ? "On" : "Off"}
+          </Row>
+          <Row label="Player Database">
+            <span translate="no">
+              {databaseChoice(draft.playerDatabase).label}
+            </span>{" "}
+            ·{" "}
+            {initialPlayerCount(
+              draft.playerDatabase,
+              draft.startYear,
+            ).toLocaleString("en-US")}{" "}
+            profiles
+          </Row>
+          <Row label="Estimated creation time">
+            {creationEstimate(draft.playerDatabase, draft.startYear).lower}–
+            {creationEstimate(draft.playerDatabase, draft.startYear).upper} s
           </Row>
         </dl>
       </div>

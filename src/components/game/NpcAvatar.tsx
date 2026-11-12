@@ -4,14 +4,17 @@ import { npcAppearance } from "@/game/appearance/npcAppearance";
 import type { Npc } from "@/types";
 
 interface Props {
-  npc: Pick<Npc, "id" | "name" | "gender">;
+  npc: Pick<Npc, "id" | "name" | "gender"> & Partial<Pick<Npc, "realProfile">>;
   size?: "sm" | "md" | "lg";
   /** A portrait next to the same visible name should not repeat the button's name. */
   decorative?: boolean;
 }
 
 export function NpcAvatar({ npc, size = "sm", decorative = false }: Props) {
-  const appearance = useMemo(() => npcAppearance(npc), [npc.id, npc.gender]);
+  const appearance = useMemo(
+    () => npcAppearance(npc),
+    [npc.id, npc.gender, npc.realProfile?.portraitId],
+  );
   return (
     <span
       data-npc-portrait={npc.id}

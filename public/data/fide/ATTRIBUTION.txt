@@ -1,0 +1,28 @@
+FIDE real-player snapshot for Chess Career Mode
+Source: FIDE Standard Rating List, November 2026
+https://ratings.fide.com/download_lists.phtml
+Download: https://ratings.fide.com/download/standard_rating_list.zip
+Source file date: 11 November 2026
+
+20,000 selected active standard-rated players, with known birth year, from
+222,878 eligible source records. This is NOT the entire FIDE database.
+Selection: top 10,000 by standard rating, plus 10,000 sampled deterministically
+across federations from the remaining players. See scripts/build-fide-snapshot.py
+and sourceZipSha256 in players-2026-11.json for reproducibility.
+
+Factual fields: FIDE ID, name, federation, sex, official title, standard rating,
+birth year. Federation does not establish birthplace or citizenship. Given
+name/family name ordering is converted from the source's comma-separated form.
+Birth day/month and hometown are not provided; the UI shows year-only birth
+data and unknown hometown. An internal January 1 placeholder is never displayed
+as a factual birthday. Age is approximate. Peak Elo means the maximum in this
+save, not a claimed historical career peak. All player styles, personality,
+skills, potential and training habits are game estimates; game results and
+future ratings are simulated. No real historical tournament results are invented.
+
+This snapshot is used only when Real Player and start year 2026 are selected.
+It is a November 2026 starting baseline, not January 2026 historical ratings.
+Other start years use the separate curated historical real-player roster with
+modeled rating curves. Normal database sizes retain fictional characters.
+
+The game is not affiliated with or endorsed by FIDE.

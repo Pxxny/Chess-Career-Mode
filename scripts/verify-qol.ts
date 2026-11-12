@@ -58,7 +58,8 @@ const global = buildWorldNpcs(2026),
 timings.buildWorld = performance.now() - at;
 assert.equal(global.filter((n) => n.kind === "fictional").length, 4000);
 assert.equal(locals.length, 80);
-assert(locals.every((n) => n.nationality === "TH" && n.city === "Bangkok"));
+assert(locals.every((n) => n.nationality === "TH"));
+assert(new Set(locals.map((n) => n.city)).size > 10);
 assert.deepEqual(localCompetitors("TH", "Bangkok", 2026), locals);
 assert.equal(new Set(npcs.map((n) => n.id)).size, npcs.length);
 const original = {
@@ -111,7 +112,7 @@ const field = pickEventField(
 );
 assert.equal(field.length, 63);
 assert(field.filter((n) => n.nationality === "TH").length >= 41);
-assert(field.filter((n) => n.city === "Bangkok").length >= 25);
+assert(new Set(field.map((n) => n.city)).size > 10);
 const national = events.find((e) => e.id === "career-national-2026")!;
 assert(
   pickEventField(npcs, 1800, national, createRng(1)).every(
@@ -215,7 +216,10 @@ const training = plannedTrainingDay(base, [
   "not-real",
 ]);
 assert.equal(training.completed.length, 3);
-assert.equal(training.completed.filter(n => !n.endsWith("(automatic)")).length, 2);
+assert.equal(
+  training.completed.filter((n) => !n.endsWith("(automatic)")).length,
+  2,
+);
 assert(training.completed.includes("Power nap (automatic)"));
 assert.equal(training.skipped.length, 1);
 assert.equal(training.save.training.hoursUsedToday, 5);

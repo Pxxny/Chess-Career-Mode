@@ -27,7 +27,11 @@ function Fact({ label, value }: { label: string; value: ReactNode }) {
       <dt className="text-xs text-ink-faint">{label}</dt>
       <dd
         translate={
-          label === "City" && value !== "National circuit" ? "no" : undefined
+          label === "City" &&
+          value !== "National circuit" &&
+          value !== "Not recorded"
+            ? "no"
+            : undefined
         }
         className="text-sm font-semibold text-ink"
       >
@@ -73,18 +77,30 @@ export function NpcProfileModal({
         <NpcAvatar npc={npc} size="lg" />
         <div className="flex min-w-0 flex-wrap gap-2">
           <Badge tone="gold">{tierLabel(npc.tier)}</Badge>
-          {npc.title !== "none" && <Badge tone="gold">{npc.title}</Badge>}
+          {(npc.realProfile?.officialTitle || npc.title !== "none") && (
+            <Badge tone="gold">
+              {npc.realProfile?.officialTitle || npc.title}
+            </Badge>
+          )}
           <Badge>{STATUS_LABELS[npc.careerStatus]}</Badge>
           {npc.kind === "legend" && <Badge>Historical legend</Badge>}
+          {npc.kind === "real" && <Badge>FIDE player</Badge>}
         </div>
       </div>
 
       <NpcSocialPanel npc={npc} onPlayAccepted={onClose} />
+      {npc.realProfile && (
+        <p className="mb-4 text-xs text-ink-muted">
+          FIDE snapshot: {npc.realProfile.snapshotDate}. Name, federation, title
+          and starting rating come from the source. Styles, skills and training
+          are game estimates. Results after career creation are simulated.
+        </p>
+      )}
 
       <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         <Fact
-          label="Nationality"
-          value={`${country?.flag ?? ""} ${country?.nationality ?? npc.nationality}`}
+          label={npc.realProfile ? "Federation" : "Nationality"}
+          value={`${country?.flag ?? ""} ${(npc.realProfile ? country?.name : country?.nationality) ?? npc.nationality}`}
         />
         <Fact label="City" value={npc.city} />
         <Fact
@@ -104,16 +120,32 @@ export function NpcProfileModal({
           }
         />
         <Fact label="Gender" value={capitalize(npc.gender)} />
-        <Fact label="Date of birth" value={npc.dateOfBirth} />
-        <Fact label="Age" value={String(npc.age)} />
+        <Fact
+          label="Date of birth"
+          value={
+            npc.realProfile
+              ? `${npc.realProfile.birthYear} · Year only`
+              : npc.dateOfBirth
+          }
+        />
+        <Fact
+          label="Age"
+          value={npc.realProfile ? `≈ ${npc.age}` : String(npc.age)}
+        />
         <Fact label="World ranking" value={rank ? `#${rank}` : "Unranked"} />
         <Fact label="Current Elo" value={String(npc.currentElo)} />
-        <Fact label="Peak Elo" value={String(npc.peakElo)} />
+        <Fact
+          label={npc.realProfile ? "Peak Elo in this save" : "Peak Elo"}
+          value={String(npc.peakElo)}
+        />
         <Fact label="Potential" value={String(npc.potentialRating)} />
         <Fact label="League" value={leagueName(npc.league)} />
         <Fact label="Playing style" value={capitalize(npc.style)} />
         <Fact label="Personality" value={capitalize(npc.personality)} />
-        <Fact label="Career start" value={String(npc.careerStartYear)} />
+        <Fact
+          label="Career start"
+          value={npc.realProfile ? "Not recorded" : String(npc.careerStartYear)}
+        />
       </dl>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">

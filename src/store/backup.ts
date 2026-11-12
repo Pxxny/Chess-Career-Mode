@@ -4,6 +4,7 @@ import {
   type ArchivedEvent,
 } from "@/game/competition/archive";
 import { GAME_CONFIG } from "@/data/config";
+import { validDatabaseSize } from "@/game/npc/playerDatabase";
 import { upgradeSave } from "@/game/training/migrate";
 import type { GameSave, Npc } from "@/types";
 import { openDb, STORES } from "@/utils/idb";
@@ -75,6 +76,11 @@ export async function parseBackup(raw: string): Promise<CareerBackup> {
   )
     fail();
   const { save, npcs } = value.payload;
+  if (
+    save?.career?.playerDatabase !== undefined &&
+    !validDatabaseSize(save.career.playerDatabase)
+  )
+    fail();
   if (
     value.payload.tournamentArchive !== undefined &&
     (!Array.isArray(value.payload.tournamentArchive) ||

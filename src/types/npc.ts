@@ -107,7 +107,15 @@ export interface Npc {
   };
   recordedPlayerEvents?: string[];
   id: string;
-  kind: "fictional" | "legend";
+  kind: "fictional" | "legend" | "real";
+  realProfile?: {
+    fideId: number;
+    snapshotDate: string;
+    snapshotYear: number;
+    birthYear: number;
+    officialTitle: string;
+    portraitId?: string;
+  };
   name: string;
   nameVersion?: number;
   /** Independent of current residence / represented federation. Missing for unverified historical figures. */

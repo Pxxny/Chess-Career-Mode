@@ -26,7 +26,10 @@ export function applyNpcResult(
     currentElo: after,
     peakElo,
     league: tierForElo(after),
-    title: higherTitle(npc.title, titleForPeak(peakElo)),
+    title:
+      npc.kind === "real"
+        ? npc.title
+        : higherTitle(npc.title, titleForPeak(peakElo)),
     ...(npc.kind === "legend"
       ? {
           careerRatingDelta: (npc.careerRatingDelta ?? 0) + after - before,

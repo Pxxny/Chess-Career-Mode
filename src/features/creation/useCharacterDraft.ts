@@ -2,6 +2,10 @@ import { useCallback, useState } from "react";
 import { DEFAULT_APPEARANCE } from "@/data/appearance";
 import { GAME_CONFIG } from "@/data/config";
 import {
+  DEFAULT_PLAYER_DATABASE,
+  type PlayerDatabaseSize,
+} from "@/game/npc/playerDatabase";
+import {
   birthDateProblem,
   defaultBirthDate,
   isRealDate,
@@ -16,6 +20,7 @@ import type {
 } from "@/types";
 
 export interface CharacterDraft {
+  playerDatabase: PlayerDatabaseSize;
   name: string;
   gender: PlayerGender | null;
   birthDate: BirthDate;
@@ -41,6 +46,7 @@ export const STEPS = [
 export type StepId = (typeof STEPS)[number]["id"];
 
 const initialDraft = (): CharacterDraft => ({
+  playerDatabase: DEFAULT_PLAYER_DATABASE,
   name: "",
   gender: null,
   birthDate: defaultBirthDate(GAME_CONFIG.startYear.default),

@@ -73,7 +73,7 @@ export function culturalName(
 /** Additive, idempotent NPC upgrade: never resets ratings, ages, IDs or results; real legends retain their names. */
 export function upgradeNpcIdentities(npcs: Npc[]): Npc[] {
   const taken = new Set(
-    npcs.filter((n) => n.kind === "legend").map((n) => n.name),
+    npcs.filter((n) => n.kind !== "fictional").map((n) => n.name),
   );
   const keep = new Set<string>();
   for (const n of npcs)
@@ -87,7 +87,7 @@ export function upgradeNpcIdentities(npcs: Npc[]): Npc[] {
     }
   let changed = false;
   const next = npcs.map((n) => {
-    if (n.kind === "legend") return n;
+    if (n.kind !== "fictional") return n;
     const country = getCountry(n.nationality);
     const name = keep.has(n.id)
       ? n.name

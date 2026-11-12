@@ -9,6 +9,7 @@ export interface GenCountry {
 }
 
 export interface WorldGenContext {
+  onProgress?: (generated:number,total:number) => void;
   /** Already mixed with the start year */
   seed: number;
   startYear: number;

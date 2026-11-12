@@ -1,0 +1,13 @@
+[WebServer] (node:14695) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:14722) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/language.spec.ts:175:1 › existing careers, navigation and an open player profile switch live without changing the save (17.6s)
+  ✓  2 tests/player-database.spec.ts:75:1 › Small selection, real Worker generation, domestic pool, stable reload and backup (4.7s)
+  ✓  3 tests/player-database.spec.ts:149:1 › Extra Large responsive creation progress, counts, learned estimate and Thai choice screen (14.2s)
+  ✓  4 tests/player-database.spec.ts:214:1 › Real FIDE roster stays real after reload and displays source/date/year-only data (7.0s)
+
+  4 passed (46.3s)

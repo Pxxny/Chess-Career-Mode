@@ -3,15 +3,16 @@ import { generateFictionalNpcs } from "./fictional";
 import { hashString } from "@/utils/format";
 import { mixSeed } from "@/game/rng";
 import type { Npc } from "@/types";
-/** Local competitors are fictional people, generated once per place and cohort, never copied real FIDE profiles. */
+import { getSeedCities } from "@/data/world/seedCities";
+/** Domestic competitors are seeded once per country/cohort, spread across real cities. */
 export function localCompetitors(
   countryCode: string,
-  city: string,
+  _city: string,
   year: number,
 ): Npc[] {
   const c = getCountry(countryCode);
   if (!c) return [];
-  const prefix = `local-${countryCode}-${hashString(city)}-${year}-`;
+  const prefix = `domestic-${countryCode}-${year}-`;
   return generateFictionalNpcs({
     seed: mixSeed(hashString(prefix), 0x10ca1),
     startYear: year,
@@ -25,7 +26,10 @@ export function localCompetitors(
         capital: c.capital,
       },
     ],
-    seedCities: () => [city],
+    seedCities: () =>
+      getSeedCities(countryCode).length
+        ? getSeedCities(countryCode)
+        : [c.capital ?? c.name],
     eventsForYear: () => [],
   })
     .filter(

@@ -6,6 +6,12 @@ import { buildLegendNpcs } from "@/game/npc/legends";
 import { create } from "zustand";
 import { buildWorldNpcs } from "@/game/npc/buildWorldNpcs";
 import {
+  fictionalCountFor,
+  realOnly,
+  type CreationProgress,
+} from "@/game/npc/playerDatabase";
+import { createNpcPopulation } from "./npcBuilder";
+import {
   applyWorldState,
   rerankNpcs,
   type WorldClock,
@@ -24,6 +30,7 @@ interface NpcStore {
   /** Career whose NPC database is currently loaded */
   careerId: string | null;
   startYear: number;
+  playerDatabase: CareerRecord["playerDatabase"];
   npcs: Npc[];
   /** Loads the NPC database of a career. It is built and saved only when missing or outdated. */
   ensureLocalPool: (
@@ -34,7 +41,10 @@ interface NpcStore {
   ) => Promise<void>;
   loadDatabase: (career: CareerRecord) => Promise<void>;
   /** Rebuilds every NPC from the seed for a new career. */
-  resetDatabase: (career: CareerRecord) => Promise<void>;
+  resetDatabase: (
+    career: CareerRecord,
+    progress?: (value: CreationProgress) => void,
+  ) => Promise<void>;
   /** Re-applies era, age, ranking and league rules for the current game date and mode. */
   syncWorld: (clock: WorldClock) => Promise<{ joined: Npc[]; retired: Npc[] }>;
   updateNpcs: (changed: Npc[]) => Promise<void>;
@@ -46,11 +56,20 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
   status: "idle",
   careerId: null,
   startYear: 0,
+  playerDatabase: undefined,
   npcs: [],
 
   ensureLocalPool: async (careerId, country, city, year) => {
     if (get().careerId !== careerId) return;
+    if (get().playerDatabase === "real") return;
     const previous = get().npcs;
+    if (
+      previous.some(
+        (n) =>
+          n.nationality === country && n.id.startsWith(`domestic-${country}-`),
+      )
+    )
+      return;
     const merged = mergeNpcAdditions(
       previous,
       localCompetitors(country, city, year),
@@ -71,6 +90,7 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
       status: "loading",
       careerId: career.id,
       startYear: career.startYear,
+      playerDatabase: career.playerDatabase,
     });
     try {
       const stored = await readNpcDatabase(career);
@@ -79,21 +99,27 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
       const growing =
         stored.meta?.databaseKey === career.databaseKey &&
         stored.meta?.schemaVersion === GAME_CONFIG.world.npcDatabaseVersion &&
-        stored.meta.fictionalCount < GAME_CONFIG.world.fictionalNpcCount;
+        stored.meta.fictionalCount < fictionalCountFor(career);
       if (
         (growing || isMetaCurrent(stored.meta, career)) &&
         stored.npcs.length > 0
       ) {
         const grow =
           !!stored.meta &&
-          stored.meta.fictionalCount < GAME_CONFIG.world.fictionalNpcCount;
+          stored.meta.fictionalCount < fictionalCountFor(career);
         const candidates = [
-          ...(grow ? buildWorldNpcs(career.startYear) : buildLegendNpcs()),
-          ...localCompetitors(
-            career.countryCode,
-            career.city.name,
-            career.startYear,
-          ),
+          ...(!realOnly(career)
+            ? grow
+              ? buildWorldNpcs(career.startYear, fictionalCountFor(career))
+              : buildLegendNpcs()
+            : []),
+          ...(!realOnly(career)
+            ? localCompetitors(
+                career.countryCode,
+                career.city.name,
+                career.startYear,
+              )
+            : []),
         ];
         const merged = mergeNpcAdditions(stored.npcs, candidates);
         const upgraded = upgradeNpcIdentities(merged.npcs);
@@ -116,33 +142,22 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
       // Storage unavailable: fall through and keep an in-memory world.
     }
     if (get().careerId !== career.id) return;
-    const npcs = upgradeNpcIdentities([
-      ...buildWorldNpcs(career.startYear),
-      ...localCompetitors(
-        career.countryCode,
-        career.city.name,
-        career.startYear,
-      ),
-    ]);
+    const npcs = await createNpcPopulation(career);
+    if (get().careerId !== career.id) return;
     set({ npcs });
     await writeNpcDatabase(npcs, career).catch(() => undefined);
     if (get().careerId === career.id) set({ status: "ready" });
   },
 
-  resetDatabase: async (career) => {
-    const npcs = upgradeNpcIdentities([
-      ...buildWorldNpcs(career.startYear),
-      ...localCompetitors(
-        career.countryCode,
-        career.city.name,
-        career.startYear,
-      ),
-    ]);
+  resetDatabase: async (career, progress) => {
+    const npcs = await createNpcPopulation(career, progress);
+    progress?.({ phase: "saving", done: npcs.length, total: npcs.length });
     set({
       npcs,
       status: "ready",
       careerId: career.id,
       startYear: career.startYear,
+      playerDatabase: career.playerDatabase,
     });
     await writeNpcDatabase(npcs, career).catch(() => undefined);
   },
@@ -150,7 +165,15 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
   syncWorld: async (clock) => {
     const previous = get().npcs;
     const careerId = get().careerId;
-    const expanded = advancePopulation(previous, get().startYear, clock.year);
+    const expanded =
+      get().playerDatabase === "real"
+        ? previous
+        : advancePopulation(
+            previous,
+            get().startYear,
+            clock.year,
+            fictionalCountFor({ playerDatabase: get().playerDatabase }),
+          );
     const next = applyWorldState(expanded, clock);
     const oldById = new Map(previous.map((n) => [n.id, n]));
     const joined = next.filter((n) => !oldById.has(n.id));

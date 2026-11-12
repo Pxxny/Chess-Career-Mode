@@ -203,7 +203,7 @@ test("existing careers, navigation and an open player profile switch live withou
   await language(page).selectOption("en");
   await expect(page.getByTestId("home-date")).toContainText("Week");
   await language(page).selectOption("th");
-  await page.getByRole("link", { name: "แข่งขัน", exact: true }).click();
+  await page.getByRole("link", { name: "ทัวร์นาเมนต์", exact: true }).click();
   await page.getByRole("tab", { name: "อันดับ", exact: true }).click();
   await page
     .getByRole("searchbox", {

@@ -1,0 +1,34 @@
+{
+  "status": "passed",
+  "build": "TypeScript + Vite production build passed; pre-existing large bundle warning remains.",
+  "unitSuites": [
+    "player-database",
+    "qol",
+    "circuit",
+    "characters",
+    "backup-lifetime",
+    "performance",
+    "world",
+    "npc-portraits",
+    "language",
+    "live-tournaments",
+    "roadmap"
+  ],
+  "browser": {
+    "distinctCases": 19,
+    "firstRunPassed": 18,
+    "firstRunIssue": "One legacy language selector expected the old Thai navigation label; updated the test to the existing Tournament label.",
+    "recheck": "4 cases passed: legacy language case, Small export/import and reload, Extra Large progress/locked steps/Thai UI, and current FIDE roster/profile."
+  },
+  "initialCounts": {
+    "small": 912,
+    "medium": 2162,
+    "large": 4162,
+    "extra-large": 15162,
+    "real2026": 20000,
+    "realHistorical": 82
+  },
+  "source": "Selected FIDE Standard November 2026 snapshot (11 Nov 2026); not the complete FIDE database.",
+  "timing": "Cloud test durations are not a phone speed promise. First creation estimates are heuristic; later estimates use actual device-local samples.",
+  "engine": "Engine source, search budgets and simulation pace preserved byte-for-byte."
+}

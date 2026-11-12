@@ -1,0 +1,12 @@
+src/game/npc/playerDatabase.ts 115ms (unchanged)
+src/game/npc/buildCareerWorld.ts 31ms (unchanged)
+src/game/npc/fidePlayers.ts 28ms (unchanged)
+src/game/npc/localPool.ts 10ms (unchanged)
+src/game/npc/world.worker.ts 4ms (unchanged)
+src/store/npcBuilder.ts 11ms (unchanged)
+src/features/creation/databaseEstimate.ts 17ms (unchanged)
+src/features/world/NpcProfileModal.tsx 46ms
+scripts/verify-player-database.ts 25ms
+scripts/verify-qol.ts 79ms
+tests/player-database.spec.ts 51ms
+tests/qol.spec.ts 73ms

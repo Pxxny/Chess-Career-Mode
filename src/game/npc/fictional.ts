@@ -350,7 +350,12 @@ function generateOne(
 export function generateFictionalNpcs(ctx: WorldGenContext): Npc[] {
   const tiers = assignTiers(ctx.seed, ctx.fictionalCount, ctx.startYear);
   const taken = new Set<string>();
-  return tiers.map((tier, index) => generateOne(ctx, index, tier, taken));
+  return tiers.map((tier, index) => {
+    const npc = generateOne(ctx, index, tier, taken);
+    if ((index + 1) % 250 === 0 || index + 1 === tiers.length)
+      ctx.onProgress?.(index + 1, tiers.length);
+    return npc;
+  });
 }
 
 export { higherTitle };

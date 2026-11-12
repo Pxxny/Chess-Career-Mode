@@ -1,6 +1,7 @@
 import { GAME_CONFIG } from "@/data/config";
 import type { CareerRecord, Npc } from "@/types";
 import { STORES, transact } from "@/utils/idb";
+import { fictionalCountFor } from "@/game/npc/playerDatabase";
 
 /** Describes which career an NPC database was built for; any mismatch triggers a rebuild. */
 export interface NpcDatabaseMeta {
@@ -24,7 +25,7 @@ export const metaFor = (career: CareerRecord): NpcDatabaseMeta => ({
   careerId: career.id,
   startYear: career.startYear,
   schemaVersion: GAME_CONFIG.world.npcDatabaseVersion,
-  fictionalCount: GAME_CONFIG.world.fictionalNpcCount,
+  fictionalCount: fictionalCountFor(career),
 });
 
 export const isMetaCurrent = (

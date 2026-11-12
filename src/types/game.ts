@@ -15,6 +15,7 @@ import type { World } from "./world";
 
 /** The permanent link between a player, their country and city, their historical period and their NPC database. */
 export interface CareerRecord {
+  playerDatabase?: import("@/game/npc/playerDatabase").PlayerDatabaseSize;
   id: string;
   startYear: number;
   countryCode: string;
@@ -59,6 +60,7 @@ export interface GameSave {
 }
 
 export interface NewCareerOptions {
+  playerDatabase?: import("@/game/npc/playerDatabase").PlayerDatabaseSize;
   birthPlace?: import("./geo").BirthPlace;
   name: string;
   gender: PlayerGender;

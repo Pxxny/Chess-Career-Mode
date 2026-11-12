@@ -52,6 +52,7 @@ async function fixture(
               for (const row of all.result) {
                 if (
                   row.npc.id.startsWith("local-") ||
+                  row.npc.id.startsWith("domestic-") ||
                   (row.npc.id.startsWith("npc-") &&
                     Number(row.npc.id.slice(4)) > 1200)
                 )

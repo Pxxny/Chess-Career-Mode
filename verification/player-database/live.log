@@ -1,0 +1,5 @@
+
+> chess-career-mode@0.1.0 test:live-tournaments
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-live-tournaments.ts
+
+PASS year limits, event categories, live legal NPC game, saved moves/clocks/RNG, cross-career/round/player-write guards, immutable watched result, one-time settlement, archive outbox, actual world standings/pairings and full backup roundtrip.
