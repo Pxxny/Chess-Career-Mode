@@ -1,0 +1,15 @@
+[WebServer] (node:7307) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:7325) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/all-cities.spec.ts:67:1 › Russia: all 4301 cities reachable by scrolling, every search match retained, keyboard and saved last-city selection work (32.9s)
+  ✓  2 tests/all-cities.spec.ts:177:1 › Touch city selection › mobile: Thai labels, city after index 3000, touch selection, country reset and custom input (2.0s)
+  ✓  3 tests/all-cities.spec.ts:217:1 › USA largest file and a late country response do not truncate or replace the new country list (1.9s)
+  ✓  4 tests/full-calendar.spec.ts:49:1 › history shows all calendar tournaments from day one; national standings include real projected roster names (4.0s)
+  ✓  5 tests/full-calendar.spec.ts:130:1 › unentered calendar event has entrants and live NPC boards, then real named standings and one NPC history after finishing and reloading (23.4s)
+  ✓  6 tests/full-calendar.spec.ts:280:1 › city selector exposes all real places, UK federation datasets, and all available small-country cities (3.4s)
+
+  6 passed (1.2m)

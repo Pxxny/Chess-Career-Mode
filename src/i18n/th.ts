@@ -450,6 +450,8 @@ export const TH_MESSAGES: Record<string, string> = {
   "No country matches your search": "ไม่พบประเทศที่ตรงกับการค้นหา",
   "No matches": "ไม่พบรายการที่ตรงกัน",
   "Major cities": "เมืองหลัก",
+  "{{0}} cities · scroll to browse all": "{{0}} เมือง · เลื่อนดูได้ทั้งหมด",
+  "{{0}} matching cities": "พบ {{0}} เมือง",
   Capital: "เมืองหลวง",
   "Custom city": "เมืองที่กำหนดเอง",
   "Add as a custom city": "เพิ่มเป็นเมืองที่กำหนดเอง",

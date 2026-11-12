@@ -290,13 +290,11 @@ for (const country of COUNTRIES) {
 }
 for (const code of ["TH", "US", "IN", "FR", "GB-ENG", "GB-SCO", "GB-WLS"])
   assert(index.countries[code] > 62);
-assert.equal(GAME_CONFIG.world.majorCityCount, 62);
-assert.equal(GAME_CONFIG.world.maxCityResults, 90);
 const cities = Array.from({ length: 100 }, (_, i) => ({
   name: `Place ${i}`,
   population: 100 - i,
 }));
-assert.equal(getMajorCities(cities, 62).length, 62);
+assert.equal(getMajorCities(cities).length, 100);
 console.log(
-  `PASS city expansion: 50 additional distinct seed cities in ${expanded} countries/federations; ${limited} smaller/missing datasets retain all available real places and custom input. 62 default choices, 90 search results, separate England/Scotland/Wales data.`,
+  `PASS city expansion: 50 additional distinct seed cities in ${expanded} countries/federations; ${limited} smaller/missing datasets retain all available real places and custom input. No default city-list cap, separate England/Scotland/Wales data.`,
 );

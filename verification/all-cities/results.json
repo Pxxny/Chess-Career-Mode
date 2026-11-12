@@ -1,0 +1,77 @@
+{
+  "release": "2026-11-12",
+  "base": "Chess-Career-Mode-Tournaments-Standings-Cities-Full.zip",
+  "baseFilesRetained": 834,
+  "problem": "The complete country city file was loaded, but the creator capped initial options at 62 and search results at 90.",
+  "solution": "Unlimited country list and search result set, with optional virtualized rendering in the existing selector. All countries retain their complete dataset and custom entry. Other selectors preserve their non-virtual behavior.",
+  "changedBaseFiles": [
+    "CHANGELOG.md",
+    "README.md",
+    "artifacts/all-tournaments-history-th.png",
+    "artifacts/calendar-completed-standings-en.png",
+    "artifacts/calendar-completed-standings-th.png",
+    "artifacts/calendar-npc-live-en.png",
+    "artifacts/more-cities-thailand-en.png",
+    "package.json",
+    "scripts/verify-full-calendar.ts",
+    "src/components/ui/SearchSelect.tsx",
+    "src/data/config.ts",
+    "src/features/creation/CitySelect.tsx",
+    "src/game/world/citySearch.ts",
+    "src/i18n/th.ts",
+    "tests/full-calendar.spec.ts"
+  ],
+  "checks": [
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "log": "build.log"
+    },
+    {
+      "command": "npm run test:city-search",
+      "result": "passed: all 249 country/federation files, 127911 source rows, unlimited defaults, broad matches and last-name retrieval",
+      "log": "search-logic.log"
+    },
+    {
+      "command": "CHROMIUM_PATH=/usr/bin/chromium npx playwright test tests/all-cities.spec.ts tests/full-calendar.spec.ts --workers=1",
+      "result": "6 passed",
+      "log": "browser-tests.log",
+      "json": "browser-results.json"
+    },
+    {
+      "command": "npm run test:full-calendar",
+      "result": "passed: full 364-day simulated career calendar plus city pools and full backups",
+      "log": "calendar-regression.log"
+    },
+    {
+      "command": "npm run test:language",
+      "result": "passed",
+      "log": "language-regression.log"
+    }
+  ],
+  "russiaBrowserCoverage": {
+    "total": 4301,
+    "scrollVisited": 4301,
+    "maxRendered": 13,
+    "query": "a",
+    "matchCount": 2687,
+    "searchVisited": 2687,
+    "maxSearchRendered": 13,
+    "savedCity": "Petrovskoye"
+  },
+  "browserDetails": [
+    "Collected all 4301 distinct city names by scrolling the real creator list; compared with the actual RU JSON.",
+    "Collected all 2687 results for broad query a; no 90/300/500 cap. At most 13 option rows rendered at once.",
+    "Keyboard Home/End, Ctrl+End, PageUp/PageDown, Enter selection and click-to-reopen checked. Last city Petrovskoye persisted as custom:false in a career created through UI.",
+    "Mobile touch selection of city beyond source index 3000, Thai labels, country changes, Vatican single-city dataset and custom input tested.",
+    "Largest US dataset remains accessible to its last option; switching away from pending Russia request retains Thailand city list.",
+    "Existing annual list, live NPC board, standings/rosters, reload and UK federation dataset integration tests passed."
+  ],
+  "scope": [
+    "Complete means every city in the country dataset; the GeoNames dataset is not every settlement that exists in reality.",
+    "No game saves, existing NPCs or city datasets are rewritten.",
+    "Node timings in search-logic.log measure logic checks on Cloud Node, not network or Termux UI latency. Browser coverage is Chromium desktop and emulated touch at 390x844; no physical Android/Termux/iOS device test.",
+    "Panel captures temporarily hide sticky navigation; live-game images in other release directories are retained from their original tests.",
+    "The existing production bundle size warning remains."
+  ]
+}

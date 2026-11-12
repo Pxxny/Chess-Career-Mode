@@ -1,0 +1,6 @@
+
+> chess-career-mode@0.1.0 test:city-search
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-city-search.ts
+
+PASS all 249 country/federation files: 127911 rows remain available; unlimited default list/search, prefix/contains matches, exact last cities, accents and original input retained.
+PASS Russia: 4,301 cities; 2687 matches for "a", beyond former caps. Node logic check times (not browser/network): RU 3.44 ms, US 8.93 ms.

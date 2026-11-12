@@ -277,7 +277,7 @@ test("unentered calendar event has entrants and live NPC boards, then real named
   expect(reloaded.save.player.rating).toBe(watching.save.player.rating);
 });
 
-test("city selector exposes 62 real places, UK federation datasets, and all available small-country cities", async ({
+test("city selector exposes all real places, UK federation datasets, and all available small-country cities", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -298,13 +298,24 @@ test("city selector exposes 62 real places, UK federation datasets, and all avai
       .click();
     const city = page.getByRole("combobox", { name: "City", exact: true });
     await city.click();
+    const rows = await (
+      await page.request.get(
+        `/data/cities/${({ Thailand: "TH", England: "GB-ENG", Scotland: "GB-SCO", Wales: "GB-WLS" } as Record<string, string>)[name]}.json`,
+      )
+    ).json();
     await expect(
-      page
+      page.getByRole("listbox", { name: "City", exact: true }),
+    ).toHaveAttribute("data-total-options", String(rows.length));
+    expect(
+      await page
         .getByRole("listbox", { name: "City", exact: true })
-        .getByRole("option"),
-    ).toHaveCount(62);
+        .getByRole("option")
+        .count(),
+    ).toBeLessThan(20);
     if (name === "Thailand") {
-      await page.getByRole('listbox', { name: 'City', exact: true }).scrollIntoViewIfNeeded();
+      await page
+        .getByRole("listbox", { name: "City", exact: true })
+        .scrollIntoViewIfNeeded();
       await page.screenshot({
         path: "artifacts/more-cities-thailand-en.png",
         ...capture,

@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { SearchSelect, type SelectOption } from "@/components/ui";
-import { GAME_CONFIG } from "@/data/config";
 import {
   getMajorCities,
   hasExactCity,
@@ -36,8 +35,8 @@ export function CitySelect({ country, value, onChange }: CitySelectProps) {
 
   const options = useMemo(() => {
     const found = trimmed
-      ? searchCities(cities, trimmed, GAME_CONFIG.world.maxCityResults)
-      : getMajorCities(cities, GAME_CONFIG.world.majorCityCount);
+      ? searchCities(cities, trimmed)
+      : getMajorCities(cities);
     const list = found.map(toOption);
     if (trimmed.length >= 2 && !hasExactCity(cities, trimmed)) {
       list.push({
@@ -66,6 +65,7 @@ export function CitySelect({ country, value, onChange }: CitySelectProps) {
       }
       disabled={!country}
       loading={status === "loading"}
+      virtualized
       options={options}
       selected={
         value
@@ -77,7 +77,11 @@ export function CitySelect({ country, value, onChange }: CitySelectProps) {
             }
           : null
       }
-      listHeading={trimmed ? undefined : "Major cities"}
+      listHeading={
+        trimmed
+          ? `${formatNumber(options.filter((o) => !o.id.startsWith(CUSTOM_PREFIX)).length)} matching cities`
+          : `${formatNumber(cities.length)} cities · scroll to browse all`
+      }
       onQueryChange={setQuery}
       onSelect={(option) =>
         onChange(
