@@ -1,0 +1,172 @@
+{
+  "verifiedAt": "2026-11-11T15:11:16.574300+00:00",
+  "base": "Chess-Career-Mode-Tournament-Guide-Backup-Full.zip",
+  "request": "Complete roadmap stages 2–6 and rename the main competition menu to Tournament.",
+  "completedStages": {
+    "2": {
+      "features": [
+        "18-stat effects guide and matching training suggestions",
+        "Shared simulator impact formula for learned technique, phases, preparation, clock and fatigue",
+        "Forecast adapter uses trained strategy/middlegame, pattern recognition and pressure",
+        "Last-session XP/level changes; human moves and displayed Elo stay under game-result control"
+      ],
+      "verification": "Actual session execution, stronger trained simulator profiles, UI training without free Elo, EN/TH screenshots"
+    },
+    "3": {
+      "features": [
+        "Four selectable annual focus modes, real progress counters, focus lock and year archive",
+        "Booked-event calendar includes traditional and esports entries",
+        "Eligible, open, affordable, conflict-free individual-event recommendations and direct event links",
+        "Upcoming registration windows"
+      ],
+      "verification": "Focus changes/locking, result counts, annual rollover and registration/calendar/reload through UI"
+    },
+    "4": {
+      "features": [
+        "Championship qualification path and missing requirements",
+        "CM/FM game-count requirements; three distinct event norms for IM/GM",
+        "Classical games, distinct opponents, federations, titled-opponent and performance thresholds",
+        "Permanent legacy titles, reigning champion metadata and defence qualification revoked after losing defence"
+      ],
+      "verification": "Three completed 12-player classical round robins produce norms and GM; rapid, withdrawn, short, single-federation, untitled-opposition and duplicate events excluded"
+    },
+    "5": {
+      "features": [
+        "Persistent actual rated/social/friendly memories and first rated encounter",
+        "Rivalry labels independent of closeness",
+        "People dashboard and result-based world headlines prioritising known people and elite players"
+      ],
+      "verification": "Real recording functions produce 3-game rivalry with zero closeness; actual world-result news deduplicates; EN/TH profile UI and reload preserve memories; legacy relationships with prior meetings do not receive an invented first-meeting date"
+    },
+    "6": {
+      "features": [
+        "One 12-week sponsorship at a time; activity-target reviews every 4 weeks",
+        "Paid/missed periods, ledger and history, cancellation/expiry cooldown and reload idempotence",
+        "Optional mentor/commentator/ambassador roles with unlock requirements, AP/hour/fatigue costs, weekly limits and a 12-service achievement"
+      ],
+      "verification": "Paid/missed/expired/cancelled contracts in headless checks; UI day advancement pays once, role activity spends resources once per week and backup export retains new state"
+    }
+  },
+  "navigation": {
+    "label": "Tournament",
+    "legacyUrl": "/complete",
+    "compatibility": "Existing URLs and saved characters continue to work."
+  },
+  "buildAndTypecheck": "passed",
+  "headlessCommands": {
+    "headless-tests.log": "passed",
+    "complete-regression.log": "passed",
+    "esports-regression.log": "passed",
+    "match-regression.log": "passed",
+    "qol-regression.log": "passed",
+    "social-regression.log": "passed",
+    "backup-regression.log": "passed",
+    "hosts-regression.log": "passed",
+    "prediction-regression.log": "passed"
+  },
+  "browser": {
+    "passed": 7,
+    "failed": 0,
+    "flaky": 0,
+    "viewport": "390x844",
+    "engine": "Chromium",
+    "report": "browser-final-results.json",
+    "cases": [
+      "Expanded tournament previews EN/TH",
+      "Actual human tournament move, result and reload",
+      "New-career training, focus, recommendation, registration, calendar and reload",
+      "Veteran championship requirements and actual recorded rivalry/memories",
+      "Due sponsorship review through UI end-day, weekly legacy service, reload and export",
+      "Regional hosts/registration/capacity EN/TH",
+      "Full NPC backup restore, corrupt backup and occupied-slot rejection"
+    ]
+  },
+  "saveCompatibility": "Save v15, additive optional fields. Older earned titles are retained; no past conversations or achievements invented. All new state is included in the full existing backup mechanism.",
+  "limits": [
+    "Title/norm rules are simplified career rules, not official FIDE certification.",
+    "Recommendations use entry rating thresholds, budget and timing as heuristics, not guarantees of a win.",
+    "Later-career browser cases use seeded veteran backup fixtures generated from domain recording/training functions; they do not claim a decade of manual play.",
+    "Mobile screenshots use Chromium emulation, not physical Termux/iOS hardware. Fixed header/navigation are temporarily hidden only while taking panel screenshots to avoid covering content.",
+    "Detailed memory/news/goal archives are bounded; earlier outcomes that were pruned before lifetime tracking cannot be reconstructed."
+  ],
+  "regressionsPreserved": [
+    "Regional team hosts",
+    "Selected 12/24/12-player multi-day fields and game schedules",
+    "Recorded chess audio",
+    "Real-player likeness portraits",
+    "Install suggestion popup",
+    "Full NPC simulation",
+    "Full save backups",
+    "Vercel deep-link rewrites"
+  ],
+  "baseFilesRetained": 724,
+  "changedExistingFiles": [
+    "CHANGELOG.md",
+    "README.md",
+    "artifacts/career-backup-export.png",
+    "artifacts/expanded-tournament-3day-11games.png",
+    "artifacts/expanded-tournament-7day-23games.png",
+    "artifacts/expanded-tournament-7day-33games.png",
+    "artifacts/expanded-tournament-after-round.png",
+    "artifacts/expanded-tournament-live-playtest.png",
+    "artifacts/expanded-tournament-thai.png",
+    "artifacts/tournament-guide-africa-en.png",
+    "artifacts/tournament-guide-capacity-th.png",
+    "package.json",
+    "scripts/verify-qol.ts",
+    "src/data/navigation.ts",
+    "src/features/esports/EsportsPanel.tsx",
+    "src/features/home/TitlesSection.tsx",
+    "src/features/match/TournamentPanel.tsx",
+    "src/features/training/SessionCard.tsx",
+    "src/features/world/NpcProfileModal.tsx",
+    "src/game/career/expansion.ts",
+    "src/game/career/news.ts",
+    "src/game/career/overview.ts",
+    "src/game/career/titles.ts",
+    "src/game/competition/preparation.ts",
+    "src/game/competition/types.ts",
+    "src/game/history/createHistory.ts",
+    "src/game/history/recordGame.ts",
+    "src/game/match/npcProfile.ts",
+    "src/game/prediction/adapters.ts",
+    "src/game/social/relationships.ts",
+    "src/game/training/engine.ts",
+    "src/i18n/th.ts",
+    "src/pages/CareerPage.tsx",
+    "src/pages/CompletePage.tsx",
+    "src/pages/HomePage.tsx",
+    "src/pages/TrainPage.tsx",
+    "src/store/gameStore.ts",
+    "src/types/game.ts",
+    "src/types/history.ts",
+    "tests/audio.spec.ts",
+    "tests/circuit.spec.ts",
+    "tests/complete.spec.ts",
+    "tests/esports.spec.ts",
+    "tests/expanded-tournaments.spec.ts",
+    "tests/expansion.spec.ts",
+    "tests/language.spec.ts",
+    "tests/match-clock.browser.mjs",
+    "tests/match-clock.spec.ts",
+    "tests/npc-portraits.spec.ts",
+    "tests/prediction.spec.ts",
+    "tests/qol.spec.ts",
+    "tests/social.spec.ts",
+    "tests/tournament-guide.spec.ts",
+    "tests/world-activity.spec.ts"
+  ],
+  "screenshots": [
+    "artifacts/roadmap-2-skill-effects-en.png",
+    "artifacts/roadmap-2-skill-effects-th.png",
+    "artifacts/roadmap-3-season-plan-en.png",
+    "artifacts/roadmap-3-season-plan-th.png",
+    "artifacts/roadmap-4-championship-en.png",
+    "artifacts/roadmap-5-memories-en.png",
+    "artifacts/roadmap-5-memories-th.png",
+    "artifacts/roadmap-6-sponsor-legacy-en.png",
+    "artifacts/roadmap-6-sponsor-legacy-th.png",
+    "artifacts/expanded-tournament-live-playtest.png"
+  ],
+  "previousPendingSteps": "Resolved by the user-provided roadmap in this turn. Stages 2–6 are implemented in this release."
+}

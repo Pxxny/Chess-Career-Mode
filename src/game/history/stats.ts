@@ -1,4 +1,5 @@
-import type { CareerHistory, GameOutcome, GameResult } from '@/types';
+import { lifetimeOf, type OutcomeTotals } from "./lifetime";
+import type { CareerHistory, GameOutcome, GameResult } from "@/types";
 
 export interface Record3 {
   games: number;
@@ -10,10 +11,18 @@ export interface Record3 {
 }
 
 export function recordOf(games: GameResult[]): Record3 {
-  const wins = games.filter((g) => g.outcome === 'win').length;
-  const draws = games.filter((g) => g.outcome === 'draw').length;
+  const wins = games.filter((g) => g.outcome === "win").length;
+  const draws = games.filter((g) => g.outcome === "draw").length;
   const losses = games.length - wins - draws;
-  return { games: games.length, wins, draws, losses, winRate: games.length ? Math.round(((wins + draws * 0.5) / games.length) * 1000) / 10 : null };
+  return {
+    games: games.length,
+    wins,
+    draws,
+    losses,
+    winRate: games.length
+      ? Math.round(((wins + draws * 0.5) / games.length) * 1000) / 10
+      : null,
+  };
 }
 
 export interface OpeningStat extends Record3 {
@@ -33,24 +42,40 @@ export interface CareerStats {
 
 export function computeStats(history: CareerHistory): CareerStats {
   const games = history.games;
-  const analysed = games.filter((g) => g.analyzed !== false);
-  const accuracy = analysed.length ? Math.round((analysed.reduce((s, g) => s + g.accuracy, 0) / analysed.length) * 10) / 10 : null;
-  const best = games
-    .filter((g) => g.outcome !== 'loss')
-    .sort((a, b) => b.opponentElo + (b.outcome === 'win' ? 50 : 0) - (a.opponentElo + (a.outcome === 'win' ? 50 : 0)))[0] ?? null;
+  const lifetime = lifetimeOf(history);
+  const record = (r: OutcomeTotals): Record3 => ({
+    ...r,
+    winRate: r.games
+      ? Math.round(((r.wins + r.draws * 0.5) / r.games) * 1000) / 10
+      : null,
+  });
+  const accuracy = lifetime.analysedGames
+    ? Math.round((lifetime.accuracySum / lifetime.analysedGames) * 10) / 10
+    : null;
+  const best =
+    games
+      .filter((g) => g.outcome !== "loss")
+      .sort(
+        (a, b) =>
+          b.opponentElo +
+          (b.outcome === "win" ? 50 : 0) -
+          (a.opponentElo + (a.outcome === "win" ? 50 : 0)),
+      )[0] ?? null;
 
   const byOpening = new Map<string, GameResult[]>();
-  for (const g of games) if (g.opening) byOpening.set(g.opening, [...(byOpening.get(g.opening) ?? []), g]);
+  for (const g of games)
+    if (g.opening)
+      byOpening.set(g.opening, [...(byOpening.get(g.opening) ?? []), g]);
   const favoriteOpenings = [...byOpening.entries()]
     .map(([name, list]) => ({ name, ...recordOf(list) }))
     .sort((a, b) => b.games - a.games || a.name.localeCompare(b.name))
     .slice(0, 3);
 
   return {
-    total: recordOf(games),
-    white: recordOf(games.filter((g) => g.color === 'white')),
-    black: recordOf(games.filter((g) => g.color === 'black')),
-    tournament: recordOf(games.filter((g) => g.tournamentId !== null)),
+    total: record(lifetime.total),
+    white: record(lifetime.white),
+    black: record(lifetime.black),
+    tournament: record(lifetime.tournament),
     averageAccuracy: accuracy,
     bestPerformance: best,
     favoriteOpenings,
@@ -58,11 +83,19 @@ export function computeStats(history: CareerHistory): CareerStats {
 }
 
 /** Games are stored in the order they were played, so the newest are at the end. Returns newest first. */
-export const recentGames = (history: CareerHistory, count: number): GameResult[] => [...history.games].reverse().slice(0, count);
+export const recentGames = (
+  history: CareerHistory,
+  count: number,
+): GameResult[] => [...history.games].reverse().slice(0, count);
 
-export const lastGame = (history: CareerHistory): GameResult | null => recentGames(history, 1)[0] ?? null;
+export const lastGame = (history: CareerHistory): GameResult | null =>
+  recentGames(history, 1)[0] ?? null;
 
-export const OUTCOME_LETTER: Record<GameOutcome, 'W' | 'D' | 'L'> = { win: 'W', draw: 'D', loss: 'L' };
+export const OUTCOME_LETTER: Record<GameOutcome, "W" | "D" | "L"> = {
+  win: "W",
+  draw: "D",
+  loss: "L",
+};
 
 export interface Rival {
   key: string;
@@ -72,7 +105,11 @@ export interface Rival {
 }
 
 /** Opponents met at least `minGames` times, most-played first. */
-export function findRivals(history: CareerHistory, minGames = 2, limit = 5): Rival[] {
+export function findRivals(
+  history: CareerHistory,
+  minGames = 2,
+  limit = 5,
+): Rival[] {
   const groups = new Map<string, GameResult[]>();
   for (const g of history.games) {
     const key = g.opponentId ?? `name:${g.opponentName}`;
@@ -80,7 +117,12 @@ export function findRivals(history: CareerHistory, minGames = 2, limit = 5): Riv
   }
   return [...groups.entries()]
     .filter(([, list]) => list.length >= minGames)
-    .map(([key, list]) => ({ key, name: list[0].opponentName, elo: list[list.length - 1].opponentElo, record: recordOf(list) }))
+    .map(([key, list]) => ({
+      key,
+      name: list[0].opponentName,
+      elo: list[list.length - 1].opponentElo,
+      record: recordOf(list),
+    }))
     .sort((a, b) => b.record.games - a.record.games || b.elo - a.elo)
     .slice(0, limit);
 }

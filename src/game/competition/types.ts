@@ -22,6 +22,7 @@ export type Qualification =
   | "world-championship"
   | "super-invitation";
 export interface EventDetails {
+  host?: { mode: "rotation" | "online"; relocationReason?: string };
   agenda?: {
     days: number;
     startDay: number;
@@ -100,11 +101,17 @@ export interface ScoutingReport {
   stamp: number;
 }
 export interface CompetitionState {
+  champion?: { id: string; name: string; year: number; eventId: string };
   target: string;
   plan: GamePlan;
   repertoire: EventRepertoire;
   prepared: PreparedEvent | null;
   scouts: ScoutingReport[];
-  qualifications: { kind: Qualification; year: number; source: string }[];
+  qualifications: {
+    kind: Qualification;
+    year: number;
+    source: string;
+    route?: "qualification" | "defence";
+  }[];
   archive: ActiveTournament[];
 }

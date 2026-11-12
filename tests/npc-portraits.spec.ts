@@ -90,7 +90,7 @@ test("ranking, directory and NPC profile use the same face and preserve name but
   await profile
     .getByRole("button", { name: "Close dialog", exact: true })
     .click();
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page.getByRole("tab", { name: "Rankings", exact: true }).click();
   await page
     .getByRole("searchbox", {

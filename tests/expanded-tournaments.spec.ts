@@ -28,7 +28,7 @@ async function start(page: Page) {
     localStorage.setItem("chess-career-install-hidden", "yes"),
   );
   await createCareer(page);
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page
     .getByRole("button", { name: "Find suitable tournaments", exact: true })
     .click();

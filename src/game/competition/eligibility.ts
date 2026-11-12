@@ -1,3 +1,4 @@
+import { registrationWindow } from "./registrationWindow";
 import type { ScheduledEvent } from "@/game/world/schedule";
 import type { ChessTitle, GameSave, SkillTier } from "@/types";
 import { competitionOf } from "./preparation";
@@ -73,6 +74,8 @@ export function registrationIssue(
     event.week > 52
   )
     return "Invalid event data.";
+  if (registrationWindow(save, event).status === "upcoming")
+    return "Registration has not opened yet.";
   if (
     stampIndex(save.world.date) > stampIndex(event.registrationDeadline) ||
     stampIndex(save.world.date) > stampIndex(event)

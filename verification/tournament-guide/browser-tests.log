@@ -1,0 +1,11 @@
+
+Running 6 tests using 1 worker
+
+  ✓  1 tests/expanded-tournaments.spec.ts:48:1 › selected extended editions display larger game counts with safe daily timetables in English and Thai (5.4s)
+  ✓  2 tests/expanded-tournaments.spec.ts:90:1 › register and play a human round in a longer tournament, then retain its round count and result after reload (12.3s)
+  ✓  3 tests/slots.spec.ts:34:1 › date of birth, then two characters side by side in separate slots (5.8s)
+  ✓  4 tests/slots.spec.ts:89:1 › a date of birth that does not fit the start year blocks the start year step (3.5s)
+  ✓  5 tests/tournament-guide.spec.ts:18:1 › mobile guides show regional national hosts, real opening windows and selected larger capacities in both languages (4.2s)
+  ✓  6 tests/tournament-guide.spec.ts:45:1 › export complete career and NPC world, reject corrupt input and occupied slots, restore independently and reload (10.3s)
+
+  6 passed (44.2s)

@@ -1,3 +1,6 @@
+import { useSearchParams } from "react-router-dom";
+import { TournamentOverview } from "./TournamentOverview";
+import { registrationWindow } from "@/game/competition/registrationWindow";
 import { confirmUI } from "@/i18n/translate";
 import { UpcomingPredictions } from "@/features/prediction/CareerPrediction";
 import { PredictionSummary } from "@/features/prediction/PredictionPanel";
@@ -47,10 +50,13 @@ import type { ActiveTournament } from "@/types";
 
 export function EventFacts({ event }: { event: ScheduledEvent }) {
   const d = event.details;
+  const save = useSave();
   const facts = [
     [
       "Location",
-      `${d?.location ?? "Local venue"}, ${getCountry(d?.country ?? "")?.name ?? d?.country ?? "Home country"}`,
+      d?.host?.mode === "online"
+        ? "Online"
+        : `${d?.location ?? "Local venue"}, ${getCountry(d?.country ?? "")?.name ?? d?.country ?? "Home country"}`,
     ],
     [
       "Start",
@@ -72,12 +78,15 @@ export function EventFacts({ event }: { event: ScheduledEvent }) {
             ? `${d.historicalSchedule.endDate} (W${d.end.week})`
             : dateLabel(d?.end ?? event),
     ],
-    ["Registration deadline", dateLabel(event.registrationDeadline)],
+    ["Registration deadline", dayLabel(registrationWindow(save, event).close)],
     ["Entry fee", `$${event.entryFee}`],
     ["Travel estimate", `$${d?.travelCost ?? 0}`],
     ["Total to register", `$${event.entryFee + (d?.travelCost ?? 0)}`],
     ["Required Elo", `${event.minElo}+`],
-    ["Participant limit", event.fieldSize],
+    [
+      "Participant limit",
+      d?.teamEvent ? `${event.fieldSize} national teams` : event.fieldSize,
+    ],
     ["Duration", `${eventAgenda(event).days} day(s)`],
     ...(d?.agenda?.exactStart
       ? [["Starting day", dayLabel(bookedStart(event))]]
@@ -333,6 +342,8 @@ export function TournamentPanel({
     [query, setQuery] = useState(""),
     [category, setCategory] = useState("all"),
     [limit, setLimit] = useState(6);
+  const [urlParams, setUrlParams] = useSearchParams();
+  const selectedEventId = urlParams.get("event");
   const events = useMemo(() => {
     const country = getCountry(save.player.country);
     return getSchedule(
@@ -352,6 +363,9 @@ export function TournamentPanel({
     save.player.city.name,
     save.career.id,
   ]);
+  const targetEvent = selectedEventId
+    ? events.find((e) => e.id === selectedEventId)
+    : undefined;
   const regs = registrationStates(save).filter(
     (r) => !swissOnly || (r.details?.format ?? "swiss") === "swiss",
   );
@@ -400,7 +414,9 @@ export function TournamentPanel({
         (location === "abroad" && e.details?.country !== save.player.country) ||
         e.details?.country === location) &&
       (category === "all" || e.details?.category === category) &&
-      e.name.toLowerCase().includes(query.toLowerCase()),
+      (query
+        ? e.name.toLowerCase().includes(query.toLowerCase())
+        : !targetEvent || e.id === targetEvent.id),
   );
   return (
     <div className="space-y-4" data-testid="tournament-panel">
@@ -411,6 +427,10 @@ export function TournamentPanel({
           onClose={() => setFinderOpen(false)}
           onApply={(value) => {
             setSearch(value);
+            setUrlParams((params) => {
+              params.delete("event");
+              return params;
+            });
             setLocation("all");
             setSource("all");
             setCategory("all");
@@ -706,6 +726,11 @@ export function TournamentPanel({
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
+              if (selectedEventId)
+                setUrlParams((params) => {
+                  params.delete("event");
+                  return params;
+                });
               setLimit(6);
             }}
             className="min-w-0 flex-1 rounded-lg bg-navy-900 p-3 text-sm text-ink"
@@ -749,6 +774,7 @@ export function TournamentPanel({
               closed =
                 stampIndex(save.world.date) >
                 stampIndex(e.registrationDeadline),
+              notOpen = registrationWindow(save, e).status === "upcoming",
               issues = eligibilityIssues(save, e),
               conflict = bookingConflict(
                 save,
@@ -781,17 +807,20 @@ export function TournamentPanel({
                   <Badge tone={closed ? "neutral" : "gold"}>
                     {registered
                       ? "Registered"
-                      : closed
-                        ? "Registration closed"
-                        : e.details?.showcase
-                          ? invitation?.invited
-                            ? "You are invited"
-                            : "Invitation only"
-                          : full
-                            ? "Full"
-                            : "Registration open"}
+                      : notOpen
+                        ? "Not open yet"
+                        : closed
+                          ? "Registration closed"
+                          : e.details?.showcase
+                            ? invitation?.invited
+                              ? "You are invited"
+                              : "Invitation only"
+                            : full
+                              ? "Full"
+                              : "Registration open"}
                   </Badge>
                 </div>
+                <TournamentOverview event={e} />
                 <EventFacts event={e} />
                 <TournamentTimetable event={e} />
                 {totalEntrants !== null && e.details?.format !== "team" && (
@@ -871,21 +900,23 @@ export function TournamentPanel({
                     ? "Registered"
                     : played
                       ? "Already played"
-                      : closed
-                        ? "Deadline passed"
-                        : conflict
-                          ? "Schedule conflict"
-                          : issues.length
-                            ? "Not eligible"
-                            : !afford
-                              ? "Cannot afford"
-                              : invitation
-                                ? invitation.invited
-                                  ? "Accept invitation"
-                                  : "Invitation only"
-                                : full
-                                  ? "Full"
-                                  : "Register"}
+                      : notOpen
+                        ? "Not open yet"
+                        : closed
+                          ? "Deadline passed"
+                          : conflict
+                            ? "Schedule conflict"
+                            : issues.length
+                              ? "Not eligible"
+                              : !afford
+                                ? "Cannot afford"
+                                : invitation
+                                  ? invitation.invited
+                                    ? "Accept invitation"
+                                    : "Invitation only"
+                                  : full
+                                    ? "Full"
+                                    : "Register"}
                 </Button>
               </li>
             );

@@ -1,9 +1,10 @@
-import type { ChessTitle } from './npc';
-import type { SkillKey } from './player';
-import type { SessionRecord } from './training';
+import type { LifetimeTotals } from "@/game/history/lifetime";
+import type { ChessTitle } from "./npc";
+import type { SkillKey } from "./player";
+import type { SessionRecord } from "./training";
 
-export type GameOutcome = 'win' | 'draw' | 'loss';
-export type PieceColor = 'white' | 'black';
+export type GameOutcome = "win" | "draw" | "loss";
+export type PieceColor = "white" | "black";
 
 /** A point on the game calendar. */
 export interface GameStamp {
@@ -34,14 +35,19 @@ export interface GameResult extends GameStamp {
 export interface TournamentRecord extends GameStamp {
   tournamentId: string;
   name: string;
-  level: 'local' | 'national' | 'international' | 'elite';
+  level: "local" | "national" | "international" | "elite";
   /** 1 = winner */
   rank: number;
   fieldSize: number;
   points: number;
 }
 
-export type TrophyCategory = 'tournament' | 'league' | 'elo' | 'title' | 'special';
+export type TrophyCategory =
+  | "tournament"
+  | "league"
+  | "elo"
+  | "title"
+  | "special";
 
 export interface Trophy extends GameStamp {
   id: string;
@@ -50,7 +56,15 @@ export interface Trophy extends GameStamp {
   description: string;
 }
 
-export type NewsKind = 'invitation' | 'title' | 'ranking' | 'rivalry' | 'promotion' | 'sponsorship' | 'history' | 'milestone';
+export type NewsKind =
+  | "invitation"
+  | "title"
+  | "ranking"
+  | "rivalry"
+  | "promotion"
+  | "sponsorship"
+  | "history"
+  | "milestone";
 
 export interface NewsItem extends GameStamp {
   id: string;
@@ -66,7 +80,12 @@ export interface TrainingRecord extends GameStamp {
   apCost: number;
 }
 
-export type LedgerKind = 'prize' | 'sponsorship' | 'entry-fee' | 'expense' | 'other';
+export type LedgerKind =
+  | "prize"
+  | "sponsorship"
+  | "entry-fee"
+  | "expense"
+  | "other";
 
 export interface LedgerEntry extends GameStamp {
   id: string;
@@ -77,7 +96,7 @@ export interface LedgerEntry extends GameStamp {
 }
 
 export interface TitleRecord extends GameStamp {
-  title: Exclude<ChessTitle, 'none'>;
+  title: Exclude<ChessTitle, "none">;
 }
 
 export interface RatingSnapshot extends GameStamp {
@@ -86,6 +105,8 @@ export interface RatingSnapshot extends GameStamp {
 
 /** Everything that happened in the player's career. All career statistics are derived from this and the player. */
 export interface CareerHistory {
+  titleNorms?: import("@/game/career/titleRules").TitleNorm[];
+  lifetime?: LifetimeTotals;
   games: GameResult[];
   tournaments: TournamentRecord[];
   trophies: Trophy[];

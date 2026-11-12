@@ -185,7 +185,7 @@ if (!this.__clockPerfCallbacks) {
   await devPage.getByRole('option', { name: /^Bangkok/ }).first().click();
   for (let step = 0; step < 4; step++) await devPage.getByRole('button', { name: 'Next', exact: true }).click();
   await devPage.getByRole('button', { name: 'Create career', exact: true }).click();
-  await devPage.getByRole('link', { name: 'Complete', exact: true }).click();
+  await devPage.getByRole('link', { name: 'Tournament', exact: true }).click();
   await devPage.getByRole('button', { name: 'White', exact: true }).click();
   await devPage.getByRole('button', { name: 'Friendly', exact: true }).click();
   await devPage.getByTestId('custom-minutes').fill('1');

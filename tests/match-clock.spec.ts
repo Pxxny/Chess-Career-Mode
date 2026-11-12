@@ -49,7 +49,7 @@ test("Complete clocks update independently and live/review boards keep eight row
     }) as typeof window.clearInterval;
   });
   await createCareer(page);
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page.getByText("Individual match / free play", { exact: true }).click();
   await page.getByRole("button", { name: "White", exact: true }).click();
   await page.getByRole("button", { name: "Friendly", exact: true }).click();

@@ -33,7 +33,7 @@ const SHORTCUTS = [
   },
   {
     to: ROUTES.complete,
-    label: "Complete",
+    label: "Tournament",
     text: "Find opponents and events.",
     icon: Swords,
   },
@@ -60,6 +60,27 @@ export function HomePage() {
         title={`Welcome, ${player.name}`}
         description="Your career at a glance."
       />
+      <Card className="mb-4">
+        <CardTitle>Plan your career</CardTitle>
+        <div className="flex flex-wrap gap-3 text-sm">
+          <Link className="text-gold-300 underline" to="/career?view=plan">
+            Season plan
+          </Link>
+          <Link
+            className="text-gold-300 underline"
+            to="/career?view=championship"
+          >
+            Championship path
+          </Link>
+          <Link className="text-gold-300 underline" to="/career?view=people">
+            People & stories
+          </Link>
+          <Link className="text-gold-300 underline" to="/career?view=business">
+            Sponsors & legacy
+          </Link>
+        </div>
+      </Card>
+
       <EsportsHomeCard />
 
       <time

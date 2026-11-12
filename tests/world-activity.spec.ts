@@ -129,7 +129,7 @@ test("finished player event appears in NPC profiles, survives reload, and Magnus
     },
   );
   await writeCareer(page, finished);
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page.getByRole("tab", { name: "Rankings", exact: true }).click();
   const profileName = (await readCareer(page)).npcs.find(
     (n) => n.id === npc.id,
@@ -147,7 +147,7 @@ test("finished player event appears in NPC profiles, survives reload, and Magnus
   ).toHaveLength(1);
   await page.reload();
   await expect(
-    page.getByRole("heading", { name: "Complete", exact: true }),
+    page.getByRole("heading", { name: "Tournament", exact: true }),
   ).toBeVisible();
   expect(
     (await readCareer(page)).npcs
@@ -167,7 +167,7 @@ test("finished player event appears in NPC profiles, survives reload, and Magnus
           .tournamentHistory.filter((h) => h.source === "world-circuit").length,
     )
     .toBeGreaterThan(0);
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page.getByRole("tab", { name: "Rankings", exact: true }).click();
   await page
     .getByRole("searchbox", { name: "Search players by name, city or country" })

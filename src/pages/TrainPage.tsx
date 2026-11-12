@@ -1,3 +1,4 @@
+import { SkillEffects } from "@/features/training/SkillEffects";
 import { WorkPanel } from "@/features/qol/CareerPanels";
 import { useSearchParams } from "react-router-dom";
 import { useState } from "react";
@@ -14,6 +15,7 @@ const TABS = [
   { id: "games", label: "Games" },
   { id: "openings", label: "Openings" },
   { id: "work", label: "Work" },
+  { id: "effects", label: "Skill effects" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -38,6 +40,7 @@ export function TrainPage() {
         label="Training sections"
       >
         {tab === "sessions" && <SessionsTab />}
+        {tab === "effects" && <SkillEffects />}
         {tab === "games" && <GamesTab />}
         {tab === "work" && <WorkPanel />}
         {tab === "openings" && <OpeningsTab />}

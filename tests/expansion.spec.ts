@@ -71,7 +71,7 @@ test("expanded look, federation, coaching, team entry guard, tournament entrants
   const original = await snapshot(page);
   expect(original.npcs.length).toBe(4162);
   expect(original.save.player.appearance.hairStyle).toMatch(/^female-/);
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page.getByText("Federation & national teams", { exact: true }).click();
   await page
     .getByRole("button", { name: "Join federation · $35", exact: true })
@@ -180,7 +180,7 @@ test("expanded look, federation, coaching, team entry guard, tournament entrants
     page.getByRole("link", { name: /Open profile for Expansion Browser/ }),
   ).toBeVisible();
   expect((await snapshot(page)).npcs.length).toBe(after.npcs.length);
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page.getByRole("tab", { name: "History", exact: true }).click();
   await expect(page.getByText(/new players enter the circuit/)).toBeVisible();
   await expect(page.getByText(/wins World Circuit Open/)).toBeVisible();

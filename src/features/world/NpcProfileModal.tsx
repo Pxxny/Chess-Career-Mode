@@ -1,3 +1,4 @@
+import { SharedMemories } from "./SharedMemories";
 import { Badge, Modal, ProgressBar } from "@/components/ui";
 import { NpcAvatar } from "@/components/game/NpcAvatar";
 import { getLegendCareerStage } from "@/game/npc/legends";
@@ -178,6 +179,7 @@ export function NpcProfileModal({
         </div>
       )}
 
+      {save && <SharedMemories save={save} npcId={npc.id} />}
       <div className="mt-5">
         <p className="mb-2 text-sm text-ink-muted">Tournament history</p>
         {npc.competitionStats && (

@@ -82,11 +82,11 @@ export function CompletePage() {
   return (
     <>
       <PageHeader
-        title="Complete"
+        title="Tournament"
         description="Rated games, tournaments and matches against the players of your world."
       />
       <Tabs
-        label="Complete sections"
+        label="Tournament sections"
         active={tab}
         onChange={setTab}
         tabs={[

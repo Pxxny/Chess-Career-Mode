@@ -1,3 +1,4 @@
+import { TEAM_EVENTS } from "../src/data/chess/nationalTeamEvents.ts";
 import assert from "node:assert/strict";
 import { performance } from "node:perf_hooks";
 import { randomAppearance } from "../src/data/appearance.ts";
@@ -71,7 +72,9 @@ const region = {
 };
 const events = getSchedule(base.world.date, region, base.career.id, 52);
 assert.equal(new Set(events.map((e) => e.id)).size, events.length);
-assert.equal(new Set(events.map((e) => e.details?.category)).size, 14);
+const categories = new Set(events.map((e) => e.details?.category));
+assert.equal(categories.size, 14 + TEAM_EVENTS.length);
+for (const spec of TEAM_EVENTS) assert(categories.has(spec.category));
 const open = events.find(
   (e) =>
     e.level === "local" &&

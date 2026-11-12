@@ -19,7 +19,7 @@ export function StatsTab() {
     ["Wins", String(stats.total.wins)],
     ["Draws", String(stats.total.draws)],
     ["Losses", String(stats.total.losses)],
-    ["Win rate", pct(stats.total.winRate)],
+    ["Score rate", pct(stats.total.winRate)],
     ["Average accuracy", pct(stats.averageAccuracy)],
     ["Highest Elo", String(player.peakRating)],
     ["White record", fmt(stats.white)],
@@ -45,12 +45,26 @@ export function StatsTab() {
           ))}
         </dl>
         <p className="mt-3 text-xs text-ink-faint">
-          Win rate counts a draw as half a point.
+          Score rate counts a draw as half a point.
         </p>
+        <p className="mt-2 text-xs text-ink-faint">
+          Detailed game history keeps the latest 1,000 rated games. Lifetime
+          totals keep counting after that limit.
+        </p>
+        {player.ratedGames > stats.total.games && (
+          <p className="mt-2 text-xs text-ink-faint">
+            Older results were already missing when lifetime tracking started.
+            Known outcomes cover {stats.total.games} of {player.ratedGames}{" "}
+            rated games.
+          </p>
+        )}
       </Card>
 
       <Card className="mb-4">
         <CardTitle>Best performance</CardTitle>
+        <p className="mb-2 text-xs text-ink-muted">
+          Best performance and opening breakdown use retained game history.
+        </p>
         {best ? (
           <p className="text-ink">
             {best.outcome === "win" ? "Beat" : "Drew with"}{" "}

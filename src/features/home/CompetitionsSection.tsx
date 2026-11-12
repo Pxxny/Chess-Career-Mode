@@ -1,3 +1,5 @@
+import { useSave } from "@/hooks/useGame";
+import { registrationWindow } from "@/game/competition/registrationWindow";
 import { UpcomingPredictions } from "@/features/prediction/CareerPrediction";
 import { Badge, Card, CardTitle } from "@/components/ui";
 import { getTier } from "@/data/chess/tiers";
@@ -22,6 +24,7 @@ const startsIn = (weeks: number): string =>
   weeks <= 0 ? "this week" : weeks === 1 ? "next week" : `in ${weeks} weeks`;
 
 export function CompetitionsSection({ player, schedule, rankings }: Props) {
+  const save = useSave();
   const upcoming = schedule.slice(0, UPCOMING);
   const eligible = (e: ScheduledEvent) =>
     isEligible(e, player.rating, player.reputation);
@@ -63,7 +66,7 @@ export function CompetitionsSection({ player, schedule, rankings }: Props) {
         <ul className="divide-y divide-white/5">
           {upcoming.map((e) => {
             const ok = eligible(e);
-            const open = registrationOpen(e);
+            const open = registrationOpen(e, save);
             return (
               <li key={e.id} className="py-3">
                 <div className="flex items-start justify-between gap-3">
@@ -83,7 +86,9 @@ export function CompetitionsSection({ player, schedule, rankings }: Props) {
                   {startsIn(e.weeksUntilStart)}).{" "}
                   {open
                     ? `Register by week ${e.registrationDeadline.week} (${startsIn(e.weeksUntilDeadline)}).`
-                    : "Registration closed."}
+                    : registrationWindow(save, e).status === "upcoming"
+                      ? "Registration has not opened yet."
+                      : "Registration closed."}
                 </p>
               </li>
             );

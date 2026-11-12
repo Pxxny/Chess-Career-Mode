@@ -34,7 +34,7 @@ async function saveState(page: Page, patch?: Record<string, unknown>) {
   }, patch);
 }
 async function complete(page: Page) {
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
 }
 
 test("birth place: independent country/town in creation, confirmation, profile and reload", async ({

@@ -257,7 +257,7 @@ async function fixture(
   }, kind);
   await page.reload();
   await expect(
-    page.getByRole("link", { name: "Complete", exact: true }),
+    page.getByRole("link", { name: "Tournament", exact: true }),
   ).toBeVisible();
 }
 
@@ -288,7 +288,7 @@ test("QoL: date, work income, abroad/FIDE filters, diverse repertoire and chosen
   const worked = await readState(page);
   expect(worked.save.player.money).toBe(before.save.player.money + 30);
   expect(worked.save.player.ap.current).toBe(before.save.player.ap.current - 1);
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page
     .getByLabel("Tournament location", { exact: true })
     .selectOption("abroad");
@@ -415,7 +415,7 @@ test("QoL: favorite opening and tournament player histories scope outcomes and o
   await opening
     .getByRole("button", { name: "Close dialog", exact: true })
     .click();
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page
     .getByRole("button", {
       name: "Tournament games for History Rival",
@@ -497,7 +497,7 @@ test("QoL: federation processing, calendar cancellation and additive legacy NPC 
   const applied = await readState(page);
   expect(applied.save.player.money).toBe(750);
   expect(applied.save.player.country).toBe("TH");
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page
     .getByRole("button", { name: "Simulate until tournament", exact: true })
     .click();
@@ -513,7 +513,7 @@ test("QoL: federation processing, calendar cancellation and additive legacy NPC 
   expect(moved.save.qol.moves).toHaveLength(1);
   expect(moved.count).toBe(4242);
   await fixture(page, "long-event");
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page
     .getByRole("button", { name: "Simulate until tournament", exact: true })
     .click();
@@ -531,7 +531,7 @@ test("QoL: federation processing, calendar cancellation and additive legacy NPC 
   expect(stopped.save.world.date.week).toBeLessThan(50);
   await page.reload();
   await expect(
-    page.getByRole("link", { name: "Complete", exact: true }),
+    page.getByRole("link", { name: "Tournament", exact: true }),
   ).toBeVisible();
   expect((await readState(page)).save.world.date).toEqual(
     stopped.save.world.date,

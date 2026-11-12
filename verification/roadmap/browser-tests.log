@@ -1,0 +1,45 @@
+
+Running 7 tests using 1 worker
+
+  ✓  1 tests/expanded-tournaments.spec.ts:48:1 › selected extended editions display larger game counts with safe daily timetables in English and Thai (5.3s)
+  ✓  2 tests/expanded-tournaments.spec.ts:90:1 › register and play a human round in a longer tournament, then retain its round count and result after reload (11.1s)
+  ✘  3 tests/roadmap.spec.ts:50:1 › new career: actual training, visible skill effects, season focus, recommended registration and calendar persist (13.1s)
+  ✓  4 tests/roadmap.spec.ts:117:1 › veteran fixture: championship requirements, a real recorded rivalry and durable shared memories in English and Thai (4.5s)
+  ✓  5 tests/roadmap.spec.ts:170:1 › veteran due-payment fixture: actual day advancement pays sponsor once, legacy work has costs and weekly cooldown, backups retain state (7.0s)
+  ✓  6 tests/tournament-guide.spec.ts:27:1 › mobile guides show regional national hosts, real opening windows and selected larger capacities in both languages (4.3s)
+  ✓  7 tests/tournament-guide.spec.ts:77:1 › export complete career and NPC world, reject corrupt input and occupied slots, restore independently and reload (9.9s)
+
+
+  1) tests/roadmap.spec.ts:50:1 › new career: actual training, visible skill effects, season focus, recommended registration and calendar persist 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: 'Train: Tactics Puzzle', exact: true })
+
+
+      56 |   await page
+      57 |     .getByRole("button", { name: "Train: Tactics Puzzle", exact: true })
+    > 58 |     .click();
+         |      ^
+      59 |   await page.getByRole("tab", { name: "Skill effects", exact: true }).click();
+      60 |   await expect(page.getByTestId("skill-effects")).toContainText(
+      61 |     "Training does not directly add rated Elo.",
+        at /workspace/chess-career-roadmap/Chess-Career-Mode/tests/roadmap.spec.ts:58:6
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/roadmap-new-career-actual--fdab4-ration-and-calendar-persist/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/roadmap-new-career-actual--fdab4-ration-and-calendar-persist/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/roadmap-new-career-actual--fdab4-ration-and-calendar-persist/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/roadmap-new-career-actual--fdab4-ration-and-calendar-persist/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests/roadmap.spec.ts:50:1 › new career: actual training, visible skill effects, season focus, recommended registration and calendar persist 
+  6 passed (58.3s)

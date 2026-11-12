@@ -1,0 +1,149 @@
+{
+  "verifiedAt": "2026-11-11T14:32:46.432833+00:00",
+  "base": "Chess-Career-Mode-More-Tournament-Games-Full.zip",
+  "scopeCompleted": [
+    "Regional hosts for all 20 national-team events; online event and travel distinction; legacy booking venue repair",
+    "Tournament guide with format, purpose for championship categories, inclusive opening/closing dates, capacity in people or national teams/boards/reserves",
+    "Retain selected 3/7-day expanded fields 12/24/12 and old saved field/game counts",
+    "Known stage 1: full career/NPC backup export/import, isolated empty-slot restore, lifetime rated outcome/accuracy counters and Compete navigation label"
+  ],
+  "pendingClarification": {
+    "items": "Original recommendation steps 2–6",
+    "reason": "The original numbered recommendation text is absent from the accessible conversation and files. An asynchronous question requested that list; no answer had arrived at packaging time. This release does not claim completion of those five unknown steps."
+  },
+  "buildAndTypecheck": "passed",
+  "headlessChecks": {
+    "hosts-registration.log": "passed",
+    "backup-lifetime.log": "passed",
+    "team-regression.log": "passed",
+    "esports-regression.log": "passed",
+    "expanded-regression.log": "passed",
+    "session-regression.log": "passed",
+    "career-regression.log": "passed"
+  },
+  "browser": {
+    "integrationScenariosPassed": 6,
+    "failed": 0,
+    "finalGuideAndBackupRerunPassed": 2,
+    "cases": [
+      "EN/TH game count/daily timetable previews",
+      "Actual registration, human move, result and reload in expanded event",
+      "Character slot creation/switch/reload/deletion",
+      "Date-of-birth validation",
+      "Regional host, online travel, unopened registration, EN/TH guide and capacity",
+      "Full exported NPC comparison, corrupt file rejection, occupied-slot race rejection, independent restore and reload"
+    ]
+  },
+  "hostPolicy": "Deterministic career-year rotations using region-eligible host pools, independent of character country or city. Not historical real-world hosting claims. No simulated relocation exception was invented.",
+  "registrationPolicy": "Open 35–63 days before close, using the existing NPC-arrival seed and closing day. Both dates inclusive. UI, NPC arrivals and registration guard share the window.",
+  "selectedFields": {
+    "Open Board Rotation": {
+      "months": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12
+      ],
+      "days": 3,
+      "players": 12,
+      "maxMainGames": 11
+    },
+    "Seven Days Masters": {
+      "months": [
+        3,
+        6,
+        9,
+        12
+      ],
+      "days": 7,
+      "players": 24,
+      "maxMainGames": 23
+    },
+    "Triple Crown Series": {
+      "months": [
+        3,
+        6,
+        9,
+        12
+      ],
+      "days": 7,
+      "players": 12,
+      "maxMainGames": 33
+    }
+  },
+  "backup": "Versioned JSON with SHA-256 checksum, complete in-memory save/NPC snapshot. Restore validates before a single IndexedDB transaction into an empty slot. A new career storage identity isolates the copy; future simulations are independent.",
+  "saveSchema": "v15, optional fields upgraded on load; existing saves supported",
+  "lifetimeVerification": "1,104 rated games; exact 368 wins/368 draws/368 losses beyond a 1,000-game detailed retention limit. Analysis updates are idempotent and game IDs remain unique.",
+  "limits": [
+    "Legacy outcomes pruned before this release cannot be reconstructed; the Stats screen states the known coverage. Best performance/opening breakdown uses retained history.",
+    "Browser screenshots and tests use Chromium at a mobile viewport, not physical Android/iOS or Termux hardware.",
+    "Original recommendation steps 2–6 await the missing numbered list."
+  ],
+  "baseFilesRetained": 696,
+  "changedExistingFiles": [
+    "CHANGELOG.md",
+    "README.md",
+    "artifacts/expanded-tournament-3day-11games.png",
+    "artifacts/expanded-tournament-7day-23games.png",
+    "artifacts/expanded-tournament-7day-33games.png",
+    "artifacts/expanded-tournament-after-round.png",
+    "artifacts/expanded-tournament-live-playtest.png",
+    "artifacts/expanded-tournament-thai.png",
+    "package.json",
+    "scripts/verify-complete.ts",
+    "scripts/verify-team-events.ts",
+    "src/data/navigation.ts",
+    "src/features/home/CompetitionsSection.tsx",
+    "src/features/match/TournamentPanel.tsx",
+    "src/features/profile/tabs/StatsTab.tsx",
+    "src/features/training/SessionsTab.tsx",
+    "src/game/career/news.ts",
+    "src/game/competition/catalog.ts",
+    "src/game/competition/eligibility.ts",
+    "src/game/competition/entries.ts",
+    "src/game/competition/types.ts",
+    "src/game/history/createHistory.ts",
+    "src/game/history/recordGame.ts",
+    "src/game/history/stats.ts",
+    "src/game/qol/schedule.ts",
+    "src/game/training/migrate.ts",
+    "src/game/training/recommend.ts",
+    "src/game/world/schedule.ts",
+    "src/i18n/th.ts",
+    "src/pages/CareerPage.tsx",
+    "src/pages/CompletePage.tsx",
+    "src/pages/SaveSlotsPage.tsx",
+    "src/types/history.ts",
+    "tests/audio.spec.ts",
+    "tests/circuit.spec.ts",
+    "tests/complete.spec.ts",
+    "tests/esports.spec.ts",
+    "tests/expanded-tournaments.spec.ts",
+    "tests/expansion.spec.ts",
+    "tests/language.spec.ts",
+    "tests/match-clock.browser.mjs",
+    "tests/match-clock.spec.ts",
+    "tests/npc-portraits.spec.ts",
+    "tests/prediction.spec.ts",
+    "tests/qol.spec.ts",
+    "tests/social.spec.ts",
+    "tests/world-activity.spec.ts"
+  ],
+  "preserved": [
+    "Recorded board audio",
+    "Real-player cartoon likenesses",
+    "English/Thai language selection",
+    "Install suggestion popup",
+    "Vercel rewrites",
+    "Larger tournament schedules and saved field snapshots"
+  ],
+  "screenshots": [
+    "artifacts/tournament-guide-africa-en.png",
+    "artifacts/tournament-guide-capacity-th.png",
+    "artifacts/career-backup-export.png",
+    "artifacts/career-backup-import.png",
+    "artifacts/expanded-tournament-live-playtest.png"
+  ]
+}

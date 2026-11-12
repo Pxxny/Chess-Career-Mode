@@ -1,3 +1,4 @@
+import { withTeamHost } from "@/game/competition/hosts";
 import { socialOf } from "@/game/social/relationships";
 import { yearReviewOf } from "@/game/career/yearReview";
 import { normalizePredictionState } from "@/game/prediction/statistics";
@@ -55,9 +56,17 @@ export function upgradeSave(save: GameSave): GameSave {
       },
     },
     matches: raw.matches ?? [],
-    tournament: raw.tournament ?? null,
+    tournament: raw.tournament
+      ? {
+          ...raw.tournament,
+          details: withTeamHost(raw.tournament.details, raw.tournament.year),
+        }
+      : null,
     pendingMatch: raw.pendingMatch ?? null,
-    registrations: raw.registrations ?? [],
+    registrations: (raw.registrations ?? []).map((r) => ({
+      ...r,
+      details: withTeamHost(r.details, r.year),
+    })),
   };
   return {
     ...upgraded,

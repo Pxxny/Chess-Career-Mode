@@ -1,3 +1,9 @@
+import {
+  canEarnTitle,
+  awardPlayerTitles,
+  addTournamentNorms,
+} from "@/game/career/titleRules";
+import { addLifetimeGame, lifetimeOf } from "./lifetime";
 import { recordRatedContact } from "@/game/social/relationships";
 import { trackYearActivity } from "@/game/career/yearReview";
 import { archiveCompetition } from "@/game/competition/preparation";
@@ -75,10 +81,15 @@ export function withGameAccuracy(
   const target = save.history.games.find((g) => g.id === gameId);
   if (!target) return save;
   const value = Math.min(100, Math.max(0, Math.round(accuracy + bonus)));
+  const lifetime = structuredClone(lifetimeOf(save.history));
+  lifetime.accuracySum +=
+    value - (target.analyzed === false ? 0 : target.accuracy);
+  if (target.analyzed === false) lifetime.analysedGames++;
   return {
     ...save,
     history: {
       ...save.history,
+      lifetime,
       games: save.history.games.map((g) =>
         g.id === gameId ? { ...g, accuracy: value, analyzed: true } : g,
       ),
@@ -139,7 +150,7 @@ export function recordGame(save: GameSave, input: GameInput): GameSave {
         ),
       );
   const game: GameResult = {
-    id: `g${history.games.length + 1}-${stamp.year}-${stamp.week}`,
+    id: `g${player.ratedGames + 1}-${stamp.year}-${stamp.week}`,
     ...stamp,
     opponentId: input.opponentId,
     opponentName: input.opponentName,
@@ -154,6 +165,7 @@ export function recordGame(save: GameSave, input: GameInput): GameSave {
     ...(pending ? { analyzed: false } : {}),
     opening: input.opening ?? null,
   };
+  history.lifetime = addLifetimeGame(lifetimeOf(save.history), game);
   history.games.push(game);
   history.games = cap(history.games, GAME_CONFIG.history.maxGames);
   history.ratingHistory.push({ ...stamp, elo: after });
@@ -169,7 +181,11 @@ export function recordGame(save: GameSave, input: GameInput): GameSave {
   // Titles follow peak Elo and are kept for life.
   for (const step of TITLE_LADDER) {
     if (
-      peak >= step.minElo &&
+      canEarnTitle(
+        { ...player, peakRating: peak, ratedGames },
+        history,
+        step.id,
+      ) &&
       !history.titles.some((t) => t.title === step.id)
     ) {
       history.titles.push({ ...stamp, title: step.id });
@@ -442,17 +458,26 @@ export function recordTournament(
     history.ledger.push(entry);
     history.ledger = cap(history.ledger, GAME_CONFIG.history.maxLedger);
   }
-  return trackYearActivity(
-    save,
-    {
-      ...save,
-      player: { ...save.player, money: save.player.money + prize, reputation },
-      history,
-    },
-    "tournament",
-    undefined,
-    save.tournament?.eventId === input.tournamentId && save.tournament.withdrawn
-      ? Infinity
-      : input.rank,
+  return awardPlayerTitles(
+    addTournamentNorms(
+      trackYearActivity(
+        save,
+        {
+          ...save,
+          player: {
+            ...save.player,
+            money: save.player.money + prize,
+            reputation,
+          },
+          history,
+        },
+        "tournament",
+        undefined,
+        save.tournament?.eventId === input.tournamentId &&
+          save.tournament.withdrawn
+          ? Infinity
+          : input.rank,
+      ),
+    ),
   );
 }

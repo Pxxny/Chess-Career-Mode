@@ -61,7 +61,7 @@ async function writeCareer(page: Page, save: GameSave) {
   await page.reload();
 }
 async function openDirectory(page: Page) {
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page.getByRole("tab", { name: "Rankings", exact: true }).click();
 }
 async function openNpc(page: Page, npc: Npc) {

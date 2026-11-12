@@ -150,7 +150,12 @@ assert.deepEqual(
   open.reserves.map((c) => c.id),
   ["w2"],
 );
-const tiny = pickRoster([mk("only", 1500, "male", 30)], teamSpec("olympiad")!, 4, 1);
+const tiny = pickRoster(
+  [mk("only", 1500, "male", 30)],
+  teamSpec("olympiad")!,
+  4,
+  1,
+);
 assert.equal(tiny.starters.length, 1);
 assert.equal(pickRoster(pool, teamSpec("sea-games")!, 2, 0).starters.length, 2);
 
@@ -197,7 +202,9 @@ for (const key of TEAM_EVENTS.map((e) => e.key)) {
 }
 assert(!playersOf("disability-olympiad").some(({ p }) => p.id === "player"));
 assert(
-  playersOf("disability-olympiad").every(({ p }) => p.id.startsWith("abstract:")),
+  playersOf("disability-olympiad").every(({ p }) =>
+    p.id.startsWith("abstract:"),
+  ),
 );
 
 // 5. Simulation: round robin up to 12 teams, Swiss above; results are consistent.
@@ -279,7 +286,12 @@ const member = joinFederation(strong);
 assert(member.ok);
 const find = (key: string) =>
   teamEvents.find((e) => e.details!.teamEvent!.key === key)!;
-const issue = (key: string) => registrationIssue(member.save, find(key), world);
+const duringRegistration = (save: typeof member.save, key: string) => ({
+  ...save,
+  world: { ...save.world, date: find(key).registrationDeadline, day: 1 },
+});
+const issue = (key: string) =>
+  registrationIssue(duringRegistration(member.save, key), find(key), world);
 assert.equal(issue("olympiad"), null);
 assert.equal(issue("asian-nations-cup"), null);
 assert.equal(issue("sea-games"), null);
@@ -294,7 +306,7 @@ assert(!registerForEvent(member.save, find("european-team"), world).ok);
 // 8. Several different team events in one year are independent; same event only once.
 const enter = (save: typeof member.save, key: string) => {
   const event = find(key);
-  const reg = registerForEvent(save, event, world);
+  const reg = registerForEvent(duringRegistration(save, key), event, world);
   assert(reg.ok, `${key}: ${reg.ok ? "" : reg.error}`);
   const ready = {
     ...reg.save,
@@ -309,18 +321,24 @@ const cupsSea = stateOf(afterSea).cups;
 assert.equal(cupsSea.length, 1);
 assert.equal(cupKey(cupsSea[0]), "sea-games");
 assert(cupsSea[0].represented);
-assert.equal(cupsSea[0].boardsPerTeam, find("sea-games").details!.teamEvent!.boards);
+assert.equal(
+  cupsSea[0].boardsPerTeam,
+  find("sea-games").details!.teamEvent!.boards,
+);
 assert.equal(afterSea.player.ap.current, member.save.player.ap.current - 2);
 assert.equal(afterSea.player.rating, member.save.player.rating);
 assert.equal(afterSea.registrations.length, 0);
 const afterBoth = enter(
-  { ...afterSea, player: { ...afterSea.player, ap: { ...afterSea.player.ap, current: 20 } } },
+  {
+    ...afterSea,
+    player: { ...afterSea.player, ap: { ...afterSea.player.ap, current: 20 } },
+  },
   "asian-nations-cup",
 );
-assert.deepEqual(
-  stateOf(afterBoth).cups.map(cupKey).sort(),
-  ["asian-nations-cup", "sea-games"],
-);
+assert.deepEqual(stateOf(afterBoth).cups.map(cupKey).sort(), [
+  "asian-nations-cup",
+  "sea-games",
+]);
 assert(!playTeamCup(afterBoth, world, { key: "sea-games" }).ok);
 // A selected player must register; a federation member who is not selected may follow the event.
 assert(!playTeamCup(afterBoth, world, { key: "olympiad" }).ok);
@@ -343,9 +361,7 @@ const legacy = {
   ...afterBoth,
   expansion: {
     ...stateOf(afterBoth),
-    cups: [
-      { year: 2026, teams: [], boards: [], represented: false, prize: 0 },
-    ],
+    cups: [{ year: 2026, teams: [], boards: [], represented: false, prize: 0 }],
   },
 };
 assert.equal(cupKey(legacy.expansion.cups[0]), "olympiad");

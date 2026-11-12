@@ -214,9 +214,11 @@ const training = plannedTrainingDay(base, [
   "calculation-drills",
   "not-real",
 ]);
-assert.equal(training.completed.length, 2);
+assert.equal(training.completed.length, 3);
+assert.equal(training.completed.filter(n => !n.endsWith("(automatic)")).length, 2);
+assert(training.completed.includes("Power nap (automatic)"));
 assert.equal(training.skipped.length, 1);
-assert.equal(training.save.training.hoursUsedToday, 3);
+assert.equal(training.save.training.hoursUsedToday, 5);
 assert.equal(training.save.player.ap.current, 7);
 assert(training.save.training.xp.tactics! > 0);
 assert.deepEqual(plannedTrainingDay(base, []).save, base);

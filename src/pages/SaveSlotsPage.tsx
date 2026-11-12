@@ -1,3 +1,4 @@
+import { ImportBackup } from "@/features/career/ImportBackup";
 import { InstallSuggestion } from "@/features/install/InstallSuggestion";
 import { useCallback, useEffect, useState } from "react";
 import { LanguageSelector } from "@/i18n/LanguageSelector";
@@ -81,6 +82,7 @@ export function SaveSlotsPage() {
         career, NPC world and progress, saved automatically in this browser.
       </p>
 
+      <ImportBackup onImported={refresh} />
       {error && (
         <p role="alert" className="mb-4 text-sm text-red-300">
           {error}

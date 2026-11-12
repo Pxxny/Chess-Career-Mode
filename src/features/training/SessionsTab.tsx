@@ -73,7 +73,8 @@ export function SessionsTab() {
   const events: ChoiceOption[] = schedule
     .filter(
       (e) =>
-        registrationOpen(e) && isEligible(e, player.rating, player.reputation),
+        registrationOpen(e, save) &&
+        isEligible(e, player.rating, player.reputation),
     )
     .slice(0, MAX_CHOICES)
     .map((e) => ({

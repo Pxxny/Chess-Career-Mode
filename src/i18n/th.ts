@@ -1,8 +1,285 @@
 /** English source messages stay in saves; only their presentation is localized. */
 export const TH_MESSAGES: Record<string, string> = {
+  "First rated meeting: {{0}}": "พบกันในเกมคิดเรตครั้งแรก: {{0}}",
+  "Skill effects": "ผลของสกิล",
+  "How training affects play": "การฝึกส่งผลต่อการเล่นอย่างไร",
+  "Skills change simulated decisions, clock use and forecasts. When you play yourself, your moves remain under your control. Training does not directly add rated Elo.":
+    "สกิลส่งผลต่อการตัดสินใจของตัวจำลอง การใช้เวลา และการคาดการณ์ เมื่อเล่นเองคุณยังเลือกเดินเองทั้งหมด การฝึกไม่ได้เพิ่ม Elo โดยตรง",
+  "Training strength bonus": "โบนัสความสามารถจากการฝึก",
+  "Simulator clock skill": "ทักษะใช้เวลาของตัวจำลอง",
+  "Extra prepared half-moves": "จำนวนครึ่งตาที่เตรียมเพิ่ม",
+  "Fatigue penalty per point": "โทษความเหนื่อยต่อหนึ่งหน่วย",
+  "These are simulator modifiers, not guaranteed wins or official rating gains.":
+    "ค่าปรับของตัวจำลองเหล่านี้ไม่รับประกันชัยชนะหรือการเพิ่มเรต",
+  "Choose a skill to understand": "เลือกสกิลที่อยากเข้าใจ",
+  "Skill effect": "ผลของสกิล",
+  "Sessions that train this skill": "กิจกรรมที่ฝึกสกิลนี้",
+  "Last session improvements": "พัฒนาการจากการฝึกครั้งล่าสุด",
+  "Improves opening strength and prepared book depth.":
+    "เพิ่มความสามารถช่วงเปิดเกมและความลึกของไลน์ที่เตรียม",
+  "Improves middlegame strength and general technique.":
+    "เพิ่มความสามารถกลางเกมและเทคนิคโดยรวม",
+  "Improves endgame strength and general technique.":
+    "เพิ่มความสามารถท้ายเกมและเทคนิคโดยรวม",
+  "Improves general technique and tactical move selection.":
+    "เพิ่มเทคนิคโดยรวมและการเลือกตาเชิงแท็กติก",
+  "Improves general technique, endgame strength and calculation.":
+    "เพิ่มเทคนิคโดยรวม ความสามารถท้ายเกม และการคำนวณ",
+  "Improves general technique and positional move selection.":
+    "เพิ่มเทคนิคโดยรวมและการเลือกตาเชิงตำแหน่ง",
+  "Improves the simulator’s clock use and thinking pace.":
+    "เพิ่มประสิทธิภาพการใช้เวลาและจังหวะคิดของตัวจำลอง",
+  "Supports mental resilience in match forecasts.":
+    "ช่วยความเข้มแข็งทางจิตใจในการคาดการณ์แมตช์",
+  "Improves the simulator’s general technique.": "เพิ่มเทคนิคโดยรวมของตัวจำลอง",
+  "Improves general technique and match forecasts.":
+    "เพิ่มเทคนิคโดยรวมและส่งผลต่อการคาดการณ์แมตช์",
+  "Improves clock use and match forecasts.":
+    "เพิ่มการใช้เวลาและส่งผลต่อการคาดการณ์แมตช์",
+  "Adds opening strength and prepared book depth.":
+    "เพิ่มความสามารถเปิดเกมและความลึกของไลน์ที่เตรียม",
+  "Adds general technique and middlegame strength.":
+    "เพิ่มเทคนิคโดยรวมและความสามารถกลางเกม",
+  "Reduces the effect of low morale on simulated strength.":
+    "ลดผลกระทบจากขวัญกำลังใจต่ำต่อความสามารถของตัวจำลอง",
+  "Reduces training fatigue and its effect on simulated play.":
+    "ลดความเหนื่อยจากการฝึกและผลกระทบต่อการเล่นของตัวจำลอง",
+  "Improves overnight fatigue recovery.": "ช่วยฟื้นความเหนื่อยข้ามคืน",
+  "Supports performance under pressure in match forecasts.":
+    "ช่วยผลงานภายใต้ความกดดันในการคาดการณ์แมตช์",
+  "Plan your career": "วางแผนอาชีพ",
+  "Season plan": "แผนประจำฤดูกาล",
+  "Championship path": "เส้นทางชิงแชมป์",
+  "People & stories": "ผู้คนและเรื่องราว",
+  "Sponsors & legacy": "สปอนเซอร์และบทบาทใหม่",
+  "Annual goals": "เป้าหมายรายปี",
+  "Annual focus": "แนวทางประจำปี",
+  "Balanced season": "ฤดูกาลสมดุล",
+  "Rating growth": "พัฒนาเรต",
+  "Tournament experience": "ประสบการณ์แข่งขัน",
+  "Learning season": "ฤดูกาลแห่งการเรียนรู้",
+  "Choose a season focus. Goals track your actual games, tournaments, training and peak rating this year.":
+    "เลือกแนวทางประจำฤดูกาล เป้าหมายติดตามเกม ทัวร์นาเมนต์ การฝึก และเรตสูงสุดที่เกิดขึ้นจริงในปีนี้",
+  "Save annual focus": "บันทึกแนวทางประจำปี",
+  "Focus can be changed in weeks 1–4. Goals do not grant automatic Elo or prize money.":
+    "เปลี่ยนแนวทางได้ในสัปดาห์ 1–4 เป้าหมายไม่แจก Elo หรือเงินรางวัลอัตโนมัติ",
+  "Annual focus is locked after week 4. Choose again next year.":
+    "แนวทางประจำปีล็อกหลังสัปดาห์ที่ 4 เลือกใหม่ได้ปีหน้า",
+  "Choose a valid annual focus.": "เลือกแนวทางประจำปีที่ถูกต้อง",
+  "Improve peak Elo this year": "เพิ่ม Elo สูงสุดในปีนี้",
+  "Play rated games this year": "เล่นเกมคิดเรตในปีนี้",
+  "Complete tournaments this year": "แข่งทัวร์นาเมนต์ให้จบในปีนี้",
+  "Complete training sessions this year": "ฝึกให้ครบในปีนี้",
+  "Your competition calendar": "ปฏิทินการแข่งขันของคุณ",
+  "No booked tournaments. Choose an event below and register when ready.":
+    "ยังไม่ได้จองรายการ เลือกรายการด้านล่างและสมัครเมื่อพร้อม",
+  "Recommended individual events": "รายการบุคคลที่แนะนำ",
+  "Ranked by eligibility, budget, timing and rating fit. Registration is open; NPC entries can still fill up.":
+    "เรียงตามคุณสมบัติ งบประมาณ เวลา และระดับเรต ขณะนี้เปิดรับสมัครอยู่ แต่ผู้สมัคร NPC อาจทำให้เต็มได้",
+  "No travel cost and entry requirements met.":
+    "ไม่เสียค่าเดินทางและมีคุณสมบัติครบ",
+  "Entry and travel fit your current budget and eligibility.":
+    "ค่าสมัครและค่าเดินทางอยู่ในงบ พร้อมคุณสมบัติครบ",
+  "View tournament": "ดูทัวร์นาเมนต์",
+  "No suitable open individual event right now. Review your budget, entry requirements or upcoming registration windows.":
+    "ยังไม่มีรายการบุคคลที่เปิดรับและเหมาะสม ลองตรวจงบ คุณสมบัติ หรือช่วงเปิดรับสมัครถัดไป",
+  "Upcoming registration windows": "ช่วงรับสมัครที่กำลังจะเปิด",
+  "Past annual goals": "เป้าหมายในปีก่อน",
+  "Road to World Champion": "เส้นทางสู่แชมป์โลก",
+  "Earn qualification through results, then satisfy the rating, title and reputation requirements. Career qualifications remain valid for two following seasons.":
+    "ทำผลงานเพื่อคว้าสิทธิ์คัดเลือก แล้วผ่านเงื่อนไขเรต ตำแหน่ง และชื่อเสียง สิทธิ์ในเกมใช้ได้ถึงสองฤดูกาลถัดไป",
+  "Reigning champion:": "แชมป์ปัจจุบัน:",
+  "Top 3 earn continental qualification.": "สามอันดับแรกได้สิทธิ์แข่งระดับทวีป",
+  "Top 3 earn World Cup and Grand Swiss qualifications.":
+    "สามอันดับแรกได้สิทธิ์ World Cup และ Grand Swiss",
+  "Top 2 earn Candidates qualification.": "สองอันดับแรกได้สิทธิ์ Candidates",
+  "The winner earns a World Championship match.":
+    "ผู้ชนะได้สิทธิ์แมตช์ชิงแชมป์โลก",
+  "Win the match to become champion and earn a title defence.":
+    "ชนะแมตช์เพื่อเป็นแชมป์และได้สิทธิ์ป้องกันตำแหน่ง",
+  "Earned qualifications": "สิทธิ์คัดเลือกที่ได้รับ",
+  "No qualifications earned yet.": "ยังไม่ได้รับสิทธิ์คัดเลือก",
+  "Career title requirements": "เงื่อนไขตำแหน่งในอาชีพ",
+  "Current career title": "ตำแหน่งในอาชีพปัจจุบัน",
+  "Simplified career requirements; existing earned titles are kept.":
+    "ใช้เงื่อนไขอาชีพแบบย่อ ตำแหน่งที่เคยได้รับยังคงอยู่",
+  "Simplified career rules, not official FIDE certification. Titles already earned in an older save remain yours.":
+    "ใช้กติกาอาชีพแบบย่อ ไม่ใช่การรับรอง FIDE จริง ตำแหน่งที่ได้ในเซฟเก่ายังคงอยู่",
+  "Peak Elo {{0}} + 30 rated games": "Elo สูงสุด {{0}} + เกมคิดเรต 30 เกม",
+  "Peak Elo {{0}} + 50 rated games": "Elo สูงสุด {{0}} + เกมคิดเรต 50 เกม",
+  "Peak Elo {{0}} + 50 rated games + 3 {{1}} norms":
+    "Elo สูงสุด {{0}} + เกมคิดเรต 50 เกม + norm {{1}} จำนวน 3 ครั้ง",
+  "A norm needs a finished classical tournament, at least 9 played games, 5 different opponents and 3 opposing federations. IM: average opposition 2200+, performance 2450+, at least 3 titled opponents. GM: average opposition 2400+, performance 2600+, at least 3 GM opponents. Byes and withdrawn events do not qualify.":
+    "norm ต้องมาจากรายการคลาสสิกที่แข่งจบ เล่นจริงอย่างน้อย 9 เกม พบคู่แข่งต่างคนอย่างน้อย 5 คนจาก 3 สหพันธ์ สำหรับ IM: คู่แข่งเฉลี่ย 2200+ ผลงาน 2450+ และคู่แข่งมีตำแหน่งอย่างน้อย 3 คน สำหรับ GM: คู่แข่งเฉลี่ย 2400+ ผลงาน 2600+ และพบ GM อย่างน้อย 3 คน ไม่นับบายหรือรายการที่ถอนตัว",
+  "Performance is estimated from your score and average opponent Elo.":
+    "ค่าผลงานประมาณจากคะแนนที่ทำได้และ Elo เฉลี่ยของคู่แข่ง",
+  "Shared memories": "ความทรงจำร่วม",
+  "No established rivalry": "ยังไม่เป็นคู่ปรับ",
+  "Emerging rivalry": "คู่ปรับที่เริ่มก่อตัว",
+  "Closely matched rivals": "คู่ปรับฝีมือสูสี",
+  "Long-running rivalry": "คู่ปรับที่พบกันมายาวนาน",
+  "Competition builds a rivalry; friendship grows through social time together.":
+    "การแข่งขันสร้างความเป็นคู่ปรับ ส่วนมิตรภาพเติบโตจากเวลาที่ใช้ร่วมกันนอกการแข่งขัน",
+  "You drew": "คุณเสมอ",
+  "Talked together": "พูดคุยกัน",
+  "Studied together": "ศึกษาหมากรุกด้วยกัน",
+  "No shared memories yet.": "ยังไม่มีความทรงจำร่วม",
+  "People in your career": "ผู้คนในเส้นทางอาชีพ",
+  "Meet opponents repeatedly to build rivalries. Conversations, study and friendly games build friendship separately.":
+    "พบคู่แข่งบ่อยเพื่อสร้างความเป็นคู่ปรับ การพูดคุย ศึกษา และเล่นกระชับมิตรสร้างความสนิทแยกต่างหาก",
+  "Play an opponent or spend social time with an NPC to start your shared story.":
+    "เล่นกับคู่แข่งหรือใช้เวลากับ NPC เพื่อเริ่มเรื่องราวร่วมกัน",
+  "News about people you know": "ข่าวของคนที่คุณรู้จัก",
+  "World results appear here as weeks advance. Friends, rivals and elite players receive priority.":
+    "ผลแข่งในโลกจะแสดงเมื่อสัปดาห์เดินหน้า โดยเน้นเพื่อน คู่ปรับ และผู้เล่นระดับสูง",
+  "Sponsorship contracts": "สัญญาสปอนเซอร์",
+  "One contract at a time, lasting 12 weeks. Payment is every 4 weeks when you complete the activity targets. No payment for a missed target. A four-week cooldown follows cancellation or expiry.":
+    "รับได้ครั้งละหนึ่งสัญญา อายุ 12 สัปดาห์ ประเมินและจ่ายเงินทุก 4 สัปดาห์เมื่อทำกิจกรรมครบ หากไม่ครบจะไม่จ่าย หลังยกเลิกหรือหมดสัญญาต้องรอ 4 สัปดาห์",
+  "Cancel contract": "ยกเลิกสัญญา",
+  "Sign contract": "เซ็นสัญญา",
+  "Past contracts": "สัญญาที่ผ่านมา",
+  "Sponsorship payment": "เงินจากสปอนเซอร์",
+  "Sponsorship payment received": "ได้รับเงินสปอนเซอร์",
+  "Sponsorship target missed": "ทำเป้าสปอนเซอร์ไม่ครบ",
+  "You do not meet this sponsor’s Elo and reputation requirements.":
+    "Elo และชื่อเสียงยังไม่ผ่านเกณฑ์สปอนเซอร์นี้",
+  "Finish the current contract and cooldown before signing another.":
+    "จบสัญญาปัจจุบันและรอครบช่วงพักก่อนเซ็นสัญญาใหม่",
+  "Life beyond the peak": "ชีวิตหลังจุดสูงสุด",
+  "Keep competing or build a second career in chess. Roles unlock at age 35, after ten seasons, or at a peak Elo of 2400. Changing role has a four-week cooldown.":
+    "แข่งต่อหรือสร้างอาชีพที่สองในวงการหมากรุก ปลดล็อกเมื่ออายุ 35 ปี ผ่านสิบฤดูกาล หรือเคยได้ Elo 2400 เปลี่ยนบทบาทได้ทุก 4 สัปดาห์",
+  "Active competitor": "นักแข่งเต็มตัว",
+  Mentor: "ผู้ถ่ายทอดความรู้",
+  Commentator: "ผู้พากย์การแข่งขัน",
+  "Chess ambassador": "ทูตหมากรุก",
+  "Run a group lesson and share your experience.":
+    "สอนบทเรียนกลุ่มและถ่ายทอดประสบการณ์",
+  "Commentate a chess session for an audience.": "พากย์การเล่นหมากรุกให้ผู้ชม",
+  "Represent chess at a community event.": "เป็นตัวแทนหมากรุกในกิจกรรมชุมชน",
+  "Once per week · 2 AP · 2 hours · +6 fatigue · +1 reputation":
+    "สัปดาห์ละครั้ง · 2 AP · 2 ชั่วโมง · ความเหนื่อย +6 · ชื่อเสียง +1",
+  "Do weekly legacy activity": "ทำกิจกรรมประจำสัปดาห์",
+  "Legacy roles unlock at age 35, after ten seasons, or at a peak Elo of 2400.":
+    "บทบาทใหม่ปลดล็อกเมื่ออายุ 35 ปี ผ่านสิบฤดูกาล หรือเคยได้ Elo 2400",
+  "Wait four weeks before changing career role again.":
+    "รอ 4 สัปดาห์ก่อนเปลี่ยนบทบาทอีกครั้ง",
+  "Choose an unlocked legacy role first.": "เลือกบทบาทที่ปลดล็อกแล้วก่อน",
+  "You have completed this week’s legacy activity.":
+    "คุณทำกิจกรรมประจำสัปดาห์นี้แล้ว",
+  "This activity needs 2 AP, 2 free hours and enough energy.":
+    "กิจกรรมนี้ต้องใช้ 2 AP เวลาว่าง 2 ชั่วโมง และพลังงานเพียงพอ",
+  "Income: ${{0}}": "รายได้: ${{0}}",
+  "Weekly contributions: {{0}} / 12 for a legacy achievement":
+    "กิจกรรมที่ช่วยวงการ: {{0}} / 12 เพื่อรับความสำเร็จ",
+  "Rated games: {{0}} / {{1}} · Training sessions: {{2}} / 8":
+    "เกมคิดเรต: {{0}} / {{1}} · การฝึก: {{2}} / 8",
+  "Next review: {{0}} · Paid ${{1}} · Missed {{2}}":
+    "ประเมินครั้งต่อไป: {{0}} · จ่ายแล้ว ${{1}} · ไม่ผ่านเป้า {{2}} ครั้ง",
+  "${{0}} / 4 weeks · {{1}} rated games + 8 training sessions":
+    "${{0}} / 4 สัปดาห์ · เกมคิดเรต {{1}} เกม + ฝึก 8 ครั้ง",
+  "{{0}} rated meetings · {{1}}W {{2}}D {{3}}L":
+    "พบกันในเกมคิดเรต {{0}} ครั้ง · ชนะ {{1}} เสมอ {{2}} แพ้ {{3}}",
+  "IM norms: {{0}} / 3 · GM norms: {{1}} / 3":
+    "norm IM: {{0}} / 3 · norm GM: {{1}} / 3",
+
+  "Tournament sections": "ส่วนต่าง ๆ ของการแข่งขัน",
+  "National title event. A top-three finish earns a continental qualification in this career.":
+    "รายการชิงแชมป์ระดับประเทศ ติดสามอันดับแรกจะได้สิทธิ์เข้าแข่งระดับทวีปในอาชีพนี้",
+  "Continental title event. A top-three finish earns World Cup and Grand Swiss qualifications.":
+    "รายการชิงแชมป์ทวีป ติดสามอันดับแรกจะได้สิทธิ์ World Cup และ Grand Swiss",
+  "International knockout cup. The top two qualify for the Candidates Tournament.":
+    "ถ้วยนานาชาติแบบแพ้คัดออก สองอันดับแรกได้สิทธิ์เข้า Candidates Tournament",
+  "Elite Swiss event. The top two qualify for the Candidates Tournament.":
+    "รายการสวิสระดับสูง สองอันดับแรกได้สิทธิ์เข้า Candidates Tournament",
+  "The winner earns qualification for the World Chess Championship match.":
+    "ผู้ชนะจะได้สิทธิ์เข้าแมตช์ชิงแชมป์โลก",
+  "The final title match on the career championship path.":
+    "แมตช์ชิงตำแหน่งสูงสุดบนเส้นทางแชมป์ในอาชีพ",
+  "An elite classical field requiring a title, league level or invitation qualification.":
+    "รายการคลาสสิกระดับสูง มีเงื่อนไขตำแหน่ง ระดับลีก หรือสิทธิ์รับเชิญ",
+  "A championship played at rapid time controls.":
+    "รายการชิงแชมป์โดยใช้เวลาคิดแบบ Rapid",
+  "A championship played at blitz time controls.":
+    "รายการชิงแชมป์โดยใช้เวลาคิดแบบ Blitz",
+  "A recurring multi-day event. Selected months have larger fields and more games; other months keep shorter editions.":
+    "รายการหลายวันที่จัดเป็นประจำ บางเดือนรับผู้เล่นและแข่งมากขึ้น เดือนอื่นยังมีรุ่นสั้น",
+
+  "Best performance and opening breakdown use retained game history.":
+    "ผลงานดีที่สุดและสถิติช่องเปิดอ้างอิงประวัติเกมที่ยังเก็บไว้",
+  Compete: "แข่งขัน",
+  "Tournament guide": "คู่มือทัวร์นาเมนต์",
+  "Registration window": "ช่วงเปิดรับสมัคร",
+  Capacity: "ความจุ",
+  "Not open yet": "ยังไม่เปิดรับสมัคร",
+  "Registration has not opened yet.": "ยังไม่ถึงช่วงเปิดรับสมัคร",
+  "Swiss: play opponents on similar scores each round; you do not meet everyone.":
+    "ระบบสวิส: จับคู่กับผู้เล่นคะแนนใกล้กันในแต่ละรอบ ไม่ได้พบคู่แข่งครบทุกคน",
+  "Round robin: play every other entrant once.":
+    "พบกันหมด: พบคู่แข่งทุกคนคนละหนึ่งเกม",
+  "Double round robin: play every other entrant twice, once with each colour.":
+    "พบกันหมดสองรอบ: พบคู่แข่งทุกคนสองครั้ง สลับสีขาวและดำ",
+  "BO3 round robin: play a best-of-three series against every opponent; a tied series needs a decider.":
+    "พบกันหมดแบบ BO3: แข่งซีรีส์สองในสามเกมกับคู่แข่งแต่ละคน หากคะแนนซีรีส์เท่ากันจะมีเกมตัดสิน",
+  "Knockout: advance by winning each match; a loss eliminates you.":
+    "แพ้คัดออก: ชนะแมตช์เพื่อเข้ารอบ แพ้แล้วตกรอบ",
+  "Championship match: two players contest a 14-game match.":
+    "แมตช์ชิงแชมป์: ผู้เล่นสองคนแข่งกัน 14 เกม",
+  "National teams compete across several boards. Team standings use match points and board points.":
+    "ทีมชาติแข่งหลายกระดาน อันดับทีมใช้คะแนนแมตช์และคะแนนกระดาน",
+  "Invitation showmatch: the organizer selects rising stars to represent their countries.":
+    "แมตช์รับเชิญ: ผู้จัดคัดเลือกดาวรุ่งเป็นตัวแทนแต่ละประเทศ",
+  "National teams from around the world.": "ทีมชาติจากทั่วโลก",
+  "Regional national teams only; your federation must belong to this event’s eligible region.":
+    "เฉพาะทีมชาติในภูมิภาคที่กำหนด สหพันธ์ของคุณต้องมีสิทธิ์เข้าร่วมรายการนี้",
+  "Women only.": "เฉพาะผู้หญิง",
+  "Team selection must also satisfy the required board composition.":
+    "การคัดตัวต้องตรงตามเงื่อนไของค์ประกอบผู้เล่นในแต่ละกระดานด้วย",
+  "Selection is based on eligible national-team players.":
+    "คัดเลือกจากผู้เล่นทีมชาติที่มีคุณสมบัติครบ",
+  "Junior event: age {{0}} and under.": "รายการเยาวชน: อายุไม่เกิน {{0}} ปี",
+  "{{0}} players including you": "รับ {{0}} คน รวมตัวคุณ",
+  "{{0}} national teams · {{1}} starters + {{2}} reserves per team":
+    "รับ {{0}} ทีมชาติ · ตัวจริง {{1}} คน + สำรอง {{2}} คนต่อทีม",
+  "National-team selection is required; this is not an individual open entry.":
+    "ต้องผ่านการคัดตัวทีมชาติ ไม่ใช่รายการเปิดรับบุคคลทั่วไป",
+  "Host rotates within the eligible region in this career calendar.":
+    "เจ้าภาพหมุนเวียนภายในภูมิภาคที่กำหนดตามปฏิทินจำลองในเกม",
+  "Online event: no host-country travel is required.":
+    "รายการออนไลน์: ไม่ต้องเดินทางไปประเทศเจ้าภาพ",
+  "Career backup": "สำรองเซฟอาชีพ",
+  "Export backup": "ดาวน์โหลดไฟล์สำรอง",
+  "Exporting…": "กำลังสร้างไฟล์…",
+  "Download your character, progress and complete NPC world as a file. Restore it into an empty slot on the character screen.":
+    "ดาวน์โหลดตัวละคร ความคืบหน้า และโลก NPC ทั้งหมดเป็นไฟล์ นำกลับมาใช้ได้ในช่องว่างบนหน้าตัวละคร",
+  "Import backup": "นำเข้าไฟล์สำรอง",
+  "Backup file": "ไฟล์สำรอง",
+  "Reading backup…": "กำลังอ่านไฟล์…",
+  "Restore a backup into an empty slot. Existing characters are kept.":
+    "นำไฟล์สำรองเข้าในช่องว่าง ตัวละครเดิมยังอยู่ครบ",
+  "Restore this career?": "นำเข้าเซฟอาชีพนี้หรือไม่?",
+  "Restore backup": "นำเข้าเซฟ",
+  "This creates an independent copy with the same progress and NPC results.":
+    "สร้างสำเนาที่แยกจากกัน โดยคงความคืบหน้าและผลแข่งของ NPC",
+  "This backup is damaged or has an unsupported format.":
+    "ไฟล์สำรองเสียหายหรือเป็นรูปแบบที่ไม่รองรับ",
+  "This backup is too large. Maximum size is 64 MB.":
+    "ไฟล์สำรองใหญ่เกินไป รองรับสูงสุด 64 MB",
+  "No empty slots. Export a backup before deleting any character.":
+    "ไม่มีช่องว่าง ควรดาวน์โหลดไฟล์สำรองก่อนลบตัวละคร",
+  "Choose an empty character slot.": "เลือกช่องตัวละครที่ว่าง",
+  "The backup could not be restored.": "ไม่สามารถนำเข้าไฟล์สำรองได้",
+  "The backup could not be exported.": "ไม่สามารถสร้างไฟล์สำรองได้",
+  "Score rate counts a draw as half a point.":
+    "อัตราทำคะแนนนับผลเสมอเป็นครึ่งคะแนน",
+  "Detailed game history keeps the latest 1,000 rated games. Lifetime totals keep counting after that limit.":
+    "ประวัติแบบละเอียดเก็บเกมคิดเรตล่าสุด 1,000 เกม แต่ยอดสะสมตลอดอาชีพยังนับต่อไป",
+  "Older results were already missing when lifetime tracking started. Known outcomes cover {{0}} of {{1}} rated games.":
+    "ผลเกมเก่าบางส่วนหายไปก่อนเริ่มบันทึกยอดสะสม ทราบผล {{0}} จาก {{1}} เกมคิดเรต",
+  "{{0}} national teams": "{{0}} ทีมชาติ",
+
   Home: "หน้าหลัก",
   Train: "ฝึกซ้อม",
-  Complete: "แข่งขัน",
+
   Career: "เส้นทางอาชีพ",
   Profile: "โปรไฟล์",
   Main: "เมนูหลัก",
@@ -1486,7 +1763,7 @@ export const TH_MESSAGES: Record<string, string> = {
   "Esports history": "ประวัติอีสปอร์ต",
   "Completed esports events appear here separately from traditional tournaments.":
     "รายการอีสปอร์ตที่จบแล้วจะแสดงแยกจากทัวร์นาเมนต์ปกติที่นี่",
-  "Actual played boards can be replayed in Complete → History. Team prize money is split equally among the squad.":
+  "Actual played boards can be replayed in Tournament → History. Team prize money is split equally among the squad.":
     "กระดานที่เล่นจริงดูย้อนหลังได้ที่ แข่งขัน → ประวัติ เงินรางวัลทีมแบ่งเท่ากันระหว่างสมาชิก",
   "Find esports tournaments": "ค้นหาทัวร์นาเมนต์อีสปอร์ต",
   "Esports tier": "ระดับอีสปอร์ต",

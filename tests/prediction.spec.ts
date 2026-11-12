@@ -76,7 +76,7 @@ test("a real friendly game persists its forecast before move one and scores only
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await createCareer(page);
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page.getByText("Individual match / free play", { exact: true }).click();
   await page.getByRole("button", { name: "White", exact: true }).click();
   await page.getByRole("button", { name: "Friendly", exact: true }).click();
@@ -132,7 +132,7 @@ test("a real friendly game persists its forecast before move one and scores only
     path: "artifacts/prediction-career-dashboard.png",
     fullPage: false,
   });
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page.getByRole("tab", { name: "History", exact: true }).click();
   await expect(page.getByTestId("prediction-summary")).toContainText(
     "Actual: loss",
@@ -150,7 +150,7 @@ test("Swiss, Home and Prepare show forecasts; completed NPC boards populate cali
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await createCareer(page);
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page.getByRole("tab", { name: "Swiss", exact: true }).click();
   await page.locator('button[data-testid="register"]:enabled').first().click();
   await expect(
@@ -185,7 +185,7 @@ test("Swiss, Home and Prepare show forecasts; completed NPC boards populate cali
   await page.getByRole("link", { name: "Home", exact: true }).click();
   await expect(page.getByTestId("match-prediction")).toBeVisible();
   await odds(page.getByTestId("match-prediction"));
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page
     .getByRole("button", {
       name: "Simulate (take control any time)",
@@ -264,7 +264,7 @@ test("model settings persist, all career statistics start empty, and upset panel
   page,
 }) => {
   await createCareer(page);
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page.getByRole("tab", { name: "Prepare", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Tournament preparation", exact: true }),

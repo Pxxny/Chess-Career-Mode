@@ -1,3 +1,4 @@
+import { withTeamHost } from "./hosts";
 import type { EventLevel } from "@/data/chess/tournaments";
 import type { EventDetails } from "./types";
 import type { Region, ScheduledEvent } from "@/game/world/schedule";
@@ -55,7 +56,8 @@ const teamTemplates = (year: number): Template[] =>
         category: spec.category,
         format: "team",
         rounds: info.teams <= 12 ? info.teams - 1 : spec.rounds,
-        timeControl: spec.timeControl === "rapid" ? tc(15, 10, "rapid") : classical,
+        timeControl:
+          spec.timeControl === "rapid" ? tc(15, 10, "rapid") : classical,
         prize: spec.prize,
         prestige: spec.prestige,
         provenance: "inspired",
@@ -302,24 +304,27 @@ export function careerEvents(
             : 1),
       );
       if (verified) end = { year: 2024, week: 17 };
-      const details: EventDetails = {
-        ...t.details,
-        end,
-        location: region.city,
-        country: region.countryCode,
-        ...(verified
-          ? {
-              location: "Toronto",
-              country: "CA",
-              historicalSchedule: {
-                startDate: "2024-04-03",
-                endDate: "2024-04-23",
-                source: HISTORICAL_REFERENCE.url,
-              },
-            }
-          : {}),
-        ...(t.key === "national" ? { nationality: region.countryCode } : {}),
-      };
+      const details: EventDetails = withTeamHost(
+        {
+          ...t.details,
+          end,
+          location: region.city,
+          country: region.countryCode,
+          ...(verified
+            ? {
+                location: "Toronto",
+                country: "CA",
+                historicalSchedule: {
+                  startDate: "2024-04-03",
+                  endDate: "2024-04-23",
+                  source: HISTORICAL_REFERENCE.url,
+                },
+              }
+            : {}),
+          ...(t.key === "national" ? { nationality: region.countryCode } : {}),
+        },
+        year,
+      );
       out.push({
         id: `career-${t.key}-${year}`,
         name: `${t.name} ${year}`,

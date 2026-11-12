@@ -1,3 +1,4 @@
+import { sponsorsOf } from "./business";
 import { getEventsForYear } from "@/data/chess/historicalEvents";
 import { SPONSORSHIPS } from "@/data/reputation";
 import { TITLE_LADDER } from "@/data/titles";
@@ -28,7 +29,7 @@ export function buildNews(
     if (
       !e.invitational ||
       !isEligible(e, player.rating, player.reputation) ||
-      !registrationOpen(e)
+      !registrationOpen(e, save)
     )
       continue;
     if (
@@ -41,19 +42,23 @@ export function buildNews(
       id: `live-invite-${e.id}`,
       kind: "invitation",
       headline: `Invitation: ${e.name}`,
-      detail: `Starts year ${e.year}, week ${e.week}. ${e.details?.showcase ? "Accept your organizer invitation in Complete > Tournament" : "Register"} by week ${e.registrationDeadline.week}. Entry $${e.entryFee}.`,
+      detail: `Starts year ${e.year}, week ${e.week}. ${e.details?.showcase ? "Accept your organizer invitation in Tournament > Events" : "Register"} by week ${e.registrationDeadline.week}. Entry $${e.entryFee}.`,
       ...now,
     });
   }
 
   // Sponsorship opportunities the player now qualifies for.
   for (const s of SPONSORSHIPS) {
-    if (player.reputation >= s.minReputation && player.rating >= s.minElo) {
+    if (
+      !sponsorsOf(save).active &&
+      player.reputation >= s.minReputation &&
+      player.rating >= s.minElo
+    ) {
       live.push({
         id: `live-sponsor-${s.id}`,
         kind: "sponsorship",
         headline: s.name,
-        detail: `Offer worth about $${s.monthly} a month.`,
+        detail: `$${s.monthly} per four-week review, subject to activity targets. See Career → Sponsors & legacy.`,
         ...now,
       });
     }
@@ -66,7 +71,7 @@ export function buildNews(
       id: `live-title-${next.id}`,
       kind: "title",
       headline: `${next.minElo - player.peakRating} Elo points from ${next.label}`,
-      detail: `The title needs a peak Elo of ${next.minElo}.`,
+      detail: `The title needs a peak Elo of ${next.minElo} and recorded career results. See Career → Championship path.`,
       ...now,
     });
   }

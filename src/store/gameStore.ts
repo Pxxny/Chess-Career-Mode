@@ -1,3 +1,11 @@
+import { chooseAnnualFocus, type AnnualFocus } from "@/game/career/planning";
+import {
+  signSponsor,
+  cancelSponsor,
+  changeLegacyRole,
+  legacyService,
+  type LegacyRole,
+} from "@/game/career/business";
 import { configurePredictions } from "@/game/prediction/statistics";
 import { reconcileTournamentHistory } from "@/game/npc/tournamentHistory";
 import {
@@ -118,6 +126,14 @@ let calendarOwned = false;
 let calendarDaySave: GameSave | null = null;
 let calendarSync: Promise<unknown> = Promise.resolve();
 interface GameStore {
+  careerAction: (
+    command:
+      | { type: "focus"; focus: AnnualFocus }
+      | { type: "sponsor"; id: string }
+      | { type: "cancel-sponsor" }
+      | { type: "legacy-role"; role: LegacyRole }
+      | { type: "legacy-service" },
+  ) => { ok: true } | { ok: false; error: string };
   approachNpc: (
     npcId: string,
     action: SocialAction,
@@ -263,6 +279,31 @@ export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
       save: null,
+      careerAction: (command) => {
+        const save = get().save;
+        if (
+          !save ||
+          get().calendarProgress ||
+          save.pendingMatch ||
+          matchRunning(save.career.id)
+        )
+          return { ok: false, error: "Finish the running activity first." };
+        const result =
+          command.type === "focus"
+            ? chooseAnnualFocus(save, command.focus)
+            : command.type === "sponsor"
+              ? signSponsor(save, command.id)
+              : command.type === "cancel-sponsor"
+                ? { ok: true as const, save: cancelSponsor(save) }
+                : command.type === "legacy-role"
+                  ? changeLegacyRole(save, command.role)
+                  : legacyService(save);
+        if (result.ok) {
+          set({ save: result.save });
+          return { ok: true };
+        }
+        return result;
+      },
       approachNpc: (npcId, action) => {
         const save = get().save,
           world = useNpcStore.getState();

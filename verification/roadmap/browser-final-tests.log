@@ -1,0 +1,12 @@
+
+Running 7 tests using 1 worker
+
+  ✓  1 tests/expanded-tournaments.spec.ts:48:1 › selected extended editions display larger game counts with safe daily timetables in English and Thai (5.6s)
+  ✓  2 tests/expanded-tournaments.spec.ts:90:1 › register and play a human round in a longer tournament, then retain its round count and result after reload (12.7s)
+  ✓  3 tests/roadmap.spec.ts:55:1 › new career: actual training, visible skill effects, season focus, recommended registration and calendar persist (4.9s)
+  ✓  4 tests/roadmap.spec.ts:147:1 › veteran fixture: championship requirements, a real recorded rivalry and durable shared memories in English and Thai (4.0s)
+  ✓  5 tests/roadmap.spec.ts:209:1 › veteran due-payment fixture: actual day advancement pays sponsor once, legacy work has costs and weekly cooldown, backups retain state (6.4s)
+  ✓  6 tests/tournament-guide.spec.ts:27:1 › mobile guides show regional national hosts, real opening windows and selected larger capacities in both languages (4.2s)
+  ✓  7 tests/tournament-guide.spec.ts:77:1 › export complete career and NPC world, reject corrupt input and occupied slots, restore independently and reload (9.4s)
+
+  7 passed (51.7s)

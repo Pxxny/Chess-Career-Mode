@@ -1,3 +1,4 @@
+import { remember, type SharedMemory } from "./memories";
 import { gameDay } from "@/game/competition/agenda";
 import { createRng, mixSeed } from "@/game/rng";
 import { performSession } from "@/game/training/engine";
@@ -6,6 +7,7 @@ import type { ActiveTournament, GameOutcome, GameSave, Npc } from "@/types";
 
 export type SocialAction = "talk" | "study" | "play";
 export interface Relationship {
+  firstRatedMemory?: SharedMemory;
   npcId: string;
   familiarity: number;
   closeness: number;
@@ -33,6 +35,7 @@ export interface SocialInvitation {
   started: boolean;
 }
 export interface SocialState {
+  memories?: SharedMemory[];
   relationships: Record<string, Relationship>;
   sequence: number;
   pending: SocialInvitation | null;
@@ -115,8 +118,21 @@ export function recordRatedContact(
 ): GameSave {
   if (!npcId || npcId === "player" || npcId === save.player.id) return save;
   const r = relationshipAt(save, npcId);
-  return storeRelationship(save, {
+  const game = save.history.games.at(-1);
+  const next = storeRelationship(save, {
     ...r,
+    ...(game && r.ratedGames === 0 && !r.firstRatedMemory
+      ? {
+          firstRatedMemory: {
+            id: `rated-${game.id}`,
+            npcId,
+            day: gameDay(save),
+            kind: "rated" as const,
+            outcome,
+            ...(game.tournamentName ? { event: game.tournamentName } : {}),
+          },
+        }
+      : {}),
     familiarity: cap(r.familiarity + 2),
     ratedGames: r.ratedGames + 1,
     wins: r.wins + Number(outcome === "win"),
@@ -124,6 +140,15 @@ export function recordRatedContact(
     losses: r.losses + Number(outcome === "loss"),
     lastMetDay: gameDay(save),
   });
+  return game
+    ? remember(next, {
+        id: `rated-${game.id}`,
+        npcId,
+        kind: "rated",
+        outcome,
+        event: game.tournamentName ?? undefined,
+      })
+    : next;
 }
 export function recordSharedEvent(
   save: GameSave,
@@ -316,7 +341,11 @@ export function approachNpc(
     return {
       ok: true,
       accepted: false,
-      save: log(next, npc.id, action, message),
+      save: remember(log(next, npc.id, action, message), {
+        id: `social-${npc.id}-${action}-${gameDay(save)}`,
+        npcId: npc.id,
+        kind: action === "talk" ? "talk" : "study",
+      }),
       message,
     };
   }
@@ -379,7 +408,11 @@ export function approachNpc(
   return {
     ok: true,
     accepted: true,
-    save: log(next, npc.id, action, message),
+    save: remember(log(next, npc.id, action, message), {
+      id: `social-${npc.id}-${action}-${gameDay(save)}`,
+      npcId: npc.id,
+      kind: action === "talk" ? "talk" : "study",
+    }),
     message,
   };
 }
@@ -431,5 +464,13 @@ export function finishSocialGame(
       ? "Played a friendly game together."
       : "Friendly session ended without a friendship reward.",
   );
-  return cancelSocialInvitation(next);
+  return cancelSocialInvitation(
+    meaningful
+      ? remember(next, {
+          id: `friendly-${context.requestId}`,
+          npcId: context.npcId,
+          kind: "friendly",
+        })
+      : next,
+  );
 }

@@ -43,8 +43,8 @@ test("Complete: six menus, registration, paid plan/repertoire/scout, reload and 
   page.on("pageerror", (e) => errors.push(e.message));
   await page.setViewportSize({ width: 390, height: 844 });
   await createCareer(page);
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
-  const tabs = page.getByRole("tablist", { name: "Complete sections" });
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
+  const tabs = page.getByRole("tablist", { name: "Tournament sections" });
   await expect(tabs.getByRole("tab")).toHaveText([
     "Tournament",
     "Swiss",
@@ -176,7 +176,7 @@ test("2024 Candidates uses verified dates and venue while career rules are label
   page,
 }) => {
   await createCareer(page, 2024);
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page
     .getByLabel("Tournament category", { exact: true })
     .selectOption("Candidates Tournament");
@@ -238,7 +238,7 @@ test("national team participation requires registration and consumes the entry o
     }
   });
   await page.reload();
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page.getByText("Federation & national teams", { exact: true }).click();
   await expect(
     page.getByRole("button", {

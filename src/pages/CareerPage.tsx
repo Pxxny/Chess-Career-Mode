@@ -1,3 +1,8 @@
+import { SeasonPlan } from "@/features/career/SeasonPlan";
+import { ChampionshipPath } from "@/features/career/ChampionshipPath";
+import { PeopleStories } from "@/features/career/PeopleStories";
+import { CareerBusiness } from "@/features/career/CareerBusiness";
+import { BackupPanel } from "@/features/career/BackupPanel";
 import { YearReviews } from "@/features/career/YearReviews";
 import { useSearchParams } from "react-router-dom";
 import { PredictionStatistics } from "@/features/prediction/PredictionStatistics";
@@ -28,12 +33,17 @@ import { formatMoney, formatNumber } from "@/utils/format";
 
 export function CareerPage() {
   const [params, setParams] = useSearchParams();
+  const availableViews = [
+    "overview",
+    "plan",
+    "championship",
+    "people",
+    "business",
+    "predictions",
+    "years",
+  ] as const;
   const view =
-    params.get("view") === "predictions"
-      ? "predictions"
-      : params.get("view") === "years"
-        ? "years"
-        : "overview";
+    availableViews.find((v) => v === params.get("view")) ?? "overview";
   const save = useSave();
   const { player, world, history } = save;
   const { date } = world;
@@ -60,7 +70,7 @@ export function CareerPage() {
         : "No games",
     ],
     [
-      "Win rate",
+      "Score rate",
       stats.total.winRate === null ? "–" : `${stats.total.winRate}%`,
     ],
     ["Tournaments played", String(history.tournaments.length)],
@@ -80,17 +90,30 @@ export function CareerPage() {
         description={`Year ${date.year}, week ${date.week}. Every title on the road to World Champion.`}
       />
 
+      <BackupPanel />
       <Tabs
         label="Career sections"
         active={view}
         onChange={(v) => setParams(v === "overview" ? {} : { view: v })}
         tabs={[
           { id: "overview", label: "Overview" },
+          { id: "plan", label: "Season plan" },
+          { id: "championship", label: "Championship path" },
+          { id: "people", label: "People & stories" },
+          { id: "business", label: "Sponsors & legacy" },
           { id: "predictions", label: "Match predictions" },
           { id: "years", label: "Year in review" },
         ]}
       >
-        {view === "predictions" ? (
+        {view === "plan" ? (
+          <SeasonPlan />
+        ) : view === "championship" ? (
+          <ChampionshipPath />
+        ) : view === "people" ? (
+          <PeopleStories />
+        ) : view === "business" ? (
+          <CareerBusiness />
+        ) : view === "predictions" ? (
           <PredictionStatistics />
         ) : view === "years" ? (
           <YearReviews />

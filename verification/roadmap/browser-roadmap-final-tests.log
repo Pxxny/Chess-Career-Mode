@@ -1,0 +1,8 @@
+
+Running 3 tests using 1 worker
+
+  ✓  1 tests/roadmap.spec.ts:50:1 › new career: actual training, visible skill effects, season focus, recommended registration and calendar persist (5.7s)
+  ✓  2 tests/roadmap.spec.ts:122:1 › veteran fixture: championship requirements, a real recorded rivalry and durable shared memories in English and Thai (4.2s)
+  ✓  3 tests/roadmap.spec.ts:175:1 › veteran due-payment fixture: actual day advancement pays sponsor once, legacy work has costs and weekly cooldown, backups retain state (6.0s)
+
+  3 passed (18.0s)

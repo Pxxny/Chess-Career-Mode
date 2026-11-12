@@ -230,7 +230,7 @@ export function withTravel(
   const d = event.details;
   if (!d) return event;
   const travelCost =
-    d.country === homeCountry
+    d.host?.mode === "online" || d.country === homeCountry
       ? 0
       : getCountry(homeCountry)?.continent === getCountry(d.country)?.continent
         ? 60

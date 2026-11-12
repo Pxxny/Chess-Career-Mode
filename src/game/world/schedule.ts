@@ -1,3 +1,4 @@
+import { registrationWindow } from "@/game/competition/registrationWindow";
 import { rotatingEvents } from "@/game/competition/agenda";
 import { showcaseEvents } from "@/game/competition/showcase";
 import { getCountry } from "@/data/world/countries";
@@ -9,7 +10,7 @@ import {
   EVENT_STYLES,
   type EventLevel,
 } from "@/data/chess/tournaments";
-import type { GameStamp } from "@/types";
+import type { GameStamp, GameSave } from "@/types";
 import { hashString } from "@/utils/format";
 import { weeksBetween } from "../history/createHistory";
 
@@ -155,7 +156,8 @@ export function getSchedule(
                 },
           prize: rule.fee * (minField + (seed % (maxField - minField + 1))),
           prestige:
-            (level === "local" ? 10 : 30) + (style.kind === "championship" ? 10 : 0),
+            (level === "local" ? 10 : 30) +
+            (style.kind === "championship" ? 10 : 0),
           provenance: "fictional",
         },
         invitational: level === "international" || level === "elite",
@@ -209,5 +211,9 @@ export const isEligible = (
   rating: number,
   reputation: number,
 ): boolean => rating >= event.minElo && reputation >= event.minReputation;
-export const registrationOpen = (event: ScheduledEvent): boolean =>
-  event.weeksUntilDeadline >= 0;
+export const registrationOpen = (
+  event: ScheduledEvent,
+  save?: GameSave,
+): boolean =>
+  event.weeksUntilDeadline >= 0 &&
+  (!save || registrationWindow(save, event).status === "open");

@@ -25,6 +25,9 @@ export interface CareerRecord {
 }
 
 export interface GameSave {
+  planning?: import("@/game/career/planning").PlanningState;
+  sponsorship?: import("@/game/career/business").SponsorshipState;
+  legacy?: import("@/game/career/business").LegacyState;
   social?: import("@/game/social/relationships").SocialState;
   yearReview?: import("@/game/career/yearReview").YearReviewState;
   prediction?: import("@/game/prediction/types").PredictionState;

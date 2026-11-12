@@ -1,3 +1,4 @@
+import { registrationWindow } from "./registrationWindow";
 import type { GameSave, Npc } from "@/types";
 import type { ScheduledEvent } from "@/game/world/schedule";
 import { hashString } from "@/utils/format";
@@ -52,9 +53,10 @@ export function registrationCount(
     `${save.world.seed}:${save.career.id}:${event.id}:arrivals`,
   );
   const window = 35 + (key % 29);
+  const opening = registrationWindow(save, event).open;
   const progress = Math.max(
     0,
-    Math.min(1, (entryDay(save) - (close - window)) / window),
+    Math.min(1, (entryDay(save) - opening) / window),
   );
   const popularity = key % 3 === 0 ? 1 : 0.65 + (key % 31) / 100;
   const fillAt = key % 3 === 0 ? 0.65 + (key % 20) / 100 : 1;

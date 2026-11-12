@@ -34,7 +34,7 @@ async function stored(page: Page, patch?: Record<string, unknown>) {
   }, patch);
 }
 async function esports(page: Page) {
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page.getByRole("button", { name: "Esports", exact: true }).click();
   await expect(page.getByTestId("esports-panel")).toBeVisible();
 }
@@ -60,7 +60,7 @@ test("Official/Unofficial finder, rotating 3/7-day schedules and exact-day regis
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await createCareer(page);
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page
     .getByRole("button", { name: "Find suitable tournaments", exact: true })
     .click();

@@ -885,7 +885,7 @@ export function EsportsPanel({
             </details>
           ))}
           <p className="mt-3 text-xs text-ink-faint">
-            Actual played boards can be replayed in Complete → History. Team
+            Actual played boards can be replayed in Tournament → History. Team
             prize money is split equally among the squad.
           </p>
         </Card>

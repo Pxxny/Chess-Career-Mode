@@ -1,0 +1,5 @@
+
+> chess-career-mode@0.1.0 test:team-events
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-team-events.ts
+
+team events ok

@@ -1,0 +1,5 @@
+
+> chess-career-mode@0.1.0 test:tournament-guide
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-tournament-guide.ts
+
+PASS all 20 hosts across 151 years, region restrictions, player-independent hosting, old booking repair, online travel and inclusive registration boundaries.

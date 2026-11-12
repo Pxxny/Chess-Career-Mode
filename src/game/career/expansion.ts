@@ -1,3 +1,4 @@
+import { personalWorldNews } from "@/game/social/memories";
 import { simulateWorldCircuit } from "@/game/npc/activity";
 import { recordPredictions } from "@/game/prediction/statistics";
 import type { PredictionSnapshot } from "@/game/prediction/types";
@@ -416,7 +417,9 @@ export function playTeamCup(
     expansion: {
       ...state,
       cups: [
-        ...state.cups.filter((c) => !(c.year === year && cupKey(c) === info.key)),
+        ...state.cups.filter(
+          (c) => !(c.year === year && cupKey(c) === info.key),
+        ),
         cup,
       ].slice(-MAX_CUPS),
     },
@@ -483,7 +486,10 @@ export function weeklyCircuit(
       `World Circuit: ${result.events} events, ${result.observations.length} games`,
       result.headlines.join(" "),
     );
-  return { save: next, changed: result.changed };
+  return {
+    save: personalWorldNews(next, result.changed),
+    changed: result.changed,
+  };
 }
 
 export function tournamentBulletin(

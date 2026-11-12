@@ -1,3 +1,5 @@
+import { advancePlanning } from "@/game/career/planning";
+import { settleSponsors } from "@/game/career/business";
 import { advanceYearReview, trackYearActivity } from "@/game/career/yearReview";
 import { trainingCoachMultiplier } from "@/game/career/expansion";
 import { GAME_CONFIG } from "@/data/config";
@@ -503,7 +505,7 @@ export function endDay(save: GameSave): {
     },
   };
   return {
-    save: advanceYearReview(save, next),
+    save: settleSponsors(advancePlanning(save, advanceYearReview(save, next))),
     report: {
       recovered,
       restDay,

@@ -1,3 +1,4 @@
+import { trainingImpact } from "@/game/training/impact";
 import {
   applyMove,
   inCheck,
@@ -198,13 +199,14 @@ export function buildPlayerProfile(
 ): MoveProfile {
   const values = Object.values(player.skills);
   const avg = values.reduce((a, b) => a + b, 0) / values.length;
-  const moraleAdj = (player.morale - 50) * 0.45;
-  const fatigueAdj = -fatigue * 0.65;
+  const trained = trainingImpact(player);
+  const moraleAdj = (player.morale - 50) * trained.moraleFactor;
+  const fatigueAdj = -fatigue * trained.fatigueFactor;
   const effectiveElo = Math.round(
     clamp(
-      player.rating + moraleAdj + fatigueAdj,
+      player.rating + trained.skillBonus + moraleAdj + fatigueAdj,
       player.rating - 150,
-      player.rating + 100,
+      player.rating + 320,
     ),
   );
   const phaseElo = { opening: 0, middlegame: 0, endgame: 0 } as Record<
@@ -212,11 +214,7 @@ export function buildPlayerProfile(
     number
   >;
   for (const phase of ["opening", "middlegame", "endgame"] as Phase[])
-    phaseElo[phase] = clamp(
-      (player.skills[PHASE_SKILL[phase]] - avg) * 1.1,
-      -60,
-      60,
-    );
+    phaseElo[phase] = clamp(trained.phase[phase], -60, 60);
   const style: PlayStyle =
     player.tendencies.aggression >= 65
       ? "attacking"
@@ -242,13 +240,9 @@ export function buildPlayerProfile(
     morale: player.morale,
     form: 50,
     fatigue: Math.round(fatigue),
-    bookDepth: Math.max(
-      4,
-      bookDepthFor(effectiveElo) +
-        Math.round((player.skills.opening - avg) / 6),
-    ),
+    bookDepth: Math.max(4, bookDepthFor(effectiveElo) + trained.extraBookPlies),
     lines,
-    clockSkill: clamp(0.35 + tm / 160, 0.15, 0.95),
+    clockSkill: trained.clockSkill,
     pace: clamp(1.15 - tm / 300, 0.8, 1.2),
     stubborn: true,
     phaseElo,

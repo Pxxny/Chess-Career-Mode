@@ -267,7 +267,7 @@ test("NPC actions and a running friendly board retain their state when switching
       })(),
   )!;
   expect(npc).toBeTruthy();
-  await page.getByRole("link", { name: "Complete", exact: true }).click();
+  await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page.getByRole("tab", { name: "Rankings", exact: true }).click();
   await page
     .getByRole("searchbox", {
