@@ -104,9 +104,14 @@ test("annual calendar is a real tab, shows the complete current year and filters
     .click();
   const history = page.getByTestId("annual-history");
   await history.getByLabel("Tournament year").selectOption("2025");
+  await expect(history.locator("[data-annual-event]")).not.toHaveCount(0);
+  await history
+    .getByLabel("Tournament results filter")
+    .selectOption("recorded");
   await expect(history).toContainText(
     "No tournament results recorded for this year.",
   );
+  await history.getByLabel("Tournament results filter").selectOption("all");
   await expect(
     history.getByLabel("Tournament year").locator("option"),
   ).not.toContainText(["2027"]);

@@ -208,9 +208,11 @@ export function NpcProfileModal({
                     <span className="block text-xs text-ink-faint">
                       {t.source === "career"
                         ? "Career tournament"
-                        : t.source === "esports"
-                          ? "Esports team event"
-                          : "Simulated world circuit"}
+                        : t.source === "calendar"
+                          ? "Calendar tournament"
+                          : t.source === "esports"
+                            ? "Esports team event"
+                            : "Simulated world circuit"}
                     </span>
                   )}
                 </span>

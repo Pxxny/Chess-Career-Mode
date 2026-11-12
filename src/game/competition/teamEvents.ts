@@ -105,6 +105,7 @@ export function buildEventTeams(
   save: GameSave,
   npcs: Npc[],
   info: TeamEventInfo,
+  includePlayer = true,
 ): NationalTeam[] {
   const spec = teamSpec(info.key) ?? TEAM_EVENTS[0];
   const groups = new Map<string, Candidate[]>();
@@ -124,7 +125,7 @@ export function buildEventTeams(
         gender: n.gender,
         age: n.age,
       });
-  if (!spec.abstract)
+  if (!spec.abstract && includePlayer)
     add(save.player.country, {
       id: "player",
       name: save.player.name,
@@ -225,6 +226,7 @@ export function simulateTeamEvent(
   info: TeamEventInfo,
   teams: NationalTeam[],
   rng: Rng,
+  recordAll = false,
 ): TeamEventResult {
   const spec = teamSpec(info.key) ?? TEAM_EVENTS[0];
   const year = save.world.date.year;
@@ -258,7 +260,9 @@ export function simulateTeamEvent(
       la = lineup(a),
       lb = lineup(b);
     const keep =
-      a.country === save.player.country || b.country === save.player.country;
+      recordAll ||
+      a.country === save.player.country ||
+      b.country === save.player.country;
     let score = 0;
     for (let k = 0; k < boardsPerMatch; k++) {
       const flip = (ai + bi + k) % 2 === 1;
@@ -277,11 +281,7 @@ export function simulateTeamEvent(
                 ...plannedOpeningConditions(
                   actor(w),
                   actor(bl),
-                  conditionsFor(
-                    spec.timeControl,
-                    "white",
-                    "national-team",
-                  ),
+                  conditionsFor(spec.timeControl, "white", "national-team"),
                 ),
                 tournamentName: spec.name,
                 importance: 0.8,
@@ -369,7 +369,7 @@ export function simulateTeamEvent(
       a.country.localeCompare(b.country),
   );
   const trimmed = teams.map((t, i) =>
-    i < KEEP_ROSTERS || t.country === save.player.country
+    recordAll || i < KEEP_ROSTERS || t.country === save.player.country
       ? t
       : { ...t, players: [], reserves: [] },
   );

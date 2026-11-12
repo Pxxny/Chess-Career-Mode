@@ -251,6 +251,7 @@ const show = schedule.find((e) => e.details?.showcase)!;
 assert(show);
 const inviteSave = {
   ...base,
+  world: { ...base.world, date: show.registrationDeadline, day: 1 },
   player: { ...base.player, age: 20, rating: 3500, money: 100000 },
 };
 const selection = showcaseSelection(inviteSave, show, npcs);

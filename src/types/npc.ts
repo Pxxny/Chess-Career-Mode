@@ -62,7 +62,7 @@ export interface TrainingHabits {
 export interface TournamentResult {
   eventId?: string;
   week?: number;
-  source?: "career" | "world-circuit" | "esports";
+  source?: "career" | "world-circuit" | "esports" | "calendar";
   rounds?: number;
   wins?: number;
   draws?: number;

@@ -1,0 +1,7 @@
+
+> chess-career-mode@0.1.0 test:full-calendar
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-full-calendar.ts
+
+PASS full 364-day calendar: 335 scheduled entries, 314 regular and 20 national events recorded, 49987 regular boards, all rosters/names, NPC histories and ratings without human games. 23955 ms.
+PASS reserved human events, no invented old results, six NPC-only pairing formats, calendar live checkpoint and full backup.
+PASS city expansion: 50 additional distinct seed cities in 132 countries/federations; 121 smaller/missing datasets retain all available real places and custom input. 62 default choices, 90 search results, separate England/Scotland/Wales data.

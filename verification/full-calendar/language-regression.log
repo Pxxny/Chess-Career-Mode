@@ -1,0 +1,5 @@
+
+> chess-career-mode@0.1.0 test:language
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-language.ts
+
+Language checks passed: English defaults, Thai messages (3586), named captures, canonical text, countries, appearance, skills and preference subscriptions.

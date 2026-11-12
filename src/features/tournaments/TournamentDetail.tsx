@@ -1,5 +1,10 @@
 import { useMatchRunning } from "@/store/matchLocks";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useNpcs } from "@/hooks/useNpcs";
+import { calendarField } from "@/game/competition/worldCalendar";
+import { previewEntrants } from "@/game/match/registration";
+import { buildEventTeams } from "@/game/competition/teamEvents";
+import { teamInfoOf } from "@/data/chess/nationalTeamEvents";
 import { Button, Modal, Tabs } from "@/components/ui";
 import { useSave } from "@/hooks/useGame";
 import { getCountry } from "@/data/world/countries";
@@ -9,6 +14,8 @@ import {
   bookedEnd,
   maximumPlayerGames,
   tournamentReady,
+  tournamentSlot,
+  gameDay,
 } from "@/game/competition/agenda";
 import { registrationWindow } from "@/game/competition/registrationWindow";
 import { standings } from "@/game/match/tournament";
@@ -28,9 +35,17 @@ export function TournamentDetail({
   onClose: () => void;
 }) {
   const save = useSave(),
+    npcs = useNpcs(),
     running = useMatchRunning(save.career.id),
     id = tournament?.eventId ?? record?.id ?? event!.id;
-  const t = save.tournament?.eventId === id ? save.tournament : tournament;
+  const t =
+    save.tournament?.eventId === id
+      ? save.tournament
+      : (tournament ??
+        save.calendarTournaments?.active.find((t) => t.eventId === id));
+  const teamEntry = save.calendarTournaments?.national.find(
+    (n) => n.event.id === id,
+  );
   const [tab, setTab] = useState<"details" | "pairings" | "standings">(
       "details",
     ),
@@ -38,7 +53,53 @@ export function TournamentDetail({
       (t?.round ?? record?.pairings.length ?? 1) - 1,
     ),
     [watch, setWatch] = useState<number | null>(null);
-  const players = t?.players ?? record?.players ?? [],
+  const preview = useMemo<ArchivedEvent["players"]>(() => {
+    if (!event || t || record || gameDay(save) > bookedEnd(event)) return [];
+    const reg = save.registrations.find((r) => r.eventId === id);
+    if (event.details?.format === "team") {
+      const teams =
+        teamEntry?.teams ??
+        buildEventTeams(save, npcs, teamInfoOf(event.details), !!reg);
+      return teams.map((team) => ({
+        id: team.country,
+        name: getCountry(team.country)?.name ?? team.country,
+        countryCode: team.country,
+        elo: 0,
+        title: "none",
+        rank: 0,
+        points: 0,
+        members: [...team.players, ...(team.reserves ?? [])],
+      }));
+    }
+    const field = reg
+      ? previewEntrants(save, event, npcs)
+      : calendarField(save, event, npcs);
+    return [
+      ...(reg
+        ? [
+            {
+              id: "player",
+              name: save.player.name,
+              elo: save.player.rating,
+              title: "none" as const,
+              countryCode: save.player.country,
+              points: 0,
+              rank: 0,
+            },
+          ]
+        : []),
+      ...field.map((n) => ({
+        id: n.id,
+        name: n.name,
+        elo: n.currentElo,
+        title: n.title,
+        countryCode: n.nationality,
+        points: 0,
+        rank: 0,
+      })),
+    ];
+  }, [event, t, record, save, npcs, id, teamEntry]);
+  const players = t?.players ?? record?.players ?? preview,
     pairings = t?.pairings ?? record?.pairings ?? [];
   const pairs = pairings[round] ?? [];
   const start =
@@ -49,7 +110,7 @@ export function TournamentDetail({
     end =
       record?.endDay ??
       (event ? bookedEnd(event) : start + (t?.details?.agenda?.days ?? 1) - 1);
-  const d = event?.details ?? t?.details,
+  const d = t?.details ?? event?.details,
     window = event ? registrationWindow(save, event) : null;
   const rows: Array<[string, string | number]> = [
     [
@@ -107,7 +168,9 @@ export function TournamentDetail({
     t &&
     t.status === "playing" &&
     round === t.round - 1 &&
-    tournamentReady(save) &&
+    (save.tournament?.eventId === t.eventId
+      ? tournamentReady(save)
+      : tournamentSlot(t).absoluteDay === gameDay(save)) &&
     !save.pendingMatch &&
     !running;
   return (
@@ -298,7 +361,13 @@ export function TournamentDetail({
             {tab === "standings" && (
               <>
                 <p className="mb-3 text-xs text-ink-muted">
-                  Standings after completed rounds.
+                  {t || record
+                    ? "Standings after completed rounds."
+                    : teamEntry
+                      ? "National event in progress. Final team totals appear when it finishes."
+                      : event?.details?.format === "team"
+                        ? "Projected national squads · selections may change before the event starts."
+                        : "Announced entrants · rankings and points appear after games are played."}
                 </p>
                 {players.length ? (
                   <div className="overflow-x-auto">
@@ -308,6 +377,7 @@ export function TournamentDetail({
                           <th>Rank</th>
                           <th>Player / team</th>
                           <th>Points</th>
+                          <th>Elo</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -316,19 +386,54 @@ export function TournamentDetail({
                               ...r.player,
                               rank: r.rank,
                             }))
-                          : record!.players
+                          : (record?.players ?? preview)
                         ).map((p) => (
-                          <tr key={p.id}>
-                            <td className="py-2">{p.rank}</td>
-                            <td translate="no">{p.name}</td>
-                            <td>{p.points}</td>
+                          <tr key={p.id} data-testid="standing-participant">
+                            <td className="py-2 align-top">
+                              {t || record ? p.rank : "—"}
+                            </td>
+                            <td className="py-2 pr-3">
+                              <span translate="no">{p.name}</span>
+                              <p
+                                className="text-xs text-ink-muted"
+                                translate="no"
+                              >
+                                {getCountry(p.countryCode)?.flag}{" "}
+                                {getCountry(p.countryCode)?.name ??
+                                  p.countryCode}
+                              </p>
+                              {"members" in p &&
+                                Array.isArray(p.members) &&
+                                p.members.length > 0 && (
+                                  <details className="mt-2 text-xs">
+                                    <summary>Team roster</summary>
+                                    <ul className="mt-2 space-y-1">
+                                      {p.members.map((m) => (
+                                        <li key={m.id} translate="no">
+                                          {m.name} · {m.elo}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </details>
+                                )}
+                            </td>
+                            <td className="py-2 align-top">
+                              {t || record ? p.points : "—"}
+                            </td>
+                            <td className="py-2 align-top">
+                              {p.elo > 0 ? p.elo : "—"}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
                 ) : (
-                  <p>No participant list recorded yet.</p>
+                  <p>
+                    {event && gameDay(save) <= bookedEnd(event)
+                      ? "No entrants announced yet. Names appear as registration opens and eligible NPCs enter."
+                      : "No participant list was saved for this older event. Current NPCs are not substituted for historical entrants."}
+                  </p>
                 )}
               </>
             )}

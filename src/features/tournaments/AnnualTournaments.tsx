@@ -24,11 +24,13 @@ import {
   maximumPlayerGames,
 } from "@/game/competition/agenda";
 import { TournamentDetail } from "./TournamentDetail";
+import { annualEvents } from "@/game/competition/worldCalendar";
 export function AnnualTournaments({ history = false }: { history?: boolean }) {
   const save = useSave(),
     npcs = useNpcs(),
     [year, setYear] = useState(save.world.date.year),
     [kind, setKind] = useState("all"),
+    [resultFilter, setResultFilter] = useState("all"),
     [query, setQuery] = useState(""),
     [limit, setLimit] = useState(20),
     [stored, setStored] = useState<ArchivedEvent[]>([]),
@@ -64,25 +66,10 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
       current = false;
     };
   }, [save.career.id, selectedYear, save.tournamentArchivePending, npcs]);
-  const events = useMemo(() => {
-    const c = getCountry(save.player.country);
-    return getSchedule(
-      { year: selectedYear - 1, week: 52 },
-      {
-        city: save.player.city.name,
-        countryCode: save.player.country,
-        demonym: c?.nationality ?? save.player.country,
-        continent: c?.continent ?? "World",
-      },
-      save.career.id,
-      53,
-    ).filter((e) => e.year === selectedYear);
-  }, [
-    selectedYear,
-    save.career.id,
-    save.player.country,
-    save.player.city.name,
-  ]);
+  const events = useMemo(
+    () => annualEvents(save, selectedYear),
+    [selectedYear, save.career.id, save.player.country, save.player.city.name],
+  );
   const records = useMemo(() => {
     const map = new Map(stored.map((e) => [e.id, e]));
     for (const e of retainedArchives(save))
@@ -107,25 +94,17 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
     kind: "regular" | "national";
     event?: ScheduledEvent;
     record?: ArchivedEvent;
-  }> = history
-    ? records.map((record) => ({
-        id: record.id,
-        name: record.name,
-        kind: record.kind,
-        record,
-        event: events.find((e) => e.id === record.id),
-      }))
-    : events.map((event) => {
-        const record = records.find((r) => r.id === event.id);
-        return {
-          id: event.id,
-          name: record?.name ?? event.name,
-          kind: record?.kind ?? eventKind(event),
-          event,
-          record,
-        };
-      });
-  if (!history) {
+  }> = events.map((event) => {
+    const record = records.find((r) => r.id === event.id);
+    return {
+      id: event.id,
+      name: record?.name ?? event.name,
+      kind: record?.kind ?? eventKind(event),
+      event,
+      record,
+    };
+  });
+  {
     const ids = new Set(source.map((e) => e.id));
     for (const record of records)
       if (!ids.has(record.id))
@@ -135,15 +114,25 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
           kind: record.kind,
           record,
         });
-    source.sort(
-      (a, b) =>
+    source.sort((a, b) => {
+      // Hundreds of supplementary circuit groups must not bury the actual annual catalogue.
+      const circuit =
+        Number(a.record?.source === "world-circuit") -
+        Number(b.record?.source === "world-circuit");
+      if (circuit) return circuit;
+      // Completed results first in history; every other scheduled event remains accessible.
+      if (history && !!a.record !== !!b.record) return a.record ? -1 : 1;
+      return (
         (a.record?.startDay ?? bookedStart(a.event!)) -
-        (b.record?.startDay ?? bookedStart(b.event!)),
-    );
+          (b.record?.startDay ?? bookedStart(b.event!)) ||
+        a.name.localeCompare(b.name)
+      );
+    });
   }
   const filtered = source.filter(
     (e) =>
       (kind === "all" || e.kind === kind) &&
+      (resultFilter === "all" || !!e.record) &&
       e.name.toLowerCase().includes(query.toLowerCase()),
   );
   return (
@@ -159,8 +148,12 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
         </CardTitle>
         <p className="mb-4 text-sm text-ink-muted">
           {history
-            ? "Completed results recorded in this career, including NPC world events. Future years stay hidden until your career reaches them."
+            ? "Every tournament scheduled in this year, together with recorded results. Events without results stay visible. Future years stay hidden until your career reaches them."
             : "Browse the whole year: tournament names, dates, participant limits, formats and game counts. Click any event for details."}
+        </p>
+        <p className="mb-4 text-xs text-ink-muted">
+          Calendar tournaments are listed first. Extra NPC World Circuit events
+          follow.
         </p>
         <div className="flex flex-wrap gap-2">
           <select
@@ -201,6 +194,20 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
               setLimit(20);
             }}
           />
+          {history && (
+            <select
+              aria-label="Tournament results filter"
+              className="rounded-lg bg-navy-900 p-3"
+              value={resultFilter}
+              onChange={(e) => {
+                setResultFilter(e.target.value);
+                setLimit(20);
+              }}
+            >
+              <option value="all">All tournaments this year</option>
+              <option value="recorded">Recorded results only</option>
+            </select>
+          )}
         </div>
         <p className="mt-3 text-xs text-ink-muted">{filtered.length} events</p>
         {error && (
@@ -214,8 +221,14 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
           {filtered.slice(0, limit).map((row) => {
             const { event: e, record: r } = row,
               live =
-                save.tournament?.eventId === row.id &&
-                save.tournament.status === "playing",
+                (save.tournament?.eventId === row.id &&
+                  save.tournament.status === "playing") ||
+                save.calendarTournaments?.active.some(
+                  (t) => t.eventId === row.id,
+                ) ||
+                save.calendarTournaments?.national.some(
+                  (n) => n.event.id === row.id,
+                ),
               start = r?.startDay ?? bookedStart(e!),
               end = r?.endDay ?? bookedEnd(e!),
               status = live
@@ -259,6 +272,12 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
                     {r ? r.rounds || "Not recorded" : maximumPlayerGames(e!)}{" "}
                     {r ? "rounds" : "max games per player"}
                   </p>
+                  {!r && gameDay(save) > end && (
+                    <p className="mt-2 text-xs text-ink-muted">
+                      This event has no saved results. Older missing results
+                      cannot be reconstructed.
+                    </p>
+                  )}
                   <Button
                     className="mt-3"
                     onClick={() => setSelected({ event: e, record: r })}
@@ -288,7 +307,11 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
         <TournamentDetail
           key={selected.event?.id ?? selected.record!.id}
           event={selected.event}
-          record={selected.record}
+          record={
+            records.find(
+              (r) => r.id === (selected.event?.id ?? selected.record?.id),
+            ) ?? selected.record
+          }
           tournament={
             save.tournament?.eventId ===
             (selected.event?.id ?? selected.record?.id)

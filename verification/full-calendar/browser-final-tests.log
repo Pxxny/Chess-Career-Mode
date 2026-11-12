@@ -1,0 +1,14 @@
+[WebServer] (node:5764) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 5 tests using 1 worker
+
+(node:5782) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/full-calendar.spec.ts:49:1 › history shows all calendar tournaments from day one; national standings include real projected roster names (4.7s)
+  ✓  2 tests/full-calendar.spec.ts:130:1 › unentered calendar event has entrants and live NPC boards, then real named standings and one NPC history after finishing and reloading (19.2s)
+  ✓  3 tests/full-calendar.spec.ts:280:1 › city selector exposes 62 real places, UK federation datasets, and all available small-country cities (2.1s)
+  ✓  4 tests/live-tournaments.spec.ts:33:1 › annual calendar is a real tab, shows the complete current year and filters regular vs national team events, without future years (3.9s)
+  ✓  5 tests/live-tournaments.spec.ts:119:1 › NPC live board plays real moves, pauses and reloads without spending player resources; world history persists separately and travels in backups (16.4s)
+
+  5 passed (48.4s)

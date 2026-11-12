@@ -5,6 +5,7 @@ import {
 } from "@/game/competition/broadcast";
 import type { BroadcastGame } from "@/types";
 import { writeEventArchive } from "./tournamentArchive";
+import { advanceCalendarTournaments } from "@/game/competition/worldCalendar";
 import { chooseAnnualFocus, type AnnualFocus } from "@/game/career/planning";
 import {
   signSponsor,
@@ -731,9 +732,19 @@ export const useGameStore = create<GameStore>()(
           if (completed.length)
             void useNpcStore.getState().updateNpcs(completed);
         }
+        const calendar =
+          useNpcStore.getState().careerId === save.career.id
+            ? advanceCalendarTournaments(
+                save,
+                next,
+                useNpcStore.getState().npcs,
+              )
+            : { save: next, changed: [] };
+        if (calendar.changed.length)
+          void useNpcStore.getState().updateNpcs(calendar.changed);
         const bulletin = report.newWeek
-          ? weeklyCircuit(next, useNpcStore.getState().npcs)
-          : { save: next, changed: [] };
+          ? weeklyCircuit(calendar.save, useNpcStore.getState().npcs)
+          : { save: calendar.save, changed: [] };
         set({ save: bulletin.save });
         if (
           bulletin.changed.length &&

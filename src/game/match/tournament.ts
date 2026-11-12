@@ -110,6 +110,8 @@ export function pickEventField(
 }
 
 export interface CreateTournamentInput {
+  /** Calendar events can run with NPCs only; they never create a human match or award the player a prize. */
+  npcOnly?: boolean;
   event: ScheduledEvent;
   player: { name: string; rating: number; country: string; title: ChessTitle };
   npcs: Npc[];
@@ -133,21 +135,30 @@ export function createTournament(
             !!n &&
             (n.careerStatus === "active" || n.careerStatus === "semi-retired"),
         )
-        .slice(0, event.fieldSize - 1)
-    : pickEventField(input.npcs, player.rating, event, rng);
+        .slice(0, event.fieldSize - (input.npcOnly ? 0 : 1))
+    : pickEventField(
+        input.npcs,
+        player.rating,
+        input.npcOnly ? { ...event, fieldSize: event.fieldSize + 1 } : event,
+        rng,
+      );
   const players: TournamentPlayer[] = [
-    {
-      id: PLAYER_ID,
-      predictionActor: input.playerActor,
-      name: player.name,
-      elo: player.rating,
-      title: player.title,
-      countryCode: player.country,
-      isPlayer: true,
-      points: 0,
-      opponents: [],
-      colors: [],
-    },
+    ...(!input.npcOnly
+      ? [
+          {
+            id: PLAYER_ID,
+            predictionActor: input.playerActor,
+            name: player.name,
+            elo: player.rating,
+            title: player.title,
+            countryCode: player.country,
+            isPlayer: true,
+            points: 0,
+            opponents: [],
+            colors: [],
+          },
+        ]
+      : []),
     ...field.map((n) => ({
       id: n.id,
       predictionActor: npcActor(n),
@@ -312,10 +323,11 @@ export function startRound(
   );
   const mine = playerPairing(next);
   if (
-    (mine && mine.black === "bye") ||
-    (!mine &&
-      (t.details?.format === "knockout" ||
-        t.details?.format === "round-robin-bo3"))
+    t.players.some((p) => p.id === PLAYER_ID) &&
+    ((mine && mine.black === "bye") ||
+      (!mine &&
+        (t.details?.format === "knockout" ||
+          t.details?.format === "round-robin-bo3")))
   )
     return completeRound(next, null, env);
   return next;
@@ -638,8 +650,9 @@ export function standings(t: ActiveTournament): StandingRow[] {
 
 function finishTournament(t: ActiveTournament): ActiveTournament {
   const rows = standings(t);
-  const rank = rows.find((r) => r.player.isPlayer)!.rank;
-  const share = GAME_CONFIG.match.prizeShares[rank - 1] ?? 0;
+  const rank = rows.find((r) => r.player.isPlayer)?.rank ?? null;
+  const share =
+    rank === null ? 0 : (GAME_CONFIG.match.prizeShares[rank - 1] ?? 0);
   return {
     ...t,
     status: "finished",

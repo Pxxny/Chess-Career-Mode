@@ -1,4 +1,5 @@
 import type { ArchivedEvent } from "@/game/competition/archive";
+import { calendarBusyIds } from "@/game/competition/worldCalendar";
 import {
   conditionsFor,
   npcActor,
@@ -25,6 +26,7 @@ export function simulateWorldCircuit(save: GameSave, npcs: Npc[]) {
       ? save.tournament.players.map((p) => p.id)
       : [],
   );
+  for (const id of calendarBusyIds(save)) busy.add(id);
   if (save.esports?.active?.status === "playing")
     save.esports.active.teams.forEach((t) =>
       t.members.forEach((m) => busy.add(m.id)),

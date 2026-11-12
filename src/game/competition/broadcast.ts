@@ -6,7 +6,7 @@ import {
   makeMove,
   detectEnd,
 } from "@/game/chess/rules";
-import { tournamentReady } from "./agenda";
+import { tournamentReady, tournamentSlot, gameDay } from "./agenda";
 export interface BroadcastContext {
   careerId: string;
   eventId: string;
@@ -21,14 +21,19 @@ export function updateBroadcast(
   ctx: BroadcastContext,
   state: BroadcastGame,
 ): GameSave {
-  const t = save.tournament;
+  const own = save.tournament?.eventId === ctx.eventId;
+  const t = own
+    ? save.tournament
+    : save.calendarTournaments?.active.find((t) => t.eventId === ctx.eventId);
   if (
     save.career.id !== ctx.careerId ||
     !t ||
     t.eventId !== ctx.eventId ||
     t.status !== "playing" ||
     t.round !== ctx.round ||
-    !tournamentReady(save)
+    !(own
+      ? tournamentReady(save)
+      : tournamentSlot(t).absoluteDay === gameDay(save))
   )
     return save;
   const board = t.pairings[ctx.round - 1]?.[ctx.board];
@@ -86,5 +91,15 @@ export function updateBroadcast(
         )
       : r,
   );
-  return { ...save, tournament: { ...t, pairings } };
+  return own
+    ? { ...save, tournament: { ...t, pairings } }
+    : {
+        ...save,
+        calendarTournaments: {
+          ...save.calendarTournaments!,
+          active: save.calendarTournaments!.active.map((event) =>
+            event.eventId === t.eventId ? { ...t, pairings } : event,
+          ),
+        },
+      };
 }

@@ -1,0 +1,5 @@
+
+> chess-career-mode@0.1.0 test:npc-portraits
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-npc-portraits.ts
+
+NPC portrait checks passed: 4082 existing identities, valid and varied character art, stable across reload/rating/age/name/federation changes, female appearance and unmodified NPC data.

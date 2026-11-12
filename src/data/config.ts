@@ -114,7 +114,7 @@ export const GAME_CONFIG = {
     /** Bump to rebuild stored NPC databases after changing generation rules. */
     npcDatabaseVersion: 2,
     fictionalNpcCount: 4000,
-    maxCityResults: 40,
-    majorCityCount: 12,
+    maxCityResults: 90,
+    majorCityCount: 62,
   },
 } as const;

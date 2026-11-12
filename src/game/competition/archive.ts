@@ -1,4 +1,5 @@
 import { maximumPlayerGames } from "./agenda";
+import { getCountry } from "@/data/world/countries";
 import { teamSpec } from "@/data/chess/nationalTeamEvents";
 import { teamHost } from "./hosts";
 import type {
@@ -15,7 +16,7 @@ export interface ArchivedEvent {
   week: number;
   name: string;
   kind: EventKind;
-  source: "career" | "world-circuit" | "national-team";
+  source: "career" | "world-circuit" | "national-team" | "calendar";
   datePrecision?: "day" | "week";
   location?: string;
   country?: string;
@@ -29,6 +30,8 @@ export interface ArchivedEvent {
     Pick<TournamentPlayer, "id" | "name" | "elo" | "countryCode" | "title"> & {
       points: number;
       rank: number;
+      members?: Array<{ id: string; name: string; elo: number }>;
+      boardPoints?: number;
     }
   >;
   pairings: Array<
@@ -154,7 +157,9 @@ export function retainedArchives(save: GameSave): ArchivedEvent[] {
       timeControl: "Classical",
       players: cup.teams.map((t, i) => ({
         id: t.country,
-        name: t.country,
+        name: getCountry(t.country)?.name ?? t.country,
+        members: [...t.players, ...(t.reserves ?? [])],
+        boardPoints: t.boardPoints,
         countryCode: t.country,
         elo: 0,
         title: "none",
@@ -182,7 +187,11 @@ export function legacyEventSummaries(
   const map = new Map<string, ArchivedEvent>();
   for (const n of npcs)
     for (const h of n.tournamentHistory) {
-      if (h.year !== year || h.source !== "world-circuit" || !h.eventId)
+      if (
+        h.year !== year ||
+        !["world-circuit", "calendar"].includes(h.source ?? "") ||
+        !h.eventId
+      )
         continue;
       let e = map.get(h.eventId);
       if (!e) {
@@ -192,7 +201,7 @@ export function legacyEventSummaries(
           week: h.week ?? 1,
           name: h.event,
           kind: "regular",
-          source: "world-circuit",
+          source: h.source === "calendar" ? "calendar" : "world-circuit",
           datePrecision: "week",
           startDay: (year * 52 + (h.week ?? 1) - 1) * 7,
           endDay: (year * 52 + (h.week ?? 1) - 1) * 7,

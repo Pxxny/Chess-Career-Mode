@@ -348,7 +348,7 @@ ok(
 const titled = recordGame(
   {
     ...createNewSave(opts, career),
-    player: { ...save.player, rating: 2290, peakRating: 2290 },
+    player: { ...save.player, rating: 2290, peakRating: 2290, ratedGames: 49 },
   },
   { ...base, opponentElo: 2400, outcome: "win" },
 );
@@ -458,7 +458,24 @@ const hi = {
   ...won,
   player: { ...won.player, rating: 2450, peakRating: 2450, reputation: 120 },
 };
-const news = buildNews(hi, getSchedule(hi.world.date, region, career.id, 60));
+const inviteEvent = getSchedule(hi.world.date, region, career.id, 60).find(
+  (e) =>
+    e.invitational &&
+    !e.details?.showcase &&
+    !e.details?.minimumTitle &&
+    !e.details?.qualification &&
+    !e.details?.federation &&
+    e.minElo <= hi.player.rating &&
+    e.minReputation <= hi.player.reputation,
+)!;
+const liveHi = {
+  ...hi,
+  world: { ...hi.world, date: inviteEvent.registrationDeadline, day: 1 },
+};
+const news = buildNews(
+  liveHi,
+  getSchedule(liveHi.world.date, region, career.id, 60),
+);
 ok(
   news.some((n) => n.kind === "sponsorship") &&
     news.some((n) => n.kind === "invitation") &&

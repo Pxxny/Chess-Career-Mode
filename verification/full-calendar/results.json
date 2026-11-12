@@ -1,0 +1,195 @@
+{
+  "release": "2026-11-12",
+  "base": "Chess-Career-Mode-Live-Tournaments-Annual-History-Full.zip",
+  "baseFileCount": 797,
+  "missingBaseFiles": [],
+  "changedBaseFiles": [
+    "CHANGELOG.md",
+    "README.md",
+    "artifacts/annual-calendar-en.png",
+    "artifacts/annual-calendar-th.png",
+    "artifacts/annual-event-details-en.png",
+    "artifacts/expanded-tournament-after-round.png",
+    "artifacts/expanded-tournament-live-playtest.png",
+    "artifacts/tournament-history-result-en.png",
+    "artifacts/tournament-history-year-en.png",
+    "artifacts/tournament-live-board-en.png",
+    "artifacts/tournament-live-board-th.png",
+    "package.json",
+    "public/data/cities/index.json",
+    "scripts/build-world-data.mjs",
+    "scripts/verify-circuit.ts",
+    "scripts/verify-world.ts",
+    "src/data/config.ts",
+    "src/data/world/seedCities.ts",
+    "src/features/tournaments/AnnualTournaments.tsx",
+    "src/features/tournaments/TournamentDetail.tsx",
+    "src/features/world/NpcProfileModal.tsx",
+    "src/game/competition/archive.ts",
+    "src/game/competition/broadcast.ts",
+    "src/game/competition/teamEvents.ts",
+    "src/game/match/tournament.ts",
+    "src/game/npc/activity.ts",
+    "src/i18n/th.ts",
+    "src/store/gameStore.ts",
+    "src/types/game.ts",
+    "src/types/npc.ts",
+    "tests/live-tournaments.spec.ts"
+  ],
+  "addedFilesBeforePackaging": [
+    "artifacts/all-tournaments-history-th.png",
+    "artifacts/all-tournaments-national-en.png",
+    "artifacts/calendar-completed-standings-en.png",
+    "artifacts/calendar-completed-standings-th.png",
+    "artifacts/calendar-npc-live-en.png",
+    "artifacts/more-cities-thailand-en.png",
+    "artifacts/national-standings-roster-en.png",
+    "artifacts/national-standings-roster-th.png",
+    "public/data/cities/GB-ENG.json",
+    "public/data/cities/GB-SCO.json",
+    "public/data/cities/GB-WLS.json",
+    "scripts/verify-full-calendar.ts",
+    "src/data/world/expandedCities.json",
+    "src/game/competition/worldCalendar.ts",
+    "tests/full-calendar.spec.ts",
+    "verification/full-calendar/backup-lifetime-regression.log",
+    "verification/full-calendar/browser-final-results.json",
+    "verification/full-calendar/browser-final-tests.log",
+    "verification/full-calendar/browser-results.json",
+    "verification/full-calendar/browser-tests.log",
+    "verification/full-calendar/build.log",
+    "verification/full-calendar/circuit-regression.log",
+    "verification/full-calendar/city-screenshot-results.json",
+    "verification/full-calendar/city-screenshot-tests.log",
+    "verification/full-calendar/complete-regression.log",
+    "verification/full-calendar/esports-regression.log",
+    "verification/full-calendar/language-regression.log",
+    "verification/full-calendar/live-tournaments-regression.log",
+    "verification/full-calendar/logic.log",
+    "verification/full-calendar/npc-portraits-regression.log",
+    "verification/full-calendar/prediction-regression.log",
+    "verification/full-calendar/qol-regression.log",
+    "verification/full-calendar/roadmap-regression.log",
+    "verification/full-calendar/team-events-regression.log",
+    "verification/full-calendar/world-regression.log"
+  ],
+  "features": [
+    "History includes every chess tournament in the annual schedule from day one, along with actual records. Calendar tournaments precede supplemental World Circuit groups. Optional recorded-only filter.",
+    "Standings shows announced individual entrants with names/country/Elo before play, actual scores after rounds, and expandable national squads. Future squads clearly labelled projected.",
+    "Unentered calendar events run through existing Swiss/RR/BO3/knockout/match and national team simulators during daily progression, update actual NPC histories/ratings, and archive named rosters/pairings/results.",
+    "Human bookings are reserved, active calendar participants excluded from overlapping events and World Circuit, no automatic human matches/prizes, one-time daily cursor prevents re-settlement.",
+    "Engine spectator checkpoints also support current playable rounds in NPC-only calendar events, retain moves/clocks/result on reload and settle with the normal round.",
+    "City selector default 12 to 62, search cap 40 to 90; 50 additional real seed/NPC/fallback places per country with sufficient data; separate England/Scotland/Wales datasets."
+  ],
+  "cityData": {
+    "source": "all-the-cities / GeoNames (populated places >=1000)",
+    "countryFiles": 249,
+    "countriesAndFederationsWithFull50Additions": 132,
+    "remainingCountriesAndTerritories": 121,
+    "smallCountryPolicy": "Use all available named places; no invented cities or duplicate placeholders. Existing custom entry remains available. Existing saved NPCs and player cities are not rerolled."
+  },
+  "checks": [
+    {
+      "command": "npm run test:complete",
+      "result": "passed",
+      "log": "complete-regression.log"
+    },
+    {
+      "command": "npm run test:live-tournaments",
+      "result": "passed",
+      "log": "live-tournaments-regression.log"
+    },
+    {
+      "command": "npm run test:esports",
+      "result": "passed",
+      "log": "esports-regression.log"
+    },
+    {
+      "command": "npm run test:team-events",
+      "result": "passed",
+      "log": "team-events-regression.log"
+    },
+    {
+      "command": "npm run test:prediction",
+      "result": "passed",
+      "log": "prediction-regression.log"
+    },
+    {
+      "command": "npm run test:circuit",
+      "result": "passed",
+      "log": "circuit-regression.log"
+    },
+    {
+      "command": "npm run test:backup-lifetime",
+      "result": "passed",
+      "log": "backup-lifetime-regression.log"
+    },
+    {
+      "command": "npm run test:qol",
+      "result": "passed",
+      "log": "qol-regression.log"
+    },
+    {
+      "command": "npm run test:roadmap",
+      "result": "passed",
+      "log": "roadmap-regression.log"
+    },
+    {
+      "command": "npm run test:world",
+      "result": "passed",
+      "log": "world-regression.log"
+    },
+    {
+      "command": "npm run test:npc-portraits",
+      "result": "passed",
+      "log": "npc-portraits-regression.log"
+    },
+    {
+      "command": "npm run test:language",
+      "result": "passed",
+      "log": "language-regression.log"
+    },
+    {
+      "command": "npm run test:full-calendar",
+      "result": "passed",
+      "log": "logic.log",
+      "coverage": [
+        "PASS full 364-day calendar: 335 scheduled entries, 314 regular and 20 national events recorded, 49987 regular boards, all rosters/names, NPC histories and ratings without human games. 23955 ms.",
+        "PASS reserved human events, no invented old results, six NPC-only pairing formats, calendar live checkpoint and full backup.",
+        "PASS city expansion: 50 additional distinct seed cities in 132 countries/federations; 121 smaller/missing datasets retain all available real places and custom input. 62 default choices, 90 search results, separate England/Scotland/Wales data."
+      ]
+    },
+    {
+      "command": "npm run build",
+      "result": "passed",
+      "log": "build.log"
+    },
+    {
+      "command": "CHROMIUM_PATH=/usr/bin/chromium npx playwright test tests/full-calendar.spec.ts tests/live-tournaments.spec.ts tests/tournament-guide.spec.ts tests/expanded-tournaments.spec.ts --workers=1",
+      "result": "9 passed",
+      "log": "browser-tests.log",
+      "json": "browser-results.json"
+    },
+    {
+      "command": "CHROMIUM_PATH=/usr/bin/chromium npx playwright test tests/full-calendar.spec.ts tests/live-tournaments.spec.ts --workers=1",
+      "result": "5 passed on final UI",
+      "log": "browser-final-tests.log",
+      "json": "browser-final-results.json"
+    },
+    {
+      "command": "CHROMIUM_PATH=/usr/bin/chromium npx playwright test tests/full-calendar.spec.ts --grep \"city selector\" --workers=1",
+      "result": "1 passed; recaptured dropdown fully in viewport",
+      "log": "city-screenshot-tests.log"
+    }
+  ],
+  "inheritedTestFixtures": "Verified the previous full release also failed outdated circuit invitation and world title/news fixtures. Updated test data to an open registration week, FM minimum 50 rated games, and a currently open eligible invitation; preserved all assertions and gameplay rules. Both suites then passed.",
+  "limits": [
+    "Every event means the game chess schedule, not every real-world tournament. Standalone Esports continues in its existing separate section.",
+    "Old missing results/entrants are not reconstructed from current NPCs. The catalogue still shows these events with explicit no-result text; future events have no invented scores.",
+    "A tournament needs enough eligible available NPCs to run. Human registered events retain their original player-controlled workflow.",
+    "National squads may be projections before starting. Completed NPC national events store all actual team rosters and recorded boards.",
+    "No invented PGNs: only viewed engine games record moves, and partial recordings are labelled. Other NPC events use the existing abstract result model.",
+    "The full-year test is headless real game logic, not manual play of all games. Browser tests use Chromium emulation at 390x844, with live screenshots 390x1200. No physical Termux/Android/iOS test. Sticky navigation hidden temporarily in panel screenshots.",
+    "The existing large JavaScript chunk warning remains; production typecheck/build succeeds."
+  ]
+}

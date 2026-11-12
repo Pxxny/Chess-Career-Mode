@@ -25,6 +25,7 @@ export interface CareerRecord {
 }
 
 export interface GameSave {
+  calendarTournaments?: import("@/game/competition/worldCalendar").CalendarTournamentState;
   tournamentArchivePending?: import("@/game/competition/archive").ArchivedEvent[];
   planning?: import("@/game/career/planning").PlanningState;
   sponsorship?: import("@/game/career/business").SponsorshipState;

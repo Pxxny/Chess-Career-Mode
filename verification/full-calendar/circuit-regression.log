@@ -1,0 +1,20 @@
+
+> chess-career-mode@0.1.0 test:circuit
+> node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-circuit.ts
+
+Thai NPCs: 87; distinct given names: 74; distinct surnames: 83
+PASS cultural names, duplicate handling, additive/idempotent NPC upgrade and independent birth place
+PASS daily monotonic registration, stable arrivals, full events, reload/spam guards, reserved paid seat and final roster
+PASS real organizer selection, nationality quota, age/rating boundaries, accept-only invitation and 10-round showcase
+PASS inclusive tournament finder boundaries and organizer metadata
+{
+  "timingsMs": {
+    "worldAndIdentities": 307.20390599999996,
+    "legacyIdentityUpgrade": 91.400711,
+    "catalogueFilterAndCountsPerPass": 0.8488137500000016
+  },
+  "npcs": 4321,
+  "events": 336,
+  "showcaseCountries": 50,
+  "showcasePlayers": 198
+}

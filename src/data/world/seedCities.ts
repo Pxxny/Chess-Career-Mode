@@ -1,3 +1,4 @@
+import expandedCities from "./expandedCities.json" with { type: "json" };
 /**
  * Curated major cities used to give persistent NPCs a hometown and as the
  * offline fallback for the city selector. The full searchable city database
@@ -94,11 +95,37 @@ SN: Dakar
 
 const SEED_CITIES: Record<string, string[]> = Object.fromEntries(
   RAW.trim()
-    .split('\n')
+    .split("\n")
     .map((line) => {
-      const [code, list] = line.split(':');
-      return [code.trim(), list.split(',').map((c) => c.trim())];
+      const [code, list] = line.split(":");
+      return [code.trim(), list.split(",").map((c) => c.trim())];
     }),
 );
 
-export const getSeedCities = (countryCode: string): string[] => SEED_CITIES[countryCode] ?? [];
+const EXPANDED_CITIES: Record<string, string[]> = Object.fromEntries(
+  Object.entries(expandedCities).map(([code, names]) => {
+    const curated = SEED_CITIES[code] ?? [];
+    const seen = new Set(
+      curated.map((name) =>
+        name
+          .normalize("NFD")
+          .replace(/\p{Diacritic}/gu, "")
+          .toLowerCase(),
+      ),
+    );
+    const added: string[] = [];
+    for (const name of names) {
+      const key = name
+        .normalize("NFD")
+        .replace(/\p{Diacritic}/gu, "")
+        .toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      added.push(name);
+      if (added.length === 50) break;
+    }
+    return [code, [...curated, ...added]];
+  }),
+);
+export const getSeedCities = (countryCode: string): string[] =>
+  EXPANDED_CITIES[countryCode] ?? SEED_CITIES[countryCode] ?? [];
