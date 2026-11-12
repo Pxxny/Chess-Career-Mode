@@ -1,4 +1,4 @@
-export type Side = 'w' | 'b';
+export type Side = "w" | "b";
 
 /**
  * A two-sided chess clock. Only the side to move loses time. Time is counted at a `rate`, which is 1 for a
@@ -68,7 +68,9 @@ export class MatchClock {
   /** Time charged to the side to move on the current move so far. */
   used(): number {
     if (this.active === null) return 0;
-    return this.carried + (this.running ? (this.now() - this.since) * this.rate : 0);
+    return (
+      this.carried + (this.running ? (this.now() - this.since) * this.rate : 0)
+    );
   }
 
   /** Milliseconds left for a side, including the move in progress. */
@@ -85,7 +87,11 @@ export class MatchClock {
    */
   press(side: Side, spentMs?: number): boolean {
     if (this.active !== side) return true;
-    const spent = this.hasTime ? (spentMs === undefined ? this.used() : Math.max(spentMs, this.used())) : 0;
+    const spent = this.hasTime
+      ? spentMs === undefined
+        ? this.used()
+        : Math.max(spentMs, this.used())
+      : 0;
     const after = this.left[side] - spent;
     if (this.hasTime && after <= 0) {
       this.left[side] = 0;
@@ -94,7 +100,7 @@ export class MatchClock {
       return false;
     }
     this.left[side] = this.hasTime ? after + this.increment : this.left[side];
-    this.active = side === 'w' ? 'b' : 'w';
+    this.active = side === "w" ? "b" : "w";
     this.carried = 0;
     this.since = this.now();
     this.running = true;
@@ -103,7 +109,11 @@ export class MatchClock {
 
   /** Freezes both clocks, charging the running side up to now. */
   stop(): void {
-    if (this.active !== null && this.hasTime) this.left[this.active] = Math.max(0, this.left[this.active] - this.used());
+    if (this.active !== null && this.hasTime)
+      this.left[this.active] = Math.max(
+        0,
+        this.left[this.active] - this.used(),
+      );
     this.active = null;
     this.carried = 0;
     this.running = false;
@@ -114,6 +124,11 @@ export class MatchClock {
     this.left[side] = 0;
     this.active = null;
     this.running = false;
+  }
+
+  restore(left: { white: number; black: number }): void {
+    this.stop();
+    this.left = { w: Math.max(0, left.white), b: Math.max(0, left.black) };
   }
 
   activeSide(): Side | null {

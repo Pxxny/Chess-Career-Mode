@@ -37,7 +37,8 @@
     "test:expanded-tournaments": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-expanded-tournaments.ts",
     "test:tournament-guide": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-tournament-guide.ts",
     "test:backup-lifetime": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-backup-lifetime.ts",
-    "test:roadmap": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-roadmap.ts"
+    "test:roadmap": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-roadmap.ts",
+    "test:live-tournaments": "node --experimental-strip-types --import ./scripts/register-alias.mjs scripts/verify-live-tournaments.ts"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.3.0",

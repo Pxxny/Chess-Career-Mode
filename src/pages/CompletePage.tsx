@@ -1,3 +1,4 @@
+import { AnnualTournaments } from "@/features/tournaments/AnnualTournaments";
 import { EsportsPanel } from "@/features/esports/EsportsPanel";
 import { SectionMenu } from "@/components/ui/SectionMenu";
 import { useSearchParams } from "react-router-dom";
@@ -30,7 +31,9 @@ type Tab =
   | "prepare"
   | "rankings"
   | "league"
-  | "history";
+  | "history"
+  | "calendar"
+  | "event-history";
 
 export function CompletePage() {
   const save = useSave();
@@ -91,6 +94,8 @@ export function CompletePage() {
         onChange={setTab}
         tabs={[
           { id: "tournament", label: "Tournament" },
+          { id: "calendar", label: "Annual calendar" },
+          { id: "event-history", label: "Tournament history" },
           { id: "swiss", label: "Swiss" },
           { id: "prepare", label: "Prepare" },
           { id: "rankings", label: "Rankings" },
@@ -135,6 +140,8 @@ export function CompletePage() {
             )}
           </div>
         )}
+        {tab === "calendar" && <AnnualTournaments />}
+        {tab === "event-history" && <AnnualTournaments history />}
         {tab === "swiss" && <TournamentPanel onStart={setActive} swissOnly />}
         {tab === "prepare" && <PreparePanel />}
         {tab === "league" && (

@@ -1,5 +1,71 @@
 /** English source messages stay in saves; only their presentation is localized. */
 export const TH_MESSAGES: Record<string, string> = {
+  "Annual calendar": "ปฏิทินรายปี",
+  "Annual tournament calendar": "ปฏิทินทัวร์นาเมนต์ประจำปี",
+  "Tournament history by year": "ประวัติทัวร์นาเมนต์แยกตามปี",
+  "Regular tournaments": "การแข่งขันปกติ",
+  "National teams": "ทีมชาติ",
+  "Event type": "ประเภทรายการ",
+  "Tournament year": "ปีทัวร์นาเมนต์",
+  "Annual tournament category": "ประเภททัวร์นาเมนต์รายปี",
+  "Search annual tournaments": "ค้นหาทัวร์นาเมนต์รายปี",
+  "Browse the whole year: tournament names, dates, participant limits, formats and game counts. Click any event for details.":
+    "ดูรายการทั้งปี: ชื่อ วันจัด จำนวนผู้เข้าร่วม รูปแบบ และจำนวนเกม กดแต่ละรายการเพื่อดูรายละเอียด",
+  "Completed results recorded in this career, including NPC world events. Future years stay hidden until your career reaches them.":
+    "ผลแข่งที่บันทึกในอาชีพนี้ รวมรายการในโลก NPC ปีอนาคตจะยังไม่แสดงจนกว่าเวลาในเซฟจะถึงปีนั้น",
+  "Calendar entries describe the career schedule. Results appear in tournament history only after they have actually been recorded in this save.":
+    "รายการในปฏิทินแสดงกำหนดแข่งในเกม ประวัติจะแสดงผลเมื่อมีการบันทึกการแข่งขันในเซฟนี้จริงแล้ว",
+  "Only a retained result summary is available for this older event. No moves or pairings were invented.":
+    "รายการเก่านี้เหลือเฉพาะสรุปผลที่เก็บไว้ ไม่มีการสร้างตาเดินหรือคู่แข่งย้อนหลัง",
+  "Open tournament / watch games": "เข้าทัวร์นาเมนต์ / ชมการแข่งขัน",
+  "Event details": "รายละเอียดรายการ",
+  "Pairings & live boards": "คู่แข่งขันและกระดานสด",
+  "Event details sections": "ส่วนรายละเอียดรายการ",
+  Standings: "ตารางคะแนน",
+  "Live simulated board": "กระดานจำลองสด",
+  "Broadcast paused": "พักการถ่ายทอด",
+  "Game finished": "เกมจบแล้ว",
+  "Back to pairings": "กลับไปดูคู่แข่งขัน",
+  "Watch live board": "ชมกระดานสด",
+  "Pause broadcast": "พักการถ่ายทอด",
+  "Resume broadcast": "ดูต่อ",
+  "Broadcast speed": "ความเร็วถ่ายทอด",
+  "Both NPCs use the chess engine. Closing pauses this board; reopening resumes its saved moves and clocks. Your AP, Elo and calendar do not change.":
+    "NPC ทั้งคู่ใช้เอนจินหมากรุก ปิดหน้าชมเพื่อพักกระดาน เปิดใหม่จะเล่นต่อจากตาเดินและเวลาที่บันทึกไว้ การชมไม่เปลี่ยน AP, Elo หรือปฏิทินของคุณ",
+  "Watch NPC boards in the current playable round. Your own board is played from the tournament screen. Unwatched games use the existing round simulation.":
+    "ชมคู่ NPC ในรอบปัจจุบันที่ถึงเวลาแข่งแล้ว เล่นกระดานของคุณจากหน้าทัวร์ คู่ที่ไม่ได้ชมยังใช้ระบบจำลองรอบเดิม",
+  "These NPCs are no longer available for a live board.":
+    "ไม่พบ NPC คู่นี้สำหรับกระดานสด",
+  "Recorded board replay": "ดูย้อนหลังจากกระดานที่บันทึก",
+  "Partial board recording": "ตาเดินที่บันทึกไว้บางส่วน",
+  "Replay recorded board": "ดูกระดานย้อนหลัง",
+  "Waiting / in progress": "รอแข่ง / กำลังแข่ง",
+  "Your board": "กระดานของคุณ",
+  "This round is not playable yet.": "ยังไม่ถึงเวลาแข่งรอบนี้",
+  "No move recording for this result.": "ผลคู่นี้ไม่มีตาเดินบันทึกไว้",
+  "No pairings recorded for this event.":
+    "ไม่มีคู่แข่งขันบันทึกไว้สำหรับรายการนี้",
+  "No participant list recorded yet.": "ยังไม่มีรายชื่อผู้เข้าร่วมที่บันทึกไว้",
+  "Standings after completed rounds.": "คะแนนหลังรอบที่แข่งเสร็จแล้ว",
+  "Player / team": "ผู้เล่น / ทีม",
+  "Recorded team boards": "ผลกระดานทีมชาติที่บันทึกไว้",
+  "No tournament results recorded for this year.":
+    "ยังไม่มีผลทัวร์นาเมนต์ที่บันทึกไว้ในปีนี้",
+  "No tournaments match these filters.": "ไม่มีรายการตรงกับตัวกรอง",
+  "The tournament archive could not be read. Retained save data is still shown.":
+    "อ่านคลังประวัติไม่ได้ กำลังแสดงข้อมูลที่ยังอยู่ในเซฟ",
+  "Show more events": "แสดงรายการเพิ่มเติม",
+  "{{0}} events": "{{0}} รายการ",
+  "In progress": "กำลังแข่งขัน",
+  Completed: "แข่งจบแล้ว",
+  "Event dates in progress": "อยู่ในช่วงวันจัดรายการ",
+  "Date passed · no recorded result": "เลยวันจัดแล้ว · ไม่มีผลบันทึกไว้",
+  "Exact day not recorded": "ไม่ได้บันทึกวันที่แน่นอน",
+  "Max games per player": "จำนวนเกมสูงสุดต่อคน",
+  "max games per player": "เกมสูงสุดต่อคน",
+  teams: "ทีม",
+  rounds: "รอบ",
+
   "First rated meeting: {{0}}": "พบกันในเกมคิดเรตครั้งแรก: {{0}}",
   "Skill effects": "ผลของสกิล",
   "How training affects play": "การฝึกส่งผลต่อการเล่นอย่างไร",

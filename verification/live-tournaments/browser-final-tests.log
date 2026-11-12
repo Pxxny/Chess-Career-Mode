@@ -1,0 +1,9 @@
+
+Running 4 tests using 1 worker
+
+  ✓  1 tests/live-tournaments.spec.ts:33:1 › annual calendar is a real tab, shows the complete current year and filters regular vs national team events, without future years (4.6s)
+  ✓  2 tests/live-tournaments.spec.ts:114:1 › NPC live board plays real moves, pauses and reloads without spending player resources; world history persists separately and travels in backups (15.2s)
+  ✓  3 tests/tournament-guide.spec.ts:27:1 › annual calendar replaces inline guides and shows regional hosts and registration dates (3.4s)
+  ✓  4 tests/tournament-guide.spec.ts:42:1 › export complete career and NPC world, reject corrupt input and occupied slots, restore independently and reload (10.2s)
+
+  4 passed (35.7s)

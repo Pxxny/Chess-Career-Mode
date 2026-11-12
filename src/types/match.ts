@@ -177,7 +177,15 @@ export interface TournamentPlayer {
   colors: number[];
 }
 
+export interface BroadcastGame {
+  ucis: string[];
+  clocks: { white: number; black: number };
+  rngState: number;
+  result?: MatchResultKind;
+  termination?: MatchTermination;
+}
 export interface TournamentPairing {
+  broadcast?: BroadcastGame;
   forecast?: import("@/game/prediction/types").CompactPrediction;
   prediction?: import("@/game/prediction/types").PredictionSnapshot;
   /** Deciding rapid tiebreak winner when a knockout classical game is drawn. */

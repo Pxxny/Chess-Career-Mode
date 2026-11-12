@@ -139,6 +139,11 @@ export interface EngineHandle {
 }
 
 export interface MatchSessionOptions {
+  initialState?: {
+    ucis: string[];
+    clocks: { white: number; black: number };
+    rngState: number;
+  };
   setup: MatchSetup;
   engine: EngineHandle;
   db: OpeningDatabase;
@@ -246,7 +251,9 @@ export class MatchSession {
     this.setup = options.setup;
     this.now = options.now ?? (() => performance.now());
     this.sleep = options.sleep ?? defaultSleep;
-    this.rng = createRng(mixSeed(options.setup.seed, 0x51ed));
+    this.rng = createRng(
+      options.initialState?.rngState ?? mixSeed(options.setup.seed, 0x51ed),
+    );
     const tc = options.setup.timeControl;
     this.clock = new MatchClock(
       tc.category === "none" ? 0 : tc.base * 1000,
@@ -254,6 +261,12 @@ export class MatchSession {
       this.now,
     );
     this.game = createGame();
+    for (const uci of options.initialState?.ucis ?? []) {
+      const move = parseUci(currentPosition(this.game), uci);
+      if (!move) throw new Error("Invalid saved broadcast move");
+      this.game = makeMove(this.game, move);
+    }
+    if (options.initialState) this.clock.restore(options.initialState.clocks);
     this.referee = createReferee(toFen(currentPosition(this.game)));
     this.speed = options.setup.speed;
     const human =
@@ -263,6 +276,22 @@ export class MatchSession {
       black: human === "black" ? "human" : "auto",
     };
     this.snap = this.build();
+  }
+
+  broadcastState() {
+    const snap = this.getSnapshot();
+    const remaining = this.clocks();
+    return {
+      ucis: [...this.game.ucis],
+      clocks: {
+        white: Number.isFinite(remaining.white) ? remaining.white : 0,
+        black: Number.isFinite(remaining.black) ? remaining.black : 0,
+      },
+      rngState: this.rng.getState?.() ?? 0,
+      ...(snap.finish
+        ? { result: snap.finish.result, termination: snap.finish.termination }
+        : {}),
+    };
   }
 
   // ---- observation
@@ -391,7 +420,12 @@ export class MatchSession {
     if (this.status !== "ready" || this.disposed) return;
     this.status = "running";
     void this.opts.engine.ensureLoaded?.();
-    this.clock.start("w", 1);
+    const ended = detectEnd(this.game);
+    if (ended) {
+      this.finishGame(ended);
+      return;
+    }
+    this.clock.start(letterOf(this.turnColor()), 1);
     this.timer = setInterval(() => this.tick(), 100);
     this.checkpoint();
     this.emit();

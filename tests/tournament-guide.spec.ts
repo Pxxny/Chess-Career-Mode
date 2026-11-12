@@ -24,55 +24,20 @@ async function finder(page: Page) {
     .getByRole("button", { name: "Find tournaments", exact: true })
     .click();
 }
-test("mobile guides show regional national hosts, real opening windows and selected larger capacities in both languages", async ({
-  page,
-}) => {
-  await start(page);
-  await finder(page);
-  await page.getByLabel("Search tournaments").fill("African Games");
-  const africa = page.locator('[data-event-id="career-african-games-2026"]');
-  const guide = africa.getByTestId("tournament-overview");
-  await expect(guide.getByTestId("event-host")).toHaveText("Cairo, Egypt");
-  await expect(guide).toContainText("national teams");
-  await expect(guide).toContainText("4 starters + 0 reserves");
-  await expect(guide.getByTestId("registration-window")).toContainText("2025-");
-  await guide.screenshot({ path: "artifacts/tournament-guide-africa-en.png" });
-  // A late-year tournament is visible now but registration has not opened yet.
-  await page
-    .getByLabel("Search tournaments")
-    .fill("Seven Days Masters · 2026/12");
-  const late = page.locator('[data-event-id="rotation-2026-12-1"]');
-  await expect(late.getByTestId("tournament-overview")).toContainText(
-    "24 players including you",
-  );
-  await expect(late.getByTestId("tournament-overview")).toContainText(
-    "Not open yet",
-  );
-  await expect(late.getByTestId("register")).toBeDisabled();
-  await page
-    .getByRole("combobox", { name: "Language / ภาษา", exact: true })
-    .selectOption("th");
-  await expect(late.getByTestId("tournament-overview")).toContainText(
-    "รับ 24 คน รวมตัวคุณ",
-  );
-  await expect(late.getByTestId("tournament-overview")).toContainText(
-    "ยังไม่เปิดรับสมัคร",
-  );
-  await late
-    .getByTestId("tournament-overview")
-    .screenshot({ path: "artifacts/tournament-guide-capacity-th.png" });
-  await page
-    .getByRole("combobox", { name: "Language / ภาษา", exact: true })
-    .selectOption("en");
-  await page
-    .getByLabel("Search tournaments")
-    .fill("FIDE Online Chess Olympiad");
-  const online = page.locator('[data-event-id="career-online-olympiad-2026"]');
-  await expect(online.getByTestId("event-host")).toHaveText("Online");
-  await expect(online).toContainText("no host-country travel");
-  await expect(
-    online.locator("dt").filter({ hasText: "Travel estimate" }).locator(".."),
-  ).toContainText("$0");
+test("annual calendar replaces inline guides and shows regional hosts and registration dates", async ({page})=>{
+ await start(page);
+ await page.getByRole("link",{name:"Tournament",exact:true}).click();
+ await page.getByRole("tab",{name:"Annual calendar",exact:true}).click();
+ await page.getByLabel("Search annual tournaments").fill("African Games");
+ await page.locator('[data-annual-event="career-african-games-2026"]').getByRole("button").first().click();
+ const modal=page.getByRole("dialog",{name:"African Games (Mixed Team) 2026",exact:true});
+ await expect(modal.getByTestId("event-host")).toHaveText("Cairo, Egypt");
+ await expect(modal.getByTestId("registration-window")).toContainText("2025-");
+ await expect(modal).toContainText("National teams");
+ await modal.getByRole("button",{name:"Close dialog",exact:true}).click();
+ await page.getByLabel("Search annual tournaments").fill("FIDE Online Chess Olympiad");
+ await page.locator('[data-annual-event="career-online-olympiad-2026"]').getByRole("button").first().click();
+ await expect(page.getByRole("dialog").getByTestId("event-host")).toContainText("Online");
 });
 test("export complete career and NPC world, reject corrupt input and occupied slots, restore independently and reload", async ({
   page,

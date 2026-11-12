@@ -1,0 +1,155 @@
+{
+  "release": "2026-11-12",
+  "base": "Chess-Career-Mode-Roadmap-2-6-Full.zip",
+  "baseFileCount": 766,
+  "missingBaseFiles": [],
+  "changedBaseFiles": [
+    "CHANGELOG.md",
+    "README.md",
+    "artifacts/expanded-tournament-3day-11games.png",
+    "artifacts/expanded-tournament-after-round.png",
+    "artifacts/expanded-tournament-live-playtest.png",
+    "artifacts/expanded-tournament-thai.png",
+    "package.json",
+    "src/features/match/TournamentPanel.tsx",
+    "src/game/career/expansion.ts",
+    "src/game/competition/preparation.ts",
+    "src/game/match/clock.ts",
+    "src/game/match/session.ts",
+    "src/game/npc/activity.ts",
+    "src/game/rng.ts",
+    "src/i18n/th.ts",
+    "src/pages/CompletePage.tsx",
+    "src/store/backup.ts",
+    "src/store/gameStore.ts",
+    "src/store/npcRepository.ts",
+    "src/types/game.ts",
+    "src/types/match.ts",
+    "src/utils/idb.ts",
+    "tests/circuit.spec.ts",
+    "tests/complete.spec.ts",
+    "tests/tournament-guide.spec.ts"
+  ],
+  "addedFilesBeforePackaging": [
+    "artifacts/annual-calendar-en.png",
+    "artifacts/annual-calendar-th.png",
+    "artifacts/annual-event-details-en.png",
+    "artifacts/tournament-history-result-en.png",
+    "artifacts/tournament-history-year-en.png",
+    "artifacts/tournament-live-board-en.png",
+    "artifacts/tournament-live-board-th.png",
+    "scripts/verify-live-tournaments.ts",
+    "src/features/tournaments/AnnualTournaments.tsx",
+    "src/features/tournaments/BroadcastBoard.tsx",
+    "src/features/tournaments/TournamentDetail.tsx",
+    "src/game/competition/archive.ts",
+    "src/game/competition/broadcast.ts",
+    "src/store/tournamentArchive.ts",
+    "tests/live-tournaments.spec.ts",
+    "verification/live-tournaments/backup-regression.log",
+    "verification/live-tournaments/browser-final-results.json",
+    "verification/live-tournaments/browser-final-tests.log",
+    "verification/live-tournaments/browser-results.json",
+    "verification/live-tournaments/browser-tests.log",
+    "verification/live-tournaments/build.log",
+    "verification/live-tournaments/complete-regression.log",
+    "verification/live-tournaments/esports-regression.log",
+    "verification/live-tournaments/headless-tests.log",
+    "verification/live-tournaments/prediction-regression.log",
+    "verification/live-tournaments/qol-regression.log",
+    "verification/live-tournaments/roadmap-regression.log",
+    "verification/live-tournaments/session-regression.log",
+    "verification/live-tournaments/team-regression.log"
+  ],
+  "features": [
+    "Annual calendar tab: full reached year, search, names/dates/capacity/game limits and clickable details/registration windows.",
+    "Regular vs national team categories in registration, annual calendar and tournament history.",
+    "Tournament history per career/year; 2025 through current career year, with earlier start years retained for historical careers.",
+    "Current playable NPC boards in the player active tournament run through the actual MatchSession/engine, with clocks, pause/resume, saved moves and RNG.",
+    "Watched completed result settles once with original round; viewing does not change AP, calendar, player pending match or Elo.",
+    "Per-career IndexedDB v5 archive captures original World Circuit results without a second simulation, player tournaments and national cups.",
+    "Legacy retained snapshots and sparse factual NPC summaries backfill without overwriting complete records.",
+    "Archive included in full backup/restore and isolated career deletion; existing save v15 and old backups supported."
+  ],
+  "checks": {
+    "build": {
+      "command": "npm run build",
+      "result": "passed",
+      "log": "build.log"
+    },
+    "liveLogic": {
+      "command": "npm run test:live-tournaments",
+      "result": "passed",
+      "log": "headless-tests.log"
+    },
+    "browserInitial": {
+      "command": "CHROMIUM_PATH=/usr/bin/chromium npx playwright test tests/expanded-tournaments.spec.ts tests/live-tournaments.spec.ts tests/tournament-guide.spec.ts --workers=1",
+      "result": "6 passed",
+      "log": "browser-tests.log",
+      "json": "browser-results.json"
+    },
+    "browserFinal": {
+      "command": "CHROMIUM_PATH=/usr/bin/chromium npx playwright test tests/live-tournaments.spec.ts tests/tournament-guide.spec.ts --workers=1",
+      "result": "4 passed",
+      "log": "browser-final-tests.log",
+      "json": "browser-final-results.json",
+      "extra": "Exercises deletion and factual legacy backfill of one World Circuit record, then preserves complete saved record."
+    },
+    "regressions": [
+      {
+        "command": "npm run test:complete",
+        "result": "passed",
+        "log": "complete-regression.log"
+      },
+      {
+        "command": "npm run test:esports",
+        "result": "passed",
+        "log": "esports-regression.log"
+      },
+      {
+        "command": "npm run test:team-events",
+        "result": "passed",
+        "log": "team-regression.log"
+      },
+      {
+        "command": "npm run test:backup-lifetime",
+        "result": "passed",
+        "log": "backup-regression.log"
+      },
+      {
+        "command": "npm run test:roadmap",
+        "result": "passed",
+        "log": "roadmap-regression.log"
+      },
+      {
+        "command": "npm run test:qol",
+        "result": "passed",
+        "log": "qol-regression.log"
+      },
+      {
+        "command": "npm run test:session",
+        "result": "passed",
+        "log": "session-regression.log"
+      },
+      {
+        "command": "npm run test:prediction",
+        "result": "passed",
+        "log": "prediction-regression.log"
+      }
+    ]
+  },
+  "browserCoverage": [
+    "Create career via UI; annual tab; regular/national filter; expanded tournament game limits; current-year bounds; event detail and registration window.",
+    "Register actual 3-day event, advance calendar, watch real NPC engine moves, pause/reload/resume without spending player resources.",
+    "Read original completed World Circuit standings/pairings from year history; retain archive across reload.",
+    "Export/import full career including archives into a separate empty slot; original remains isolated; corrupt or occupied-slot restore rejected.",
+    "Regional hosts and existing expanded tournament human moves/round completion/reload regressions."
+  ],
+  "limitations": [
+    "Live means a simulated chess board, not internet video streaming. Current live NPC games are in the player active tournament current playable round; player games still use the original match screen.",
+    "World Circuit is completed by the existing weekly simulation. Its historical results/pairings are available, but it never recorded live move sequences; no historical PGNs are invented.",
+    "Older missing events or discarded details cannot be reconstructed. Retained summaries are labelled and partial recordings do not claim to be complete games.",
+    "Year bounds follow in-game career time, not device date. A 2026 career hides 2027 until the career reaches 2027.",
+    "Browser tests use Chromium emulation, not a physical Termux, Android or iOS device. Main viewport 390x844; live-board screenshots 390x1200. Sticky navigation is hidden temporarily for panel screenshots."
+  ]
+}

@@ -179,7 +179,8 @@ test("tournament finder, official organizer, real full state and invitation-only
   await page.getByRole("button", { name: "Clear finder", exact: true }).click();
   await page
     .getByLabel("Tournament category")
-    .selectOption("Invitational Showmatches");
+    .selectOption("regular");
+  await page.getByLabel("Search tournaments",{exact:true}).fill("Next Generation Nations Showcase");
   await expect(
     page.getByTestId("open-events").getByTestId("register").first(),
   ).toBeDisabled();
@@ -198,7 +199,8 @@ test("tournament finder, official organizer, real full state and invitation-only
   await page.reload();
   await page
     .getByLabel("Tournament category")
-    .selectOption("Invitational Showmatches");
+    .selectOption("regular");
+  await page.getByLabel("Search tournaments",{exact:true}).fill("Next Generation Nations Showcase");
   await page
     .getByRole("button", { name: "Accept invitation", exact: true })
     .first()

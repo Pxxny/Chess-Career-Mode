@@ -1,3 +1,4 @@
+import { queueArchives, retainedArchives } from "@/game/competition/archive";
 import { personalWorldNews } from "@/game/social/memories";
 import { simulateWorldCircuit } from "@/game/npc/activity";
 import { recordPredictions } from "@/game/prediction/statistics";
@@ -56,6 +57,7 @@ export interface NationalTeam {
   boardPoints: number;
 }
 export interface TeamCup {
+  playedOnDay?: number;
   year: number;
   teams: NationalTeam[];
   boards: NationalBoard[];
@@ -388,6 +390,10 @@ export function playTeamCup(
   // National games are stored in the cup itself, with separate rating from individual rated history.
   const prize = represented ? teamPrize(spec, rank, ranked.length) : 0;
   const cup: TeamCup = {
+    playedOnDay:
+      (save.world.date.year * 52 + save.world.date.week - 1) * 7 +
+      (save.world.day ?? 1) -
+      1,
     year,
     teams: ranked,
     boards: result.boards,
@@ -463,7 +469,18 @@ export function playTeamCup(
     ).length;
     for (let i = 0; i < games; i++) next = coachedGame(next);
   }
-  return { ok: true, save: next };
+  return {
+    ok: true,
+    save: queueArchives(
+      next,
+      retainedArchives(next).filter(
+        (e) =>
+          e.source === "national-team" &&
+          e.year === year &&
+          e.id === `career-${info.key}-${year}`,
+      ),
+    ),
+  };
 }
 /** The existing weekly circuit now records every entrant and updates ratings from board results. */
 export function weeklyCircuit(
@@ -487,7 +504,10 @@ export function weeklyCircuit(
       result.headlines.join(" "),
     );
   return {
-    save: personalWorldNews(next, result.changed),
+    save: queueArchives(
+      personalWorldNews(next, result.changed),
+      result.archives,
+    ),
     changed: result.changed,
   };
 }

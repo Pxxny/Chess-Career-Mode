@@ -1,4 +1,5 @@
 export interface Rng {
+  getState?(): number;
   next(): number;
   int(min: number, max: number): number;
   float(min: number, max: number): number;
@@ -30,8 +31,10 @@ export function createRng(seed: number): Rng {
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
-  const int = (min: number, max: number) => Math.floor(next() * (max - min + 1)) + min;
+  const int = (min: number, max: number) =>
+    Math.floor(next() * (max - min + 1)) + min;
   return {
+    getState: () => a,
     next,
     int,
     float: (min, max) => min + next() * (max - min),
@@ -40,7 +43,10 @@ export function createRng(seed: number): Rng {
     normal: (mean, deviation) => {
       const u = Math.max(next(), 1e-9);
       const v = next();
-      return mean + deviation * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+      return (
+        mean +
+        deviation * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v)
+      );
     },
     shuffle: (items) => {
       const out = [...items];

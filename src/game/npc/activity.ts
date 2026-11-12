@@ -1,3 +1,4 @@
+import type { ArchivedEvent } from "@/game/competition/archive";
 import {
   conditionsFor,
   npcActor,
@@ -59,6 +60,7 @@ export function simulateWorldCircuit(save: GameSave, npcs: Npc[]) {
   const changed: Npc[] = [],
     observations: PredictionObservation[] = [];
   const headlines: string[] = [];
+  const archives: ArchivedEvent[] = [];
   for (const [group, field] of fields.entries()) {
     if (field.length < 2) continue;
     const eventId = `world-circuit-${index}-${group}`;
@@ -74,6 +76,7 @@ export function simulateWorldCircuit(save: GameSave, npcs: Npc[]) {
       ),
     );
     const byId = new Map(field.map((n) => [n.id, n]));
+    const boards: ArchivedEvent["pairings"] = [];
     const scores = new Map(
       field.map((n) => [
         n.id,
@@ -84,12 +87,17 @@ export function simulateWorldCircuit(save: GameSave, npcs: Npc[]) {
     if (seats.length % 2) seats.push(null);
     const rounds = Math.min(3, seats.length - 1);
     for (let round = 0; round < rounds; round++) {
+      const pairings: ArchivedEvent["pairings"][number] = [];
+      boards.push(pairings);
       for (let j = 0; j < seats.length / 2; j++) {
         const aId = seats[j],
           bId = seats[seats.length - 1 - j];
         if (!aId || !bId) {
           const bye = scores.get((aId ?? bId)!);
-          if (bye) bye.points++;
+          if (bye) {
+            bye.points++;
+            pairings.push({ white: (aId ?? bId)!, black: "bye", result: 1 });
+          }
           continue;
         }
         const [wId, bkId] = (round + j) % 2 ? [bId, aId] : [aId, bId];
@@ -110,6 +118,7 @@ export function simulateWorldCircuit(save: GameSave, npcs: Npc[]) {
         });
         const result = sampleOutcome(prediction.adjusted, rng.next()),
           score = scoreOf(result);
+        pairings.push({ white: wId, black: bkId, result: score });
         observations.push({
           prediction,
           result,
@@ -142,6 +151,31 @@ export function simulateWorldCircuit(save: GameSave, npcs: Npc[]) {
         b.currentElo - a.currentElo ||
         a.id.localeCompare(b.id),
     );
+    archives.push({
+      id: eventId,
+      year: save.world.date.year,
+      week: save.world.date.week,
+      name,
+      kind: "regular",
+      source: "world-circuit",
+      startDay: index * 7 - 7,
+      endDay: index * 7 - 7,
+      fieldSize: field.length,
+      rounds,
+      gamesPerEntrant: rounds,
+      format: "round-robin",
+      timeControl: "Rapid",
+      players: ranked.map((n, i) => ({
+        id: n.id,
+        name: n.name,
+        elo: n.currentElo,
+        countryCode: n.nationality,
+        title: n.title,
+        points: scores.get(n.id)!.points,
+        rank: i + 1,
+      })),
+      pairings: boards,
+    });
     for (const [rank, npc] of ranked.entries()) {
       const updated = byId.get(npc.id)!;
       changed.push({
@@ -171,6 +205,7 @@ export function simulateWorldCircuit(save: GameSave, npcs: Npc[]) {
   }
   return {
     changed,
+    archives,
     observations,
     headlines,
     events: fields.filter((f) => f.length >= 2).length,

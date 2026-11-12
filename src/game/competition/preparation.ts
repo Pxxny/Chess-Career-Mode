@@ -1,3 +1,4 @@
+import { queueArchives, archiveTournament } from "./archive";
 import { compactTournament } from "@/game/prediction/adapters";
 import { GAME_CONFIG } from "@/data/config";
 import { dayIndex } from "@/game/career/expansion";
@@ -302,46 +303,49 @@ export function archiveCompetition(save: GameSave): GameSave {
   if (rank === 1 && category === "World Chess Championship")
     grants.push("world-championship");
   if (rank <= 3 && t.level === "international") grants.push("super-invitation");
-  return {
-    ...save,
-    competition: {
-      ...state,
-      ...(category === "World Chess Championship"
-        ? {
-            champion: {
-              id:
-                t.players.find((p) => p.isPlayer === (rank === 1))?.id ??
-                "unknown",
-              name:
-                t.players.find((p) => p.isPlayer === (rank === 1))?.name ??
-                "Unknown",
-              year: save.world.date.year,
-              eventId: t.eventId,
-            },
-          }
-        : {}),
-      archive: [...state.archive, compactTournament(t)].slice(-30),
-      qualifications: [
-        ...state.qualifications.filter(
-          (q) =>
-            !(
-              category === "World Chess Championship" &&
-              rank !== 1 &&
-              q.route === "defence"
-            ),
-        ),
-        ...grants.map((kind) => ({
-          kind,
-          year: save.world.date.year,
-          source: t.name,
-          route:
-            category === "World Chess Championship"
-              ? ("defence" as const)
-              : ("qualification" as const),
-        })),
-      ].slice(-100),
+  return queueArchives(
+    {
+      ...save,
+      competition: {
+        ...state,
+        ...(category === "World Chess Championship"
+          ? {
+              champion: {
+                id:
+                  t.players.find((p) => p.isPlayer === (rank === 1))?.id ??
+                  "unknown",
+                name:
+                  t.players.find((p) => p.isPlayer === (rank === 1))?.name ??
+                  "Unknown",
+                year: save.world.date.year,
+                eventId: t.eventId,
+              },
+            }
+          : {}),
+        archive: [...state.archive, compactTournament(t)].slice(-30),
+        qualifications: [
+          ...state.qualifications.filter(
+            (q) =>
+              !(
+                category === "World Chess Championship" &&
+                rank !== 1 &&
+                q.route === "defence"
+              ),
+          ),
+          ...grants.map((kind) => ({
+            kind,
+            year: save.world.date.year,
+            source: t.name,
+            route:
+              category === "World Chess Championship"
+                ? ("defence" as const)
+                : ("qualification" as const),
+          })),
+        ].slice(-100),
+      },
     },
-  };
+    [archiveTournament(t)],
+  );
 }
 /** Both sides must reasonably want a draw; the setting never overrides a winning/losing position. */
 export function reasonableEarlyDraw(input: {

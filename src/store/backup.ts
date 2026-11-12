@@ -1,3 +1,8 @@
+import { readEventArchive, archiveKey } from "./tournamentArchive";
+import {
+  retainedArchives,
+  type ArchivedEvent,
+} from "@/game/competition/archive";
 import { GAME_CONFIG } from "@/data/config";
 import { upgradeSave } from "@/game/training/migrate";
 import type { GameSave, Npc } from "@/types";
@@ -9,7 +14,7 @@ export interface CareerBackup {
   format: "chess-career-mode-backup";
   version: 1;
   exportedAt: string;
-  payload: { save: GameSave; npcs: Npc[] };
+  payload: { save: GameSave; npcs: Npc[]; tournamentArchive?: ArchivedEvent[] };
   checksum: string;
 }
 const fail = (): never => {
@@ -34,7 +39,15 @@ export async function createBackup(
 ): Promise<CareerBackup> {
   if (!npcs.length)
     throw new Error("Wait for the NPC world to finish loading.");
-  const payload = structuredClone({ save, npcs });
+  const archived = await readEventArchive(save.career.id);
+  const archive = new Map(
+    [...archived, ...retainedArchives(save)].map((e) => [e.id, e]),
+  );
+  const payload = structuredClone({
+    save,
+    npcs,
+    ...(archive.size ? { tournamentArchive: [...archive.values()] } : {}),
+  });
   return {
     format: "chess-career-mode-backup",
     version: 1,
@@ -62,6 +75,19 @@ export async function parseBackup(raw: string): Promise<CareerBackup> {
   )
     fail();
   const { save, npcs } = value.payload;
+  if (
+    value.payload.tournamentArchive !== undefined &&
+    (!Array.isArray(value.payload.tournamentArchive) ||
+      value.payload.tournamentArchive.some(
+        (e: unknown) =>
+          !object(e) ||
+          !text(e.id) ||
+          !Number.isInteger(e.year) ||
+          !Array.isArray(e.players) ||
+          !Array.isArray(e.pairings),
+      ))
+  )
+    fail();
   if (
     !object(save) ||
     save.version !== GAME_CONFIG.saveVersion ||
@@ -170,7 +196,7 @@ export async function restoreBackup(
   const db = await openDb();
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction(
-      [STORES.keyval, STORES.careerNpcs, STORES.meta],
+      [STORES.keyval, STORES.careerNpcs, STORES.meta, STORES.tournamentArchive],
       "readwrite",
     );
     let issue: Error | null = null;
@@ -189,6 +215,11 @@ export async function restoreBackup(
       for (const npc of validated.payload.npcs)
         tx.objectStore(STORES.careerNpcs).put({ key: `${id}|${npc.id}`, npc });
       tx.objectStore(STORES.meta).put(metaFor(save.career), `npc-db:${id}`);
+      for (const event of validated.payload.tournamentArchive ?? [])
+        tx.objectStore(STORES.tournamentArchive).put({
+          key: archiveKey(id, event),
+          event,
+        });
     };
     tx.oncomplete = () => resolve();
     tx.onerror = tx.onabort = () =>

@@ -1,6 +1,6 @@
-import { GAME_CONFIG } from '@/data/config';
-import type { CareerRecord, Npc } from '@/types';
-import { STORES, transact } from '@/utils/idb';
+import { GAME_CONFIG } from "@/data/config";
+import type { CareerRecord, Npc } from "@/types";
+import { STORES, transact } from "@/utils/idb";
 
 /** Describes which career an NPC database was built for; any mismatch triggers a rebuild. */
 export interface NpcDatabaseMeta {
@@ -12,10 +12,12 @@ export interface NpcDatabaseMeta {
 }
 
 /** Key of the single database used before characters had their own (one career at a time). */
-const LEGACY_META_KEY = 'npc-db';
+const LEGACY_META_KEY = "npc-db";
 const metaKeyFor = (careerId: string): string => `npc-db:${careerId}`;
-const npcKey = (careerId: string, npcId: string): string => `${careerId}|${npcId}`;
-const careerRange = (careerId: string): IDBKeyRange => IDBKeyRange.bound(`${careerId}|`, `${careerId}|\uffff`);
+const npcKey = (careerId: string, npcId: string): string =>
+  `${careerId}|${npcId}`;
+const careerRange = (careerId: string): IDBKeyRange =>
+  IDBKeyRange.bound(`${careerId}|`, `${careerId}|\uffff`);
 
 export const metaFor = (career: CareerRecord): NpcDatabaseMeta => ({
   databaseKey: career.databaseKey,
@@ -25,10 +27,17 @@ export const metaFor = (career: CareerRecord): NpcDatabaseMeta => ({
   fictionalCount: GAME_CONFIG.world.fictionalNpcCount,
 });
 
-export const isMetaCurrent = (meta: NpcDatabaseMeta | undefined, career: CareerRecord): meta is NpcDatabaseMeta => {
+export const isMetaCurrent = (
+  meta: NpcDatabaseMeta | undefined,
+  career: CareerRecord,
+): meta is NpcDatabaseMeta => {
   const expected = metaFor(career);
-  return !!meta && meta.databaseKey === expected.databaseKey && meta.schemaVersion === expected.schemaVersion &&
-    meta.fictionalCount === expected.fictionalCount;
+  return (
+    !!meta &&
+    meta.databaseKey === expected.databaseKey &&
+    meta.schemaVersion === expected.schemaVersion &&
+    meta.fictionalCount === expected.fictionalCount
+  );
 };
 
 /** Where NPC worlds live. IndexedDB in the app; an in-memory copy in the tests. */
@@ -36,7 +45,11 @@ export interface NpcBackend {
   getMeta(careerId: string): Promise<NpcDatabaseMeta | undefined>;
   readAll(careerId: string): Promise<Npc[]>;
   /** Replaces the whole world of a career and its meta record. */
-  replaceAll(careerId: string, npcs: Npc[], meta: NpcDatabaseMeta): Promise<void>;
+  replaceAll(
+    careerId: string,
+    npcs: Npc[],
+    meta: NpcDatabaseMeta,
+  ): Promise<void>;
   putMany(careerId: string, npcs: Npc[]): Promise<void>;
   deleteAll(careerId: string): Promise<void>;
   /** The single database of saves made before characters had their own worlds. */
@@ -45,15 +58,23 @@ export interface NpcBackend {
 }
 
 export const idbNpcBackend: NpcBackend = {
-  getMeta: (careerId) => transact<NpcDatabaseMeta>([STORES.meta], 'readonly', (tx) => tx.objectStore(STORES.meta).get(metaKeyFor(careerId))),
+  getMeta: (careerId) =>
+    transact<NpcDatabaseMeta>([STORES.meta], "readonly", (tx) =>
+      tx.objectStore(STORES.meta).get(metaKeyFor(careerId)),
+    ),
 
   readAll: async (careerId) => {
-    const records = (await transact<Array<{ key: string; npc: Npc }>>([STORES.careerNpcs], 'readonly', (tx) => tx.objectStore(STORES.careerNpcs).getAll(careerRange(careerId)))) ?? [];
+    const records =
+      (await transact<Array<{ key: string; npc: Npc }>>(
+        [STORES.careerNpcs],
+        "readonly",
+        (tx) => tx.objectStore(STORES.careerNpcs).getAll(careerRange(careerId)),
+      )) ?? [];
     return records.map((r) => r.npc);
   },
 
   replaceAll: async (careerId, npcs, meta) => {
-    await transact([STORES.careerNpcs, STORES.meta], 'readwrite', (tx) => {
+    await transact([STORES.careerNpcs, STORES.meta], "readwrite", (tx) => {
       const store = tx.objectStore(STORES.careerNpcs);
       store.delete(careerRange(careerId));
       npcs.forEach((npc) => store.put({ key: npcKey(careerId, npc.id), npc }));
@@ -62,27 +83,40 @@ export const idbNpcBackend: NpcBackend = {
   },
 
   putMany: async (careerId, npcs) => {
-    await transact([STORES.careerNpcs], 'readwrite', (tx) => {
+    await transact([STORES.careerNpcs], "readwrite", (tx) => {
       const store = tx.objectStore(STORES.careerNpcs);
       npcs.forEach((npc) => store.put({ key: npcKey(careerId, npc.id), npc }));
     });
   },
 
   deleteAll: async (careerId) => {
-    await transact([STORES.careerNpcs, STORES.meta], 'readwrite', (tx) => {
-      tx.objectStore(STORES.careerNpcs).delete(careerRange(careerId));
-      tx.objectStore(STORES.meta).delete(metaKeyFor(careerId));
-    });
+    await transact(
+      [STORES.careerNpcs, STORES.meta, STORES.tournamentArchive],
+      "readwrite",
+      (tx) => {
+        tx.objectStore(STORES.tournamentArchive).delete(careerRange(careerId));
+        tx.objectStore(STORES.careerNpcs).delete(careerRange(careerId));
+        tx.objectStore(STORES.meta).delete(metaKeyFor(careerId));
+      },
+    );
   },
 
   readLegacy: async () => {
-    const meta = await transact<NpcDatabaseMeta>([STORES.meta], 'readonly', (tx) => tx.objectStore(STORES.meta).get(LEGACY_META_KEY));
-    const npcs = meta ? ((await transact<Npc[]>([STORES.npcs], 'readonly', (tx) => tx.objectStore(STORES.npcs).getAll())) ?? []) : [];
+    const meta = await transact<NpcDatabaseMeta>(
+      [STORES.meta],
+      "readonly",
+      (tx) => tx.objectStore(STORES.meta).get(LEGACY_META_KEY),
+    );
+    const npcs = meta
+      ? ((await transact<Npc[]>([STORES.npcs], "readonly", (tx) =>
+          tx.objectStore(STORES.npcs).getAll(),
+        )) ?? [])
+      : [];
     return { meta, npcs };
   },
 
   clearLegacy: async () => {
-    await transact([STORES.npcs, STORES.meta], 'readwrite', (tx) => {
+    await transact([STORES.npcs, STORES.meta], "readwrite", (tx) => {
       tx.objectStore(STORES.npcs).clear();
       tx.objectStore(STORES.meta).delete(LEGACY_META_KEY);
     });
@@ -93,12 +127,19 @@ export const idbNpcBackend: NpcBackend = {
  * Reads the stored NPC world of one career. A world saved by the single-career version of the game is moved
  * into the career it belongs to the first time that career loads, so existing saves keep their NPCs.
  */
-export async function readNpcDatabase(career: CareerRecord, backend: NpcBackend = idbNpcBackend): Promise<{ meta?: NpcDatabaseMeta; npcs: Npc[] }> {
+export async function readNpcDatabase(
+  career: CareerRecord,
+  backend: NpcBackend = idbNpcBackend,
+): Promise<{ meta?: NpcDatabaseMeta; npcs: Npc[] }> {
   const meta = await backend.getMeta(career.id);
   if (meta) return { meta, npcs: await backend.readAll(career.id) };
 
   const legacy = await backend.readLegacy();
-  if (legacy.meta && legacy.meta.careerId === career.id && legacy.npcs.length > 0) {
+  if (
+    legacy.meta &&
+    legacy.meta.careerId === career.id &&
+    legacy.npcs.length > 0
+  ) {
     await backend.replaceAll(career.id, legacy.npcs, legacy.meta);
     await backend.clearLegacy();
     return { meta: legacy.meta, npcs: legacy.npcs };
@@ -107,18 +148,29 @@ export async function readNpcDatabase(career: CareerRecord, backend: NpcBackend 
 }
 
 /** Replaces the stored world of `career` with `npcs`. Other careers are not touched. */
-export function writeNpcDatabase(npcs: Npc[], career: CareerRecord, backend: NpcBackend = idbNpcBackend): Promise<void> {
+export function writeNpcDatabase(
+  npcs: Npc[],
+  career: CareerRecord,
+  backend: NpcBackend = idbNpcBackend,
+): Promise<void> {
   return backend.replaceAll(career.id, npcs, metaFor(career));
 }
 
 /** Persists changed NPCs of one career only. */
-export async function putNpcs(npcs: Npc[], careerId: string, backend: NpcBackend = idbNpcBackend): Promise<void> {
+export async function putNpcs(
+  npcs: Npc[],
+  careerId: string,
+  backend: NpcBackend = idbNpcBackend,
+): Promise<void> {
   if (npcs.length === 0) return;
   await backend.putMany(careerId, npcs);
 }
 
 /** Removes the NPC world of a deleted character. */
-export function deleteNpcDatabase(careerId: string, backend: NpcBackend = idbNpcBackend): Promise<void> {
+export function deleteNpcDatabase(
+  careerId: string,
+  backend: NpcBackend = idbNpcBackend,
+): Promise<void> {
   return backend.deleteAll(careerId);
 }
 
@@ -152,7 +204,10 @@ export function createMemoryNpcBackend(): MemoryNpcBackend {
       worlds.delete(id);
       metas.delete(id);
     },
-    readLegacy: async () => ({ meta: clone(legacyMeta), npcs: legacyNpcs.map(clone) }),
+    readLegacy: async () => ({
+      meta: clone(legacyMeta),
+      npcs: legacyNpcs.map(clone),
+    }),
     clearLegacy: async () => {
       legacyMeta = undefined;
       legacyNpcs = [];
@@ -161,6 +216,11 @@ export function createMemoryNpcBackend(): MemoryNpcBackend {
       legacyMeta = meta;
       legacyNpcs = npcs;
     },
-    dump: () => ({ worlds: Object.fromEntries([...worlds].map(([id, w]) => [id, [...w.values()]])), legacy: legacyNpcs }),
+    dump: () => ({
+      worlds: Object.fromEntries(
+        [...worlds].map(([id, w]) => [id, [...w.values()]]),
+      ),
+      legacy: legacyNpcs,
+    }),
   };
 }

@@ -1,3 +1,10 @@
+import { retainedArchives, queueArchives } from "@/game/competition/archive";
+import {
+  updateBroadcast,
+  type BroadcastContext,
+} from "@/game/competition/broadcast";
+import type { BroadcastGame } from "@/types";
+import { writeEventArchive } from "./tournamentArchive";
 import { chooseAnnualFocus, type AnnualFocus } from "@/game/career/planning";
 import {
   signSponsor,
@@ -126,6 +133,10 @@ let calendarOwned = false;
 let calendarDaySave: GameSave | null = null;
 let calendarSync: Promise<unknown> = Promise.resolve();
 interface GameStore {
+  broadcastCheckpoint: (
+    context: BroadcastContext,
+    state: BroadcastGame,
+  ) => boolean;
   careerAction: (
     command:
       | { type: "focus"; focus: AnnualFocus }
@@ -279,6 +290,20 @@ export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
       save: null,
+      broadcastCheckpoint: (context, state) => {
+        const save = get().save;
+        if (
+          !save ||
+          get().calendarProgress ||
+          save.pendingMatch ||
+          matchRunning(save.career.id)
+        )
+          return false;
+        const next = updateBroadcast(save, context, state);
+        if (next === save) return false;
+        set({ save: next });
+        return true;
+      },
       careerAction: (command) => {
         const save = get().save;
         if (
@@ -1080,4 +1105,62 @@ useNpcStore.subscribe((state, previous) => {
     (previous.status !== "ready" || state.careerId !== previous.careerId)
   )
     syncFinishedNpcEvents();
+});
+
+// A single flush per career. Outbox records remain in the save if storage fails.
+const archiveFlushes = new Set<string>();
+function flushTournamentArchive() {
+  const save = useGameStore.getState().save;
+  if (
+    !save?.tournamentArchivePending?.length ||
+    typeof indexedDB === "undefined" ||
+    archiveFlushes.has(save.career.id)
+  )
+    return;
+  const careerId = save.career.id,
+    pending = save.tournamentArchivePending;
+  archiveFlushes.add(careerId);
+  void writeEventArchive(careerId, pending)
+    .then(() => {
+      const current = useGameStore.getState().save;
+      if (current?.career.id !== careerId) return;
+      const written = new Map(pending.map((e) => [e.id, e]));
+      useGameStore.setState({
+        save: {
+          ...current,
+          tournamentArchivePending: current.tournamentArchivePending?.filter(
+            (e) => written.get(e.id) !== e,
+          ),
+        },
+      });
+    })
+    .catch(() => undefined)
+    .finally(() => {
+      archiveFlushes.delete(careerId);
+      const current = useGameStore.getState().save;
+      if (
+        current?.career.id === careerId &&
+        current.tournamentArchivePending?.some((e) => !pending.includes(e))
+      )
+        flushTournamentArchive();
+    });
+}
+useGameStore.subscribe((state, previous) => {
+  if (
+    typeof indexedDB !== "undefined" &&
+    state.save &&
+    state.save.career.id !== previous.save?.career.id
+  ) {
+    const records = retainedArchives(state.save);
+    if (records.length) {
+      useGameStore.setState({ save: queueArchives(state.save, records) });
+      return;
+    }
+  }
+  if (
+    state.save?.career.id !== previous.save?.career.id ||
+    state.save?.tournamentArchivePending !==
+      previous.save?.tournamentArchivePending
+  )
+    flushTournamentArchive();
 });

@@ -1,5 +1,6 @@
 import { useSearchParams } from "react-router-dom";
-import { TournamentOverview } from "./TournamentOverview";
+import { TournamentDetail } from "@/features/tournaments/TournamentDetail";
+import { eventKind } from "@/game/competition/archive";
 import { registrationWindow } from "@/game/competition/registrationWindow";
 import { confirmUI } from "@/i18n/translate";
 import { UpcomingPredictions } from "@/features/prediction/CareerPrediction";
@@ -330,6 +331,7 @@ export function TournamentPanel({
   const running = useMatchRunning(save.career.id);
   const acceptInvitation = useGameStore((s) => s.acceptShowcaseInvitation);
   const [finderOpen, setFinderOpen] = useState(false);
+  const [viewTournament, setViewTournament] = useState(false);
   const [search, setSearch] = useState<TournamentSearch | null>(null);
   const register = useGameStore((s) => s.registerForEvent),
     cancel = useGameStore((s) => s.cancelRegistration),
@@ -413,13 +415,19 @@ export function TournamentPanel({
         (location === "home" && e.details?.country === save.player.country) ||
         (location === "abroad" && e.details?.country !== save.player.country) ||
         e.details?.country === location) &&
-      (category === "all" || e.details?.category === category) &&
+      (category === "all" || eventKind(e) === category) &&
       (query
         ? e.name.toLowerCase().includes(query.toLowerCase())
         : !targetEvent || e.id === targetEvent.id),
   );
   return (
     <div className="space-y-4" data-testid="tournament-panel">
+      {viewTournament && t && (
+        <TournamentDetail
+          tournament={t}
+          onClose={() => setViewTournament(false)}
+        />
+      )}
       {finderOpen && (
         <TournamentFinder
           initial={search}
@@ -554,6 +562,14 @@ export function TournamentPanel({
           {t.status === "playing" && (
             <TournamentDayClock tournament={t} interactive />
           )}
+          <Button
+            className="mb-3"
+            variant="secondary"
+            onClick={() => setViewTournament(true)}
+            data-testid="open-current-tournament"
+          >
+            Open tournament / watch games
+          </Button>
           <TournamentTimetable tournament={t} />
           <h3 className="mb-2 font-semibold text-ink">Tournament standings</h3>
           <TournamentStandings t={t} />
@@ -745,15 +761,8 @@ export function TournamentPanel({
             className="max-w-full rounded-lg bg-navy-900 p-3 text-sm text-ink"
           >
             <option value="all">All categories</option>
-            {[
-              ...new Set(
-                events
-                  .map((e) => e.details?.category)
-                  .filter((c): c is string => !!c),
-              ),
-            ].map((c) => (
-              <option key={c}>{c}</option>
-            ))}
+            <option value="regular">Regular tournaments</option>
+            <option value="national">National teams</option>
           </select>
         </div>
         <ul className="space-y-4" data-testid="open-events">
@@ -788,6 +797,7 @@ export function TournamentPanel({
               <li
                 key={e.id}
                 data-event-id={e.id}
+                data-event-kind={eventKind(e)}
                 className="rounded-xl border border-white/10 bg-navy-900 p-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -820,7 +830,6 @@ export function TournamentPanel({
                               : "Registration open"}
                   </Badge>
                 </div>
-                <TournamentOverview event={e} />
                 <EventFacts event={e} />
                 <TournamentTimetable event={e} />
                 {totalEntrants !== null && e.details?.format !== "team" && (
