@@ -4,7 +4,7 @@ import { buildNews } from "@/game/career/news";
 import { getTitleStatus } from "@/game/career/titles";
 import { computeMorale } from "@/game/player/morale";
 import { computeRankings } from "@/game/world/standings";
-import { getSchedule } from "@/game/world/schedule";
+import { preserveBookedVenues, regionForSave, getSchedule } from "@/game/world/schedule";
 import { useSave } from "@/hooks/useGame";
 import { useRankedNpcs } from "@/hooks/useNpcs";
 
@@ -28,18 +28,8 @@ export function useDashboard() {
     [player, history, world.date, save.training.fatigue],
   );
   const schedule = useMemo(
-    () =>
-      getSchedule(
-        world.date,
-        {
-          city: player.city.name,
-          countryCode: player.country,
-          demonym: country?.nationality ?? player.country,
-          continent: country?.continent ?? "World",
-        },
-        career.id,
-      ),
-    [world.date, player.city.name, player.country, country, career.id],
+    () => preserveBookedVenues(save, getSchedule(world.date, regionForSave(save), career.id)),
+    [world.date, player.city.name, player.country, player.birthPlace, career.id, save.registrations, save.tournament, save.calendarTournaments],
   );
   const news = useMemo(
     () => buildNews(save, schedule, ranked),

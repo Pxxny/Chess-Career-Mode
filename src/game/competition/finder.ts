@@ -1,4 +1,4 @@
-import { getCountry } from "@/data/world/countries";
+import { matchesVenueContinent } from "./venues";
 import type { ScheduledEvent } from "@/game/world/schedule";
 import { eventAgenda } from "./agenda";
 export interface TournamentSearch {
@@ -40,7 +40,6 @@ export function matchesTournamentSearch(
     event.minElo <= search.maxElo &&
     event.fieldSize >= search.minPlayers &&
     event.fieldSize <= search.maxPlayers &&
-    (search.continent === "all" ||
-      getCountry(event.details?.country ?? "")?.continent === search.continent)
+    matchesVenueContinent(event.details?.country, search.continent)
   );
 }

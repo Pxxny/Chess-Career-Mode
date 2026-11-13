@@ -1,13 +1,16 @@
+import { TOURNAMENT_CONTINENTS } from "@/game/competition/venues";
 import { useState } from "react";
 import { Button, Modal } from "@/components/ui";
 import type { TournamentSearch } from "@/game/competition/finder";
 export function TournamentFinder({
   initial,
+  continent = "all",
   rating,
   onApply,
   onClose,
 }: {
   initial: TournamentSearch | null;
+  continent?: string;
   rating: number;
   onApply: (search: TournamentSearch) => void;
   onClose: () => void;
@@ -18,7 +21,7 @@ export function TournamentFinder({
       toWeek: 12,
       minElo: 0,
       maxElo: rating,
-      continent: "all",
+      continent,
       minPlayers: 2,
       maxPlayers: 256,
       availableOnly: true,
@@ -155,15 +158,7 @@ export function TournamentFinder({
             }
             className="mt-1 w-full rounded-lg bg-navy-900 p-3 text-ink"
           >
-            {[
-              "all",
-              "Africa",
-              "Asia",
-              "Europe",
-              "North America",
-              "South America",
-              "Oceania",
-            ].map((c) => (
+            {["all", ...TOURNAMENT_CONTINENTS].map((c) => (
               <option key={c} value={c}>
                 {c === "all" ? "All continents" : c}
               </option>
@@ -180,6 +175,7 @@ export function TournamentFinder({
           />
           Only events I can enter now
         </label>
+        <p className="text-xs text-ink-faint">Continent means the host country, not the player's nationality or the event name.</p>
         <p className="text-xs text-ink-faint">
           Elo range filters the published minimum entry requirement, not the
           opponents’ ratings. Availability includes seats, deadline,

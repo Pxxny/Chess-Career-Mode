@@ -1,3 +1,4 @@
+import { TOURNAMENT_CONTINENTS, matchesVenueContinent } from "@/game/competition/venues";
 import { useSearchParams } from "react-router-dom";
 import { TournamentDetail } from "@/features/tournaments/TournamentDetail";
 import { eventKind } from "@/game/competition/archive";
@@ -36,7 +37,7 @@ import { buildMatchSetup } from "@/game/match/setup";
 import { playerOpponentId, standings } from "@/game/match/tournament";
 import type { MatchSetup } from "@/game/match/session";
 import { registrationStates, previewEntrants } from "@/game/match/registration";
-import { getSchedule, type ScheduledEvent } from "@/game/world/schedule";
+import { preserveBookedVenues, regionForSave, getSchedule, type ScheduledEvent } from "@/game/world/schedule";
 import {
   dateLabel,
   HISTORICAL_REFERENCE,
@@ -339,6 +340,7 @@ export function TournamentPanel({
     withdraw = useGameStore((s) => s.withdrawTournament),
     close = useGameStore((s) => s.closeTournament);
   const [location, setLocation] = useState("all");
+  const [continent, setContinent] = useState("all");
   const [source, setSource] = useState("all");
   const [error, setError] = useState(""),
     [query, setQuery] = useState(""),
@@ -347,24 +349,8 @@ export function TournamentPanel({
   const [urlParams, setUrlParams] = useSearchParams();
   const selectedEventId = urlParams.get("event");
   const events = useMemo(() => {
-    const country = getCountry(save.player.country);
-    return getSchedule(
-      save.world.date,
-      {
-        city: save.player.city.name,
-        countryCode: save.player.country,
-        demonym: country?.nationality ?? save.player.country,
-        continent: country?.continent ?? "World",
-      },
-      save.career.id,
-      52,
-    );
-  }, [
-    save.world.date,
-    save.player.country,
-    save.player.city.name,
-    save.career.id,
-  ]);
+    return preserveBookedVenues(save, getSchedule(save.world.date, regionForSave(save), save.career.id, 52));
+  }, [save.world.date, save.player.country, save.player.city.name, save.player.birthPlace, save.career.id, save.registrations, save.tournament, save.calendarTournaments]);
   const targetEvent = selectedEventId
     ? events.find((e) => e.id === selectedEventId)
     : undefined;
@@ -404,6 +390,7 @@ export function TournamentPanel({
   const filtered = events.filter(
     (e) =>
       (!swissOnly || e.details?.format === "swiss") &&
+      matchesVenueContinent(e.details?.country, continent) &&
       (!search ||
         (matchesTournamentSearch(e, search) &&
           (!search.availableOnly ||
@@ -431,10 +418,12 @@ export function TournamentPanel({
       {finderOpen && (
         <TournamentFinder
           initial={search}
+          continent={continent}
           rating={save.player.rating}
           onClose={() => setFinderOpen(false)}
           onApply={(value) => {
             setSearch(value);
+            setContinent(value.continent);
             setUrlParams((params) => {
               params.delete("event");
               return params;
@@ -678,6 +667,7 @@ export function TournamentPanel({
                 variant="secondary"
                 onClick={() => {
                   setSearch(null);
+                  setContinent("all");
                   setLimit(6);
                 }}
               >
@@ -686,6 +676,7 @@ export function TournamentPanel({
             </>
           )}
         </div>
+        <p className="mb-3 text-xs text-ink-muted">Continent filters use the host country. Annual venues target 20% in your birth city and 80% elsewhere; historical and national-team hosts keep their recorded locations.</p>
         <p className="mb-3 text-xs text-ink-muted">
           Career fields, fees, entry deadlines, requirements, prizes and results
           are simulated. Dates and formats are generated unless a historical
@@ -706,6 +697,13 @@ export function TournamentPanel({
             <option value="fide">FIDE-listed references</option>
             <option value="fictional">In-game circuit</option>
           </select>
+          <select data-testid="tournament-continent-filter" aria-label="Tournament continent" value={continent} onChange={(e) => {
+            setContinent(e.target.value); setLocation("all"); setLimit(6);
+            setSearch((previous) => previous ? { ...previous, continent: e.target.value } : null);
+          }} className="max-w-full rounded-lg bg-navy-900 p-3 text-sm text-ink">
+            <option value="all">All continents</option>
+            {TOURNAMENT_CONTINENTS.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
           <select
             aria-label="Tournament location"
             value={location}
@@ -721,6 +719,7 @@ export function TournamentPanel({
             {[
               ...new Set(
                 events
+                  .filter((e) => matchesVenueContinent(e.details?.country, continent))
                   .map((e) => e.details?.country)
                   .filter((c): c is string => !!c),
               ),
@@ -797,6 +796,9 @@ export function TournamentPanel({
               <li
                 key={e.id}
                 data-event-id={e.id}
+                data-host-country={e.details?.country ?? ""}
+                data-host-city={e.details?.location ?? ""}
+                data-host-continent={getCountry(e.details?.country ?? "")?.continent ?? ""}
                 data-event-kind={eventKind(e)}
                 className="rounded-xl border border-white/10 bg-navy-900 p-4"
               >

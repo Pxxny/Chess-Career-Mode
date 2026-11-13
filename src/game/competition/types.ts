@@ -22,6 +22,8 @@ export type Qualification =
   | "world-championship"
   | "super-invitation";
 export interface EventDetails {
+  /** Original display pattern, used when assigning a generated host. */
+  venueNamePattern?: string;
   host?: { mode: "rotation" | "online"; relocationReason?: string };
   agenda?: {
     days: number;

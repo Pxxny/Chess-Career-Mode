@@ -80,8 +80,13 @@ export function pickEventField(
   if (d?.nationality)
     return pickField(eligible, playerRating, event.level, count, rng);
   const local = eligible.filter((n) => n.nationality === d?.country);
-  if (event.level === "local" && d?.country)
-    return pickField(local, playerRating, event.level, count, rng);
+  if (event.level === "local" && d?.country) {
+    const hosts = pickField(local, playerRating, event.level, count, rng);
+    // Open events at sparsely populated new venues can admit travelling players.
+    // Nationality-restricted events have already returned above.
+    if (hosts.length === count) return hosts;
+    return [...hosts, ...pickField(eligible.filter((n) => n.nationality !== d.country), playerRating, event.level, count - hosts.length, rng)];
+  }
   const share =
     d?.localShare ??
     (event.level === "local" ? 0.65 : event.level === "national" ? 0.8 : 0.25);

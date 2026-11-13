@@ -2,7 +2,7 @@ import type { ActiveTournament, GameSave, Npc } from "@/types";
 import type { NationalTeam } from "@/game/career/expansion";
 import { getCountry } from "@/data/world/countries";
 import { teamInfoOf } from "@/data/chess/nationalTeamEvents";
-import { getSchedule, type ScheduledEvent } from "@/game/world/schedule";
+import { preserveBookedVenues, regionForSave, getSchedule, type ScheduledEvent } from "@/game/world/schedule";
 import { createRng, mixSeed } from "@/game/rng";
 import { hashString } from "@/utils/format";
 import { createTournament, completeRound } from "@/game/match/tournament";
@@ -37,18 +37,9 @@ export interface CalendarTournamentState {
 }
 
 export function annualEvents(save: GameSave, year: number): ScheduledEvent[] {
-  const country = getCountry(save.player.country);
-  return getSchedule(
-    { year: year - 1, week: 52 },
-    {
-      city: save.player.city.name,
-      countryCode: save.player.country,
-      demonym: country?.nationality ?? save.player.country,
-      continent: country?.continent ?? "World",
-    },
-    save.career.id,
-    53,
-  ).filter((e) => e.year === year);
+  return preserveBookedVenues(save, getSchedule(
+    { year: year - 1, week: 52 }, regionForSave(save), save.career.id, 53,
+  ).filter((e) => e.year === year));
 }
 
 /** Same NPC cannot play two overlapping calendar events or a reserved player event. */

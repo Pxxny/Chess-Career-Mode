@@ -157,7 +157,7 @@ const BRANDS = [
   "First Rank",
   "Kingside",
 ];
-/** Three foreign events every week across six continents, alongside the existing home circuit. */
+/** Weekly circuit templates. The annual allocator assigns their final hometown/domestic/foreign venues. */
 export function extraCircuit(
   now: GameStamp,
   region: Region,

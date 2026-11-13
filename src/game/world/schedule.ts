@@ -1,3 +1,4 @@
+import { distributeAnnualVenues } from "@/game/competition/venues";
 import { registrationWindow } from "@/game/competition/registrationWindow";
 import { rotatingEvents } from "@/game/competition/agenda";
 import { showcaseEvents } from "@/game/competition/showcase";
@@ -19,6 +20,7 @@ export interface Region {
   countryCode: string;
   demonym: string;
   continent: string;
+  birthPlace?: import("@/types").BirthPlace;
 }
 
 export interface ScheduledEvent extends GameStamp {
@@ -85,7 +87,7 @@ function fill(pattern: string, region: Region): string {
 }
 
 /** Events starting within the next `horizon` weeks, soonest first. Deterministic for a given date, career and region. */
-export function getSchedule(
+function buildSchedule(
   now: GameStamp,
   region: Region,
   careerId: string,
@@ -123,6 +125,7 @@ export function getSchedule(
         weeksUntilStart: weeksBetween(now, when),
         weeksUntilDeadline: weeksBetween(now, deadline),
         details: {
+          venueNamePattern: `${style.pattern} · ${when.year}/${when.week}`,
           category:
             style.kind === "junior" ? "Junior Tournaments" : "Open Tournaments",
           ...(style.maxAge !== undefined ? { maxAge: style.maxAge } : {}),
@@ -171,39 +174,61 @@ export function getSchedule(
     ...extraCircuit(now, region, careerId, horizon),
     ...showcaseEvents(now, region, horizon),
     ...rotatingEvents(now, region, horizon),
-  ]
-    .map((e) => {
-      if (e.details && !e.details.organizer) {
-        const official =
-          e.details.federation ||
-          /Championship|World Cup|Candidates|Olympiad|Grand Swiss/.test(
-            e.details.category,
-          );
-        const federation =
-          getCountry(e.details.country)?.federation.name ?? "Host federation";
-        e = {
-          ...e,
-          details: {
-            ...e.details,
-            organizer: {
-              name: official
-                ? federation
-                : `${e.name.split(" · ")[0]} Organizing Club`,
-              status: official ? "Official" : "Unofficial",
-              simulated: true,
-            },
-          },
-        };
-      }
-      return withTravel(e, region.countryCode);
-    })
-    .sort(
-      (a, b) =>
-        a.weeksUntilStart - b.weeksUntilStart ||
-        (a.details?.agenda?.startDay ?? 1) -
-          (b.details?.agenda?.startDay ?? 1) ||
-        a.name.localeCompare(b.name),
-    );
+  ];
+}
+
+const annualCache = new Map<string, ScheduledEvent[]>();
+export function regionForSave(save: GameSave): Region {
+  const country = getCountry(save.player.country);
+  return { city: save.player.city.name, countryCode: save.player.country,
+    demonym: country?.nationality ?? save.player.country, continent: country?.continent ?? "World",
+    birthPlace: save.player.birthPlace ?? { countryCode: save.career.countryCode, city: save.career.city.name } };
+}
+
+/** Keep paid bookings and already-running player/NPC events at their saved venues. */
+export function preserveBookedVenues(save: GameSave, events: ScheduledEvent[]): ScheduledEvent[] {
+  const snapshots = new Map<string, Pick<ScheduledEvent, "details" | "name" | "entryFee">>([
+    ...save.registrations.map((r) => [r.eventId, r] as const),
+    ...(save.calendarTournaments?.active ?? []).map((t) => [t.eventId, t] as const),
+    ...(save.calendarTournaments?.national ?? []).map((n) => [n.event.id, { ...n.event, eventId: n.event.id }] as const),
+    ...(save.tournament ? [[save.tournament.eventId, save.tournament] as const] : []),
+  ]);
+  return events.map((e) => {
+    const saved = snapshots.get(e.id);
+    return saved?.details ? { ...e, name: saved.name, details: saved.details, entryFee: saved.entryFee } : e;
+  });
+}
+
+/** Annual hosts are stable across dates/horizons; only relative week counters change. */
+export function getSchedule(now: GameStamp, region: Region, careerId: string, horizon = 26): ScheduledEvent[] {
+  if (!Number.isFinite(horizon) || horizon < 0) return [];
+  const last = normalize(now.year, now.week + Math.floor(horizon));
+  const output: ScheduledEvent[] = [];
+  for (let year = now.year; year <= last.year; year++) {
+    const key = JSON.stringify([year, careerId, region]);
+    let annual = annualCache.get(key);
+    if (!annual) {
+      const raw = buildSchedule({ year: year - 1, week: 52 }, region, careerId, 52).filter((e) => e.year === year);
+      annual = distributeAnnualVenues(raw, region, careerId).map((event) => {
+        let e = event;
+        if (e.details && !e.details.organizer) {
+          const official = e.details.federation || /Championship|World Cup|Candidates|Olympiad|Grand Swiss/.test(e.details.category);
+          e = { ...e, details: { ...e.details, organizer: {
+            name: official ? getCountry(e.details.country)?.federation.name ?? "Host federation" : `${e.name.split(" · ")[0]} Organizing Club`,
+            status: official ? "Official" : "Unofficial", simulated: true,
+          } } };
+        }
+        return withTravel(e, region.countryCode);
+      });
+      if (annualCache.size >= 32) annualCache.delete(annualCache.keys().next().value!);
+      annualCache.set(key, annual);
+    }
+    for (const e of annual) {
+      const gap = weeksBetween(now, e);
+      if (gap >= 0 && gap <= horizon) output.push({ ...e, weeksUntilStart: gap, weeksUntilDeadline: weeksBetween(now, e.registrationDeadline) });
+    }
+  }
+  return output.sort((a, b) => a.weeksUntilStart - b.weeksUntilStart || (a.details?.agenda?.startDay ?? 1) - (b.details?.agenda?.startDay ?? 1) || a.name.localeCompare(b.name));
 }
 
 export const isEligible = (

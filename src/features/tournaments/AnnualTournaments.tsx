@@ -1,3 +1,4 @@
+import { TOURNAMENT_CONTINENTS, matchesVenueContinent } from "@/game/competition/venues";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Button, Card, CardTitle } from "@/components/ui";
 import { useSave } from "@/hooks/useGame";
@@ -32,6 +33,7 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
     npcs = useNpcs(),
     [year, setYear] = useState(save.world.date.year),
     [kind, setKind] = useState("all"),
+    [continent, setContinent] = useState("all"),
     [resultFilter, setResultFilter] = useState("all"),
     [query, setQuery] = useState(""),
     [limit, setLimit] = useState(20),
@@ -134,6 +136,7 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
   const filtered = source.filter(
     (e) =>
       (kind === "all" || e.kind === kind) &&
+      matchesVenueContinent(e.record?.country ?? e.event?.details?.country, continent) &&
       (resultFilter === "all" || !!e.record) &&
       e.name.toLowerCase().includes(query.toLowerCase()),
   );
@@ -172,6 +175,10 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
                 {y}
               </option>
             ))}
+          </select>
+          <select data-testid="annual-continent-filter" aria-label="Annual tournament continent" value={continent} onChange={(e) => { setContinent(e.target.value); setLimit(20); }} className="max-w-full rounded-lg bg-navy-900 p-3">
+            <option value="all">All continents</option>
+            {TOURNAMENT_CONTINENTS.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
           <select
             aria-label="Annual tournament category"
@@ -252,6 +259,8 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
               <li
                 key={row.id}
                 data-annual-event={row.id}
+                data-host-country={r?.country ?? e?.details?.country ?? ""}
+                data-host-continent={getCountry(r?.country ?? e?.details?.country ?? "")?.continent ?? ""}
                 data-event-kind={row.kind}
               >
                 <Card>

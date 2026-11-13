@@ -1,5 +1,8 @@
 /** English source messages stay in saves; only their presentation is localized. */
 export const TH_MESSAGES: Record<string, string> = {
+  "Annual tournament continent": "ทวีปของรายการแข่งประจำปี",
+  "Continent filters use the host country. Annual venues target 20% in your birth city and 80% elsewhere; historical and national-team hosts keep their recorded locations.": "ตัวกรองทวีปอิงประเทศเจ้าภาพ สถานที่แข่งทั้งปีตั้งเป้า 20% ในเมืองเกิด และ 80% ที่อื่น โดยคงสถานที่อ้างอิงประวัติศาสตร์และรายการทีมชาติไว้",
+  "Continent means the host country, not the player's nationality or the event name.": "ทวีปหมายถึงทวีปของประเทศเจ้าภาพ ไม่ใช่สัญชาติผู้เล่นหรือชื่อรายการ",
   "Continental Championship": "ชิงแชมป์ทวีป",
   "World Cup": "เวิลด์คัพ",
   "Grand Swiss": "แกรนด์สวิส",

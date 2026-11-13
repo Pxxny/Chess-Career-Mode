@@ -1,7 +1,6 @@
 import type { GameSave } from "@/types";
 import { yearReviewOf } from "./yearReview";
-import { getCountry } from "@/data/world/countries";
-import { getSchedule } from "@/game/world/schedule";
+import { preserveBookedVenues, regionForSave, getSchedule } from "@/game/world/schedule";
 import { registrationIssue } from "@/game/competition/eligibility";
 import { registrationWindow } from "@/game/competition/registrationWindow";
 import { bookedStart, calendarBookings } from "@/game/competition/agenda";
@@ -111,19 +110,7 @@ export function advancePlanning(before: GameSave, after: GameSave): GameSave {
   };
 }
 export function careerSchedule(save: GameSave, horizon = 26) {
-  const p = save.player,
-    c = getCountry(p.country);
-  return getSchedule(
-    save.world.date,
-    {
-      city: p.city.name,
-      countryCode: p.country,
-      demonym: c?.nationality ?? p.country,
-      continent: c?.continent ?? "World",
-    },
-    save.career.id,
-    horizon,
-  );
+  return preserveBookedVenues(save, getSchedule(save.world.date, regionForSave(save), save.career.id, horizon));
 }
 export function recommendedEvents(save: GameSave) {
   const focus = planningOf(save).current.focus;
