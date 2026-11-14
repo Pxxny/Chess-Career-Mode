@@ -9,10 +9,22 @@ import { useGameStore } from "@/store/gameStore";
 import { highlightsOf, type CareerArticle } from "@/game/career/highlights";
 import { translateUI as t } from "@/i18n/translate";
 import { LanguageContext } from "@/i18n/context";
+import { useNavigate } from "react-router-dom";
 
 const LABELS = { trophy: "Tournament victory", national: "National team", title: "New title", qualification: "Championship qualification" };
 function Reader({ article, close, resume, remaining = 0 }: { article: CareerArticle; close: () => void; resume?: () => void; remaining?: number }) {
   const reduced = useReducedMotion();
+  const navigate = useNavigate();
+  const registrations = () => {
+    close();
+    const params = new URLSearchParams({ section: "registrations" });
+    // Old articles have no metadata; their qualifications are still recovered from the save.
+    const eventId = article.eventId ?? (article.id.startsWith("national-selected:") ? article.id.slice("national-selected:".length) : undefined);
+    const qualification = article.qualification ?? (article.kind === "qualification" ? article.id.split(":")[2] : undefined);
+    if (eventId) params.set("focusRegistration", eventId);
+    if (qualification) params.set("qualification", qualification);
+    navigate(`/complete?${params}`);
+  };
   return <div data-testid="career-news-article" className="min-w-0 break-words [overflow-wrap:anywhere]">
     <motion.img initial={reduced ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} src={`/news/${article.kind}.svg`} alt={t(LABELS[article.kind])} className="aspect-[2/1] w-full rounded-xl object-cover" />
     <div className="py-5"><p className="text-xs font-semibold uppercase tracking-wider text-gold-400">{LABELS[article.kind]} · {article.year} / W{article.week}</p>
@@ -21,6 +33,7 @@ function Reader({ article, close, resume, remaining = 0 }: { article: CareerArti
       {resume && <p className="mt-4 rounded-xl bg-gold-500/10 p-3 text-xs text-gold-300">Season simulation is paused. Your completed progress is saved.</p>}
     </div>
     <div className="flex flex-wrap gap-2 border-t border-white/10 pt-4">
+      {(article.kind === "national" || article.kind === "qualification") && <Button onClick={registrations}>Your registrations</Button>}
       {resume && <Button onClick={resume}>{remaining > 1 ? "Next story" : "Continue season"}</Button>}
       <Button variant="secondary" onClick={close}>{resume ? "Read and stay paused" : "Close news"}</Button>
     </div>

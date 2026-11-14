@@ -8,6 +8,8 @@ export const articleSchema = z.object({
   id: z.string(), kind: z.enum(["trophy", "national", "title", "qualification"]),
   year: z.number().int(), week: z.number().int().min(1).max(52), day: z.number().int().min(1).max(7),
   headline: z.string(), body: z.string(), event: z.string(),
+  eventId: z.string().optional(),
+  qualification: z.enum(["continental", "world-cup", "grand-swiss", "candidates", "world-championship", "super-invitation"]).optional(),
 });
 export type CareerArticle = z.infer<typeof articleSchema>;
 export const highlightsSchema = z.object({ items: z.array(articleSchema), seen: z.array(z.string()), unread: z.array(z.string()) });
@@ -22,10 +24,10 @@ export function acknowledgeArticle(save: GameSave, id: string): GameSave {
 export function captureHighlights(before: GameSave, after: GameSave, npcs: Npc[] = []): GameSave {
   if (before.career.id !== after.career.id) return after;
   const previous = highlightsOf(after), state = { items: [...previous.items], seen: [...previous.seen], unread: [...previous.unread] };
-  const add = (id: string, kind: CareerArticle["kind"], event: string, headline: string, body: string) => {
+  const add = (id: string, kind: CareerArticle["kind"], event: string, headline: string, body: string, destination: Pick<CareerArticle, "eventId" | "qualification"> = {}) => {
     if (state.seen.includes(id)) return;
     state.seen.push(id);
-    state.items.push({ id, kind, event, headline, body, ...after.world.date, day: after.world.day ?? 1 });
+    state.items.push({ id, kind, event, headline, body, ...destination, ...after.world.date, day: after.world.day ?? 1 });
     state.unread.push(id);
   };
   for (const t of after.history.tournaments) {
@@ -44,7 +46,7 @@ export function captureHighlights(before: GameSave, after: GameSave, npcs: Npc[]
     if ((before.competition?.qualifications ?? []).some((old) => old.kind === q.kind && old.year === q.year && old.source === q.source)) continue;
     add(`qualification:${q.year}:${q.kind}:${q.source}`, "qualification", q.source,
       `${after.player.name} qualifies for ${qualificationNames[q.kind]}`,
-      `Your result at ${q.source} earned qualification for ${qualificationNames[q.kind]}. Check the championship path for entry requirements and the qualification expiry.`);
+      `Your result at ${q.source} earned qualification for ${qualificationNames[q.kind]}. Check the championship path for entry requirements and the qualification expiry.`, { qualification: q.kind });
   }
   const esports = [...(after.esports?.history ?? []), ...(after.esports?.active?.status === "finished" ? [after.esports.active] : [])];
   for (const c of esports) {
@@ -70,7 +72,7 @@ export function captureHighlights(before: GameSave, after: GameSave, npcs: Npc[]
     const home = buildEventTeams(after, npcs, teamInfoOf(r.details)).find((t) => t.country === after.player.country);
     if (!home?.players.some((p) => p.id === "player")) continue;
     add(id, "national", r.name, `${after.player.name} selected for the national team`,
-      `You have been selected for the starting roster at ${r.name}. The registered event is ready to begin. Simulation paused before the team competition starts.`);
+      `You have been selected for the starting roster at ${r.name}. The registered event is ready to begin. Simulation paused before the team competition starts.`, { eventId: r.eventId });
   }
   if (state.items.length === previous.items.length) return after;
   const keep = state.items.filter((a, i) => i >= state.items.length - 300 || state.unread.includes(a.id));

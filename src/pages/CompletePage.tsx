@@ -1,7 +1,7 @@
 import { AnnualTournaments } from "@/features/tournaments/AnnualTournaments";
 import { EsportsPanel } from "@/features/esports/EsportsPanel";
 import { SectionMenu } from "@/components/ui/SectionMenu";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { PreparePanel } from "@/features/competition/PreparePanel";
 import { competitionOf } from "@/game/competition/preparation";
 import {
@@ -38,6 +38,7 @@ type Tab =
 export function CompletePage() {
   const save = useSave();
   const [params] = useSearchParams();
+  const route = useLocation();
   const [circuit, setCircuit] = useState<"traditional" | "esports">(
     params.get("circuit") === "esports" ? "esports" : "traditional",
   );
@@ -47,11 +48,16 @@ export function CompletePage() {
   const [tab, setTab] = useState<Tab>("tournament");
   const [active, setActive] = useState<MatchSetup | null>(null);
   useEffect(() => {
+    if (params.get("section") === "registrations") {
+      setCircuit("traditional");
+      setTab("tournament");
+      return;
+    }
     if (params.get("circuit") === "esports") {
       setCircuit("esports");
       setTab("tournament");
     }
-  }, [params]);
+  }, [params, route.key]);
 
   const nearby = useMemo(
     () =>

@@ -1,5 +1,6 @@
 import { TOURNAMENT_CONTINENTS, matchesVenueContinent } from "@/game/competition/venues";
-import { useSearchParams } from "react-router-dom";
+import { earnedEntries } from "@/game/competition/earnedEntries";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { TournamentDetail } from "@/features/tournaments/TournamentDetail";
 import { eventKind } from "@/game/competition/archive";
 import { registrationWindow } from "@/game/competition/registrationWindow";
@@ -26,7 +27,7 @@ import { TournamentFinder } from "./TournamentFinder";
 import { AdvanceToEvent } from "@/features/qol/CareerPanels";
 import { TournamentHistoryDialog } from "@/features/qol/HistoryDialogs";
 import { useMatchRunning } from "@/store/matchLocks";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Badge, Button, Card, CardTitle } from "@/components/ui";
 import { useSave } from "@/hooks/useGame";
 import { useNpcs } from "@/hooks/useNpcs";
@@ -347,6 +348,7 @@ export function TournamentPanel({
     [category, setCategory] = useState("all"),
     [limit, setLimit] = useState(6);
   const [urlParams, setUrlParams] = useSearchParams();
+  const route = useLocation();
   const selectedEventId = urlParams.get("event");
   const events = useMemo(() => {
     return preserveBookedVenues(save, getSchedule(save.world.date, regionForSave(save), save.career.id, 52));
@@ -357,6 +359,18 @@ export function TournamentPanel({
   const regs = registrationStates(save).filter(
     (r) => !swissOnly || (r.details?.format ?? "swiss") === "swiss",
   );
+  const earned = useMemo(() => earnedEntries(save, events).filter(
+    ({ event }) => !swissOnly || event.details?.format === "swiss",
+  ), [save, events, swissOnly]);
+  useEffect(() => {
+    if (urlParams.get("section") !== "registrations") return;
+    const frame = requestAnimationFrame(() => {
+      const section = document.getElementById("your-registrations");
+      section?.focus({ preventScroll: true });
+      section?.scrollIntoView({ block: "start" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [urlParams, route.key]);
   const t = save.tournament;
   const showCurrent =
     t && (!swissOnly || (t.details?.format ?? "swiss") === "swiss");
@@ -588,23 +602,29 @@ export function TournamentPanel({
           </p>
         </Card>
       )}
-      <Card>
-        <CardTitle>Your registrations</CardTitle>
+      <Card id="your-registrations" tabIndex={-1} className="scroll-mt-24" data-testid="your-registrations">
+        <CardTitle aside={<Badge tone="gold">{regs.length + earned.length}</Badge>}>Your registrations</CardTitle>
+        <p className="mb-4 text-sm text-ink-muted">Your qualified events and national team entries appear here automatically. Qualified entries still need registration confirmation.</p>
         {running && (
           <p role="status" className="mb-3 text-xs text-gold-400">
             A match is running in the background. Its result will appear when it
             finishes.
           </p>
         )}
-        {!regs.length && (
+        {!regs.length && !earned.length && (
           <p className="text-sm text-ink-muted">
             You are not registered for any event.
           </p>
         )}
         <ul className="space-y-3" data-testid="registrations">
           {regs.map((r) => (
-            <li key={r.eventId} className="rounded-lg bg-navy-900 p-3">
+            <li key={r.eventId} data-event-id={r.eventId} className={`rounded-lg bg-navy-900 p-3 ${urlParams.get("focusRegistration") === r.eventId ? "ring-1 ring-gold-400" : ""}`}>
               <p className="font-semibold text-ink">{r.name}</p>
+              <p className="mt-2 text-xs font-semibold text-gold-300">
+                {r.status === "missed" ? "Event missed" : r.status === "ready" ? "Registered · ready to play" : "Registered · waiting to play"}
+              </p>
+              {r.details?.format === "team" && <p className="mt-1 text-xs text-gold-300">{save.highlights?.seen.includes(`national-selected:${r.eventId}`) ? "Selected for the national team" : "National team entry"}</p>}
+              {r.details && <p className="mt-1 text-xs text-ink-muted">{r.details.location} · {getCountry(r.details.country)?.name ?? r.details.country}</p>}
               <p className="my-2 text-xs text-ink-muted">
                 {dateLabel(r)} · {r.status} · fee paid ${r.entryFee} · travel $
                 {r.travelCost ?? 0}
@@ -646,6 +666,24 @@ export function TournamentPanel({
             </li>
           ))}
         </ul>
+        {!!earned.length && <ul className="mt-3 space-y-3" data-testid="qualified-registrations">
+          {earned.map(({ event, qualification }) => {
+            const window = registrationWindow(save, event);
+            const issue = registrationIssue(save, event, npcs);
+            return <li key={event.id} data-event-id={event.id} className={`rounded-xl border border-gold-500/20 bg-gold-500/5 p-4 ${urlParams.get("qualification") === qualification.kind ? "ring-1 ring-gold-400" : ""}`}>
+              <p className="text-xs font-semibold text-gold-300">{window.status === "upcoming" ? "Qualified · waiting for registration" : issue ? "Qualified · requirements pending" : "Qualified · confirm registration"}</p>
+              <h3 className="mt-2 break-words font-semibold text-ink">{event.name}</h3>
+              <p className="mt-2 text-xs text-ink-muted">{dateLabel(event)} · {event.details?.location} · {getCountry(event.details?.country ?? "")?.name ?? event.details?.country}</p>
+              <p className="mt-2 text-xs text-ink-muted"><span>Qualified via</span>: <span translate="no">{qualification.source}</span> ({qualification.year})</p>
+              <p className="mt-1 text-xs text-ink-muted"><span>Qualification valid through</span>: {qualification.year + 2}</p>
+              <p className="mt-2 text-xs text-ink-muted"><span>Registration opens</span>: {dayLabel(window.open)} · <span>Registration deadline</span>: {dayLabel(window.close)}</p>
+              <p className="mt-1 text-xs text-ink-muted"><span>Entry fee</span>: ${event.entryFee} · <span>Travel</span>: ${event.details?.travelCost ?? 0}</p>
+              {issue && <p className="mt-3 text-xs text-gold-300">{issue}</p>}
+              <details className="mt-3 text-sm"><summary className="cursor-pointer text-ink-muted">Entry details</summary><div className="mt-3"><EventFacts event={event} /></div></details>
+              <Button className="mt-3" disabled={!!issue || running} onClick={() => result(register(event))}>Confirm registration</Button>
+            </li>;
+          })}
+        </ul>}
         <p className="mt-3 text-xs text-ink-faint">
           Use End Day in Train to advance the calendar. Start in the listed
           week; registration closes at the end of the deadline week. One
