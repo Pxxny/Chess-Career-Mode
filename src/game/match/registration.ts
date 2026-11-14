@@ -151,18 +151,6 @@ export function registerForEvent(
   if (error) return { ok: false, error };
   if (npcs && !npcs.length)
     return { ok: false, error: "Wait for the NPC world to finish loading." };
-  if (
-    event.details?.format === "team" &&
-    npcs &&
-    !buildEventTeams(save, npcs, teamInfoOf(event.details))
-      .find((t) => t.country === save.player.country)
-      ?.players.some((p) => p.id === "player")
-  )
-    return {
-      ok: false,
-      error:
-        "You must be selected among the top four eligible players of your national team.",
-    };
   const entry: EventRegistration = {
     eventId: event.id,
     registrationDay: entryDay(save),

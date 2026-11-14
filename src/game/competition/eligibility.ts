@@ -1,3 +1,5 @@
+import { teamSpec,teamInfoOf } from "@/data/chess/nationalTeamEvents";
+import { teamSelection } from "./teamSelection";
 import { registrationWindow } from "./registrationWindow";
 import { circuitVisible, qualificationMatches, CIRCUIT_LABELS } from "./qualificationCircuit";
 import type { ScheduledEvent } from "@/game/world/schedule";
@@ -109,12 +111,16 @@ export function registrationIssue(
     return "This tournament is full.";
   const issues = eligibilityIssues(save, event);
   if (issues.length) return `Requires ${issues.join(", ")}.`;
+  if(npcs&&npcs.length===0)return "Wait for the NPC world to finish loading.";
+  const selection=teamSelection(save,event,npcs);
+  if(selection?.issue)return selection.issue;
   if (save.player.money < event.entryFee + (event.details?.travelCost ?? 0))
     return "You cannot afford the entry fee and travel.";
   return null;
 }
-export const requirementsText = (e: ScheduledEvent): string =>
-  [
+export const requirementsText = (e: ScheduledEvent): string => {
+  const spec=e.details?.format==='team'?teamSpec(teamInfoOf(e.details).key):undefined,maxAge=e.details?.maxAge??spec?.maxAge;
+  return [
     `${e.minElo}+ Elo`,
     e.minReputation ? `reputation ${e.minReputation}+` : null,
     e.details?.minimumTitle ? `${e.details.minimumTitle} title` : null,
@@ -124,6 +130,10 @@ export const requirementsText = (e: ScheduledEvent): string =>
     e.details?.nationality ? `${e.details.nationality} nationality` : null,
     e.details?.minimumLeague ? `${e.details.minimumLeague} league` : null,
     e.details?.federation ? "federation member" : null,
+    maxAge!==undefined?`age ${maxAge} or younger`:null,
+    spec?.minAge!==undefined?`age ${spec.minAge}+`:null,
+    e.details?.format==='team'?"national-team starting-roster selection":null,
   ]
     .filter(Boolean)
     .join(" · ");
+};

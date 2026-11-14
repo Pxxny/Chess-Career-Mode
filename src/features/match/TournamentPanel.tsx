@@ -1,3 +1,4 @@
+import { teamSelection } from "@/game/competition/teamSelection";
 import { hasOpeningCeremony } from "@/game/competition/presentation";
 import { CareerTools } from "@/features/career/CareerTools";
 import { tournamentCategory } from "@/game/competition/categories";
@@ -293,6 +294,8 @@ export function TournamentPanel({
   const running = useMatchRunning(save.career.id);
   const acceptInvitation = useGameStore((s) => s.acceptShowcaseInvitation);
   const [finderOpen, setFinderOpen] = useState(false);
+  const [registrationError,setRegistrationError]=useState<{id:string;message:string}|null>(null);
+  useEffect(()=>setRegistrationError(null),[save,npcs]);
   const [viewTournament, setViewTournament] = useState(false);
   const [spotlight, setSpotlight] = useState<ScheduledEvent | null>(null);
   const [search, setSearch] = useState<TournamentSearch | null>(null);
@@ -787,7 +790,7 @@ export function TournamentPanel({
             const totalEntrants = e.details?.showcase
               ? null
               : registrationCount(save, e, npcs);
-            const full = totalEntrants !== null && totalEntrants >= e.fieldSize;
+            const full = e.details?.format!=="team" && totalEntrants !== null && totalEntrants >= e.fieldSize;
             const invitation = e.details?.showcase
               ? showcaseSelection(save, e, npcs)
               : null;
@@ -802,6 +805,8 @@ export function TournamentPanel({
                 stampIndex(e.registrationDeadline),
               notOpen = registrationWindow(save, e).status === "upcoming",
               issues = eligibilityIssues(save, e),
+              selection=teamSelection(save,e,npcs),
+              entryIssue=registrationIssue(save,e,npcs),
               conflict = bookingConflict(
                 save,
                 bookedStart(e),
@@ -909,28 +914,13 @@ export function TournamentPanel({
                   </a>
                 )}
                 <Entrants event={e} /></details>
-                <p className="mt-3 text-xs text-ink-muted">
-                  {issues.length
-                    ? `Missing: ${issues.join(" · ")}`
-                    : "Entry requirements met"}
-                </p>
+                {selection&&<div className="mt-3 rounded-xl bg-navy-900 p-3 text-xs" data-testid="team-selection-status"><p className={selection.status==='selected'?'font-semibold text-gold-300':'font-semibold text-ink'}>National team selection · {selection.status==='selected'?'Selected for starting boards':selection.status==='reserve'?'Reserve only':selection.status==='loading'?'Loading roster':'Not selected for starting boards'}</p><p className="mt-1 text-ink-muted">Age eligibility does not guarantee a starting place. Selection follows eligible federation Elo rankings and roster quotas.</p><details className="mt-2"><summary className="cursor-pointer text-gold-300">View national starting roster</summary><p className="mt-2 text-ink-muted">{selection.boards} boards · {selection.rules.join(' · ')}</p><ol className="mt-2 space-y-1">{selection.starters.map((p,i)=><li key={p.id}><span translate="no">{i+1}. {p.name}</span> · Elo {p.elo}{p.id==='player'?' · YOU':''}</li>)}</ol></details></div>}
+                <p className="mt-3 text-xs text-ink-muted" data-testid="registration-reason">{registered?'Registration confirmed':played?'Already played':issues.length?`Missing: ${issues.join(' · ')}`:entryIssue??'Entry requirements met'}</p>
                 <Button
                   className="mt-3"
                   data-testid="register"
-                  disabled={
-                    registrationIssue(save, e, npcs) !== null ||
-                    full ||
-                    (invitation !== null && !invitation.invited) ||
-                    registered ||
-                    played ||
-                    closed ||
-                    issues.length > 0 ||
-                    !afford ||
-                    conflict
-                  }
-                  onClick={() =>
-                    result(invitation ? acceptInvitation(e) : register(e))
-                  }
+                  disabled={entryIssue!==null}
+                  onClick={()=>{const response=invitation?acceptInvitation(e):register(e);setError('');setRegistrationError(response.ok?null:{id:e.id,message:response.error});}}
                 >
                   {registered
                     ? "Registered"
@@ -944,6 +934,8 @@ export function TournamentPanel({
                             ? "Schedule conflict"
                             : issues.length
                               ? "Not eligible"
+                              : selection?.issue
+                                ? selection.status==='loading'?"Loading team selection":"Not selected for team"
                               : !afford
                                 ? "Cannot afford"
                                 : invitation
@@ -952,8 +944,9 @@ export function TournamentPanel({
                                     : "Invitation only"
                                   : full
                                     ? "Full"
-                                    : "Register"}
+                                    : entryIssue?"Unavailable":"Register"}
                 </Button>
+                {registrationError?.id===e.id&&<p className="mt-2 text-sm text-red-300" role="alert">{registrationError.message}</p>}
               </li>
             );
           })}
