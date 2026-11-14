@@ -1,0 +1,10 @@
+Game Atlas reference geography
+
+Natural Earth, public domain: https://www.naturalearthdata.com/about/terms-of-use/
+Reference datasets: 1:50m Admin 0 Countries, 1:50m Rivers + Lake Centerlines, 1:110m Lakes.
+Source: https://github.com/nvkelso/natural-earth-vector/tree/master/geojson
+Coordinates simplified and rounded for a compact game atlas. Geography is generalized.
+
+City names, coordinates and population: GeoNames via all-the-cities; see venue-cities-SOURCE.txt.
+The game renders all map graphics locally. City streets, districts, buildings and tournament venue artwork are procedural game scenery, not real addresses or survey data.
+No third-party map tiles, map embeds, API key or external map service is used at runtime.

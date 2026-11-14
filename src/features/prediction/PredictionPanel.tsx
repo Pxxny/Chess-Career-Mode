@@ -1,3 +1,4 @@
+import { MatchComparison } from "./MatchComparison";
 import { useId } from "react";
 import { Badge, Card, CardTitle } from "@/components/ui";
 import { displayPercentages } from "@/game/prediction/model";
@@ -150,6 +151,7 @@ export function PredictionPanel({
           </div>
         ))}
       </dl>
+      {(!compact || preview) && <MatchComparison prediction={p} />}
       {actual && (
         <p
           className="mt-4 rounded-lg bg-navy-900 p-3 text-sm text-ink"

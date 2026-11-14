@@ -1,5 +1,7 @@
 import { TOURNAMENT_CONTINENTS, matchesVenueContinent } from "@/game/competition/venues";
 import { earnedEntries } from "@/game/competition/earnedEntries";
+import { TournamentSpotlightDialog } from "@/features/tournaments/TournamentSpotlight";
+import { circuitVisible, circuitAdvancement } from "@/game/competition/qualificationCircuit";
 import { useLocation, useSearchParams } from "react-router-dom";
 import { TournamentDetail } from "@/features/tournaments/TournamentDetail";
 import { eventKind } from "@/game/competition/archive";
@@ -21,6 +23,7 @@ import { registrationCount, type EntryEvent } from "@/game/competition/entries";
 import { showcaseSelection } from "@/game/competition/showcase";
 import {
   matchesTournamentSearch,
+  matchesQualificationFilter,
   type TournamentSearch,
 } from "@/game/competition/finder";
 import { TournamentFinder } from "./TournamentFinder";
@@ -63,7 +66,7 @@ export function EventFacts({ event }: { event: ScheduledEvent }) {
     ],
     [
       "Start",
-      d?.agenda?.exactStart
+      d?.agenda?.exactStart || d?.qualificationCircuit
         ? dayLabel(bookedStart(event))
         : d?.reference?.sourceYear === event.year
           ? `${d.reference.startDate} (W${event.week})`
@@ -73,7 +76,7 @@ export function EventFacts({ event }: { event: ScheduledEvent }) {
     ],
     [
       "End",
-      d?.agenda?.exactStart
+      d?.agenda?.exactStart || d?.qualificationCircuit
         ? dayLabel(bookedEnd(event))
         : d?.reference?.sourceYear === event.year && d.reference.endDate
           ? `${d.reference.endDate} (W${d.end.week})`
@@ -115,6 +118,8 @@ export function EventFacts({ event }: { event: ScheduledEvent }) {
     ["Prize money", `$${d?.prize ?? 0}`],
     ["Prestige", `${d?.prestige ?? 0}/100`],
     ["Qualification requirements", requirementsText(event)],
+    ...(d?.qualificationCircuit?.sponsor ? [["Sponsor", d.qualificationCircuit.sponsor], ["World Finals destination", d.qualificationCircuit.worldFinalName ?? "World Qualification Finals"]] : []),
+    ...(d?.qualificationCircuit ? [["Qualification route", circuitAdvancement(d) || "Final stage · qualifiers from all continents"], ["Qualification season", d.qualificationCircuit.season]] : []),
   ];
   return (
     <dl className="mt-3 grid grid-cols-1 gap-3 text-xs sm:grid-cols-2 lg:grid-cols-3">
@@ -334,6 +339,7 @@ export function TournamentPanel({
   const acceptInvitation = useGameStore((s) => s.acceptShowcaseInvitation);
   const [finderOpen, setFinderOpen] = useState(false);
   const [viewTournament, setViewTournament] = useState(false);
+  const [spotlight, setSpotlight] = useState<ScheduledEvent | null>(null);
   const [search, setSearch] = useState<TournamentSearch | null>(null);
   const register = useGameStore((s) => s.registerForEvent),
     cancel = useGameStore((s) => s.cancelRegistration),
@@ -343,6 +349,7 @@ export function TournamentPanel({
   const [location, setLocation] = useState("all");
   const [continent, setContinent] = useState("all");
   const [source, setSource] = useState("all");
+  const [qualificationFilter, setQualificationFilter] = useState<TournamentSearch["qualification"]>("all");
   const [error, setError] = useState(""),
     [query, setQuery] = useState(""),
     [category, setCategory] = useState("all"),
@@ -404,6 +411,7 @@ export function TournamentPanel({
   const filtered = events.filter(
     (e) =>
       (!swissOnly || e.details?.format === "swiss") &&
+      circuitVisible(save.player.country, e.details) && matchesQualificationFilter(e, qualificationFilter) &&
       matchesVenueContinent(e.details?.country, continent) &&
       (!search ||
         (matchesTournamentSearch(e, search) &&
@@ -423,6 +431,7 @@ export function TournamentPanel({
   );
   return (
     <div className="space-y-4" data-testid="tournament-panel">
+      {spotlight && <TournamentSpotlightDialog event={spotlight} onClose={() => setSpotlight(null)} />}
       {viewTournament && t && (
         <TournamentDetail
           tournament={t}
@@ -433,11 +442,13 @@ export function TournamentPanel({
         <TournamentFinder
           initial={search}
           continent={continent}
+          qualification={qualificationFilter}
           rating={save.player.rating}
           onClose={() => setFinderOpen(false)}
           onApply={(value) => {
             setSearch(value);
             setContinent(value.continent);
+            setQualificationFilter(value.qualification ?? "all");
             setUrlParams((params) => {
               params.delete("event");
               return params;
@@ -574,6 +585,7 @@ export function TournamentPanel({
             Open tournament / watch games
           </Button>
           <TournamentTimetable tournament={t} />
+          {t.details?.qualificationCircuit && <p className="my-3 rounded-xl bg-gold-500/10 p-3 text-sm text-gold-300">{circuitAdvancement(t.details) || "Final stage · qualifiers from all continents"}</p>}
           <h3 className="mb-2 font-semibold text-ink">Tournament standings</h3>
           <TournamentStandings t={t} />
           <PairingHistory t={t} />
@@ -670,12 +682,13 @@ export function TournamentPanel({
           {earned.map(({ event, qualification }) => {
             const window = registrationWindow(save, event);
             const issue = registrationIssue(save, event, npcs);
-            return <li key={event.id} data-event-id={event.id} className={`rounded-xl border border-gold-500/20 bg-gold-500/5 p-4 ${urlParams.get("qualification") === qualification.kind ? "ring-1 ring-gold-400" : ""}`}>
+            return <li key={event.id} data-event-id={event.id} className={`rounded-xl border border-gold-500/20 bg-gold-500/5 p-4 ${(urlParams.get("focusRegistration") === event.id || (!urlParams.get("focusRegistration") && urlParams.get("qualification") === qualification.kind)) ? "ring-1 ring-gold-400" : ""}`}>
               <p className="text-xs font-semibold text-gold-300">{window.status === "upcoming" ? "Qualified · waiting for registration" : issue ? "Qualified · requirements pending" : "Qualified · confirm registration"}</p>
               <h3 className="mt-2 break-words font-semibold text-ink">{event.name}</h3>
+              {event.details?.qualificationCircuit?.worldFinalName && <p className="mt-2 text-xs text-gold-300"><span>World Finals destination</span>: <span translate="no">{event.details.qualificationCircuit.worldFinalName}</span></p>}
               <p className="mt-2 text-xs text-ink-muted">{dateLabel(event)} · {event.details?.location} · {getCountry(event.details?.country ?? "")?.name ?? event.details?.country}</p>
               <p className="mt-2 text-xs text-ink-muted"><span>Qualified via</span>: <span translate="no">{qualification.source}</span> ({qualification.year})</p>
-              <p className="mt-1 text-xs text-ink-muted"><span>Qualification valid through</span>: {qualification.year + 2}</p>
+              <p className="mt-1 text-xs text-ink-muted"><span>Qualification valid through</span>: {event.details?.qualificationCircuit?.season ?? qualification.year + 2}</p>
               <p className="mt-2 text-xs text-ink-muted"><span>Registration opens</span>: {dayLabel(window.open)} · <span>Registration deadline</span>: {dayLabel(window.close)}</p>
               <p className="mt-1 text-xs text-ink-muted"><span>Entry fee</span>: ${event.entryFee} · <span>Travel</span>: ${event.details?.travelCost ?? 0}</p>
               {issue && <p className="mt-3 text-xs text-gold-300">{issue}</p>}
@@ -692,6 +705,7 @@ export function TournamentPanel({
       </Card>
       <Card>
         <CardTitle>Upcoming tournaments</CardTitle>
+        <p className="mb-4 rounded-xl bg-gold-500/10 p-3 text-sm text-gold-300">Sponsored qualification circuits: Local → National → Continental → World. Each event publishes its advancing places and named World Finals destination. Places vary by event and season; federation and continent restrictions still apply.</p>
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <Button variant="secondary" onClick={() => setFinderOpen(true)}>
             Find suitable tournaments
@@ -734,6 +748,13 @@ export function TournamentPanel({
             <option value="all">All sources</option>
             <option value="fide">FIDE-listed references</option>
             <option value="fictional">In-game circuit</option>
+          </select>
+          <select aria-label="Qualification entry" value={qualificationFilter ?? "all"} onChange={(e) => {
+            const qualification = e.target.value as TournamentSearch["qualification"];
+            setQualificationFilter(qualification); setLimit(6);
+            setSearch((previous) => previous ? { ...previous, qualification, availableOnly: false } : null);
+          }} className="max-w-full rounded-lg bg-navy-900 p-3 text-sm text-ink">
+            <option value="all">All entry types</option><option value="required">Qualification required</option><option value="qualifier">Awards qualification</option><option value="circuit">Local → National → Continental → World</option>
           </select>
           <select data-testid="tournament-continent-filter" aria-label="Tournament continent" value={continent} onChange={(e) => {
             setContinent(e.target.value); setLocation("all"); setLimit(6);
@@ -871,6 +892,8 @@ export function TournamentPanel({
                   </Badge>
                 </div>
                 <EventFacts event={e} />
+                <Button className="mt-3" variant="secondary" onClick={() => setSpotlight(e)}>City map & tournament spotlight</Button>
+                {e.details?.qualificationCircuit && <p className="mt-3 rounded-lg bg-gold-500/10 p-3 text-sm text-gold-300" data-testid="qualification-route">{circuitAdvancement(e.details) || "Final stage · qualifiers from all continents"}</p>}
                 <TournamentTimetable event={e} />
                 {totalEntrants !== null && e.details?.format !== "team" && (
                   <p

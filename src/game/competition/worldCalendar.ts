@@ -91,6 +91,9 @@ export function calendarField(
   npcs: Npc[],
 ): Npc[] {
   const busy = calendarBusyIds(save, event);
+  // Qualify against the full population first. A busy finalist must not promote a failed qualifier.
+  if (event.details?.qualificationCircuit)
+    return previewEntrants(save, event, npcs).filter((n) => !busy.has(n.id) && n.currentElo >= event.minElo);
   const available = npcs.filter(
     (n) => !busy.has(n.id) && n.currentElo >= event.minElo,
   );

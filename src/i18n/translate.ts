@@ -13,6 +13,7 @@ const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // Only these captures contain interface labels. Other captures may be player names,
 // city names, openings, SAN or custom team names and must keep their original spelling.
 const labelCaptures: Record<string, number[]> = {
+  "Top {{0}} qualify for {{1}}.": [1],
   "{{0}} qualifies for {{1}}": [1],
   "Your result at {{0}} earned qualification for {{1}}. Check the championship path for entry requirements and the qualification expiry.": [1],
   "{{0}}: more sections": [0],

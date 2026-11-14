@@ -1,4 +1,5 @@
 import { queueArchives, archiveTournament } from "./archive";
+import { getCountry } from "@/data/world/countries";
 import { compactTournament } from "@/game/prediction/adapters";
 import { GAME_CONFIG } from "@/data/config";
 import { dayIndex } from "@/game/career/expansion";
@@ -291,6 +292,10 @@ export function archiveCompetition(save: GameSave): GameSave {
     ? Number.POSITIVE_INFINITY
     : (t.finalRank ?? t.players.length);
   const category = t.details?.category;
+  const circuit = t.details?.qualificationCircuit;
+  if (circuit?.advanceKind && circuit.advanceTop && rank >= 1 && rank <= circuit.advanceTop &&
+    !state.qualifications.some((q) => q.kind === circuit.advanceKind && q.eventId === circuit.targetEventId))
+    grants.push(circuit.advanceKind);
   if (rank === 1 && category === "Open Tournaments") grants.push("grand-swiss");
   if (rank <= 3 && category === "National Championships")
     grants.push("continental");
@@ -302,7 +307,7 @@ export function archiveCompetition(save: GameSave): GameSave {
     grants.push("world-championship");
   if (rank === 1 && category === "World Chess Championship")
     grants.push("world-championship");
-  if (rank <= 3 && t.level === "international") grants.push("super-invitation");
+  if (!circuit && rank <= 3 && t.level === "international") grants.push("super-invitation");
   return queueArchives(
     {
       ...save,
@@ -336,6 +341,7 @@ export function archiveCompetition(save: GameSave): GameSave {
             kind,
             year: save.world.date.year,
             source: t.name,
+            ...(kind.startsWith("circuit-") ? { eventId: circuit?.targetEventId, country: circuit?.country, continent: circuit?.continent ?? (circuit?.country ? getCountry(circuit.country)?.continent : undefined) } : {}),
             route:
               category === "World Chess Championship"
                 ? ("defence" as const)

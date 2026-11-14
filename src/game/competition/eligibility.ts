@@ -1,4 +1,5 @@
 import { registrationWindow } from "./registrationWindow";
+import { circuitVisible, qualificationMatches, CIRCUIT_LABELS } from "./qualificationCircuit";
 import type { ScheduledEvent } from "@/game/world/schedule";
 import type { ChessTitle, GameSave, SkillTier } from "@/types";
 import { competitionOf } from "./preparation";
@@ -26,6 +27,7 @@ export function eligibilityIssues(
 ): string[] {
   const issues: string[] = [];
   const d = event.details;
+  if (!circuitVisible(save.player.country, d)) issues.push("Your federation's qualification circuit only");
   if (save.player.rating < event.minElo) issues.push(`${event.minElo}+ Elo`);
   if (save.player.reputation < event.minReputation)
     issues.push(`Reputation ${event.minReputation}+`);
@@ -50,10 +52,10 @@ export function eligibilityIssues(
   if (
     d?.qualification &&
     !competitionOf(save).qualifications.some(
-      (q) => q.kind === d.qualification && q.year >= save.world.date.year - 2,
+      (q) => qualificationMatches(q, event, save.world.date.year),
     )
   )
-    issues.push(`Previous qualification: ${d.qualification}`);
+    issues.push(`Previous qualification: ${CIRCUIT_LABELS[d.qualification] ?? d.qualification}`);
   return issues;
 }
 export function registrationIssue(
@@ -117,7 +119,7 @@ export const requirementsText = (e: ScheduledEvent): string =>
     e.minReputation ? `reputation ${e.minReputation}+` : null,
     e.details?.minimumTitle ? `${e.details.minimumTitle} title` : null,
     e.details?.qualification
-      ? `qualified for ${e.details.qualification}`
+      ? `qualified for ${CIRCUIT_LABELS[e.details.qualification] ?? e.details.qualification}`
       : null,
     e.details?.nationality ? `${e.details.nationality} nationality` : null,
     e.details?.minimumLeague ? `${e.details.minimumLeague} league` : null,

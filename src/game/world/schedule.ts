@@ -1,4 +1,5 @@
 import { distributeAnnualVenues } from "@/game/competition/venues";
+import { qualificationCircuitEvents } from "@/game/competition/qualificationCircuit";
 import { registrationWindow } from "@/game/competition/registrationWindow";
 import { rotatingEvents } from "@/game/competition/agenda";
 import { showcaseEvents } from "@/game/competition/showcase";
@@ -169,6 +170,7 @@ function buildSchedule(
   }
   return [
     ...events,
+    ...Array.from({ length: normalize(now.year, now.week + horizon).year - now.year + 1 }, (_, i) => qualificationCircuitEvents(now.year + i, region)).flat(),
     ...careerEvents(now, region, horizon),
     ...sourcedEvents(now, region, horizon),
     ...extraCircuit(now, region, careerId, horizon),

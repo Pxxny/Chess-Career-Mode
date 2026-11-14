@@ -2,6 +2,7 @@ import { matchesVenueContinent } from "./venues";
 import type { ScheduledEvent } from "@/game/world/schedule";
 import { eventAgenda } from "./agenda";
 export interface TournamentSearch {
+  qualification?: "all" | "required" | "qualifier" | "circuit";
   organizer?: "all" | "Official" | "Unofficial";
   duration?: "all" | "single" | "multi" | "3" | "7";
   pairing?: "all" | "rotation" | "bo3";
@@ -19,6 +20,7 @@ export function matchesTournamentSearch(
   search: TournamentSearch,
 ): boolean {
   return (
+    matchesQualificationFilter(event, search.qualification) &&
     (!search.organizer ||
       search.organizer === "all" ||
       event.details?.organizer?.status === search.organizer) &&
@@ -42,4 +44,7 @@ export function matchesTournamentSearch(
     event.fieldSize <= search.maxPlayers &&
     matchesVenueContinent(event.details?.country, search.continent)
   );
+}
+export function matchesQualificationFilter(event: ScheduledEvent, filter: TournamentSearch["qualification"] = "all") {
+  return filter === "all" || (filter === "required" ? !!event.details?.qualification : filter === "qualifier" ? !!event.details?.qualificationCircuit?.advanceTop : !!event.details?.qualificationCircuit);
 }

@@ -8,12 +8,13 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 const OUT = new URL("../public/data/cities/", import.meta.url);
 const INDEX = new URL("index.json", OUT);
 const SEEDS = new URL("../src/data/world/expandedCities.json", import.meta.url);
-const VERSION = 2;
+const VERSION = 3;
+const VENUES = new URL("../public/data/venue-cities.json", import.meta.url);
 
 const { readFileSync } = await import("node:fs");
 if (
   existsSync(INDEX) &&
-  existsSync(SEEDS) &&
+  existsSync(SEEDS) && existsSync(VENUES) &&
   JSON.parse(readFileSync(INDEX, "utf8")).version === VERSION &&
   !process.argv.includes("--force")
 ) {
@@ -59,6 +60,7 @@ for (const city of cities) {
 mkdirSync(OUT, { recursive: true });
 const counts = {};
 const seedPools = {};
+const venueCities = {};
 for (const [code, list] of byCountry) {
   list.sort((a, b) => (b.population ?? 0) - (a.population ?? 0));
   const seen = new Set();
@@ -69,6 +71,7 @@ for (const [code, list] of byCountry) {
     seen.add(key);
     rows.push([c.name, c.population ?? 0]);
   }
+  venueCities[code] = [...new Map(list.filter(c => Array.isArray(c.loc?.coordinates) && c.loc.coordinates.length === 2).slice().reverse().map(c => [c.name.toLowerCase(),c])).values()].sort((a,b) => (b.population??0)-(a.population??0)).slice(0,150).map(c => [c.name, c.population ?? 0, ...c.loc.coordinates.map(n => Math.round(n*10000)/10000)]);
   counts[code] = rows.length;
   // Keep a small bundled pool for NPC hometowns and for offline selectors.
   // Existing curated names are preserved; getSeedCities adds 50 new distinct entries.
@@ -76,6 +79,7 @@ for (const [code, list] of byCountry) {
   writeFileSync(new URL(`${code}.json`, OUT), JSON.stringify(rows));
 }
 writeFileSync(SEEDS, JSON.stringify(seedPools));
+writeFileSync(VENUES, JSON.stringify(venueCities));
 writeFileSync(
   INDEX,
   JSON.stringify({

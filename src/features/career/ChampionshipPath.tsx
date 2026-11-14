@@ -6,6 +6,7 @@ import { eligibilityIssues } from "@/game/competition/eligibility";
 import { competitionOf } from "@/game/competition/preparation";
 import { getTitleStatus } from "@/game/career/titles";
 import { normCount } from "@/game/career/titleRules";
+import { circuitAdvancement, CIRCUIT_LABELS } from "@/game/competition/qualificationCircuit";
 const paths = [
   ["national", "Top 3 earn continental qualification."],
   ["continental", "Top 3 earn World Cup and Grand Swiss qualifications."],
@@ -24,6 +25,14 @@ export function ChampionshipPath() {
     titles = getTitleStatus(save.player, save.history);
   return (
     <div className="space-y-4" data-testid="championship-path">
+      <Card data-testid="qualification-circuit-path">
+        <CardTitle>Qualification circuit</CardTitle>
+        <p className="text-sm text-ink-muted">Sponsored qualification circuits: Local → National → Continental → World. Each event publishes its advancing places and named World Finals destination. Places vary by event and season; federation and continent restrictions still apply.</p>
+        <ol className="mt-4 space-y-3">{events.filter((e) => e.details?.qualificationCircuit).map((event) => <li key={event.id} className="rounded-xl bg-navy-900 p-3 text-sm">
+          <p translate="no" className="font-semibold">{event.name}</p><p className="mt-2 text-gold-300">{event.details?.qualificationCircuit?.worldFinalName && <span translate="no" className="block text-xs text-ink-muted">{event.details.qualificationCircuit.worldFinalName}</span>}{circuitAdvancement(event.details) || "Final stage · qualifiers from all continents"}</p>
+          <Link className="mt-2 inline-block text-gold-300 underline" to={`/complete?event=${encodeURIComponent(event.id)}`}>View tournament</Link>
+        </li>)}</ol>
+      </Card>
       <Card>
         <CardTitle>Road to World Champion</CardTitle>
         <p className="text-sm text-ink-muted">
@@ -71,7 +80,7 @@ export function ChampionshipPath() {
           <ul className="mt-2 text-sm">
             {state.qualifications.map((q, i) => (
               <li key={i}>
-                {q.kind} · {q.year}–{q.year + 2} ·{" "}
+                {CIRCUIT_LABELS[q.kind] ?? q.kind} · {q.year}–{q.eventId ? q.year : q.year + 2} ·{" "}
                 <span translate="no">{q.source}</span>
               </li>
             ))}

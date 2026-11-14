@@ -23,6 +23,9 @@ import { eventKind, type ArchivedEvent } from "@/game/competition/archive";
 import type { ActiveTournament } from "@/types";
 import type { ScheduledEvent } from "@/game/world/schedule";
 import { BroadcastBoard, RecordedBoard } from "./BroadcastBoard";
+import { circuitAdvancement } from "@/game/competition/qualificationCircuit";
+import { requirementsText } from "@/game/competition/eligibility";
+import { TournamentSpotlight } from "./TournamentSpotlight";
 export function TournamentDetail({
   event,
   record,
@@ -113,6 +116,7 @@ export function TournamentDetail({
   const d = t?.details ?? event?.details,
     window = event ? registrationWindow(save, event) : null;
   const rows: Array<[string, string | number]> = [
+    ...(d?.qualificationCircuit ? [["Qualification route", circuitAdvancement(d) || "Final stage · qualifiers from all continents"], ["Qualification season", d.qualificationCircuit.season], ...(event ? [["Qualification requirements", requirementsText(event)]] : [])] as Array<[string, string | number]> : []),
     [
       "Event type",
       (record?.kind ?? eventKind({ details: d })) === "national"
@@ -214,6 +218,7 @@ export function TournamentDetail({
           >
             {tab === "details" && (
               <>
+                {event && <div className="mb-5"><TournamentSpotlight event={event} /></div>}
                 <dl className="grid grid-cols-2 gap-3 text-sm">
                   {rows.map(([label, value]) => (
                     <div key={label}>

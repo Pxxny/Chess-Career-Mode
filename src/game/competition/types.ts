@@ -15,6 +15,9 @@ export type CompetitionFormat =
   | "knockout"
   | "team";
 export type Qualification =
+  | "circuit-national"
+  | "circuit-continental"
+  | "circuit-world"
   | "continental"
   | "world-cup"
   | "grand-swiss"
@@ -22,6 +25,20 @@ export type Qualification =
   | "world-championship"
   | "super-invitation";
 export interface EventDetails {
+  qualificationCircuit?: {
+    seriesId?: string;
+    sponsor?: string;
+    worldFinalId?: string;
+    worldFinalName?: string;
+    stage: "local" | "national" | "continental" | "world";
+    season: number;
+    country?: string;
+    continent?: string;
+    heat?: number;
+    advanceTop?: number;
+    advanceKind?: Qualification;
+    targetEventId?: string;
+  };
   /** Original display pattern, used when assigning a generated host. */
   venueNamePattern?: string;
   host?: { mode: "rotation" | "online"; relocationReason?: string };
@@ -114,6 +131,9 @@ export interface CompetitionState {
     year: number;
     source: string;
     route?: "qualification" | "defence";
+    eventId?: string;
+    country?: string;
+    continent?: string;
   }[];
   archive: ActiveTournament[];
 }

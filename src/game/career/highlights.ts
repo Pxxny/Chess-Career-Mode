@@ -3,13 +3,14 @@ import type { GameSave, Npc } from "@/types";
 import { registrationStates } from "@/game/match/registration";
 import { buildEventTeams } from "@/game/competition/teamEvents";
 import { teamInfoOf } from "@/data/chess/nationalTeamEvents";
+import { CIRCUIT_LABELS } from "@/game/competition/qualificationCircuit";
 
 export const articleSchema = z.object({
   id: z.string(), kind: z.enum(["trophy", "national", "title", "qualification"]),
   year: z.number().int(), week: z.number().int().min(1).max(52), day: z.number().int().min(1).max(7),
   headline: z.string(), body: z.string(), event: z.string(),
   eventId: z.string().optional(),
-  qualification: z.enum(["continental", "world-cup", "grand-swiss", "candidates", "world-championship", "super-invitation"]).optional(),
+  qualification: z.enum(["continental", "world-cup", "grand-swiss", "candidates", "world-championship", "super-invitation", "circuit-national", "circuit-continental", "circuit-world"]).optional(),
 });
 export type CareerArticle = z.infer<typeof articleSchema>;
 export const highlightsSchema = z.object({ items: z.array(articleSchema), seen: z.array(z.string()), unread: z.array(z.string()) });
@@ -45,8 +46,8 @@ export function captureHighlights(before: GameSave, after: GameSave, npcs: Npc[]
   for (const q of after.competition?.qualifications ?? []) {
     if ((before.competition?.qualifications ?? []).some((old) => old.kind === q.kind && old.year === q.year && old.source === q.source)) continue;
     add(`qualification:${q.year}:${q.kind}:${q.source}`, "qualification", q.source,
-      `${after.player.name} qualifies for ${qualificationNames[q.kind]}`,
-      `Your result at ${q.source} earned qualification for ${qualificationNames[q.kind]}. Check the championship path for entry requirements and the qualification expiry.`, { qualification: q.kind });
+      `${after.player.name} qualifies for ${CIRCUIT_LABELS[q.kind] ?? qualificationNames[q.kind as keyof typeof qualificationNames]}`,
+      `Your result at ${q.source} earned qualification for ${CIRCUIT_LABELS[q.kind] ?? qualificationNames[q.kind as keyof typeof qualificationNames]}. Check the championship path for entry requirements and the qualification expiry.`, { qualification: q.kind, eventId: q.eventId });
   }
   const esports = [...(after.esports?.history ?? []), ...(after.esports?.active?.status === "finished" ? [after.esports.active] : [])];
   for (const c of esports) {

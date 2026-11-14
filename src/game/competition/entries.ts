@@ -3,6 +3,7 @@ import type { GameSave, Npc } from "@/types";
 import type { ScheduledEvent } from "@/game/world/schedule";
 import { hashString } from "@/utils/format";
 import { stampIndex } from "./catalog";
+import { circuitNpcField } from "./qualificationCircuit";
 
 export type EntryEvent = Pick<
   ScheduledEvent,
@@ -63,9 +64,9 @@ export function registrationCount(
   const capacity = Math.max(0, event.fieldSize - (reg ? 1 : 0));
   const poolSize =
     reg?.entrantIds?.length ??
-    (npcs ? eligibleCount(npcs, event.details?.nationality) : capacity);
+    (npcs ? event.details?.qualificationCircuit ? circuitNpcField(event, npcs, save.world.seed).length : eligibleCount(npcs, event.details?.nationality) : capacity);
   return Math.min(
-    capacity,
+    event.details?.qualificationCircuit && event.details.qualificationCircuit.stage !== "local" ? Math.min(capacity, event.fieldSize - 1) : capacity,
     poolSize,
     Math.floor(event.fieldSize * Math.min(1, progress / fillAt) * popularity),
   );

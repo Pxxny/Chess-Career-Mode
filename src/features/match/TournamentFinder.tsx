@@ -5,12 +5,14 @@ import type { TournamentSearch } from "@/game/competition/finder";
 export function TournamentFinder({
   initial,
   continent = "all",
+  qualification = "all",
   rating,
   onApply,
   onClose,
 }: {
   initial: TournamentSearch | null;
   continent?: string;
+  qualification?: TournamentSearch["qualification"];
   rating: number;
   onApply: (search: TournamentSearch) => void;
   onClose: () => void;
@@ -22,6 +24,7 @@ export function TournamentFinder({
       minElo: 0,
       maxElo: rating,
       continent,
+      qualification,
       minPlayers: 2,
       maxPlayers: 256,
       availableOnly: true,
@@ -163,6 +166,11 @@ export function TournamentFinder({
                 {c === "all" ? "All continents" : c}
               </option>
             ))}
+          </select>
+        </label>
+        <label className="block text-sm text-ink-muted">Qualification entry
+          <select aria-label="Qualification entry" value={search.qualification ?? "all"} onChange={(e) => setSearch({ ...search, qualification: e.target.value as TournamentSearch["qualification"], availableOnly: false })} className="mt-1 w-full rounded-lg bg-navy-900 p-3 text-ink">
+            <option value="all">All entry types</option><option value="required">Qualification required</option><option value="qualifier">Awards qualification</option><option value="circuit">Local → National → Continental → World</option>
           </select>
         </label>
         <label className="flex items-center gap-2 text-sm text-ink">

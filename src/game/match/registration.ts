@@ -31,9 +31,10 @@ import { highestTitle } from "./setup";
 import { entryDay, registrationCount } from "@/game/competition/entries";
 import { showcaseSelection } from "@/game/competition/showcase";
 import { stampIndex } from "@/game/competition/catalog";
+import { circuitNpcField } from "@/game/competition/qualificationCircuit";
 
 const rosters = new WeakMap<Npc[], Map<string, Npc[]>>();
-function announcedField(
+export function projectedEntrants(
   save: GameSave,
   event: Pick<ScheduledEvent, "id" | "level" | "fieldSize" | "details">,
   npcs: Npc[],
@@ -55,7 +56,7 @@ function announcedField(
             ? 2100
             : 2500;
     field = pickEventField(
-      npcs,
+      event.details?.qualificationCircuit ? circuitNpcField(event, npcs, save.world.seed) : npcs,
       target,
       { ...event, fieldSize: event.fieldSize + 1 },
       createRng(mixSeed(eventFieldSeed(save, event.id), 0x7001)),
@@ -129,7 +130,7 @@ export function previewEntrants(
       );
     return npcs.filter((n) => ids.has(n.id));
   }
-  return announcedField(save, event, npcs).slice(
+  return projectedEntrants(save, event, npcs).slice(
     0,
     registrationCount(save, event, npcs),
   );
@@ -182,7 +183,7 @@ export function registerForEvent(
           entrantIds: (event.details?.showcase ||
           event.details?.format === "team"
             ? previewEntrants(save, event, npcs)
-            : announcedField(save, event, npcs).slice(0, event.fieldSize - 1)
+            : projectedEntrants(save, event, npcs).slice(0, event.fieldSize - 1)
           ).map((n) => n.id),
           entrantSeed: eventFieldSeed(save, event.id),
         }

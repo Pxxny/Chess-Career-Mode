@@ -1,3 +1,4 @@
+import { openingEvidence, evidenceCode } from "./openingEvidence";
 import { getBookOpening } from "@/data/chess/openingBook";
 import type {
   ActiveTournament,
@@ -58,7 +59,9 @@ export function playerActor(
       sum + scoreOf(g.outcome) - eloExpected(g.ratingBefore, g.opponentElo),
     0,
   );
+  const evidence = openingEvidence(save);
   return {
+    openingFamiliarity: evidence.familiarity, openingFamiliarityBasis: evidence.basis, openingUsage: evidence.usage,
     id: "player",
     name: p.name,
     elo,
@@ -123,6 +126,9 @@ export function npcActor(npc: Npc, round = 1): PredictionActor {
     style: npc.style,
     archetype: npc.style,
     data: "npc-estimate",
+    openingFamiliarity: bounded(skill("opening") + Math.min(12, npc.preferredOpenings.length * 2),0,100),
+    openingFamiliarityBasis: "repertoire",
+    openingUsage: npc.preferredOpenings.slice(0,4).map(id => { const o = getBookOpening(id); return { name: o?.name ?? id, eco: o?.eco ?? "", games: 0, source: "preference" as const }; }),
     openings,
     skills: {
       tactics: skill("tactics"),
@@ -215,7 +221,7 @@ export function careerPrediction(
         ]
       : prepared.repertoire.white
     : [];
-  const planned =
+  const selection =
     options.opening ??
     repIds[0] ??
     (options.color === "white"
@@ -223,6 +229,7 @@ export function careerPrediction(
       : options.color === "black"
         ? b.openings?.white[0]
         : undefined);
+  const planned = selection && selection !== "unknown" ? selection : undefined;
   // Preparation costs are paid in Prepare, not by merely selecting a repertoire here.
   if (prepared) {
     a.preparation = bounded((prepared.depth / 12) * 100, 0, 100);
@@ -244,21 +251,16 @@ export function careerPrediction(
   )
     a.preparation = bounded((a.preparation ?? 0) + 20, 0, 100);
   if (planned) {
-    const studied = save.repertoire.study.filter(
-      (s) => s.openingId === planned,
-    ).length;
-    a.openingFamiliarity = bounded(
-      (a.skills?.opening ?? 50) + Math.min(15, studied * 3),
-      0,
-      100,
-    );
-    if ("preferredOpenings" in opponent)
-      b.openingFamiliarity = opponent.preferredOpenings.some(
-        (id) => openingCode(id) === openingCode(planned),
-      )
-        ? 80
-        : 50;
+    const evidence = openingEvidence(save, planned);
+    a.openingFamiliarity = evidence.familiarity;
+    a.openingFamiliarityBasis = evidence.basis;
+    if ("preferredOpenings" in opponent) {
+      const known = opponent.preferredOpenings.some(id => evidenceCode(id) === evidenceCode(planned));
+      b.openingFamiliarity = bounded((b.skills?.opening ?? 50) / 2 + (known ? 45 : 15), 0, 100);
+      b.openingFamiliarityBasis = "planned";
+    }
   }
+
   // Online Blitz has its own rating pool: peak, recent form and head-to-head must use that pool too.
   const history =
     options.tournamentType === "practice-blitz"
@@ -464,6 +466,11 @@ export function playerView(p: PredictionSnapshot): PredictionSnapshot {
         "Slight Favorite": "Slight Underdog",
         Favorite: "Underdog",
         "Heavy Favorite": "Heavy Underdog",
+        "Narrow Favorite": "Narrow Underdog", "Narrow Underdog": "Narrow Favorite",
+        "Solid Favorite": "Solid Underdog", "Solid Underdog": "Solid Favorite",
+        "Clear Favorite": "Clear Underdog", "Clear Underdog": "Clear Favorite",
+        "Dominant Favorite": "Dominant Underdog", "Dominant Underdog": "Dominant Favorite",
+        "Overwhelming Favorite": "Overwhelming Underdog", "Overwhelming Underdog": "Overwhelming Favorite",
       } as const
     )[p.classification],
   };

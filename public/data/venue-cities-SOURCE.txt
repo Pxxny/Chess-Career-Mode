@@ -1,0 +1,11 @@
+Venue city coordinates and population
+
+Source: GeoNames populated places, via all-the-cities 3.1.0.
+https://www.geonames.org/
+https://www.npmjs.com/package/all-the-cities
+GeoNames data: Creative Commons Attribution (CC BY).
+https://www.geonames.org/about.html
+
+This compact subset retains up to 150 populated places per country/federation.
+Populations are the source dataset values, not live estimates. Coordinates are rounded to four decimal places. Missing cities are not assigned substitute coordinates.
+Game map rendering uses bundled Natural Earth geometry and generated city scenery; see game-atlas-SOURCE.txt.

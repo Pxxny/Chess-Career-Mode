@@ -31,6 +31,8 @@ export interface PredictionActor {
   fatigue?: number;
   preparation?: number;
   openingFamiliarity?: number;
+  openingFamiliarityBasis?: "planned" | "repertoire";
+  openingUsage?: import("./openingEvidence").OpeningUsage[];
   /** NPC numeric skills are estimates from rating and declared strengths, not measured attributes. */
   data: "career" | "npc-estimate" | "rating-only";
 }
@@ -56,6 +58,11 @@ export interface Probabilities {
   expected: number;
 }
 export type MatchClassification =
+  | "Narrow Underdog" | "Narrow Favorite"
+  | "Solid Underdog" | "Solid Favorite"
+  | "Clear Underdog" | "Clear Favorite"
+  | "Dominant Underdog" | "Dominant Favorite"
+  | "Overwhelming Underdog" | "Overwhelming Favorite"
   | "Heavy Underdog"
   | "Underdog"
   | "Slight Underdog"

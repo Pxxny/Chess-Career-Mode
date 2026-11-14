@@ -36,12 +36,12 @@ export function classifyMatch(
   p: Probabilities,
 ): MatchClassification {
   // Equal-rated opponents remain even despite a small colour/condition advantage.
-  if (Math.abs(eloGap) < 50 && Math.abs(p.expected - 0.5) < 0.1)
+  if (Math.abs(eloGap) < 25 && Math.abs(p.expected - 0.5) < 0.06)
     return "Even Match";
   const gap = 400 * Math.log10(p.expected / (1 - p.expected));
-  if (Math.abs(gap) < 50) return "Even Match";
-  const strength =
-    Math.abs(gap) >= 350 ? "Heavy" : Math.abs(gap) >= 150 ? "" : "Slight";
+  const size = Math.round(Math.abs(gap));
+  if (size < 25) return "Even Match";
+  const strength = size < 50 ? "Narrow" : size < 150 ? "Slight" : size < 200 ? "Solid" : size < 300 ? "" : size < 450 ? "Clear" : size < 650 ? "Heavy" : size < 900 ? "Dominant" : "Overwhelming";
   return `${strength ? `${strength} ` : ""}${gap > 0 ? "Favorite" : "Underdog"}` as MatchClassification;
 }
 /** Integer basis points via largest remainders: the displayed three values ALWAYS total 100.00%. */
