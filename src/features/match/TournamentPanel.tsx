@@ -137,6 +137,10 @@ export function EventFacts({ event }: { event: ScheduledEvent }) {
 }
 export function TournamentStandings({ t }: { t: ActiveTournament }) {
   const rows = useMemo(() => standings(t), [t]);
+  const live = useGameStore(s=>s.save?.tournament?.eventId===t.eventId);
+  const playerRating = useGameStore(s=>s.save?.player.rating);
+  const population = useNpcs();
+  const ratings = useMemo(()=>new Map(population.map(n=>[n.id,n.currentElo])),[population]);
   const bo3 = t.details?.format === "round-robin-bo3";
   const [selected, setSelected] = useState<string | null>(null);
   return (
@@ -162,8 +166,8 @@ export function TournamentStandings({ t }: { t: ActiveTournament }) {
         <thead className="sticky top-0 bg-navy-800 text-xs text-ink-faint">
           <tr>
             {(bo3
-              ? ["#", "Player", "Elo", "Series wins"]
-              : ["#", "Player", "Elo", "Points", "BH-C1", "BH", "SB", "Wins"]
+              ? ["#", "Player", live?"Current Elo":"Elo at entry", "Series wins"]
+              : ["#", "Player", live?"Current Elo":"Elo at entry", "Points", "BH-C1", "BH", "SB", "Wins"]
             ).map((h) => (
               <th key={h} className="py-2 pr-3">
                 {h}
@@ -193,7 +197,7 @@ export function TournamentStandings({ t }: { t: ActiveTournament }) {
                   {r.player.isPlayer ? " (you)" : ""}
                 </button>
               </td>
-              <td>{r.player.elo}</td>
+              <td>{live?(r.player.isPlayer?playerRating:ratings.get(r.player.id))??r.player.elo:r.player.elo}</td>
               <td>{r.player.points}</td>
               {!bo3 && (
                 <>

@@ -4582,4 +4582,10 @@ export const TH_MESSAGES: Record<string, string> = {
   "OPENING CEREMONY": "พิธีเปิดการแข่งขัน",
   "AWARD CEREMONY": "พิธีมอบรางวัล",
   "Award podium": "อันดับผู้รับรางวัล",
+  "NPC Elo History": "ประวัติ Elo ของ NPC",
+  "Opponent Elo after game": "Elo คู่แข่งหลังแข่ง",
+  "Elo at entry": "Elo ตอนเริ่มรายการ",
+  "Before first recorded match": "ก่อนเกมแรกที่แสดง",
+  "NPC ratings are recorded from played games and saved tournament results.": "บันทึก Elo จากเกมที่เล่นและผลทัวร์ที่เก็บไว้",
+  "Career results only. Match view shows up to 100 recorded games against you; period views also include saved NPC tournament results.": "แสดงผลในเซฟอาชีพนี้เท่านั้น มุมมองรายเกมแสดงได้ 100 เกมล่าสุดที่พบคุณ ส่วนมุมมองช่วงเวลารวมผลทัวร์ NPC ที่บันทึกไว้ด้วย",
 };

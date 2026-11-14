@@ -151,6 +151,7 @@ function recordGameBase(save: GameSave, input: GameInput): GameSave {
         ),
       );
   const game: GameResult = {
+    npcRatingTracked: true,
     id: `g${player.ratedGames + 1}-${stamp.year}-${stamp.week}`,
     ...stamp,
     opponentId: input.opponentId,

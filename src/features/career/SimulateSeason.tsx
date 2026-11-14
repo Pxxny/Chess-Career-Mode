@@ -1,8 +1,9 @@
+import { useNpcStore } from "@/store/npcStore";
 import { SeasonPresentation } from "./SeasonPresentation";
 import { standings } from "@/game/match/tournament";
 import { SeasonCoach } from "./CareerTools";
 import { useSeasonGameStatus } from "@/store/seasonGameClient";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { ArrowUpRight, Sparkles } from "lucide-react";
 import { LEARNING_FOCUSES, type LearningFocus } from "@/game/career/learningFocus";
 import { Button, Card, CardTitle, Modal } from "@/components/ui";
@@ -172,6 +173,8 @@ export function SimulateSeason() {
   );
 }
 export function SeasonProgressDialog() {
+  const population=useNpcStore(s=>s.npcs);
+  const ratings=useMemo(()=>new Map(population.map(n=>[n.id,n.currentElo])),[population]);
   const running = useGameStore((s) => s.seasonRunning),
     save = useGameStore((s) => s.save),
     pause = useGameStore((s) => s.cancelCalendar);
@@ -238,7 +241,7 @@ export function SeasonProgressDialog() {
         <Button variant="secondary" onClick={stop} disabled={stopping}>
           {stopping ? "Pausing…" : "Pause simulation"}
         </Button>
-      </div><aside className="min-w-0 rounded-xl bg-navy-900/60 p-3" data-testid="live-season-standings"><h3 className="mb-2 font-semibold">Live tournament standings</h3>{save.tournament ? <><p className="mb-3 break-words text-sm text-gold-300">{save.tournament.name} · Round {save.tournament.round}</p><ol className="max-h-[55dvh] space-y-2 overflow-y-auto">{standings(save.tournament).map(r=><li key={r.player.id} className={`grid grid-cols-[2rem_minmax(0,1fr)_3rem] gap-2 rounded-lg p-2 text-xs ${r.player.isPlayer?"bg-gold-500/15 text-gold-300":"bg-navy-800"}`}><span>#{r.rank}</span><span className="break-words">{r.player.name}<span className="block text-ink-muted">Elo {r.player.elo}</span></span><strong>{r.player.points} pts</strong></li>)}</ol></> : <p className="text-sm text-ink-muted">Standings appear when your next tournament starts.</p>}</aside></div>
+      </div><aside className="min-w-0 rounded-xl bg-navy-900/60 p-3" data-testid="live-season-standings"><h3 className="mb-2 font-semibold">Live tournament standings</h3>{save.tournament ? <><p className="mb-3 break-words text-sm text-gold-300">{save.tournament.name} · Round {save.tournament.round}</p><ol className="max-h-[55dvh] space-y-2 overflow-y-auto">{standings(save.tournament).map(r=><li key={r.player.id} className={`grid grid-cols-[2rem_minmax(0,1fr)_3rem] gap-2 rounded-lg p-2 text-xs ${r.player.isPlayer?"bg-gold-500/15 text-gold-300":"bg-navy-800"}`}><span>#{r.rank}</span><span className="break-words">{r.player.name}<span className="block text-ink-muted">Elo {r.player.isPlayer?save.player.rating:ratings.get(r.player.id)??r.player.elo}</span></span><strong>{r.player.points} pts</strong></li>)}</ol></> : <p className="text-sm text-ink-muted">Standings appear when your next tournament starts.</p>}</aside></div>
     </Modal>
   );
 }

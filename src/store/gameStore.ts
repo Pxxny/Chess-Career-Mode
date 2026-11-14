@@ -1,3 +1,5 @@
+import type { Npc } from "@/types";
+import { applyNpcPlayerGame } from "@/game/npc/playerResults";
 import { acknowledgeArticle, highlightsOf, captureHighlights } from "@/game/career/highlights";
 import { createSeasonGameClient } from "./seasonGameClient";
 import type { LearningFocus } from "@/game/career/learningFocus";
@@ -117,9 +119,7 @@ import {
 import type { OpeningDatabase } from "@/game/openings/database";
 import {
   applyFinishedMatch,
-  applyNpcResult,
   attachMatchAnalysis,
-  outcomeFor,
   recoverPendingMatch,
 } from "@/game/match/aftermath";
 import type { MatchFinish } from "@/game/match/session";
@@ -1083,30 +1083,6 @@ export const useGameStore = create<GameStore>()(
           finish.moves.length >= 12 || finish.termination === "checkmate"
             ? coachedGame(applied.save)
             : applied.save;
-        const opponent =
-          finish.setup.playerColor === "white"
-            ? finish.setup.black
-            : finish.setup.white;
-        if (finish.setup.rated && opponent.id) {
-          const npc = useNpcStore
-            .getState()
-            .npcs.find((n) => n.id === opponent.id);
-          const outcome = outcomeFor(finish, finish.setup.playerColor);
-          if (npc)
-            void useNpcStore
-              .getState()
-              .updateNpcs([
-                applyNpcResult(
-                  npc,
-                  outcome === "win"
-                    ? "loss"
-                    : outcome === "loss"
-                      ? "win"
-                      : "draw",
-                  save.player.rating,
-                ),
-              ]);
-        }
         set({ save: nextSave });
         return applied.record;
       },
@@ -1267,6 +1243,23 @@ export const useGameStore = create<GameStore>()(
   ),
 );
 
+// The rated game is a durable retry record. Legacy games remain untouched on load.
+function syncNpcPlayerResults(){
+ const save=useGameStore.getState().save,world=useNpcStore.getState();
+ if(!save||world.careerId!==save.career.id||world.status!=='ready')return;
+ const games=save.history.games.filter(g=>g.npcRatingTracked&&g.opponentId);
+ if(!games.length)return;
+ const byId=new Map(world.npcs.map(n=>[n.id,n])),changed=new Map<string,Npc>();
+ for(const game of games){
+  const npc=changed.get(game.opponentId!)??byId.get(game.opponentId!);
+  if(npc){const next=applyNpcPlayerGame(npc,game,game.day??1,save.player.name);if(next!==npc)changed.set(npc.id,next);}
+ }
+ if(changed.size)void world.updateNpcs([...changed.values()]);
+}
+useGameStore.subscribe((state,previous)=>{
+ if(state.save?.career.id!==previous.save?.career.id||state.save?.history.games!==previous.save?.history.games)syncNpcPlayerResults();
+});
+
 // Both freshly finished tournaments and retained old archives repair NPC history once.
 // The status guard also prevents one character's results leaking into another NPC world.
 function syncFinishedNpcEvents() {
@@ -1292,7 +1285,7 @@ useNpcStore.subscribe((state, previous) => {
     state.status === "ready" &&
     (previous.status !== "ready" || state.careerId !== previous.careerId)
   )
-    syncFinishedNpcEvents();
+    {syncNpcPlayerResults();syncFinishedNpcEvents();}
 });
 
 // A single flush per career. Outbox records remain in the save if storage fails.

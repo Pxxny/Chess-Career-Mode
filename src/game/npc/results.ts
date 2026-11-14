@@ -7,11 +7,12 @@ export function applyNpcResult(
   npc: Npc,
   outcome: GameOutcome,
   opponentElo: number,
+  context?: {ratingBefore?:number},
 ): Npc {
   const before = npc.currentElo;
   const after = Math.max(
     100,
-    before + ratingChange(before, opponentElo, outcome, 40),
+    before + ratingChange(context?.ratingBefore??before, opponentElo, outcome, 40),
   );
   const shift = outcome === "win" ? 3 : outcome === "loss" ? -3 : 0;
   const stats = npc.competitionStats ?? {

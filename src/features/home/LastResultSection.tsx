@@ -1,9 +1,12 @@
+import { useNpcStore } from "@/store/npcStore";
 import { Card, CardTitle, EmptyState } from '@/components/ui';
 import { outcomeLabel, ResultBadge } from '@/components/game/ResultBadge';
 import type { GameResult } from '@/types';
 import { cn } from '@/utils/cn';
 
 export function LastResultSection({ game }: { game: GameResult | null }) {
+  const npc = useNpcStore(s=>game?.opponentId?s.npcs.find(n=>n.id===game.opponentId):undefined);
+  const npcPoint = npc?.ratingHistory?.find(p=>p.id===`player:${game?.id}`);
   if (!game) {
     return (
       <Card>
@@ -16,6 +19,7 @@ export function LastResultSection({ game }: { game: GameResult | null }) {
   const rows: Array<[string, string]> = [
     ['Opponent', game.opponentName],
     ['Opponent Elo', String(game.opponentElo)],
+    ...(npcPoint ? [['Opponent Elo after game', `${npcPoint.before} → ${npcPoint.elo} (${npcPoint.elo-npcPoint.before>=0?'+':''}${npcPoint.elo-npcPoint.before})`] as [string,string]] : []),
     ['Date', `Year ${game.year}, week ${game.week}`],
     ['Tournament', game.tournamentName ?? 'Single rated game'],
   ];

@@ -33,7 +33,7 @@ export function reconcileTournamentHistory(save: GameSave, npcs: Npc[]): Npc[] {
       [...fresh].map((id) => [id, { games: 0, wins: 0, draws: 0, losses: 0 }]),
     );
     const before = new Map(
-      [...fresh].map((id) => [id, byId.get(id)!.currentElo]),
+      [...fresh].map((id) => [id, t.players.find(p=>p.id===id)?.elo??byId.get(id)!.currentElo]),
     );
     for (const round of t.pairings)
       for (const board of round) {

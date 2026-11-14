@@ -1,3 +1,4 @@
+import { EloChart } from "@/features/profile/EloChart";
 import { SharedMemories } from "./SharedMemories";
 import { Badge, Modal, ProgressBar } from "@/components/ui";
 import { NpcAvatar } from "@/components/game/NpcAvatar";
@@ -148,6 +149,7 @@ export function NpcProfileModal({
         />
       </dl>
 
+      <div className="mt-5"><EloChart npc={npc}/></div>
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <div>
           <p className="mb-1 text-sm text-ink-muted">Strengths</p>
