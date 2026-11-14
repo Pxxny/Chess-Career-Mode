@@ -27,6 +27,7 @@ import type {
 import { ratingChange } from "./elo";
 
 export interface GameInput {
+  tournamentRound?:number;
   opponentId: string | null;
   opponentName: string;
   opponentElo: number;
@@ -152,6 +153,7 @@ function recordGameBase(save: GameSave, input: GameInput): GameSave {
       );
   const game: GameResult = {
     npcRatingTracked: true,
+    ...(input.tournamentRound!==undefined?{tournamentRound:input.tournamentRound}:{}),
     id: `g${player.ratedGames + 1}-${stamp.year}-${stamp.week}`,
     ...stamp,
     opponentId: input.opponentId,

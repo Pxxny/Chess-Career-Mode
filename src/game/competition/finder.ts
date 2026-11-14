@@ -3,7 +3,7 @@ import type { ScheduledEvent } from "@/game/world/schedule";
 import { eventAgenda } from "./agenda";
 export interface TournamentSearch {
   qualification?: "all" | "required" | "qualifier" | "circuit";
-  organizer?: "all" | "Official" | "Unofficial";
+  organizer?: "all" | "Official" | "Unofficial" | "Sponsor";
   duration?: "all" | "single" | "multi" | "3" | "7";
   pairing?: "all" | "rotation" | "bo3";
   fromWeek: number;
@@ -21,9 +21,7 @@ export function matchesTournamentSearch(
 ): boolean {
   return (
     matchesQualificationFilter(event, search.qualification) &&
-    (!search.organizer ||
-      search.organizer === "all" ||
-      event.details?.organizer?.status === search.organizer) &&
+    matchesOrganizer(event,search.organizer) &&
     (!search.duration ||
       search.duration === "all" ||
       (search.duration === "single"
@@ -48,3 +46,8 @@ export function matchesTournamentSearch(
 export function matchesQualificationFilter(event: ScheduledEvent, filter: TournamentSearch["qualification"] = "all") {
   return filter === "all" || (filter === "required" ? !!event.details?.qualification : filter === "qualifier" ? !!event.details?.qualificationCircuit?.advanceTop : !!event.details?.qualificationCircuit);
 }
+
+export function matchesOrganizer(event:ScheduledEvent,organizer:TournamentSearch['organizer']='all'){
+ return organizer==='all'||(organizer==='Sponsor'?!!event.details?.organizer?.sponsorId:event.details?.organizer?.status===organizer);
+}
+export const isBackgroundCircuit=(record?:{source?:string;name?:string})=>record?.source==='world-circuit'||/^(World Circuit Open|World Masters|Simulated World Circuit)\b/i.test(record?.name??'');

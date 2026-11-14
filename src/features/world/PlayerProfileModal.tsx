@@ -1,3 +1,4 @@
+import { WonderkidTags } from "./WonderkidTags";
 import { Avatar, Badge, Modal, ProgressBar } from "@/components/ui";
 import { getCountry } from "@/data/world/countries";
 import { getArchetype } from "@/data/archetypes";
@@ -134,6 +135,7 @@ export function PlayerProfileModal({
         />
         <div className="flex flex-wrap gap-2">
           <Badge tone="gold">You</Badge>
+          <WonderkidTags id="player"/>
           <Badge>{tierLabel(p.league)}</Badge>
           <Badge>Active</Badge>
           {entry.title !== "none" && <Badge tone="gold">{entry.title}</Badge>}

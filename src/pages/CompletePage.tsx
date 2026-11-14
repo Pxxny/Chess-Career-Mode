@@ -1,3 +1,4 @@
+import { RankingsHub } from "@/features/world/RankingsHub";
 import { AnnualTournaments } from "@/features/tournaments/AnnualTournaments";
 import { EsportsPanel } from "@/features/esports/EsportsPanel";
 import { SectionMenu } from "@/components/ui/SectionMenu";
@@ -182,7 +183,7 @@ export function CompletePage() {
           </div>
         )}
         {tab === "rankings" && (
-          <>
+          <RankingsHub onSelect={setSelected}>
             <Card className="mb-4">
               <CardTitle>Players near your rating</CardTitle>
               <NpcTable npcs={nearby} onSelect={setSelected} />
@@ -191,7 +192,7 @@ export function CompletePage() {
               <CardTitle>Player directory</CardTitle>
               <NpcDirectory />
             </Card>
-          </>
+          </RankingsHub>
         )}
       </Tabs>
       <NpcProfileModal npc={selected} onClose={() => setSelected(null)} />

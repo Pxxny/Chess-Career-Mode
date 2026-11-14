@@ -1,3 +1,4 @@
+import { WonderkidTags } from "./WonderkidTags";
 import { getCountry } from "@/data/world/countries";
 import { NpcAvatar } from "@/components/game/NpcAvatar";
 import type { Npc } from "@/types";
@@ -57,6 +58,7 @@ export function NpcTable({ npcs, showRank = false, onSelect }: NpcTableProps) {
                         {npc.title}
                       </span>
                     )}
+                    <WonderkidTags id={npc.id}/>
                   </div>
                 </div>
               </td>

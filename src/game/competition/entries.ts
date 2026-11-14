@@ -9,14 +9,16 @@ export type EntryEvent = Pick<
   ScheduledEvent,
   "id" | "level" | "fieldSize" | "details"
 > &
-  Partial<Pick<ScheduledEvent, "registrationDeadline" | "year" | "week">>;
+  Partial<Pick<ScheduledEvent, "registrationDeadline" | "year" | "week" | "minElo">>;
 export const entryDay = (save: GameSave) =>
   stampIndex(save.world.date) * 7 + (save.world.day ?? 1) - 1;
 const population = new WeakMap<
   Npc[],
   { active: number; byCountry: Map<string, number> }
 >();
-function eligibleCount(npcs: Npc[], nationality?: string): number {
+const eloCounts=new WeakMap<Npc[],Map<string,number>>();
+function eligibleCount(npcs: Npc[], nationality?: string, minElo=0): number {
+  if(minElo>0){let cache=eloCounts.get(npcs);if(!cache){cache=new Map();eloCounts.set(npcs,cache);}const key=`${nationality??'*'}:${minElo}`;let count=cache.get(key);if(count===undefined){count=npcs.reduce((total,n)=>total+Number((n.careerStatus==='active'||n.careerStatus==='semi-retired')&&n.currentElo>=minElo&&(!nationality||n.nationality===nationality)),0);cache.set(key,count);}return count;}
   let counts = population.get(npcs);
   if (!counts) {
     counts = { active: 0, byCountry: new Map() };
@@ -64,7 +66,7 @@ export function registrationCount(
   const capacity = Math.max(0, event.fieldSize - (reg ? 1 : 0));
   const poolSize =
     reg?.entrantIds?.length ??
-    (npcs ? event.details?.qualificationCircuit ? circuitNpcField(event, npcs, save.world.seed).length : eligibleCount(npcs, event.details?.nationality) : capacity);
+    (npcs ? event.details?.qualificationCircuit ? circuitNpcField(event, npcs, save.world.seed).length : eligibleCount(npcs, event.details?.nationality,event.minElo??0) : capacity);
   return Math.min(
     event.details?.qualificationCircuit && event.details.qualificationCircuit.stage !== "local" ? Math.min(capacity, event.fieldSize - 1) : capacity,
     poolSize,

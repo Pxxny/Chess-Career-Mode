@@ -1,3 +1,4 @@
+import { WonderkidTags } from "./WonderkidTags";
 import { EloChart } from "@/features/profile/EloChart";
 import { SharedMemories } from "./SharedMemories";
 import { Badge, Modal, ProgressBar } from "@/components/ui";
@@ -84,6 +85,7 @@ export function NpcProfileModal({
             </Badge>
           )}
           <Badge>{STATUS_LABELS[npc.careerStatus]}</Badge>
+          <WonderkidTags id={npc.id}/>
           {npc.kind === "legend" && <Badge>Historical legend</Badge>}
           {npc.kind === "real" && <Badge>FIDE player</Badge>}
         </div>

@@ -7,8 +7,9 @@ export function applyNpcResult(
   npc: Npc,
   outcome: GameOutcome,
   opponentElo: number,
-  context?: {ratingBefore?:number},
+  context?: {ratingBefore?:number;at?:number;id?:string},
 ): Npc {
+  if(context?.id&&npc.recentGames?.some(g=>g.id===context.id))return npc;
   const before = npc.currentElo;
   const after = Math.max(
     100,
@@ -25,6 +26,7 @@ export function applyNpcResult(
   return {
     ...npc,
     currentElo: after,
+    recentGames:[...(npc.recentGames??[]),{...(context?.id?{id:context.id}:{}),outcome,opponentElo,ratingBefore:context?.ratingBefore??before,at:context?.at??((npc.recentGames?.at(-1)?.at??0)+.0001)}].sort((a,b)=>a.at-b.at).slice(-5),
     peakElo,
     league: tierForElo(after),
     title:

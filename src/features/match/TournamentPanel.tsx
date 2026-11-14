@@ -26,6 +26,7 @@ import { registrationCount, type EntryEvent } from "@/game/competition/entries";
 import { showcaseSelection } from "@/game/competition/showcase";
 import {
   matchesTournamentSearch,
+  matchesOrganizer,
   matchesQualificationFilter,
   type TournamentSearch,
 } from "@/game/competition/finder";
@@ -303,6 +304,7 @@ export function TournamentPanel({
   const [location, setLocation] = useState("all");
   const [continent, setContinent] = useState("all");
   const [source, setSource] = useState("all");
+  const [organizer,setOrganizer]=useState<TournamentSearch["organizer"]>("all");
   const [qualificationFilter, setQualificationFilter] = useState<TournamentSearch["qualification"]>("all");
   const [error, setError] = useState(""),
     [query, setQuery] = useState(""),
@@ -365,7 +367,7 @@ export function TournamentPanel({
   const filtered = events.filter(
     (e) =>
       (!swissOnly || e.details?.format === "swiss") &&
-      circuitVisible(save.player.country, e.details) && matchesQualificationFilter(e, qualificationFilter) &&
+      matchesOrganizer(e,organizer) && circuitVisible(save.player.country, e.details) && matchesQualificationFilter(e, qualificationFilter) &&
       matchesVenueContinent(e.details?.country, continent) &&
       (!search ||
         (matchesTournamentSearch(e, search) &&
@@ -394,13 +396,14 @@ export function TournamentPanel({
       )}
       {finderOpen && (
         <TournamentFinder
-          initial={search}
+          initial={search??{fromWeek:0,toWeek:52,minElo:0,maxElo:save.player.rating,continent,qualification:qualificationFilter,minPlayers:2,maxPlayers:256,availableOnly:true,organizer}}
           continent={continent}
           qualification={qualificationFilter}
           rating={save.player.rating}
           onClose={() => setFinderOpen(false)}
           onApply={(value) => {
             setSearch(value);
+            setOrganizer(value.organizer??"all");
             setContinent(value.continent);
             setQualificationFilter(value.qualification ?? "all");
             setUrlParams((params) => {
@@ -674,6 +677,7 @@ export function TournamentPanel({
                 variant="secondary"
                 onClick={() => {
                   setSearch(null);
+                  setOrganizer("all");
                   setContinent("all");
                   setLimit(6);
                 }}
@@ -749,6 +753,7 @@ export function TournamentPanel({
                 </option>
               ))}
           </select></label>
+          <label className="min-w-0 text-xs text-ink-muted"><span className="mb-1 block">Organizer type</span><select aria-label="Tournament organizer" value={organizer??'all'} onChange={e=>{const value=e.target.value as TournamentSearch['organizer'];setOrganizer(value);setLimit(6);setSearch(previous=>previous?{...previous,organizer:value}:null);}} className="w-full rounded-lg bg-navy-900 p-3 text-sm text-ink"><option value="all">All organizers</option><option>Official</option><option>Unofficial</option><option value="Sponsor">Sponsor-hosted</option></select></label>
           <input
             aria-label="Search tournaments"
             placeholder="Search tournaments…"
@@ -847,6 +852,7 @@ export function TournamentPanel({
                 </div>
                 <p className="mt-2 text-sm text-ink-muted">{dateLabel(e)} · {e.details?.location} · ${e.entryFee + (e.details?.travelCost??0)} total</p>
                 <p className="mt-1 text-xs text-gold-300">{tournamentCategory(e)} · {circuitAdvancement(e.details)}</p>
+                {e.details?.organizer?.sponsorId&&<p className="mt-2 text-xs font-semibold text-gold-300">Sponsor-hosted · {e.details.organizer.name} · {e.details.organizer.status}</p>}
                 {e.details?.sponsorship&&<p className="mt-2 text-xs text-gold-300">Event partner · {e.details.sponsorship.name} · Market share {e.details.sponsorship.marketShare.toFixed(2)}%</p>}
                 <p className="mt-1 text-xs text-ink-faint">{hasOpeningCeremony(e)?"Opening & award ceremonies":"Award ceremony after the final round"}</p>
                 <Button className="mt-2" variant="secondary" onClick={()=>setSpotlight(e)}>City map & tournament spotlight</Button><details className="mt-3"><summary className="cursor-pointer text-sm text-gold-300">Requirements, schedule & players</summary><EventFacts event={e} />

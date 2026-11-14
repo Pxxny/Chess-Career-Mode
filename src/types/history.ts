@@ -17,6 +17,7 @@ export interface GameStamp {
 /** One rated game played by the player. */
 export interface GameResult extends GameStamp {
   npcRatingTracked?: true;
+  tournamentRound?: number;
   id: string;
   opponentId: string | null;
   opponentName: string;

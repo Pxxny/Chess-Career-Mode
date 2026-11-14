@@ -1,3 +1,4 @@
+import { WonderkidTags } from "./WonderkidTags";
 import { useMemo, useState } from "react";
 import { Avatar, Badge, Button } from "@/components/ui";
 import { NpcAvatar } from "@/components/game/NpcAvatar";
@@ -165,6 +166,7 @@ export function NpcDirectory() {
                           {n.title}
                         </span>
                       )}
+                      <WonderkidTags id={n.kind==='player'?'player':n.id}/>
                     </div>
                   </div>
                 </td>

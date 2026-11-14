@@ -119,7 +119,7 @@ function recordNpcBoards(
       before: number;
     }
   >();
-  for (const b of boards) {
+  for (const [boardIndex,b] of boards.entries()) {
     const w = npcs.get(b.white),
       bl = npcs.get(b.black);
     if (!w || !bl) continue;
@@ -147,6 +147,7 @@ function recordNpcBoards(
           n,
           score === 1 ? "win" : score === 0.5 ? "draw" : "loss",
           opponent.currentElo,
+          {id:`${event.id}:${boardIndex}:${n.id}`,at:event.endDay*1440+(boardIndex+1)/(boards.length+1)},
         ),
       );
     }

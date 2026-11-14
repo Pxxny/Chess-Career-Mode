@@ -51,6 +51,7 @@ export interface EventDetails {
     exactStart?: boolean;
   };
   organizer?: {
+    sponsorId?: string;
     name: string;
     status: "Official" | "Unofficial";
     simulated: boolean;

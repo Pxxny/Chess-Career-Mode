@@ -107,9 +107,10 @@ export function TournamentFinder({
               }
               className="mt-1 w-full rounded-lg bg-navy-900 p-3 text-ink"
             >
-              <option value="all">Official & Unofficial</option>
+              <option value="all">All organizers</option>
               <option>Official</option>
               <option>Unofficial</option>
+              <option value="Sponsor">Sponsor-hosted</option>
             </select>
           </label>
           <label className="text-sm text-ink-muted">

@@ -1,3 +1,4 @@
+import { sponsorEvents } from "@/game/competition/sponsorEvents";
 import { withEventPartner } from "@/game/competition/presentation";
 import { distributeAnnualVenues } from "@/game/competition/venues";
 import { qualificationCircuitEvents } from "@/game/competition/qualificationCircuit";
@@ -171,6 +172,7 @@ function buildSchedule(
   }
   return [
     ...events,
+    ...Array.from({length:normalize(now.year,now.week+horizon).year-now.year+1},(_,i)=>sponsorEvents(now.year+i)).flat(),
     ...Array.from({ length: normalize(now.year, now.week + horizon).year - now.year + 1 }, (_, i) => qualificationCircuitEvents(now.year + i, region)).flat(),
     ...careerEvents(now, region, horizon),
     ...sourcedEvents(now, region, horizon),

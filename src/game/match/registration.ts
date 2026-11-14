@@ -36,7 +36,7 @@ import { circuitNpcField } from "@/game/competition/qualificationCircuit";
 const rosters = new WeakMap<Npc[], Map<string, Npc[]>>();
 export function projectedEntrants(
   save: GameSave,
-  event: Pick<ScheduledEvent, "id" | "level" | "fieldSize" | "details">,
+  event: Pick<ScheduledEvent, "id" | "level" | "fieldSize" | "details"> & Partial<Pick<ScheduledEvent,"minElo">>,
   npcs: Npc[],
 ): Npc[] {
   let cache = rosters.get(npcs);
@@ -44,7 +44,7 @@ export function projectedEntrants(
     cache = new Map();
     rosters.set(npcs, cache);
   }
-  const key = `${eventFieldSeed(save, event.id)}:${event.level}:${event.fieldSize}:${event.details?.country}:${event.details?.nationality}:${event.details?.location}:${event.details?.localShare}`;
+  const key = `${eventFieldSeed(save, event.id)}:${event.level}:${event.fieldSize}:${event.minElo??0}:${event.details?.country}:${event.details?.nationality}:${event.details?.location}:${event.details?.localShare}`;
   let field = cache.get(key);
   if (!field) {
     const target =

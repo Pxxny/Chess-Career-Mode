@@ -1,5 +1,6 @@
+import { bookedStart, gameDay } from "@/game/competition/agenda";
 import type { ArchivedEvent } from "@/game/competition/archive";
-import { calendarBusyIds } from "@/game/competition/worldCalendar";
+import { annualEvents, calendarBusyIds, calendarField } from "@/game/competition/worldCalendar";
 import {
   conditionsFor,
   npcActor,
@@ -37,6 +38,11 @@ export function simulateWorldCircuit(save: GameSave, npcs: Npc[]) {
       entry.week === save.world.date.week
     )
       entry.entrantIds?.forEach((id) => busy.add(id));
+  // Calendar events take priority, including those starting after today's daily tick.
+  const today=gameDay(save);
+  for(const event of annualEvents(save,save.world.date.year))
+    if(bookedStart(event)>=today&&bookedStart(event)<today+7&&event.details?.format!=='team')
+      calendarField(save,event,npcs).forEach(n=>busy.add(n.id));
   const active = npcs.filter(
     (n) =>
       !busy.has(n.id) &&
@@ -65,6 +71,7 @@ export function simulateWorldCircuit(save: GameSave, npcs: Npc[]) {
   const archives: ArchivedEvent[] = [];
   for (const [group, field] of fields.entries()) {
     if (field.length < 2) continue;
+    if ((index + group) % 5 !== 0) continue;
     const eventId = `world-circuit-${index}-${group}`;
     if (
       field.every((n) => n.tournamentHistory.some((h) => h.eventId === eventId))
@@ -139,10 +146,10 @@ export function simulateWorldCircuit(save: GameSave, npcs: Npc[]) {
           totals.draws += Number(s === 0.5);
           totals.losses += Number(s === 0);
         }
-        byId.set(wId, applyNpcResult(white, result, black.currentElo));
+        byId.set(wId, applyNpcResult(white, result, black.currentElo,{id:`${eventId}:${round}:${wId}`,at:gameDay(save)*1440+round+1}));
         byId.set(
           bkId,
-          applyNpcResult(black, outcomeOf(1 - score), white.currentElo),
+          applyNpcResult(black, outcomeOf(1 - score), white.currentElo,{id:`${eventId}:${round}:${bkId}`,at:gameDay(save)*1440+round+1}),
         );
       }
       seats.splice(1, 0, seats.pop()!);
@@ -210,6 +217,7 @@ export function simulateWorldCircuit(save: GameSave, npcs: Npc[]) {
     archives,
     observations,
     headlines,
-    events: fields.filter((f) => f.length >= 2).length,
+    events: archives.length,
+    candidateEvents: fields.filter((f) => f.length >= 2).length,
   };
 }

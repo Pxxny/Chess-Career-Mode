@@ -100,7 +100,9 @@ export interface HistoricalProfile {
 export interface NpcRatingPoint {
  id:string; year:number; week:number; day?:number; before:number; elo:number; eventId?:string; event:string; opponent?:string;
 }
+export interface NpcRecentGame { id?:string; outcome: import("./history").GameOutcome; opponentElo:number; ratingBefore:number; at:number; }
 export interface Npc {
+  recentGames?: NpcRecentGame[];
   ratingHistory?: NpcRatingPoint[];
   appliedPlayerGames?: string[];
   /** Career simulation changes, kept separate from a legend's historical rating curve. */

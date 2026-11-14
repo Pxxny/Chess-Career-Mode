@@ -1,3 +1,4 @@
+import { tournamentSlot } from "@/game/competition/agenda";
 import { circuitAllocation } from "@/game/competition/rollDown";
 import { standings } from "@/game/match/tournament";
 import { esportsStandings } from "@/game/esports/core";
@@ -35,7 +36,7 @@ export function reconcileTournamentHistory(save: GameSave, npcs: Npc[]): Npc[] {
     const before = new Map(
       [...fresh].map((id) => [id, t.players.find(p=>p.id===id)?.elo??byId.get(id)!.currentElo]),
     );
-    for (const round of t.pairings)
+    for (const [roundIndex,round] of t.pairings.entries())
       for (const board of round) {
         if (
           board.result === null ||
@@ -72,6 +73,7 @@ export function reconcileTournamentHistory(save: GameSave, npcs: Npc[]): Npc[] {
                   ? "draw"
                   : "loss",
               black.currentElo,
+              {id:`${t.eventId}:${roundIndex}:${white.id}`,at:tournamentSlot({...t,round:roundIndex+1}).absoluteDay*1440+roundIndex+1},
             ),
           );
         if (fresh.has(black.id))
@@ -85,6 +87,7 @@ export function reconcileTournamentHistory(save: GameSave, npcs: Npc[]): Npc[] {
                   ? "draw"
                   : "loss",
               white.currentElo,
+              {id:`${t.eventId}:${roundIndex}:${black.id}`,at:tournamentSlot({...t,round:roundIndex+1}).absoluteDay*1440+roundIndex+1},
             ),
           );
       }
@@ -150,7 +153,7 @@ export function reconcileTournamentHistory(save: GameSave, npcs: Npc[]): Npc[] {
     const before = new Map(
       [...fresh].map((id) => [id, byId.get(id)!.currentElo]),
     );
-    for (const round of c.rounds)
+    for (const [roundIndex,round] of c.rounds.entries())
       for (const f of round)
         for (const b of f.boards) {
           if (b.result === null) continue;
@@ -178,6 +181,7 @@ export function reconcileTournamentHistory(save: GameSave, npcs: Npc[]): Npc[] {
                 white,
                 b.result === 1 ? "win" : b.result === 0.5 ? "draw" : "loss",
                 black.currentElo,
+                {id:`${eventId}:${roundIndex}:${white.id}`,at:(c.event.day+Math.floor(roundIndex*c.event.days/Math.max(1,c.rounds.length)))*1440+roundIndex+1},
               ),
             );
           if (fresh.has(black.id))
@@ -187,6 +191,7 @@ export function reconcileTournamentHistory(save: GameSave, npcs: Npc[]): Npc[] {
                 black,
                 b.result === 0 ? "win" : b.result === 0.5 ? "draw" : "loss",
                 white.currentElo,
+                {id:`${eventId}:${roundIndex}:${black.id}`,at:(c.event.day+Math.floor(roundIndex*c.event.days/Math.max(1,c.rounds.length)))*1440+roundIndex+1},
               ),
             );
         }

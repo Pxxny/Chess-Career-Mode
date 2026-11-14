@@ -123,6 +123,7 @@ export function applyFinishedMatch(
       color: playerColor,
       tournamentId: setup.tournament?.id ?? null,
       tournamentName: setup.tournament?.name ?? null,
+      tournamentRound: setup.tournament?.round,
       accuracy: null,
       opening: hit?.entry.name ?? null,
     };

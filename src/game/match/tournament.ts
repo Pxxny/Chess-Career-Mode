@@ -66,7 +66,7 @@ export function pickField(
 export function pickEventField(
   npcs: Npc[],
   playerRating: number,
-  event: Pick<ScheduledEvent, "level" | "fieldSize" | "details">,
+  event: Pick<ScheduledEvent, "level" | "fieldSize" | "details"> & Partial<Pick<ScheduledEvent,"minElo">>,
   rng: Rng,
 ): Npc[] {
   const count = Math.max(1, event.fieldSize - 1),
@@ -74,6 +74,7 @@ export function pickEventField(
   const eligible = npcs.filter(
     (n) =>
       (n.careerStatus === "active" || n.careerStatus === "semi-retired") &&
+      n.currentElo >= (event.minElo??0) &&
       (!d?.nationality || n.nationality === d.nationality) &&
       (d?.maxAge === undefined || n.age <= d.maxAge),
   );

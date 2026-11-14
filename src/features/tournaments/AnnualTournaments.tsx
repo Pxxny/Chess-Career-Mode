@@ -1,3 +1,4 @@
+import { isBackgroundCircuit, matchesOrganizer, type TournamentSearch } from "@/game/competition/finder";
 import { TOURNAMENT_CONTINENTS, matchesVenueContinent } from "@/game/competition/venues";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Button, Card, CardTitle } from "@/components/ui";
@@ -29,6 +30,7 @@ import { annualEvents } from "@/game/competition/worldCalendar";
 const SeasonCalendar = lazy(() => import("./SeasonCalendar"));
 export function AnnualTournaments({ history = false }: { history?: boolean }) {
   const [calendarView, setCalendarView] = useState(false);
+  const [showBackground,setShowBackground]=useState(false),[organizer,setOrganizer]=useState<TournamentSearch["organizer"]>("all");
   const save = useSave(),
     npcs = useNpcs(),
     [year, setYear] = useState(save.world.date.year),
@@ -135,6 +137,8 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
   }
   const filtered = source.filter(
     (e) =>
+      (showBackground||!isBackgroundCircuit(e.record)) &&
+      (organizer==='all'||!!e.event&&matchesOrganizer(e.event,organizer)) &&
       (kind === "all" || e.kind === kind) &&
       matchesVenueContinent(e.record?.country ?? e.event?.details?.country, continent) &&
       (resultFilter === "all" || !!e.record) &&
@@ -157,10 +161,11 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
             : "Browse the whole year: tournament names, dates, participant limits, formats and game counts. Click any event for details."}
         </p>
         <p className="mb-4 text-xs text-ink-muted">
-          Calendar tournaments are listed first. Extra NPC World Circuit events
-          follow.
+          Calendar events are open to eligible players and NPCs. Background NPC-only circuit results are hidden unless enabled.
         </p>
         <div className="flex flex-wrap gap-2">
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showBackground} onChange={e=>{setShowBackground(e.target.checked);setLimit(20);}}/>Show NPC-only background events</label>
+          <select aria-label="Annual tournament organizer" value={organizer??'all'} onChange={e=>{setOrganizer(e.target.value as TournamentSearch['organizer']);setLimit(20);}} className="max-w-full rounded-lg bg-navy-900 p-3"><option value="all">All organizers</option><option>Official</option><option>Unofficial</option><option value="Sponsor">Sponsor-hosted</option></select>
           <select
             aria-label="Tournament year"
             className="rounded-lg bg-navy-900 p-3"
