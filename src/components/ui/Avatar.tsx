@@ -1,3 +1,4 @@
+import {useGameStore} from "@/store/gameStore";
 import { CharacterPortrait } from '@/components/game/CharacterPortrait';
 import type { Appearance } from '@/types';
 import { cn } from '@/utils/cn';
@@ -11,13 +12,17 @@ interface AvatarProps {
   size?: keyof typeof SIZES;
   /** When given, the player's portrait is shown instead of initials */
   appearance?: Appearance;
+  age?:number;gender?:string|null;
 }
 
-export function Avatar({ name, seed, size = 'md', appearance }: AvatarProps) {
+export function Avatar({ name, seed, size = 'md', appearance,age,gender }: AvatarProps) {
+  const player=useGameStore(s=>s.save?.player);
+  const own=!!player&&(player.avatarSeed===seed||player.appearance===appearance);
   if (appearance) {
     return (
       <CharacterPortrait
         appearance={appearance}
+        age={age??(own?player?.age:undefined)} gender={gender??(own?player?.gender:undefined)}
         label={`${name} portrait`}
         className={cn('shrink-0 border border-gold-500/60', SIZES[size])}
       />

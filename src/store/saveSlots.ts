@@ -32,6 +32,7 @@ export function createMemorySlotBackend(): SlotBackend & { entries(): Record<str
 
 /** A short description of a saved character for the slot screen. */
 export interface SlotSummary {
+  gender?:string;
   slot: number;
   careerId: string;
   name: string;
@@ -75,6 +76,7 @@ export function summarize(slot: number, raw: string | undefined): SlotSummary | 
     careerId: career.id ?? '',
     name: player.name ?? 'Unknown',
     appearance: player.appearance,
+    gender:player.gender,
     countryCode: career.countryCode ?? player.country ?? '',
     cityName: career.city?.name ?? player.city?.name ?? '',
     age: player.age ?? 0,

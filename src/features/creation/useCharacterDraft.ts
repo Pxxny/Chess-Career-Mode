@@ -1,5 +1,6 @@
+import {ageAtStart} from "@/game/player/birth";
 import { useCallback, useState } from "react";
-import { DEFAULT_APPEARANCE } from "@/data/appearance";
+import { DEFAULT_APPEARANCE, appearanceFor } from "@/data/appearance";
 import { GAME_CONFIG } from "@/data/config";
 import {
   DEFAULT_PLAYER_DATABASE,
@@ -88,7 +89,7 @@ export function isStepValid(step: StepId, draft: CharacterDraft): boolean {
 export function useCharacterDraft() {
   const [draft, setDraft] = useState<CharacterDraft>(initialDraft);
   const update = useCallback(
-    (patch: Partial<CharacterDraft>) => setDraft((d) => ({ ...d, ...patch })),
+    (patch: Partial<CharacterDraft>) => setDraft((d) => {const next={...d,...patch};return {...next,appearance:appearanceFor(next.appearance,next.gender,ageAtStart(next.birthDate,next.startYear))};}),
     [],
   );
   return { draft, update };

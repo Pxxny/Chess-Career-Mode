@@ -1,4 +1,5 @@
-import { getOption, sanitizeAppearance } from '@/data/appearance';
+import {hashString} from "@/utils/format";
+import { getOption, appearanceFor, portraitAgeStage } from '@/data/appearance';
 import type { Appearance } from '@/types';
 
 /**
@@ -71,17 +72,32 @@ function sideLocks(w: number, h: number, length: number): string {
   return left + right;
 }
 
-export function renderPortraitSvg(input: Partial<Appearance> | undefined, label = 'Character portrait'): string {
-  const a = sanitizeAppearance(input);
+export function renderPortraitSvg(input: Partial<Appearance> | undefined, label = 'Character portrait', context:{age?:number;gender?:string|null;uid?:string}={}): string {
+  const a = appearanceFor(input,context.gender,context.age);
+  const stage=portraitAgeStage(context.age);
+  const uid=`ccm-${(context.uid??String(hashString(JSON.stringify([a,label,context.age,context.gender])))).replace(/[^a-zA-Z0-9_-]/g,'')}`; 
   const hairVariant = /^(male|female)-hair-(\d+)$/.exec(a.hairStyle);
   const outfitVariant = /^(male|female)-outfit-(\d+)$/.exec(a.clothing);
   const accessoryVariant = /^extra-accessory-(\d+)$/.exec(a.accessory);
   if (hairVariant) a.hairStyle = (hairVariant[1] === 'male' ? ['buzz','short','sidepart','sidepart','mohawk','short','curly','buzz','afro','long'] : ['short','bob','long','ponytail','bun','ponytail','curly','ponytail','bun','bob'])[Number(hairVariant[2])];
   if (outfitVariant) a.clothing = (outfitVariant[1]==='female' ? ['shirt','tshirt','sweater','blazer','shirt','sweater','polo','tshirt','shirt','polo'] : ['blazer','shirt','hoodie','tshirt','blazer','sweater','shirt','blazer','sweater','polo'])[Number(outfitVariant[2])];
-  const p = FACES[a.facePreset] ?? FACES.classic;
+  const family=a.facePreset.startsWith('slavic')?'slavic':a.facePreset.startsWith('east-asian')?'east-asian':a.facePreset;
+  const base=FACES[a.facePreset]??(a.facePreset.endsWith('soft')?FACES.soft:FACES.angular);
+  const p={...base};
+  if(family==='slavic'){p.w+=1;p.jaw=.7;p.nose=4.8;}
+  if(family==='east-asian'){p.w+=2;p.jaw=.3;p.eye=15;p.nose=3.4;}
+  if(family==='south-asian'){p.eye=14.5;p.nose=4.4;}
+  if(family==='west-asian'){p.jaw=.6;p.nose=5.2;}
+  if(a.facePreset.startsWith('african')){p.w+=2;p.nose=5;p.mouth=12.5;}
+  if(context.gender==='female'){p.jaw*=.65;p.w-=1;}
+  if(stage==='child'){p.h*=.90;p.w*=.94;p.jaw=.12;p.nose*=.72;p.eyeY=0;p.mouth*=.83;}
+  if(stage==='teen'){p.h*=.94;p.jaw*=.7;p.nose*=.9;}
+  if(stage==='senior'){p.h*=1.02;p.jaw*=.9;}
+
   const { w, h, jaw } = p;
   const skin = getOption('skinTone', a.skinTone).color!;
-  const hair = getOption('hairColor', a.hairColor).color!;
+  let hair = getOption('hairColor', a.hairColor).color!;
+  if(stage==='senior'&&a.hairColor!=='blue')hair=mix(hair,'#d0d0ce',(context.age??55)>=70?.5:.25);
   const eye = getOption('eyeColor', a.eyeColor).color!;
   const cloth = getOption('clothingColor', a.clothingColor).color!;
   const skinShade = shade(skin, -14);
@@ -115,7 +131,7 @@ export function renderPortraitSvg(input: Partial<Appearance> | undefined, label 
     out.push(`<path d="M${CX - 32} 160C${CX - 36} 138 ${CX - 20} 132 ${CX} 132C${CX + 20} 132 ${CX + 36} 138 ${CX + 32} 160Z" fill="${shade(cloth, -22)}"/>`);
   }
   out.push(`<path d="M${CX - 16} ${n(CY + h - 14)}L${CX - 16} 160L${CX + 16} 160L${CX + 16} ${n(CY + h - 14)}Z" fill="${skinShade}"/>`);
-  out.push(`<path d="M12 200C12 168 50 154 ${CX} 154C150 154 188 168 188 200Z" fill="${cloth}"/>`);
+  out.push(`<path d="M${stage==='child'?24:context.gender==='female'?18:12} 200C18 168 50 154 ${CX} 154C150 154 182 168 ${stage==='child'?176:context.gender==='female'?182:188} 200Z" fill="${cloth}"/>`);
   const trim = shade(cloth, -20);
   const light = shade(cloth, 38);
   switch (a.clothing) {
@@ -166,14 +182,15 @@ export function renderPortraitSvg(input: Partial<Appearance> | undefined, label 
   // ---------- eyes, brows, nose, mouth ----------
   for (const s of [-1, 1]) {
     const ex = CX + s * p.eye;
-    out.push(`<ellipse cx="${ex}" cy="${ey}" rx="6.4" ry="4.3" fill="#fbfbfa"/><circle cx="${ex}" cy="${ey}" r="3.5" fill="${eye}"/><circle cx="${ex}" cy="${ey}" r="1.6" fill="#15110f"/><circle cx="${n(ex + 1.2)}" cy="${n(ey - 1.2)}" r="0.9" fill="#fff"/>`);
-    out.push(`<path d="M${n(ex - 6.8)} ${ey}C${n(ex - 3)} ${n(ey - 5.8)} ${n(ex + 3)} ${n(ey - 5.8)} ${n(ex + 6.8)} ${ey}" fill="none" stroke="${skinDeep}" stroke-width="1.4" stroke-linecap="round"/>`);
+    out.push(`<ellipse cx="${ex}" cy="${ey}" rx="6.4" ry="${family==='east-asian'?(stage==='child'?3.7:3.1):stage==='child'?4.9:4.3}" fill="#fbfbfa"/><circle cx="${ex}" cy="${ey}" r="${family==='east-asian'?(stage==='child'?3:2.7):3.5}" fill="${eye}"/><circle cx="${ex}" cy="${ey}" r="1.6" fill="#15110f"/><circle cx="${n(ex + 1.2)}" cy="${n(ey - 1.2)}" r="0.9" fill="#fff"/>`);
+    out.push(`<path d="M${n(ex - 6.8)} ${ey}C${n(ex - 3)} ${n(ey - (family==='east-asian'?4.1:5.8))} ${n(ex + 3)} ${n(ey - (family==='east-asian'?4.1:5.8))} ${n(ex + 6.8)} ${ey}" fill="none" stroke="${skinDeep}" stroke-width="1.4" stroke-linecap="round"/>`);
     out.push(`<path d="M${n(ex - 7.5)} ${n(ey - 10.5 + (s === 1 ? 0.5 : 0))}Q${ex} ${n(ey - 14.5)} ${n(ex + 7.5)} ${n(ey - 10.5 + (s === -1 ? 0.5 : 0))}" fill="none" stroke="${browColor}" stroke-width="2.9" stroke-linecap="round"/>`);
   }
   out.push(`<path d="M${CX} ${n(ey + 3)}L${n(CX - p.nose * 0.4)} ${n(ny - 2)}Q${n(CX - p.nose)} ${n(ny + 2)} ${n(CX - p.nose * 0.2)} ${n(ny + 2.5)}Q${CX} ${n(ny + 3.5)} ${n(CX + p.nose * 0.2)} ${n(ny + 2.5)}Q${n(CX + p.nose)} ${n(ny + 2)} ${n(CX + p.nose * 0.4)} ${n(ny - 2)}" fill="none" stroke="${skinDeep}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>`);
   const lip = mix(skin, '#a83a40', 0.6);
   out.push(`<path d="M${n(CX - p.mouth)} ${n(my)}Q${CX} ${n(my + 4.5)} ${n(CX + p.mouth)} ${n(my)}" fill="none" stroke="${lip}" stroke-width="2.8" stroke-linecap="round"/><path d="M${n(CX - p.mouth * 0.65)} ${n(my - 0.8)}Q${CX} ${n(my - 3)} ${n(CX + p.mouth * 0.65)} ${n(my - 0.8)}" fill="none" stroke="${lip}" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>`);
 
+  if(stage==='mature'||stage==='senior')out.push(`<g data-age-lines="${stage}" fill="none" stroke="${skinShade}" stroke-width="${stage==='senior'?1.1:.7}" opacity=".65"><path d="M84 68Q100 65 116 68M84 72Q100 69 116 72M74 102l-6 3M126 102l6 3"/>${stage==='senior'?'<path d="M81 119l-5 8M119 119l5 8M86 133q14 4 28 0"/>':''}</g>`);
   // ---------- glasses ----------
   if (a.glasses !== 'none') {
     const frame = '#24252b';
@@ -251,7 +268,7 @@ export function renderPortraitSvg(input: Partial<Appearance> | undefined, label 
     default: break;
   }
 
-  const defs = `<defs><radialGradient id="ccm-bg" cx="50%" cy="35%" r="75%"><stop offset="0" stop-color="#2b3d63"/><stop offset="1" stop-color="#121b30"/></radialGradient><clipPath id="ccm-clip"><circle cx="100" cy="100" r="100"/></clipPath></defs>`;
+  const defs = `<defs><radialGradient id="${uid}-bg" cx="50%" cy="35%" r="75%"><stop offset="0" stop-color="#2b3d63"/><stop offset="1" stop-color="#121b30"/></radialGradient><clipPath id="${uid}-clip"><circle cx="100" cy="100" r="100"/></clipPath></defs>`;
   if (hairVariant) {
     const v = Number(hairVariant[2]);
     out.push(`<path d="M${65+v} ${59+v%3} Q100 ${38+v} ${135-v} ${64+v%4}" fill="none" stroke="${shade(hair,25)}" stroke-width="${1+v%3}"/>`);
@@ -270,5 +287,5 @@ export function renderPortraitSvg(input: Partial<Appearance> | undefined, label 
     else if(v===6||v===7) out.push(`<path d="M132 55 l${7+v} -8 l-2 17 l-14 -4z" fill="${cloth}" stroke="#e7bb55"/>`);
     else out.push(`<path d="M80 156 Q100 ${175+v} 120 156" fill="none" stroke="#e7bb55" stroke-width="${1+v%3}"/><${v%2?'rect':'circle'} ${v%2?`x="94" y="${171+v}" width="12" height="9"`:`cx="100" cy="${176+v}" r="${3+v%3}"`} fill="${v===4?'#ce4747':'#e7bb55'}"/>`);
   }
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="${label.replace(/[<>&"]/g, '')}">${defs}<g clip-path="url(#ccm-clip)"><circle cx="100" cy="100" r="100" fill="url(#ccm-bg)"/><g transform="translate(100 112) scale(1.22) translate(-100 -112)">${out.join('')}</g></g></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" data-age-stage="${stage}" data-face-family="${family}" data-facial-hair="${a.facialHair}" viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="${label.replace(/[<>&"]/g, '')}">${defs}<g clip-path="url(#${uid}-clip)"><circle cx="100" cy="100" r="100" fill="url(#${uid}-bg)"/><g transform="translate(100 112) scale(1.22) translate(-100 -112)">${out.join('')}</g></g></svg>`;
 }

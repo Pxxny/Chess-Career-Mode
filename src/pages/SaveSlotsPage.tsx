@@ -109,7 +109,7 @@ export function SaveSlotsPage() {
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                     <div className="flex min-w-0 flex-1 items-center gap-4">
                       <CharacterPortrait
-                        appearance={state.summary.appearance}
+                        appearance={state.summary.appearance} age={state.summary.age} gender={state.summary.gender}
                         label={`${state.summary.name} portrait`}
                         className="h-16 w-16 shrink-0 border-2 border-gold-500/60"
                       />

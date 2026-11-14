@@ -43,9 +43,16 @@ for (const [gender, hair, clothes] of [['male',maleHair,maleClothes],['female',f
 APPEARANCE_OPTIONS.accessory.push(...['Studs','Hoops','Pendant','Medal','Bow tie','Necklace','Flower','Ribbon','Beret','Chess badge'].map((name,i)=>o(`extra-accessory-${i}`,name)));
 const newColors = ['#ce4747','#ee8970','#d6a865','#fff4dd','#ac9b79','#677955','#178875','#82b4ab','#399fc0','#276399','#5945a7','#9175ba','#c15391','#e6a1bd','#6a3443','#693f2b','#a0b3cb','#222226','#c3b391','#7eb7df'];
 APPEARANCE_OPTIONS.clothingColor.push(...newColors.map((color,i)=>o(`palette-${i}`,`Studio color ${i+1}`,color)));
-export function optionsForGender(field: AppearanceField, gender?: string | null): AppearanceOption[] {
+APPEARANCE_OPTIONS.facePreset.push(o('slavic-soft','Slavic · soft'),o('slavic-defined','Slavic · defined'),o('east-asian-soft','East Asian · soft'),o('east-asian-defined','East Asian · defined'),o('south-asian','South Asian'),o('west-asian','West Asian'),o('african-soft','African · soft'),o('african-defined','African · defined'),o('mixed','Mixed features'));
+export function optionsForGender(field: AppearanceField, gender?: string | null, age?:number): AppearanceOption[] {
   const excluded = gender === 'male' ? 'female-' : gender === 'female' ? 'male-' : null;
-  return APPEARANCE_OPTIONS[field].filter(o=>!excluded || !o.id.startsWith(excluded));
+  return APPEARANCE_OPTIONS[field].filter(o=>{
+    if(excluded&&o.id.startsWith(excluded))return false;
+    if(field==='facialHair')return gender==='female'||(age!==undefined&&age<16)?o.id==='none':age!==undefined&&age<18?['none','stubble'].includes(o.id):true;
+    if(field==='hairStyle'&&gender==='male'&&['bob','ponytail','bun'].includes(o.id))return false;
+    if(field==='hairStyle'&&gender==='female'&&['sidepart','mohawk'].includes(o.id))return false;
+    return true;
+  });
 }
 
 export const DEFAULT_APPEARANCE: Appearance = {
@@ -70,9 +77,9 @@ export function sanitizeAppearance(value: Partial<Appearance> | undefined): Appe
   return out;
 }
 
-export function randomAppearance(random: () => number = Math.random, gender?: string | null): Appearance {
+export function randomAppearance(random: () => number = Math.random, gender?: string | null, age?:number): Appearance {
   const pick = (field: AppearanceField) => {
-    const list = optionsForGender(field, gender);
+    const list = optionsForGender(field, gender, age);
     return list[Math.floor(random() * list.length)].id;
   };
   const result = { ...DEFAULT_APPEARANCE };
@@ -101,3 +108,10 @@ export function describeAppearance(value: Appearance): string {
   if (a.accessory !== 'none') parts.push(label('accessory'));
   return parts.join(', ');
 }
+
+export function appearanceFor(value:Partial<Appearance>|undefined,gender?:string|null,age?:number):Appearance{
+ const a=sanitizeAppearance(value);
+ for(const field of APPEARANCE_FIELDS){const options=optionsForGender(field,gender,age);if(!options.some(o=>o.id===a[field]))a[field]=field==='hairStyle'?(gender==='female'?'female-hair-1':'male-hair-0'):field==='clothing'?(gender==='female'?'female-outfit-0':'male-outfit-0'):options[0].id;}
+ return a;
+}
+export const portraitAgeStage=(age=25)=>age<13?'child':age<18?'teen':age<35?'adult':age<55?'mature':'senior';

@@ -45,7 +45,7 @@ export function ConfirmStep({ draft }: { draft: CharacterDraft }) {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
         <CharacterPortrait
-          appearance={draft.appearance}
+          appearance={draft.appearance} age={ageAtStart(draft.birthDate,draft.startYear)} gender={draft.gender}
           label={`${draft.name} portrait`}
           className="h-36 w-36 shrink-0 border-2 border-gold-500/70"
         />
