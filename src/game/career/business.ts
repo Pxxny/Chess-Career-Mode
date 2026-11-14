@@ -1,3 +1,4 @@
+import jsonLogic from "json-logic-js";
 import { GAME_CONFIG } from "@/data/config";
 import { SPONSORSHIPS } from "@/data/reputation";
 import type { GameSave } from "@/types";
@@ -20,6 +21,7 @@ export interface SponsorshipState {
   active: SponsorContract | null;
   cooldownUntil: number;
   history: Array<SponsorContract & { ended: number }>;
+  notifiedOffers?: string[];
 }
 export type LegacyRole = "active" | "mentor" | "commentator" | "ambassador";
 export interface LegacyState {
@@ -49,14 +51,22 @@ export const legacyUnlocked = (s: GameSave) =>
   s.player.peakRating >= 2400;
 const games = (s: GameSave) => lifetimeOf(s.history).total.games;
 const sessions = (s: GameSave) => s.training.sessionCounter;
+export function sponsorEligible(s:GameSave, sponsor: typeof SPONSORSHIPS[number]) {
+  return Boolean(jsonLogic.apply({and:[{">=":[{var:"elo"},sponsor.minElo]},{">=":[{var:"reputation"},sponsor.minReputation]}]},{elo:s.player.rating,reputation:s.player.reputation}));
+}
+export const sponsorOffers = (s:GameSave) => SPONSORSHIPS.filter(x=>sponsorEligible(s,x)).sort((a,b)=>b.marketWeight-a.marketWeight);
+export function refreshSponsorOffers(s:GameSave):GameSave {
+ const state=sponsorsOf(s),known=new Set(state.notifiedOffers??[]),fresh=sponsorOffers(s).filter(x=>!known.has(x.id));
+ if(!fresh.length)return s;
+ return {...s,sponsorship:{...state,notifiedOffers:[...known,...fresh.map(x=>x.id)]},history:{...s.history,news:[...s.history.news,{...s.world.date,id:`sponsor-offers-${stampIndex(s.world.date)}-${fresh[0].id}`,kind:'sponsorship' as const,headline:'New sponsorship offers',detail:fresh.map(x=>`${x.name} · $${x.monthly} / 4 weeks`).join(' | ')}].slice(-GAME_CONFIG.history.maxNews)}};
+}
 export function signSponsor(s: GameSave, id: string) {
   const sponsor = SPONSORSHIPS.find((x) => x.id === id),
     state = sponsorsOf(s),
     now = stampIndex(s.world.date);
   if (
     !sponsor ||
-    s.player.rating < sponsor.minElo ||
-    s.player.reputation < sponsor.minReputation
+    !sponsorEligible(s,sponsor)
   )
     return {
       ok: false as const,
@@ -91,6 +101,7 @@ export function cancelSponsor(s: GameSave) {
   return {
     ...s,
     sponsorship: {
+      ...state,
       active: null,
       cooldownUntil: stampIndex(s.world.date) + 4,
       history: [
@@ -102,6 +113,7 @@ export function cancelSponsor(s: GameSave) {
 }
 /** Called on calendar advancement, including planned simulation. Every payment has a durable unique ledger id. */
 export function settleSponsors(s: GameSave): GameSave {
+  s = refreshSponsorOffers(s);
   const state = sponsorsOf(s);
   if (!state.active) return s;
   const a = { ...state.active },
@@ -112,8 +124,7 @@ export function settleSponsors(s: GameSave): GameSave {
   while (a.nextPayment <= now && a.nextPayment <= a.end) {
     const needGames = a.sponsorId === "brand" ? 12 : 6;
     const qualified =
-      games(s) - a.gamesAtStart >= needGames &&
-      sessions(s) - a.sessionsAtStart >= 8;
+      Boolean(jsonLogic.apply({and:[{">=":[{var:"games"},needGames]},{">=":[{var:"sessions"},8]}]},{games:games(s)-a.gamesAtStart,sessions:sessions(s)-a.sessionsAtStart}));
     const id = `${a.id}-period-${a.period}`;
     if (!next.history.ledger.some((l) => l.id === id)) {
       const amount = qualified ? sponsor.monthly : 0;
@@ -160,6 +171,7 @@ export function settleSponsors(s: GameSave): GameSave {
     return {
       ...next,
       sponsorship: {
+        ...state,
         active: null,
         cooldownUntil: a.end + 4,
         history: [...state.history, { ...a, ended: a.end }].slice(-30),

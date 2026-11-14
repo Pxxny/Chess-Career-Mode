@@ -1,3 +1,6 @@
+import { hasOpeningCeremony } from "@/game/competition/presentation";
+import { CareerTools } from "@/features/career/CareerTools";
+import { tournamentCategory } from "@/game/competition/categories";
 import { TOURNAMENT_CONTINENTS, matchesVenueContinent } from "@/game/competition/venues";
 import { earnedEntries } from "@/game/competition/earnedEntries";
 import { TournamentSpotlightDialog } from "@/features/tournaments/TournamentSpotlight";
@@ -208,65 +211,12 @@ export function TournamentStandings({ t }: { t: ActiveTournament }) {
   );
 }
 export function PairingHistory({ t }: { t: ActiveTournament }) {
-  const names = new Map(t.players.map((p) => [p.id, `${p.name} (${p.elo})`]));
-  return (
-    <div className="mt-4 space-y-2">
-      <h3 className="font-semibold text-ink">Pairings & history</h3>
-      {t.pairings.map((round, i) => (
-        <details
-          key={i}
-          open={i === t.round - 1}
-          className="rounded-lg bg-navy-900 p-3"
-        >
-          <summary className="cursor-pointer text-sm text-gold-400">
-            Round {i + 1}
-            {i === t.round - 1 ? " · current" : ""}
-          </summary>
-          <ul className="mt-2 max-h-64 space-y-2 overflow-auto text-xs text-ink-muted">
-            {round.map((p) => (
-              <li key={p.white} className="break-words">
-                {names.get(p.white)} —{" "}
-                {p.black === "bye" ? "Bye" : names.get(p.black)}{" "}
-                <span className="text-ink">
-                  {p.black === "bye"
-                    ? ` · ${p.result ?? 0} point(s)`
-                    : p.result === null
-                      ? " · upcoming"
-                      : ` · ${p.result} – ${1 - p.result}`}
-                </span>
-                {(p.prediction ?? p.forecast) && (
-                  <>
-                    <PredictionSummary
-                      prediction={p.prediction ?? p.forecast}
-                      actual={
-                        p.result === null
-                          ? undefined
-                          : p.result === 1
-                            ? "win"
-                            : p.result === 0.5
-                              ? "draw"
-                              : "loss"
-                      }
-                    />
-                    <span className="text-xs text-ink-faint">
-                      White expected score{" "}
-                      {(
-                        (p.prediction ?? p.forecast)!.adjusted.expected * 100
-                      ).toFixed(2)}
-                      % · {(p.prediction ?? p.forecast)!.classification}
-                    </span>
-                  </>
-                )}
-                {p.tiebreakWinner &&
-                  ` · rapid tiebreak: ${names.get(p.tiebreakWinner)}`}
-              </li>
-            ))}
-          </ul>
-        </details>
-      ))}
-    </div>
-  );
+ const [round,setRound]=useState(Math.min(t.round-1,t.pairings.length-1)),[mine,setMine]=useState(false);
+ useEffect(()=>setRound(Math.max(0,t.round-1)),[t.round,t.eventId]);
+ const index=Math.max(0,Math.min(round,t.pairings.length-1)),names=new Map(t.players.map(p=>[p.id,`${p.name} (${p.elo})`]));
+ return <section className="mt-4 rounded-xl bg-navy-900 p-4" data-testid="pairings-history"><h3 className="font-semibold">Pairings & history</h3><div className="my-3 flex flex-wrap items-center gap-2"><Button variant="secondary" disabled={index===0} onClick={()=>setRound(index-1)}>←</Button><select aria-label="Pairing round" value={index} onChange={e=>setRound(Number(e.target.value))} className="rounded-lg bg-navy-800 p-3">{t.pairings.map((_,i)=><option key={i} value={i}>Round {i+1}{i===t.round-1?' · current':''}</option>)}</select><Button variant="secondary" disabled={index>=t.pairings.length-1} onClick={()=>setRound(index+1)}>→</Button><label className="text-xs"><input type="checkbox" checked={mine} onChange={e=>setMine(e.target.checked)}/> My board only</label></div><ul className="max-h-96 space-y-2 overflow-auto">{(t.pairings[index]??[]).filter(p=>!mine||p.white==='player'||p.black==='player').map(p=><li key={p.white} className={`min-w-0 rounded-xl border p-3 text-sm ${p.white==='player'||p.black==='player'?'border-gold-500/40':'border-white/10'}`}><div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]"><p className="break-words">♔ {names.get(p.white)}</p><strong className="text-gold-300">{p.result===null?'Upcoming':`${p.result} – ${1-p.result}`}</strong><p className="break-words">♚ {p.black==='bye'?'Bye':names.get(p.black)}</p></div>{(p.prediction??p.forecast)&&<div className="mt-2"><PredictionSummary prediction={p.prediction??p.forecast}/></div>}</li>)}</ul></section>;
 }
+
 function Entrants({ event }: { event: EntryEvent }) {
   const save = useSave(),
     npcs = useNpcs();
@@ -424,13 +374,13 @@ export function TournamentPanel({
         (location === "home" && e.details?.country === save.player.country) ||
         (location === "abroad" && e.details?.country !== save.player.country) ||
         e.details?.country === location) &&
-      (category === "all" || eventKind(e) === category) &&
+      (category === "all" || tournamentCategory(e) === category) &&
       (query
         ? e.name.toLowerCase().includes(query.toLowerCase())
         : !targetEvent || e.id === targetEvent.id),
   );
   return (
-    <div className="space-y-4" data-testid="tournament-panel">
+    <div className="space-y-4" data-testid="tournament-panel"><Card><CardTitle>Competition hub</CardTitle><p className="mb-3 text-sm text-ink-muted">Play your current event, manage earned places or find your next tournament.</p><div className="flex flex-wrap gap-2">{[["current-tournament","Play & results"],["your-registrations",`Your entries (${regs.length+earned.length})`],["available-tournaments","Find a tournament"]].map(([id,label])=><Button key={id} variant="secondary" onClick={()=>document.getElementById(id)?.scrollIntoView({behavior:"smooth",block:"start"})}>{label}</Button>)}</div></Card>
       {spotlight && <TournamentSpotlightDialog event={spotlight} onClose={() => setSpotlight(null)} />}
       {viewTournament && t && (
         <TournamentDetail
@@ -473,7 +423,7 @@ export function TournamentPanel({
           </p>
         </Card>
       )}
-      {showCurrent && t ? (
+      <div id="current-tournament" className="scroll-mt-24">{showCurrent && t ? (
         <Card>
           <CardTitle
             aside={
@@ -488,7 +438,7 @@ export function TournamentPanel({
           >
             Current tournament · {t.name}
           </CardTitle>
-          <dl className="mb-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+          <details className="mb-4"><summary className="cursor-pointer text-sm text-gold-300">Tournament information</summary><dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
             {[
               ["Location", t.details?.location ?? save.player.city.name],
               [
@@ -532,7 +482,7 @@ export function TournamentPanel({
                 <dd className="mt-1 text-ink">{v}</dd>
               </div>
             ))}
-          </dl>
+          </dl></details>
           {t.status === "playing" && next && (
             <div className="mb-4 rounded-lg bg-navy-900 p-3">
               <h3 className="font-semibold text-ink">Upcoming match</h3>
@@ -614,7 +564,7 @@ export function TournamentPanel({
           </p>
         </Card>
       )}
-      <Card id="your-registrations" tabIndex={-1} className="scroll-mt-24" data-testid="your-registrations">
+      </div><Card id="your-registrations" tabIndex={-1} className="scroll-mt-24" data-testid="your-registrations">
         <CardTitle aside={<Badge tone="gold">{regs.length + earned.length}</Badge>}>Your registrations</CardTitle>
         <p className="mb-4 text-sm text-ink-muted">Your qualified events and national team entries appear here automatically. Qualified entries still need registration confirmation.</p>
         {running && (
@@ -703,9 +653,10 @@ export function TournamentPanel({
           registration per starting week.
         </p>
       </Card>
-      <Card>
+      <Card id="available-tournaments" className="scroll-mt-24">
         <CardTitle>Upcoming tournaments</CardTitle>
         <p className="mb-4 rounded-xl bg-gold-500/10 p-3 text-sm text-gold-300">Sponsored qualification circuits: Local → National → Continental → World. Each event publishes its advancing places and named World Finals destination. Places vary by event and season; federation and continent restrictions still apply.</p>
+        <p className="mb-3 text-sm text-ink-muted">Already qualified? Your place rolls down to the next eligible finisher until all available places are filled.</p>
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <Button variant="secondary" onClick={() => setFinderOpen(true)}>
             Find suitable tournaments
@@ -735,8 +686,8 @@ export function TournamentPanel({
           source is cited. National teams use the separate four-board,
           eight-team round-robin simulation.
         </p>
-        <div className="mb-4 flex flex-wrap gap-3">
-          <select
+        <fieldset className="mb-4 grid gap-3 rounded-xl border border-white/10 p-3 sm:grid-cols-2 lg:grid-cols-3"><legend className="px-2 text-sm font-semibold">Narrow your tournament search</legend>
+          <label className="min-w-0 text-xs text-ink-muted"><span className="mb-1 block">Calendar origin</span><select
             aria-label="Tournament source"
             value={source}
             onChange={(e) => {
@@ -745,25 +696,25 @@ export function TournamentPanel({
             }}
             className="max-w-full rounded-lg bg-navy-900 p-3 text-sm text-ink"
           >
-            <option value="all">All sources</option>
-            <option value="fide">FIDE-listed references</option>
-            <option value="fictional">In-game circuit</option>
-          </select>
-          <select aria-label="Qualification entry" value={qualificationFilter ?? "all"} onChange={(e) => {
+            <option value="all">Every organizer</option>
+            <option value="fide">Published real-world calendars</option>
+            <option value="fictional">Career-generated events</option>
+          </select></label>
+          <label className="min-w-0 text-xs text-ink-muted"><span className="mb-1 block">How do I enter?</span><select aria-label="Qualification entry" value={qualificationFilter ?? "all"} onChange={(e) => {
             const qualification = e.target.value as TournamentSearch["qualification"];
             setQualificationFilter(qualification); setLimit(6);
             setSearch((previous) => previous ? { ...previous, qualification, availableOnly: false } : null);
           }} className="max-w-full rounded-lg bg-navy-900 p-3 text-sm text-ink">
-            <option value="all">All entry types</option><option value="required">Qualification required</option><option value="qualifier">Awards qualification</option><option value="circuit">Local → National → Continental → World</option>
-          </select>
-          <select data-testid="tournament-continent-filter" aria-label="Tournament continent" value={continent} onChange={(e) => {
+            <option value="all">Any entry requirement</option><option value="required">Must qualify first</option><option value="qualifier">Earn a place in the next stage</option><option value="circuit">Local → National → Continental → World</option>
+          </select></label>
+          <label className="min-w-0 text-xs text-ink-muted"><span className="mb-1 block">Host continent</span><select data-testid="tournament-continent-filter" aria-label="Tournament continent" value={continent} onChange={(e) => {
             setContinent(e.target.value); setLocation("all"); setLimit(6);
             setSearch((previous) => previous ? { ...previous, continent: e.target.value } : null);
           }} className="max-w-full rounded-lg bg-navy-900 p-3 text-sm text-ink">
             <option value="all">All continents</option>
             {TOURNAMENT_CONTINENTS.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <select
+          </select></label>
+          <label className="min-w-0 text-xs text-ink-muted"><span className="mb-1 block">Where will I travel?</span><select
             aria-label="Tournament location"
             value={location}
             onChange={(e) => {
@@ -793,7 +744,7 @@ export function TournamentPanel({
                   {getCountry(c)?.flag} {getCountry(c)?.name ?? c}
                 </option>
               ))}
-          </select>
+          </select></label>
           <input
             aria-label="Search tournaments"
             placeholder="Search tournaments…"
@@ -809,7 +760,7 @@ export function TournamentPanel({
             }}
             className="min-w-0 flex-1 rounded-lg bg-navy-900 p-3 text-sm text-ink"
           />
-          <select
+          <label className="min-w-0 text-xs text-ink-muted"><span className="mb-1 block">Competition style</span><select
             aria-label="Tournament category"
             value={category}
             onChange={(e) => {
@@ -818,11 +769,10 @@ export function TournamentPanel({
             }}
             className="max-w-full rounded-lg bg-navy-900 p-3 text-sm text-ink"
           >
-            <option value="all">All categories</option>
-            <option value="regular">Regular tournaments</option>
-            <option value="national">National teams</option>
-          </select>
-        </div>
+            <option value="all">Every competition format</option>
+            {[...new Set(events.map(tournamentCategory))].sort().map(c=><option key={c} value={c}>{c}</option>)}
+          </select></label>
+        </fieldset>
         <ul className="space-y-4" data-testid="open-events">
           {filtered.slice(0, limit).map((e) => {
             const totalEntrants = e.details?.showcase
@@ -891,8 +841,12 @@ export function TournamentPanel({
                               : "Registration open"}
                   </Badge>
                 </div>
-                <EventFacts event={e} />
-                <Button className="mt-3" variant="secondary" onClick={() => setSpotlight(e)}>City map & tournament spotlight</Button>
+                <p className="mt-2 text-sm text-ink-muted">{dateLabel(e)} · {e.details?.location} · ${e.entryFee + (e.details?.travelCost??0)} total</p>
+                <p className="mt-1 text-xs text-gold-300">{tournamentCategory(e)} · {circuitAdvancement(e.details)}</p>
+                {e.details?.sponsorship&&<p className="mt-2 text-xs text-gold-300">Event partner · {e.details.sponsorship.name} · Market share {e.details.sponsorship.marketShare.toFixed(2)}%</p>}
+                <p className="mt-1 text-xs text-ink-faint">{hasOpeningCeremony(e)?"Opening & award ceremonies":"Award ceremony after the final round"}</p>
+                <Button className="mt-2" variant="secondary" onClick={()=>setSpotlight(e)}>City map & tournament spotlight</Button><details className="mt-3"><summary className="cursor-pointer text-sm text-gold-300">Requirements, schedule & players</summary><EventFacts event={e} />
+
                 {e.details?.qualificationCircuit && <p className="mt-3 rounded-lg bg-gold-500/10 p-3 text-sm text-gold-300" data-testid="qualification-route">{circuitAdvancement(e.details) || "Final stage · qualifiers from all continents"}</p>}
                 <TournamentTimetable event={e} />
                 {totalEntrants !== null && e.details?.format !== "team" && (
@@ -944,7 +898,7 @@ export function TournamentPanel({
                     Historical date / format source · FIDE
                   </a>
                 )}
-                <Entrants event={e} />
+                <Entrants event={e} /></details>
                 <p className="mt-3 text-xs text-ink-muted">
                   {issues.length
                     ? `Missing: ${issues.join(" · ")}`
@@ -1014,25 +968,8 @@ export function TournamentPanel({
           {error}
         </p>
       )}
-      {!swissOnly && (
-        <Card>
-          <CardTitle>Historical reference · verified</CardTitle>
-          <p className="text-sm text-ink-muted">
-            {HISTORICAL_REFERENCE.name} · {HISTORICAL_REFERENCE.location} ·{" "}
-            {HISTORICAL_REFERENCE.start} to {HISTORICAL_REFERENCE.end} ·{" "}
-            {HISTORICAL_REFERENCE.format}. Reference only; the career calendar
-            above is fictional.
-          </p>
-          <a
-            className="mt-2 inline-block text-xs text-gold-400 underline"
-            href={HISTORICAL_REFERENCE.url}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Source: FIDE tournament regulations announcement
-          </a>
-        </Card>
-      )}
+      <CareerTools/>
+
     </div>
   );
 }

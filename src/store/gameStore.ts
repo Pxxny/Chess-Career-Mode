@@ -1,4 +1,4 @@
-import { acknowledgeArticle, highlightsOf } from "@/game/career/highlights";
+import { acknowledgeArticle, highlightsOf, captureHighlights } from "@/game/career/highlights";
 import { createSeasonGameClient } from "./seasonGameClient";
 import type { LearningFocus } from "@/game/career/learningFocus";
 import { queueMatchRecords, writeMatchArchive } from "./matchArchive";
@@ -1404,4 +1404,11 @@ useGameStore.subscribe((state, previous) => {
   }
   if (state.save.matchArchivePending !== previous.save?.matchArchivePending)
     flushMatches();
+});
+
+// Manual play uses the same durable presentations as season simulation.
+useGameStore.subscribe((state,previous)=>{
+ if(!state.save||!previous.save||state.save===previous.save||state.seasonRunning||state.save.career.id!==previous.save.career.id)return;
+ const next=captureHighlights(previous.save,state.save,useNpcStore.getState().npcs);
+ if(next!==state.save)useGameStore.setState({save:next});
 });

@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Button, Card, CardTitle } from "@/components/ui";
 import { useSave } from "@/hooks/useGame";
 import { useGameStore } from "@/store/gameStore";
-import { SPONSORSHIPS } from "@/data/reputation";
+import { SPONSORSHIPS, sponsorMarketShare } from "@/data/reputation";
 import {
   sponsorsOf,
+  sponsorOffers,
+  sponsorEligible,
   sponsorProgress,
   legacyOf,
   legacyUnlocked,
@@ -45,6 +47,7 @@ export function CareerBusiness() {
           <div className="mt-4 rounded-lg border border-gold-500/30 p-3">
             <p className="font-semibold">
               {SPONSORSHIPS.find((s) => s.id === state.active!.sponsorId)?.name}
+              <span className="ml-2 text-xs text-gold-300">Market share · {sponsorMarketShare(SPONSORSHIPS.find(s=>s.id===state.active!.sponsorId)??SPONSORSHIPS[0]).toFixed(2)}%</span>
             </p>
             <p className="mt-2 text-sm">
               Rated games: {progress.games} / {progress.needGames} · Training
@@ -62,36 +65,15 @@ export function CareerBusiness() {
               Cancel contract
             </Button>
           </div>
-        ) : (
-          <ul className="mt-3 space-y-3">
-            {SPONSORSHIPS.map((s) => (
-              <li
-                key={s.id}
-                className="rounded-lg border border-white/10 p-3 text-sm"
-              >
-                <p className="font-semibold">{s.name}</p>
-                <p>
-                  {s.minElo}+ Elo · Reputation {s.minReputation}+
-                </p>
-                <p>
-                  ${s.monthly} / 4 weeks · {s.id === "brand" ? 12 : 6} rated
-                  games + 8 training sessions
-                </p>
-                <Button
-                  className="mt-2"
-                  disabled={
-                    save.player.rating < s.minElo ||
-                    save.player.reputation < s.minReputation ||
-                    stampIndex(save.world.date) < state.cooldownUntil
-                  }
-                  onClick={() => run({ type: "sponsor", id: s.id })}
-                >
-                  Sign contract
-                </Button>
-              </li>
-            ))}
-          </ul>
-        )}
+        ) : null}
+        <p className="mt-3 text-sm text-ink-muted">Market share represents each company’s size in the fictional chess sponsorship market. Higher Elo and reputation attract larger sponsors and better payments.</p>
+        <div className="mt-4 rounded-xl bg-gold-500/10 p-3"><p className="font-semibold">Offers for you · {sponsorOffers(save).length}</p><p className="text-xs text-ink-muted">Companies ready to hire you. Choose a contract; signing is never automatic.</p></div>
+        {sponsorOffers(save).length===0&&<p className="mt-3 text-sm">Build your Elo and reputation to attract your first sponsor.</p>}
+        {stampIndex(save.world.date)<state.cooldownUntil&&<p className="mt-3 text-sm">Next signing window: {dateLabel(stampFromIndex(state.cooldownUntil))}</p>}
+        <ul className="mt-3 grid gap-3 sm:grid-cols-2" data-testid="sponsor-offers">
+          {sponsorOffers(save).slice(0,4).map(s=><li key={s.id} className="rounded-xl border border-gold-500/30 p-3 text-sm"><p className="font-semibold">{s.name}</p><p>Market share · {sponsorMarketShare(s).toFixed(2)}%</p><p>${s.monthly} / 4 weeks</p><p className="text-xs text-ink-muted">{s.id==='brand'?12:6} rated games + 8 training sessions</p><Button className="mt-3" disabled={!!state.active||stampIndex(save.world.date)<state.cooldownUntil} onClick={()=>run({type:'sponsor',id:s.id})}>Sign contract</Button></li>)}
+        </ul>
+        <details className="mt-4"><summary className="cursor-pointer font-semibold">Sponsor market · {SPONSORSHIPS.length} companies</summary><p className="my-3 text-xs text-ink-muted">All companies, from local supporters to global leaders. Requirements must both be met.</p><ul className="grid gap-3 sm:grid-cols-2" data-testid="sponsor-market">{[...SPONSORSHIPS].sort((a,b)=>b.marketWeight-a.marketWeight).map(s=><li key={s.id} className="min-w-0 rounded-xl border border-white/10 p-3 text-sm"><div className="flex justify-between gap-2"><span className="font-semibold">{s.name}</span><span className="shrink-0">{sponsorMarketShare(s).toFixed(2)}%</span></div><progress className="my-2 h-2 w-full accent-[var(--accent)]" aria-label={`${s.name} market share`} max={100} value={sponsorMarketShare(s)}/><p>${s.monthly} / 4 weeks</p><p>{s.minElo}+ Elo · Reputation {s.minReputation}+</p><p className="text-xs text-ink-muted">{s.id==='brand'?12:6} rated games + 8 training sessions</p><p className={sponsorEligible(save,s)?'text-gold-300':'text-ink-muted'}>{sponsorEligible(save,s)?'Offer available':'Improve your Elo and reputation to unlock'}</p><Button className="mt-2" disabled={!sponsorEligible(save,s)||!!state.active||stampIndex(save.world.date)<state.cooldownUntil} onClick={()=>run({type:'sponsor',id:s.id})}>Sign contract</Button></li>)}</ul></details>
         {state.history.length > 0 && (
           <details className="mt-4 text-sm">
             <summary>Past contracts</summary>

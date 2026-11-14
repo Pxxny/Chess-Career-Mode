@@ -25,6 +25,7 @@ export type Qualification =
   | "world-championship"
   | "super-invitation";
 export interface EventDetails {
+  sponsorship?: { id:string; name:string; marketShare:number };
   qualificationCircuit?: {
     seriesId?: string;
     sponsor?: string;
@@ -120,6 +121,7 @@ export interface ScoutingReport {
   stamp: number;
 }
 export interface CompetitionState {
+  circuitAwards?: Record<string,string[]>;
   champion?: { id: string; name: string; year: number; eventId: string };
   target: string;
   plan: GamePlan;

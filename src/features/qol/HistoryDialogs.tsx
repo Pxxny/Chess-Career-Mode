@@ -30,10 +30,10 @@ export function OpeningHistoryDialog({
           {rows.map(({ game, match }) => (
             <li
               key={game.id}
-              className="flex flex-wrap items-center gap-3 py-3"
+              className="grid min-w-0 grid-cols-1 gap-2 rounded-xl bg-navy-900/50 p-3 sm:grid-cols-[auto_minmax(0,1fr)]"
             >
               <ResultBadge outcome={game.outcome} />
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0">
                 <p className="font-semibold text-ink">
                   vs {game.opponentName} ({game.opponentElo})
                 </p>
@@ -42,10 +42,10 @@ export function OpeningHistoryDialog({
                   {game.tournamentName ?? "Individual game"}
                 </p>
               </div>
-              <PredictionSummary
+              <div className="min-w-0 sm:col-span-2"><PredictionSummary
                 prediction={match?.setup.prediction}
                 actual={game.outcome}
-              />
+              /></div>
               {match ? (
                 <Button variant="secondary" onClick={() => setMatch(match)}>
                   Replay game
@@ -100,15 +100,15 @@ export function TournamentHistoryDialog({
           {rows.map((r) => (
             <li
               key={r.round}
-              className="flex flex-wrap items-center gap-3 py-3"
+              className="grid min-w-0 grid-cols-1 gap-2 rounded-xl bg-navy-900/50 p-3 sm:grid-cols-[auto_minmax(0,1fr)]"
             >
               {r.outcome ? (
                 <ResultBadge outcome={r.outcome} />
               ) : (
                 <span className="text-xs text-ink-muted">Upcoming</span>
               )}
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-ink">
+              <div className="min-w-0">
+                <p className="whitespace-normal break-normal text-sm font-semibold leading-6 text-ink [overflow-wrap:anywhere]">
                   Round {r.round} · {r.opponent}
                   {r.elo !== null ? ` (${r.elo})` : ""}
                 </p>
@@ -120,10 +120,10 @@ export function TournamentHistoryDialog({
                 </p>
               </div>
               {!r.bye && (
-                <PredictionSummary
+                <div className="min-w-0 sm:col-span-2"><PredictionSummary
                   prediction={r.prediction}
                   actual={r.outcome ?? undefined}
-                />
+                /></div>
               )}
               {r.match && (
                 <Button variant="secondary" onClick={() => setMatch(r.match)}>

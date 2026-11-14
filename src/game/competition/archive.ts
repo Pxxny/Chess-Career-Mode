@@ -11,6 +11,8 @@ import type {
 import { standings } from "@/game/match/tournament";
 export type EventKind = "regular" | "national";
 export interface ArchivedEvent {
+  qualificationTarget?: string;
+  qualifiedIds?: string[];
   id: string;
   year: number;
   week: number;

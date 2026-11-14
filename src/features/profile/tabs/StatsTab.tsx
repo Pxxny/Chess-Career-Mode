@@ -1,3 +1,4 @@
+import { PerformanceHeatmap } from "@/features/career/CareerTools";
 import { lazy, Suspense, useState } from "react";
 import { OpeningHistoryDialog } from "@/features/qol/HistoryDialogs";
 import { Card, CardTitle, EmptyState } from "@/components/ui";
@@ -29,7 +30,7 @@ export function StatsTab() {
   ];
 
   return (
-    <>
+    <><Card className="mb-4"><PerformanceHeatmap/></Card>
       <Suspense fallback={<Card className="mb-5 min-h-64" aria-busy="true">Loading rating chart…</Card>}><EloChart /></Suspense>
       {opening && (
         <OpeningHistoryDialog name={opening} onClose={() => setOpening(null)} />

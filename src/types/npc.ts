@@ -60,6 +60,8 @@ export interface TrainingHabits {
 }
 
 export interface TournamentResult {
+  qualificationEvaluated?: boolean;
+  qualificationTarget?: string;
   eventId?: string;
   week?: number;
   source?: "career" | "world-circuit" | "esports" | "calendar";

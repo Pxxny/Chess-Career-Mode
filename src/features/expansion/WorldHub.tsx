@@ -1,3 +1,4 @@
+import { ChessTeamCanvas } from "./ChessTeamCanvas";
 import { confirmUI } from "@/i18n/translate";
 import { useMemo, useState } from "react";
 import { Badge, Button, Card, CardTitle } from "@/components/ui";
@@ -59,6 +60,7 @@ export function WorldHub({
     play = useGameStore((s) => s.playTeamCup),
     hire = useGameStore((s) => s.hireCoach),
     cancel = useGameStore((s) => s.cancelCoach);
+  const [eligibleOnly,setEligibleOnly]=useState(true);
   const [eventKey, setEventKey] = useState("olympiad");
   const [message, setMessage] = useState(""),
     [term, setTerm] = useState<CoachTerm>("game"),
@@ -246,14 +248,16 @@ export function WorldHub({
     return (
       <div className="space-y-4">
         <Card>
-          <CardTitle>National team events · {year}</CardTitle>
+          <CardTitle>Your national chess team · {year}</CardTitle>
+          <p className="mb-3 text-sm text-gold-300">{country?.name} · {selected ? "Selected for starting boards" : "Selection follows eligible federation rankings"}</p>
+          {eventHome && <ChessTeamCanvas players={eventHome.players}/>}
           <p className="text-sm text-ink-muted">
             Twenty national team competitions run each game year. Teams select
             their highest-rated eligible players for the boards; you represent
             your country when selected. Individual Elo is unchanged. Vacant
             boards lose by forfeit, so small federations can still take part.
           </p>
-          <label className="mt-3 block text-sm text-ink-muted">
+          <label className="my-3 flex items-center gap-2 text-sm"><input type="checkbox" checked={eligibleOnly} onChange={e=>setEligibleOnly(e.target.checked)}/> Events for my federation and age group</label><label className="mt-3 block text-sm text-ink-muted">
             National team event
             <select
               aria-label="National team event"
@@ -264,7 +268,7 @@ export function WorldHub({
               }}
               className="mt-1 w-full rounded-lg bg-navy-900 p-3 text-ink"
             >
-              {TEAM_EVENTS.map((e) => (
+              {TEAM_EVENTS.filter(e=>!eligibleOnly||e.key===eventKey||teamEntryIssues(save,resolveTeamEvent(e,year)).length===0).map((e) => (
                 <option key={e.key} value={e.key}>
                   {e.name}
                 </option>

@@ -46,6 +46,7 @@ export function CompletePage() {
   const ranked = useRankedNpcs();
   const [selected, setSelected] = useState<Npc | null>(null);
   const [tab, setTab] = useState<Tab>("tournament");
+  const [federationView,setFederationView]=useState<"federation"|"teams">("teams");
   const [active, setActive] = useState<MatchSetup | null>(null);
   useEffect(() => {
     if (params.get("section") === "registrations") {
@@ -138,8 +139,7 @@ export function CompletePage() {
                     Federation & national teams
                   </summary>
                   <div className="mt-3 space-y-4">
-                    <WorldHub view="federation" />
-                    <WorldHub view="teams" />
+                    <div className="flex flex-wrap gap-2"><button className="rounded-xl bg-navy-800 p-3 text-sm" aria-pressed={federationView==="teams"} onClick={()=>setFederationView("teams")}>Team selection & boards</button><button className="rounded-xl bg-navy-800 p-3 text-sm" aria-pressed={federationView==="federation"} onClick={()=>setFederationView("federation")}>Membership & federations</button></div><WorldHub view={federationView} />
                   </div>
                 </details>
               </>

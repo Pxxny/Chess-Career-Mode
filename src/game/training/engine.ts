@@ -1,3 +1,4 @@
+import { awardAchievements } from "@/game/career/achievements";
 import { advancePlanning } from "@/game/career/planning";
 import { settleSponsors } from "@/game/career/business";
 import { advanceYearReview, trackYearActivity } from "@/game/career/yearReview";
@@ -450,7 +451,7 @@ export interface NightReport {
 }
 
 /** Sleep and move to the next day. Recovers fatigue, restores AP, advances the calendar. */
-export function endDay(save: GameSave): {
+function endDayBase(save: GameSave): {
   save: GameSave;
   report: NightReport;
 } {
@@ -516,3 +517,5 @@ export function endDay(save: GameSave): {
     },
   };
 }
+
+export function endDay(save:GameSave) { const result=endDayBase(save);return {...result,save:awardAchievements(result.save)}; }

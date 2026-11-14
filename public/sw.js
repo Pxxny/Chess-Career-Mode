@@ -1,5 +1,5 @@
 /* Offline support: the app shell and every same-origin file it loads are cached as you play. */
-const VERSION = "v9-generated-game-atlas";
+const VERSION = "v12-tournament-partners-ceremonies";
 const CACHE = `chess-career-${VERSION}`;
 const SHELL = [
   "/data/game-atlas.json", "/data/venue-cities.json",
@@ -12,6 +12,7 @@ const SHELL = [
   "/audio/chess/move-2.wav",
   "/audio/chess/move-3.wav",
   "/audio/chess/capture.wav",
+  "/audio/career/milestone.wav",
 ];
 
 self.addEventListener("install", (event) => {

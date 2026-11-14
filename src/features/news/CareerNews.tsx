@@ -1,3 +1,4 @@
+import { CeremonyArt } from "./CeremonyArt";
 import { useContext, useMemo, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Drawer } from "vaul";
@@ -11,7 +12,7 @@ import { translateUI as t } from "@/i18n/translate";
 import { LanguageContext } from "@/i18n/context";
 import { useNavigate } from "react-router-dom";
 
-const LABELS = { trophy: "Tournament victory", national: "National team", title: "New title", qualification: "Championship qualification" };
+const LABELS = { opening: "Opening ceremony", award: "Award ceremony", trophy: "Tournament victory", national: "National team", title: "New title", qualification: "Championship qualification" };
 function Reader({ article, close, resume, remaining = 0 }: { article: CareerArticle; close: () => void; resume?: () => void; remaining?: number }) {
   const reduced = useReducedMotion();
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ function Reader({ article, close, resume, remaining = 0 }: { article: CareerArti
     navigate(`/complete?${params}`);
   };
   return <div data-testid="career-news-article" className="min-w-0 break-words [overflow-wrap:anywhere]">
-    <motion.img initial={reduced ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} src={`/news/${article.kind}.svg`} alt={t(LABELS[article.kind])} className="aspect-[2/1] w-full rounded-xl object-cover" />
+    {article.ceremony?<CeremonyArt article={article}/>:<motion.img initial={reduced ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} src={`/news/${article.kind}.svg`} alt={t(LABELS[article.kind])} className="aspect-[2/1] w-full rounded-xl object-cover" />}
     <div className="py-5"><p className="text-xs font-semibold uppercase tracking-wider text-gold-400">{LABELS[article.kind]} · {article.year} / W{article.week}</p>
       <h2 className="mt-3 font-display text-2xl font-bold" translate="no">{t(article.headline)}</h2>
       <p className="mt-4 whitespace-pre-line text-sm leading-7 text-ink-muted" translate="no">{t(article.body)}</p>
@@ -85,7 +86,7 @@ export function CareerNewsroom() {
   const table = useReactTable({ data: filtered, columns, autoResetPageIndex: false, state: { sorting }, onSortingChange: setSorting, getCoreRowModel: getCoreRowModel(), getSortedRowModel: getSortedRowModel() });
   return <Card className="mb-4" data-testid="career-newsroom">
     <CardTitle>Career newsroom</CardTitle>
-    <p className="mb-4 text-sm text-ink-muted">Only major career moments interrupt simulation. Read your saved stories here.</p>
+    <p className="mb-4 text-sm text-ink-muted">Career milestones and tournament ceremonies pause simulation. Read your saved stories here.</p>
     {!articles.length ? <p className="text-sm text-ink-faint">Your first major career story will appear here.</p> : <>
       <input aria-label="Search career news" value={query} onChange={(e) => setQuery(e.target.value)} className="mb-3 w-full rounded-xl bg-navy-900 p-3 text-sm" placeholder={t("Search career news")} />
       <TableVirtuoso style={{ height: Math.min(360, Math.max(120, table.getRowModel().rows.length * 64 + 48)) }} data={table.getRowModel().rows} components={{ Table: (props) => <table {...props} aria-label={t("Career news archive")} className="w-full table-fixed text-left" /> }}

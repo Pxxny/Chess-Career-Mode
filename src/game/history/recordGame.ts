@@ -1,3 +1,4 @@
+import { awardAchievements } from "@/game/career/achievements";
 import {
   canEarnTitle,
   awardPlayerTitles,
@@ -109,7 +110,7 @@ export function withGameAccuracy(
  * Elo milestones, achievements, rivalries and news. Pure: returns a new save.
  * The match engine calls this (through the store) when a game ends.
  */
-export function recordGame(save: GameSave, input: GameInput): GameSave {
+function recordGameBase(save: GameSave, input: GameInput): GameSave {
   const { player, world } = save;
   const stamp: GameStamp = { ...world.date, day: world.day };
   const history: CareerHistory = {
@@ -387,7 +388,7 @@ export interface TournamentInput {
 }
 
 /** Records a finished tournament: result, win trophy, prize money and news. */
-export function recordTournament(
+function recordTournamentBase(
   save: GameSave,
   input: TournamentInput,
 ): GameSave {
@@ -481,3 +482,6 @@ export function recordTournament(
     ),
   );
 }
+
+export function recordGame(save:GameSave,input:GameInput):GameSave { return awardAchievements(recordGameBase(save,input)); }
+export function recordTournament(save:GameSave,input:TournamentInput):GameSave { return awardAchievements(recordTournamentBase(save,input)); }

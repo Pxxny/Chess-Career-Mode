@@ -1,3 +1,6 @@
+import { SeasonPresentation } from "./SeasonPresentation";
+import { standings } from "@/game/match/tournament";
+import { SeasonCoach } from "./CareerTools";
 import { useSeasonGameStatus } from "@/store/seasonGameClient";
 import { useEffect, useState } from "react";
 import { ArrowUpRight, Sparkles } from "lucide-react";
@@ -35,6 +38,7 @@ export function SimulateSeason() {
       </p>
         </div>
       </div>
+      <details className="mb-4 rounded-xl bg-navy-900/50 p-3"><summary className="cursor-pointer text-sm">Ask your coach before simulating</summary><div className="mt-3"><SeasonCoach/></div></details>
       {season && (
         <details className="mb-4 rounded-xl bg-navy-900/60 p-3 text-sm" data-testid="season-summary">
           <summary className="cursor-pointer font-semibold">{season.year} · {translateUI(season.status === "completed" ? "Season complete" : "Simulation paused")} · {season.games} {translateUI("games")}</summary>
@@ -198,8 +202,8 @@ export function SeasonProgressDialog() {
     pause();
   };
   return (
-    <Modal open title="Simulating season" onClose={stop} size="lg">
-      <div data-testid="season-progress" className="space-y-3">
+    <Modal open title="Simulating season" onClose={stop} size="game"><div className="grid min-w-0 gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div data-testid="season-progress" className="min-w-0 space-y-3"><SeasonPresentation action={translateUI(season.action)} tournaments={season.tournaments} stopping={stopping}/>
         <p role="status">
           {season.year} · {dayLabel(gameDay(save)).slice(0, 10)} · {season.days}{" "}
           / {season.targetDay - season.startDay} days
@@ -234,7 +238,7 @@ export function SeasonProgressDialog() {
         <Button variant="secondary" onClick={stop} disabled={stopping}>
           {stopping ? "Pausing…" : "Pause simulation"}
         </Button>
-      </div>
+      </div><aside className="min-w-0 rounded-xl bg-navy-900/60 p-3" data-testid="live-season-standings"><h3 className="mb-2 font-semibold">Live tournament standings</h3>{save.tournament ? <><p className="mb-3 break-words text-sm text-gold-300">{save.tournament.name} · Round {save.tournament.round}</p><ol className="max-h-[55dvh] space-y-2 overflow-y-auto">{standings(save.tournament).map(r=><li key={r.player.id} className={`grid grid-cols-[2rem_minmax(0,1fr)_3rem] gap-2 rounded-lg p-2 text-xs ${r.player.isPlayer?"bg-gold-500/15 text-gold-300":"bg-navy-800"}`}><span>#{r.rank}</span><span className="break-words">{r.player.name}<span className="block text-ink-muted">Elo {r.player.elo}</span></span><strong>{r.player.points} pts</strong></li>)}</ol></> : <p className="text-sm text-ink-muted">Standings appear when your next tournament starts.</p>}</aside></div>
     </Modal>
   );
 }

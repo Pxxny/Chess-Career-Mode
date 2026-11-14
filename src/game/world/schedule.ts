@@ -1,3 +1,4 @@
+import { withEventPartner } from "@/game/competition/presentation";
 import { distributeAnnualVenues } from "@/game/competition/venues";
 import { qualificationCircuitEvents } from "@/game/competition/qualificationCircuit";
 import { registrationWindow } from "@/game/competition/registrationWindow";
@@ -220,7 +221,7 @@ export function getSchedule(now: GameStamp, region: Region, careerId: string, ho
             status: official ? "Official" : "Unofficial", simulated: true,
           } } };
         }
-        return withTravel(e, region.countryCode);
+        return withTravel(withEventPartner(e), region.countryCode);
       });
       if (annualCache.size >= 32) annualCache.delete(annualCache.keys().next().value!);
       annualCache.set(key, annual);

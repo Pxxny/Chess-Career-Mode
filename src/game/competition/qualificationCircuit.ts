@@ -96,7 +96,7 @@ export function circuitNpcField(event: Pick<ScheduledEvent, 'details'>, npcs: Np
   for (const n of active) { const pool = byCountry.get(n.nationality) ?? []; pool.push(n); byCountry.set(n.nationality, pool); }
   const top = (pool: Npc[], id: string, count: number): Npc[] => {
     const actual = pool.map((n) => ({ n, result: n.tournamentHistory.find((h) => h.eventId === id && h.rank > 0) })).filter((r) => r.result);
-    if (actual.length) return actual.filter((r) => r.result!.rank <= count).sort((a,b) => a.result!.rank - b.result!.rank).map((r) => r.n);
+    if (actual.length) return actual.filter((r) => r.result!.qualificationEvaluated ? !!r.result!.qualificationTarget : r.result!.rank <= count).sort((a,b) => a.result!.rank - b.result!.rank).map((r) => r.n);
     const sorted = [...pool].sort((a,b) => a.id.localeCompare(b.id));
     const rng = createRng(hashString(`${seed}:${id}`));
     const points = new Map(sorted.map((n) => [n.id, 0]));

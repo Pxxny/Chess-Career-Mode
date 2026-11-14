@@ -1,3 +1,5 @@
+import { competitionOf } from "./preparation";
+import { circuitAllocation } from "./rollDown";
 import type { ActiveTournament, GameSave, Npc } from "@/types";
 import type { NationalTeam } from "@/game/career/expansion";
 import { getCountry } from "@/data/world/countries";
@@ -157,6 +159,7 @@ function recordNpcBoards(
       tournamentHistory: [
         ...npc.tournamentHistory,
         {
+          ...(event.qualifiedIds ? {qualificationEvaluated:true,qualificationTarget:event.qualifiedIds.includes(id)?event.qualificationTarget:undefined} : {}),
           eventId: event.id,
           event: event.name,
           year: event.year,
@@ -267,6 +270,7 @@ export function advanceCalendarTournaments(
     const ranks = new Map(
       record.players.map((p) => [p.id, { rank: p.rank, points: p.points }]),
     );
+    if(t.details?.qualificationCircuit?.targetEventId) { const allocation=circuitAllocation(next,t); record.qualifiedIds=allocation.awards; record.qualificationTarget=t.details.qualificationCircuit.targetEventId;next={...next,competition:{...competitionOf(next),circuitAwards:allocation.ledger}}; }
     recordNpcBoards(
       record,
       t.pairings

@@ -1,3 +1,4 @@
+import { circuitAllocation } from "@/game/competition/rollDown";
 import { standings } from "@/game/match/tournament";
 import { esportsStandings } from "@/game/esports/core";
 import { applyNpcResult } from "./results";
@@ -91,7 +92,9 @@ export function reconcileTournamentHistory(save: GameSave, npcs: Npc[]): Npc[] {
       const p = row.player;
       if (!fresh.has(p.id)) continue;
       const npc = byId.get(p.id)!;
+      const allocated = circuitAllocation({ ...save, competition: { ...save.competition!, circuitAwards: {} , archive: (save.competition?.archive??[]).filter(old=>old.eventId!==t.eventId) } },t);
       const result = {
+        ...(t.details?.qualificationCircuit ? {qualificationEvaluated:true, qualificationTarget: (save.competition?.circuitAwards?.[t.details.qualificationCircuit.targetEventId??""]??allocated.awards).includes(p.id) ? t.details.qualificationCircuit.targetEventId : undefined} : {}),
         eventId: t.eventId,
         year: t.year,
         week: t.week,

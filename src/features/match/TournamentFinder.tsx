@@ -20,7 +20,7 @@ export function TournamentFinder({
   const [search, setSearch] = useState<TournamentSearch>(
     initial ?? {
       fromWeek: 0,
-      toWeek: 12,
+      toWeek: 52,
       minElo: 0,
       maxElo: rating,
       continent,
@@ -61,7 +61,7 @@ export function TournamentFinder({
     </label>
   );
   return (
-    <Modal open title="Find a suitable tournament" onClose={onClose} size="lg">
+    <Modal open title="Find your next tournament" onClose={onClose} size="lg">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -85,14 +85,14 @@ export function TournamentFinder({
         }}
         className="space-y-4"
       >
-        <div className="grid grid-cols-2 gap-3">
+        <p className="rounded-xl bg-gold-500/10 p-3 text-sm">Choose when to play, the entry rating and field size. Keep availability enabled to hide events you cannot enter.</p><div className="flex flex-wrap gap-2"><Button variant="secondary" onClick={()=>setSearch({...search,availableOnly:true,minElo:0,maxElo:rating,toWeek:52,qualification:"all"})}>Ready to enter</Button><Button variant="secondary" onClick={()=>setSearch({...search,availableOnly:false,minElo:0,maxElo:3500,toWeek:52,qualification:"circuit"})}>Explore qualification routes</Button></div><label className="block text-sm text-ink-muted">Plan your next event<select aria-label="Starts within weeks" className="mt-2 w-full rounded-xl bg-navy-900 p-3" value={search.toWeek} onChange={e=>setSearch({...search,toWeek:Number(e.target.value),fromWeek:0})}>{[4,12,26,52].map(w=><option key={w} value={w}>{w===52?"Any time this year":`Within ${w} weeks`}</option>)}{![4,12,26,52].includes(search.toWeek)&&<option value={search.toWeek}>{search.toWeek} weeks</option>}</select></label><details className="rounded-xl border border-white/10 p-3"><summary className="cursor-pointer text-sm font-semibold">More filters · Elo, players & format</summary><fieldset className="mt-3 grid grid-cols-2 gap-3"><legend className="px-2 font-semibold">When & who</legend>
           {number("fromWeek", "Starts in at least (weeks)", 0, 52)}
           {number("toWeek", "Starts within (weeks)", 0, 52)}
           {number("minElo", "Minimum entry Elo from", 0, 3500)}
           {number("maxElo", "Minimum entry Elo up to", 0, 3500)}
           {number("minPlayers", "Participant limit from", 2, 256)}
           {number("maxPlayers", "Participant limit up to", 2, 256)}
-        </div>
+        </fieldset>
         <div className="grid gap-3 sm:grid-cols-3">
           <label className="text-sm text-ink-muted">
             Organizer status
@@ -151,6 +151,7 @@ export function TournamentFinder({
             </select>
           </label>
         </div>
+        </details>
         <label className="block text-sm text-ink-muted">
           Continent
           <select
@@ -170,7 +171,7 @@ export function TournamentFinder({
         </label>
         <label className="block text-sm text-ink-muted">Qualification entry
           <select aria-label="Qualification entry" value={search.qualification ?? "all"} onChange={(e) => setSearch({ ...search, qualification: e.target.value as TournamentSearch["qualification"], availableOnly: false })} className="mt-1 w-full rounded-lg bg-navy-900 p-3 text-ink">
-            <option value="all">All entry types</option><option value="required">Qualification required</option><option value="qualifier">Awards qualification</option><option value="circuit">Local → National → Continental → World</option>
+            <option value="all">Any entry requirement</option><option value="required">Must qualify first</option><option value="qualifier">Earn a place in the next stage</option><option value="circuit">Local → National → Continental → World</option>
           </select>
         </label>
         <label className="flex items-center gap-2 text-sm text-ink">

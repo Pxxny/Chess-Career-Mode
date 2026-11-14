@@ -1,3 +1,4 @@
+import { circuitAllocation } from "./rollDown";
 import { queueArchives, archiveTournament } from "./archive";
 import { getCountry } from "@/data/world/countries";
 import { compactTournament } from "@/game/prediction/adapters";
@@ -293,7 +294,8 @@ export function archiveCompetition(save: GameSave): GameSave {
     : (t.finalRank ?? t.players.length);
   const category = t.details?.category;
   const circuit = t.details?.qualificationCircuit;
-  if (circuit?.advanceKind && circuit.advanceTop && rank >= 1 && rank <= circuit.advanceTop &&
+  const allocation = circuitAllocation(save,t);
+  if (circuit?.advanceKind && allocation.awards.includes("player") &&
     !state.qualifications.some((q) => q.kind === circuit.advanceKind && q.eventId === circuit.targetEventId))
     grants.push(circuit.advanceKind);
   if (rank === 1 && category === "Open Tournaments") grants.push("grand-swiss");
@@ -313,6 +315,7 @@ export function archiveCompetition(save: GameSave): GameSave {
       ...save,
       competition: {
         ...state,
+        circuitAwards: allocation.ledger,
         ...(category === "World Chess Championship"
           ? {
               champion: {

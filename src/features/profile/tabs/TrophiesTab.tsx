@@ -1,3 +1,4 @@
+import { achievementCatalog } from "@/game/career/achievements";
 import { Card, CardTitle } from '@/components/ui';
 import { useSave } from '@/hooks/useGame';
 import { newestFirst } from '@/game/history/createHistory';
@@ -12,9 +13,9 @@ export const TROPHY_CATEGORIES: Array<{ id: TrophyCategory; label: string; empty
 ];
 
 export function TrophiesTab() {
-  const { history } = useSave();
+  const save = useSave(); const {history}=save; const catalog=achievementCatalog(save);
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-4"><Card data-testid="achievement-catalog"><CardTitle>Career challenges · 30 achievements</CardTitle><div className="grid gap-3 sm:grid-cols-2">{catalog.map(a=><div key={a.id} className={`rounded-xl p-3 ${a.earned?"bg-gold-500/15":"bg-navy-900"}`}><p className="font-semibold">{a.earned?"✓ ":""}{a.name}</p><p className="mt-1 text-xs text-ink-muted">{a.description}</p><progress className="mt-2 w-full accent-[var(--accent)]" value={Math.min(a.value,a.target)} max={a.target}/><p className="text-xs text-ink-muted">{Math.min(a.value,a.target)} / {a.target}</p></div>)}</div></Card>
       {TROPHY_CATEGORIES.map(({ id, label, empty }) => {
         const trophies = history.trophies.filter((t) => t.category === id).reverse().sort(newestFirst);
         return (
