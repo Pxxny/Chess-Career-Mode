@@ -329,13 +329,13 @@ export function WorldHub({
           </p>
           <Button
             disabled={!!cup || (selected && !ready)}
-            onClick={() => act(play(spec.key), "National team cup completed.")}
+            onClick={() => {const result=play(spec.key);act(result,selected?'National team tournament started.':'National team cup completed.');if(result.ok&&selected)document.getElementById('current-tournament')?.scrollIntoView({behavior:'smooth',block:'start'});}}
           >
             {cup
               ? "Cup finished this year"
               : selected && !ready
                 ? "Register in Tournament first"
-                : "Simulate national team cup"}
+                : selected ? "Start national team tournament" : "Simulate national team cup"}
           </Button>
           {message && (
             <p role="status" className="mt-3 text-gold-400">

@@ -12,7 +12,7 @@ import {
   eventAgenda,
 } from "@/game/competition/agenda";
 import { registrationIssue } from "@/game/competition/eligibility";
-import { playTeamCup } from "@/game/career/expansion";
+import { createTeamTournament } from "@/game/competition/teamTournament";
 import { buildEventTeams } from "@/game/competition/teamEvents";
 import { teamInfoOf } from "@/data/chess/nationalTeamEvents";
 import { news } from "@/game/career/expansion";
@@ -27,7 +27,7 @@ import type {
   GameSave,
   Npc,
 } from "@/types";
-import { createTournament } from "./tournament";
+import { createTournament, startRound } from "./tournament";
 import { highestTitle } from "./setup";
 import { entryDay, registrationCount } from "@/game/competition/entries";
 import { showcaseSelection } from "@/game/competition/showcase";
@@ -237,19 +237,22 @@ export function startRegisteredTournament(
     return { ok: false, error: "The event has already taken place." };
   save = arriveForEvent(save,reg);
   if (reg.details?.format === "team") {
-    const result = playTeamCup(
+    const result = createTeamTournament(
       save,
+      reg,
       reg.entrantIds
         ? npcs.filter((n) => reg.entrantIds!.includes(n.id))
         : npcs,
-      { eventId },
+      reg.entrantSeed ?? seed,
     );
     return result.ok
       ? {
           ok: true,
           save: {
-            ...result.save,
-            registrations: result.save.registrations.filter(
+            ...save,
+            player: {...save.player,ap:{...save.player.ap,current:save.player.ap.current-2}},
+            tournament: startRound(result.tournament,predictionEnvironment(save)),
+            registrations: save.registrations.filter(
               (r) => r.eventId !== eventId,
             ),
           },

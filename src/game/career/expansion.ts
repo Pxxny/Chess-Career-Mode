@@ -57,6 +57,7 @@ export interface NationalTeam {
   boardPoints: number;
 }
 export interface TeamCup {
+  playable?: boolean;
   playedOnDay?: number;
   year: number;
   teams: NationalTeam[];
@@ -379,6 +380,8 @@ export function playTeamCup(
       error:
         "Register for the national teams event in Tournament and start during its event week.",
     };
+  if (represented)
+    return {ok:false,error:'Start your registered national team event in Tournament to play each round.'};
   if (represented && save.player.ap.current < 2)
     return { ok: false, error: "Representing your country costs 2 AP." };
   const rng = createRng(

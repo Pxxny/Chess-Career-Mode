@@ -83,6 +83,7 @@ export function applyFinishedMatch(
   ranks?: { before: number; after: (rating: number) => number },
 ): Applied {
   const { setup } = finish;
+  if(setup.tournament&&save.tournament?.team&&(save.tournament.eventId!==setup.tournament.id||save.tournament.status!=='playing'||save.tournament.round!==setup.tournament.round))return {save,record:null,tournamentFinished:false};
   const existing = setup.prediction
     ? save.matches.find((m) => m.setup.prediction?.id === setup.prediction?.id)
     : undefined;

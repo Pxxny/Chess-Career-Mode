@@ -26,6 +26,7 @@ import type {
   TournamentPlayer,
 } from "@/types";
 import { levelTimeControl } from "./timeControls";
+import { pairTeamRound, scoreTeamRound, finishTeamTournament } from "@/game/competition/teamTournament";
 
 export const PLAYER_ID = "player";
 const LEVEL_OFFSET = {
@@ -221,6 +222,7 @@ const byId = (t: ActiveTournament, id: string): TournamentPlayer =>
 
 /** Swiss pairing for the current round: by score, then rating; no rematches where avoidable; colours balanced. */
 export function pairRound(t: ActiveTournament): TournamentPairing[] {
+  if(t.team)return pairTeamRound(t);
   const format = t.details?.format ?? "swiss";
   const order = [...t.players].sort(
     (a, b) => b.elo - a.elo || a.id.localeCompare(b.id),
@@ -321,7 +323,7 @@ export function startRound(
   const mine = playerPairing(next);
   if (
     t.players.some((p) => p.id === PLAYER_ID) &&
-    ((mine && mine.black === "bye") ||
+    ((t.team && (!mine || mine.result !== null)) || (mine && mine.black === "bye") ||
       (!mine &&
         (t.details?.format === "knockout" ||
           t.details?.format === "round-robin-bo3")))
@@ -464,12 +466,13 @@ export function completeRound(
           : p.black;
     }
   }
-  const done: ActiveTournament = {
+  let done: ActiveTournament = {
     ...t,
     players,
     pairings,
     ...(knockout ? { knockoutWinners: winners, eliminated } : {}),
   };
+  if(t.team)done=scoreTeamRound(done);
   if (
     t.round >= t.rounds &&
     t.details?.format === "match" &&
@@ -646,6 +649,7 @@ export function standings(t: ActiveTournament): StandingRow[] {
 }
 
 function finishTournament(t: ActiveTournament): ActiveTournament {
+  if(t.team)return finishTeamTournament(t);
   const rows = standings(t);
   const rank = rows.find((r) => r.player.isPlayer)?.rank ?? null;
   const share =

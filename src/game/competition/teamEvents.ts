@@ -189,7 +189,7 @@ interface Rng {
 
 const pairKey = (a: number, b: number) => (a < b ? `${a}-${b}` : `${b}-${a}`);
 
-function swissPairs(
+export function swissPairs(
   order: number[],
   played: Set<string>,
   byes: Set<number>,

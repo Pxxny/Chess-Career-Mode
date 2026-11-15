@@ -1,5 +1,5 @@
 /* Offline support: the app shell and every same-origin file it loads are cached as you play. */
-const VERSION = "v19-npc-watchlist-qualification-map";
+const VERSION = "v20-playable-national-team-rounds";
 const CACHE = `chess-career-${VERSION}`;
 const SHELL = [
   "/data/game-atlas.json", "/data/venue-cities.json",

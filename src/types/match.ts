@@ -207,6 +207,7 @@ export interface BroadcastGame {
   termination?: MatchTermination;
 }
 export interface TournamentPairing {
+  teamMatch?: { a: string; b: string | null; board: number };
   broadcast?: BroadcastGame;
   forecast?: import("@/game/prediction/types").CompactPrediction;
   prediction?: import("@/game/prediction/types").PredictionSnapshot;
@@ -241,6 +242,12 @@ export interface EventRegistration {
 }
 
 export interface ActiveTournament {
+  team?: {
+    info: import("@/data/chess/nationalTeamEvents").TeamEventInfo;
+    country: string;
+    format: "round-robin" | "swiss";
+    teams: import("@/game/career/expansion").NationalTeam[];
+  };
   predictionRecordedRounds?: number;
   startedOnDay?: number;
   entryRequirements?: string;

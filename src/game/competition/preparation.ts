@@ -300,7 +300,7 @@ export function archiveCompetition(save: GameSave): GameSave {
     !state.qualifications.some((q) => q.kind === circuit.advanceKind && q.eventId === circuit.targetEventId))
     grants.push(circuit.advanceKind);
   grants.push(...standardQualificationGrants(category,rank));
-  if (!circuit && rank <= 3 && t.level === "international") grants.push("super-invitation");
+  if (!t.team && !circuit && rank <= 3 && t.level === "international") grants.push("super-invitation");
   return queueArchives(
     {
       ...save,

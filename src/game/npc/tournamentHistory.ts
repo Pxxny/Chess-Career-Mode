@@ -4,6 +4,7 @@ import { standings } from "@/game/match/tournament";
 import { esportsStandings } from "@/game/esports/core";
 import { applyNpcResult } from "./results";
 import type { ActiveTournament, GameSave, Npc } from "@/types";
+import { teamStandings } from '@/game/competition/teamTournament';
 
 /** Reconcile finished, retained events as well as newly finished events. Safe to repeat after reload. */
 export function reconcileTournamentHistory(save: GameSave, npcs: Npc[]): Npc[] {
@@ -42,6 +43,7 @@ export function reconcileTournamentHistory(save: GameSave, npcs: Npc[]): Npc[] {
           board.result === null ||
           board.white === "bye" ||
           board.black === "bye"
+          || board.white.startsWith('unfilled:') || board.black.startsWith('unfilled:')
         )
           continue;
         const white = byId.get(board.white),
@@ -103,8 +105,8 @@ export function reconcileTournamentHistory(save: GameSave, npcs: Npc[]): Npc[] {
         week: t.week,
         event: t.name,
         source: "career" as const,
-        rank: i + 1,
-        fieldSize: t.players.length,
+        rank: t.team?teamStandings(t).findIndex(team=>team.country===p.countryCode)+1:i + 1,
+        fieldSize: t.team?.teams.length??t.players.length,
         points: p.points,
         rounds: t.rounds,
         ...totals.get(p.id)!,

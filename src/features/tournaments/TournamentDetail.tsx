@@ -27,6 +27,7 @@ import { BroadcastBoard, RecordedBoard } from "./BroadcastBoard";
 import { circuitAdvancement } from "@/game/competition/qualificationCircuit";
 import { requirementsText } from "@/game/competition/eligibility";
 import { TournamentSpotlight } from "./TournamentSpotlight";
+import { TeamTournamentStandings } from '@/features/match/TeamTournamentPanel';
 export function TournamentDetail({
   event,
   record,
@@ -375,7 +376,7 @@ export function TournamentDetail({
                         ? "Projected national squads · selections may change before the event starts."
                         : "Announced entrants · rankings and points appear after games are played."}
                 </p>
-                {players.length ? (
+                {t?.team ? <TeamTournamentStandings t={t}/> : players.length ? (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
                       <thead>

@@ -9,6 +9,7 @@ import type {
   TournamentPlayer,
 } from "@/types";
 import { standings } from "@/game/match/tournament";
+import { teamStandings, teamName } from './teamTournament';
 export type EventKind = "regular" | "national";
 export interface ArchivedEvent {
   qualificationTarget?: string;
@@ -64,7 +65,7 @@ export function archiveTournament(t: ActiveTournament): ArchivedEvent {
     year: t.year,
     week: t.week,
     name: t.name,
-    kind: "regular",
+    kind: t.team?'national':"regular",
     source: "career",
     datePrecision:
       t.startedOnDay !== undefined || t.details?.agenda?.exactStart
@@ -74,15 +75,16 @@ export function archiveTournament(t: ActiveTournament): ArchivedEvent {
     country: t.details?.country,
     startDay: t.startedOnDay ?? start,
     endDay: start + Math.max(1, t.details?.agenda?.days ?? 1) - 1,
-    fieldSize: t.players.length,
+    fieldSize: t.team?.teams.length??t.players.length,
     rounds: t.rounds,
     format: t.details?.format ?? "swiss",
     timeControl: t.timeControl.label,
-    gamesPerEntrant: maximumPlayerGames({
+    gamesPerEntrant: t.team?t.rounds:maximumPlayerGames({
       details: t.details,
       fieldSize: t.players.length,
     }),
-    players: standings(t).map(({ player: p, rank }) => ({
+    ...(t.team?{teamBoards:t.pairings.flatMap((round,index)=>round.filter(p=>p.result!==null&&p.black!=='bye').map(p=>({round:index+1,white:t.players.find(x=>x.id===p.white)!.name,black:t.players.find(x=>x.id===p.black)!.name,score:p.result!})))}:{}),
+    players: t.team?teamStandings(t).map((team,index)=>({id:team.country,name:teamName(team.country),countryCode:team.country,elo:0,title:'none',points:team.points,boardPoints:team.boardPoints,rank:index+1,members:[...team.players,...(team.reserves??[])]})):standings(t).map(({ player: p, rank }) => ({
       id: p.id,
       name: p.name,
       elo: p.elo,

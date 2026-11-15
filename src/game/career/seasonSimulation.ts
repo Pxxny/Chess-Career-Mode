@@ -534,7 +534,7 @@ export async function runSeason(port: SeasonPort): Promise<void> {
         port.commit(
           updateSeason(next, {
             lastEventDay: gameDay(save),
-            tournaments: s.tournaments + Number(due.details?.format === "team"),
+            tournaments: s.tournaments + Number(r.save.tournament?.status === "finished"),
             action: `Starting ${due.name}`,
           }),
         );

@@ -64,6 +64,8 @@ import {
   requirementsText,
 } from "@/game/competition/eligibility";
 import type { ActiveTournament } from "@/types";
+import { TeamTournamentStandings, TeamRoundBoards } from './TeamTournamentPanel';
+import { teamStandings, teamName } from '@/game/competition/teamTournament';
 
 export function EventFacts({ event }: { event: ScheduledEvent }) {
   const d = event.details;
@@ -148,6 +150,9 @@ export function EventFacts({ event }: { event: ScheduledEvent }) {
   );
 }
 export function TournamentStandings({ t }: { t: ActiveTournament }) {
+  return t.team?<TeamTournamentStandings t={t}/>:<IndividualTournamentStandings t={t}/>;
+}
+function IndividualTournamentStandings({ t }: { t: ActiveTournament }) {
   const rows = useMemo(() => standings(t), [t]);
   const live = useGameStore(s=>s.save?.tournament?.eventId===t.eventId);
   const playerRating = useGameStore(s=>s.save?.player.rating);
@@ -227,6 +232,9 @@ export function TournamentStandings({ t }: { t: ActiveTournament }) {
   );
 }
 export function PairingHistory({ t }: { t: ActiveTournament }) {
+ return t.team?<TeamRoundBoards key={t.eventId} t={t}/>:<IndividualPairingHistory t={t}/>;
+}
+function IndividualPairingHistory({ t }: { t: ActiveTournament }) {
  const [round,setRound]=useState(Math.min(t.round-1,t.pairings.length-1)),[mine,setMine]=useState(false);
  useEffect(()=>setRound(Math.max(0,t.round-1)),[t.round,t.eventId]);
  const index=Math.max(0,Math.min(round,t.pairings.length-1)),names=new Map(t.players.map(p=>[p.id,`${p.name} (${p.elo})`]));
@@ -479,7 +487,7 @@ export function TournamentPanel({
               ],
               [
                 "Tournament standing",
-                `#${standings(t).find((r) => r.player.isPlayer)?.rank ?? "—"} / ${t.players.length}`,
+                t.team?`#${teamStandings(t).findIndex(team=>team.country===t.team!.country)+1} / ${t.team.teams.length}`:`#${standings(t).find((r) => r.player.isPlayer)?.rank ?? "—"} / ${t.players.length}`,
               ],
               ["Tournament prize", `$${t.prizeFund}`],
               ["Registration status", "Registered · fee paid"],
@@ -509,6 +517,7 @@ export function TournamentPanel({
           {t.status === "playing" && next && (
             <div className="mb-4 rounded-lg bg-navy-900 p-3">
               <h3 className="font-semibold text-ink">Upcoming match</h3>
+              {t.team&&<p className="mt-2 text-sm font-semibold text-gold-300"><span>{teamName(t.team.country)}</span> · <span>Your board</span> {t.pairings[t.round-1].find(p=>p.white==='player'||p.black==='player')?.teamMatch?.board} · <span>{teamName(t.players.find(p=>p.id===next.id)?.countryCode??'')}</span></p>}
               <p className="my-2 text-sm text-ink-muted">
                 Round {t.round}:{" "}
                 <span translate="no">
@@ -635,7 +644,7 @@ export function TournamentPanel({
                   <Button
                     data-testid="start-event"
                     disabled={t?.status === "playing" || running}
-                    onClick={() => result(start(r.eventId))}
+                    onClick={() => {const started=start(r.eventId);result(started);if(started.ok)requestAnimationFrame(()=>document.getElementById('current-tournament')?.scrollIntoView({behavior:'smooth',block:'start'}));}}
                   >
                     {r.details?.format === "team"
                       ? "Play national teams event"

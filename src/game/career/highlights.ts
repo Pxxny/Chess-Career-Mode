@@ -41,12 +41,12 @@ export function captureHighlights(before: GameSave, after: GameSave, npcs: Npc[]
   if(options.simulation){const suppressed=new Set(state.items.filter(a=>a.kind==="award").map(a=>a.id));state.unread=state.unread.filter(id=>!suppressed.has(id));state.items=state.items.map(a=>{if(state.unread.includes(a.id)&&a.ceremony?.phase==="award"){const {ceremony,...plain}=a;return plain;}return a;});}
   const active=after.tournament;
   if(active?.status==='playing'&&hasOpeningCeremony(active)&&(before.tournament?.eventId!==active.eventId||active.round===1)){
-    add(`opening:${active.year}:${active.eventId}`,'opening',active.name,`Opening ceremony · ${active.name}`,`The players gather for the opening ceremony at ${active.details?.location??'the tournament venue'}. The competition is ready to begin.`,{eventId:active.eventId,ceremony:{phase:'opening',sponsor:active.details?.sponsorship?.name??active.details?.qualificationCircuit?.sponsor,location:active.details?.location,podium:[]}});
+    add(active.team?`team-opening:${active.eventId}`:`opening:${active.year}:${active.eventId}`,'opening',active.name,`Opening ceremony · ${active.name}`,`The players gather for the opening ceremony at ${active.details?.location??'the tournament venue'}. The competition is ready to begin.`,{eventId:active.eventId,ceremony:{phase:'opening',sponsor:active.details?.sponsorship?.name??active.details?.qualificationCircuit?.sponsor,location:active.details?.location,podium:[]}});
   }
   for (const t of after.history.tournaments) {
     if (before.history.tournaments.some((old) => old.tournamentId === t.tournamentId && old.year === t.year)) continue;
     const finished=[...(after.competition?.archive??[]),...(active?.status==='finished'?[active]:[])].find(x=>x.eventId===t.tournamentId);
-    if(finished?.withdrawn)continue;
+    if(finished?.withdrawn||finished?.team)continue;
     const podium=finished?standings(finished).slice(0,3).map(r=>({name:r.player.name,rank:r.rank,points:r.player.points})):[];
     add(t.rank===1?`win:${t.year}:${t.tournamentId}`:`award:${t.year}:${t.tournamentId}`,t.rank===1?'trophy':'award',t.name,
       t.rank===1?`${after.player.name} wins ${t.name}`:`Award ceremony · ${t.name}`,
@@ -81,7 +81,7 @@ export function captureHighlights(before: GameSave, after: GameSave, npcs: Npc[]
     add(`team-award:${cup.year}:${cup.key??'olympiad'}`,'award',cup.name??'National team event',`Award ceremony · ${cup.name??'National team event'}`,`The national teams gather for the medal presentation. Your federation finished #${home+1}.`,{ceremony:{phase:'award',podium:cup.teams.slice(0,3).map((team,i)=>({name:team.country,rank:i+1})),playerRank:home+1}});
     if (!state.items.some((a) => a.kind === "national" && a.year === cup.year && a.event.includes(cup.name ?? "National team event"))) add(`national-played:${cup.year}:${cup.key ?? "olympiad"}`, "national", cup.name ?? "National team event",
       `${after.player.name} represents the national team`,
-      `You represented your federation at ${cup.name ?? "National team event"}. Your team finished #${home + 1}. National team results are saved separately from individual Elo.`);
+      `You represented your federation at ${cup.name ?? "National team event"}. Your team finished #${home + 1}. ${cup.playable?"Your rated board games and Elo changes are saved in match history.":"National team results are saved separately from individual Elo."}`);
     if (home === 0) add(`national-win:${cup.year}:${cup.key ?? "olympiad"}`, "trophy", cup.name ?? "National team event",
       `${after.player.name} wins ${cup.name ?? "National team event"}`,
       `Your national team finished first at ${cup.name ?? "National team event"}. Your contribution and the team standings are recorded in your career.`);

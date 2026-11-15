@@ -25,6 +25,7 @@ import type {
   Trophy,
 } from "@/types";
 import { ratingChange } from "./elo";
+import { recordPlayableTeamCup, teamStandings, teamName } from "@/game/competition/teamTournament";
 
 export interface GameInput {
   tournamentRound?:number;
@@ -399,6 +400,11 @@ function recordTournamentBase(
     save.history.tournaments.some((t) => t.tournamentId === input.tournamentId)
   )
     return save;
+  const active=save.tournament;
+  if(active?.team&&active.eventId===input.tournamentId&&active.status==='finished') {
+    input={...input,rank:active.finalRank!,fieldSize:active.team.teams.length,points:active.team.teams.find(t=>t.country===active.team!.country)?.points??0,prize:active.prize};
+    save=recordPlayableTeamCup(save,active);
+  }
   save = archiveCompetition(save);
   const stamp: GameStamp = { ...save.world.date };
   const history: CareerHistory = {
@@ -422,7 +428,8 @@ function recordTournamentBase(
     save.tournament?.eventId === input.tournamentId &&
     save.tournament.status === "finished"
   ) {
-    const winner = standings(save.tournament)[0]?.player;
+    const topTeam=save.tournament.team?teamStandings(save.tournament)[0]:undefined;
+    const winner = topTeam?{name:teamName(topTeam.country),points:topTeam.points}:standings(save.tournament)[0]?.player;
     if (winner)
       addNews(history, {
         id: `event-winner-${input.tournamentId}`,
@@ -437,7 +444,7 @@ function recordTournamentBase(
       id: `win-${input.tournamentId}-${stamp.year}`,
       category: "tournament",
       name: input.name,
-      description: `Won the ${input.name} (${input.fieldSize} players).`,
+      description: `Won the ${input.name} (${input.fieldSize} ${save.tournament?.team?'teams':'players'}).`,
       ...stamp,
     });
     addNews(history, {

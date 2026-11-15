@@ -687,6 +687,9 @@ export const useGameStore = create<GameStore>()(
       playTeamCup: (key) => {
         const save = get().save;
         if (!save) return { ok: false, error: "No career." };
+        if (get().calendarProgress) return {ok:false,error:'Calendar simulation is running.'};
+        const entry=save.registrations.find(r=>r.details?.format==='team'&&r.year===save.world.date.year&&r.week===save.world.date.week&&(!key||r.details.teamEvent?.key===key));
+        if(entry)return get().startTournament(entry.eventId);
         const r = playTeamCup(
           save,
           useNpcStore.getState().npcs,
