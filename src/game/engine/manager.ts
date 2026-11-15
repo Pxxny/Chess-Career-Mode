@@ -37,8 +37,8 @@ export class EngineManager {
 
   private loader: () => Promise<StockfishBackend>;
 
-  constructor(loader: () => Promise<StockfishBackend> = loadStockfish) {
-    this.loader = loader;
+  constructor(loader?: () => Promise<StockfishBackend>) {
+    this.loader = loader ?? (()=>loadStockfish(label=>this.set({status:"loading",label,problem:null})));
   }
 
   getInfo = (): EngineInfo => this.info;

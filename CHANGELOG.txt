@@ -1,3 +1,148 @@
+Chess Career Mode — NPC Watchlist & Interactive Qualification Path
+2026-11-15
+
+เพิ่มในรุ่นนี้
+- ปักหมุด NPC ด้วยปุ่ม Bookmark จาก Player directory, หน้าประวัติ NPC และแผนผังทีมชาติ
+- Tournament > Rankings > Player directory > Watchlist แสดงเฉพาะคนที่ติดตาม กดเปิดประวัติได้ทันที
+- รายการโปรดเก็บแยกตามตัวละคร ใช้ ID เดิมแม้ชื่อหรือ Elo เปลี่ยน และรวมอยู่ใน Backup/Restore
+- รองรับสูงสุด 500 คน; ตัวกรองรายการโปรดไม่ซ่อนคนที่ไม่มีอันดับหรือเกษียณ
+- แสดง Elo ความสัมพันธ์ ฟอร์ม 5 นัดล่าสุดและรายการล่าสุดที่มีข้อมูล พร้อม Wonderkid Tags เดิม
+- ปักหมุด/เลิกปักหมุดไม่ใช้ AP หรือเงิน และไม่เปลี่ยนความสัมพันธ์กับ NPC
+
+ผังคัดเลือกแบบกดดูได้
+- Career > Championship path เปลี่ยนเป็นผัง React Flow ที่ลากเลื่อน ซูม และกดดูแต่ละรายการได้
+- ไฮไลต์จุดปัจจุบันจากข้อมูลในเซฟ: กำลังแข่ง ลงทะเบียนแล้ว ได้สิทธิ์แล้ว หรือผ่านเงื่อนไข
+- แสดงชื่อรายการ ปี สัปดาห์ อันดับที่ต้องทำได้ เงื่อนไขที่ขาด และรายการต้นทางของสิทธิ์ที่ได้จริง
+- World Championship route ใช้กติกาชุดเดียวกับระบบแจกสิทธิ์: แชมป์ Open ไป Grand Swiss, Top 3 National ไป Continental, Top 3 Continental ไป World Cup/Grand Swiss, Top 2 World Cup/Grand Swiss ไป Candidates และแชมป์ Candidates ไป World Championship
+- Aurora และ Meridian แสดงเส้นทาง Local > National > Continental > World Finals แยกกัน พร้อมเลือก Local ทั้ง 8 รายการและโควตาจริงที่ต่างกัน
+- แสดงคำอธิบายการเลื่อนสิทธิ์ในสายสปอนเซอร์ รวมถึงกรณีผู้เล่นถือสิทธิ์ปลายทางอยู่แล้ว
+- World Finals ของสปอนเซอร์จบในสายของตัวเอง ไม่สร้างสิทธิ์ไป Candidates เพิ่มจากกติกาเดิม
+- ดูปีปัจจุบัน/ปีถัดไปได้โดยไม่เลื่อนเวลาในเกม; สิทธิ์ยังตรวจประเทศ รายการ ปี และอายุสิทธิ์ตามระบบจริง
+- ปุ่ม View tournament เปิดรายละเอียดรายการ และ Find this tournament ไปยังหน้าค้นหารายการปีปัจจุบัน
+- มือถือโฟกัสรายการที่เลือกอัตโนมัติ มีปุ่มเปลี่ยนขั้นตอนและลากดูเส้นทางอื่นได้
+- เพิ่มคำแปลไทยของรายการโปรด สถานะและผังคัดเลือก
+- อัปเดต Service Worker cache เพื่อโหลดหน้ารุ่นใหม่
+
+ตรวจสอบ
+- Production build จากซอร์ส Lite ผ่าน
+- ทดสอบ Watchlist: ID, ข้อมูลปัจจุบัน, NPC ไม่มีอันดับ, เลิกปักหมุด, แยกอาชีพ, Backup/Restore และไม่หักทรัพยากร
+- ทดสอบผัง: กติกา Candidates, โควตา Local ทั้งสองสปอนเซอร์, การเลื่อนสิทธิ์, ประเทศ/ปี/อายุสิทธิ์ และสถานะปัจจุบัน
+- ชุดตรวจ roadmap, qualification circuit และภาษา ผ่าน
+- Browser Playtest 3 กรณี: ปักหมุดและโหลดใหม่, เส้นทาง Candidates/รายละเอียดรายการ/มือถือ, โควตาสปอนเซอร์และภาษาไทย
+- ภาพ Playtest 6 ภาพแยก ZIP จากเกม; ใช้เซฟทดสอบ ไม่รวมอยู่ในไฟล์เกม
+
+ไฟล์ส่งมอบ
+- Chess-Career-Mode-NPC-Watchlist-Interactive-Qualification-Path-Lite.zip: ซอร์สเกมรวมการแก้ไขรุ่นก่อน
+- ตัด .md, node_modules, dist, ชุดทดสอบ, รายงาน และภาพ Playtest ออกจาก ZIP เกม
+- เก็บไฟล์ข้อมูลเมือง เสียง ภาพ ตัวหมาก เอนจิน สคริปต์ติดตั้งและใบอนุญาตที่เกมต้องใช้
+- ไม่เพิ่มการตั้งค่า COOP/COEP ในรุ่นนี้
+
+============================================================
+ประวัติรุ่นก่อน
+============================================================
+
+Chess Career Mode — Calm UI, Themes, Match Resume & Career QoL
+2026-11-14
+
+ไฟล์ส่งมอบ
+- Chess-Career-Mode-Calm-UI-Themes-Match-Resume-Career-QoL-Lite.zip: ซอร์สเกมจริง
+- Chess-Career-Mode-Calm-UI-Standalone.html: UI ตัวอย่างเปิดด้วยเบราว์เซอร์ได้ ไม่ต้องติดตั้ง ไม่ใช้เซฟอาชีพจริง มีบอร์ดทดลองเดินตามกติกา
+- ภาพ Playtest แยกจาก ZIP เกม เพื่อลดขนาดดาวน์โหลด
+
+แก้บัคและลดพื้นที่หน้าจอ
+- เกมที่เริ่มแล้วคง session เดิมเมื่อสลับเมนู กลับมาเล่นต่อที่ตำแหน่งเดิมได้
+- Checkpoint ใหม่บันทึก setup, UCI, นาฬิกา, seed/RNG, controller และเครดิตการเดินของผู้เล่น
+- รีโหลดจะกู้ตำแหน่งเดิมและหักเวลาที่ผ่านไปจากฝั่งที่ต้องเดิน ไม่เติมเวลาหรือสุ่มคู่แข่งใหม่
+- หน้าอื่นมีปุ่ม Resume match เมื่อยังแข่งค้าง การกด Resign/Leave โดยตรงยังใช้กติกาตัดสินผลตามปกติ
+- Checkpoint รุ่นเก่าที่ไม่มีข้อมูลครบยังใช้วิธีกู้คืนเดิม ไม่สร้างข้อมูลเกมย้อนหลังขึ้นมา
+- เอา Match Prediction ออกจากหน้ากระดานสด ทั้งแมตช์อาชีพและเกมฝึกซ้อม
+- Simulate Season ไม่เปิด Award Ceremony ทุกครั้งที่จบทัวร์ เก็บผลแข่งตามเดิม และยังหยุดให้ข่าวชนะรายการ/เหตุการณ์สำคัญ
+- Award Ceremony ตอนเล่นทัวร์ด้วยตนเองยังมีตามเดิม
+- แก้ Modal ให้แสดงผ่าน portal ที่ document.body ป้องกันหน้าต่างถูก sticky header/blur บัง
+
+UI / ธีม / กระดาน
+- ย้ายการตั้งค่ามาไว้ปุ่ม Settings ด้านบน ลดปุ่มที่แย่งพื้นที่ชื่อผู้เล่น
+- Settings > Theme เลือก Dark, Light, System; System ตามสีระบบและตอบสนองเมื่อเปลี่ยนสีระบบ
+- Board & pieces อยู่ใน Settings
+- กระดาน Tournament Green / Wood ใช้ได้ทันที; Icy Blue ปลดล็อกเมื่อครบ 10 rated games; Royal เมื่อชนะทัวร์
+- ตัวหมาก Classic, Ivory & walnut, Silver & midnight และ Geometric แบบ SVG คนละชุดจริง
+- คงตัวหมาก cburnett และใบอนุญาตเดิมไว้; ธีมที่ยังไม่ปลดล็อกใช้ข้ามอาชีพไม่ได้
+- คงสี last move, selected square, check และ checkmate เมื่อเปลี่ยนธีม
+- Floating delta แสดงเงิน/AP ที่เพิ่มหรือลด ไม่รัวระหว่าง Simulate Season และเคารพ reduced motion
+- ลดคำอธิบายยาว/รายละเอียดทางเทคนิคบนหน้าหลักและหน้าทัวร์
+- หน้า Upcoming ใช้ Quick Filters, Search, Organizer, Competition style เป็นหลัก; ตัวกรองแหล่งข้อมูล การคัดเลือก ทวีป และประเทศอยู่ใน More filters
+- กรอบทัวร์และแถบปฏิทินแยกสี National teams / Qualification / Elite / Sponsor / Junior / National / International / Open
+
+เตรียมแข่ง / หมากเปิด / ถ่ายทอดสด
+- ก่อนเริ่ม Match มี Tale of the tape แสดง CharacterPortrait กับ NpcAvatar พร้อมแถบสกิล โอกาส W/D/L และ Compare players
+- Match preview บนหน้าจัดเกม/เตรียมแข่งย้ายเป็นปุ่มเปิดหน้าต่าง ไม่กินพื้นที่ตลอดเวลา
+- ตรวจ Game Plan และ Repertoire แล้ว: snapshot ที่กด Prepare และใช้ AP/เวลาจริงมีผลต่อ profile, style, opening book และ decision time
+- การเปลี่ยนตัวเลือกอย่างเดียวเป็น draft ต้องกด Prepare for tournament เพื่อใช้แผนกับรายการนั้น
+- Badges ใน Browse/Openings ใช้ knowledge และสถิติจริง: Ready, learning, Needs practice; ไม่ทำให้ข้อมูลที่ยังไม่มีดูเหมือนชำนาญ
+- Families และ variations ใช้ React Virtuoso; เลิกตัด variations ที่ 120 รายการ; NpcTable ใช้ TableVirtuoso เมื่อรายชื่อยาว
+- เพิ่ม debounced search ใน SearchSelect และ BrowseOpenings
+- Annual calendar > Calendar view > Timeline ดูช่วงแข่งซ้อนกันได้ทีละ 28 วัน พร้อมเลื่อนไปช่วงก่อน/ถัดไปและกดเปิดรายการ
+- หน้าถ่ายทอดสดเพิ่มหลายมินิบอร์ดของรอบเดียวกัน เดินหมากจริง บันทึก moves/clocks/RNG และไฮไลต์คู่เอกกรอบทอง
+- การชมบอร์ดไม่ใช้ AP ไม่เปลี่ยนปฏิทิน และไม่ให้ผลแข่งซ้ำเมื่อกลับมาดู
+- ReviewReport และ AnalysisPanel มีคำแนะนำโค้ชจากตำแหน่งจริงและคำตอบเอนจิน เช่น knight fork/หมากที่ถูกจับ; ไม่เดา motif ที่ไม่มีหลักฐาน
+- NPC ใช้ MultiPV เดิมร่วมกับสไตล์เพิ่มเรื่อง center, tension และ king shelter; Aggressive/Solid เลือกต่างกันในกลุ่มตาที่ประเมินใกล้เคียงกัน
+
+Tournament discovery / เมือง / คิวสมัคร
+- Slideshow เพิ่มจาก 3 เป็น 6 หน้า: เต็งแชมป์, projected duel, host/qualification route, Wonderkids, five-game form และข้อมูลผู้จัด/เงินรางวัล
+- Wonderkids และ form watch มาจาก field ของรายการ; ไม่มีข้อมูลครบจะแจ้งตามจริง ไม่แทนด้วย Elo สูงอย่างเดียว
+- Host banner แสดงธง ชื่อเมือง ประเทศ พิกัด/ประชากรที่มีข้อมูล และระดับเวทีตาม tier
+- แผนที่เกมเดิมยังเป็นแผนที่สร้างในเกม ไม่พึ่งบริการแผนที่ภายนอก
+- Eligibility แสดงสิ่งที่ขาดเป็นจำนวน เช่น Elo/ชื่อเสียง/เงินที่ต้องเพิ่ม และลิงก์ไป Train, Work, Title path หรือ Team selection
+- Quick Filters: Ready to enter, Norm opportunities, Best travel value
+- Norm opportunities เช็ก classical 9+ rounds และ projected field; Norm ยังขึ้นกับคู่แข่งและ performance ที่เล่นจริงตาม titleRules
+- Queue registration สมัครอัตโนมัติทันทีที่ผ่านเกณฑ์ หรือรอวันเปิดรับ ตรวจเงิน กำหนดเวลา สนามเต็ม ทีมชาติ/สิทธิ์ และตารางชนทุกครั้ง
+- คิวไม่ข้ามเงื่อนไขและไม่จ่ายเงินซ้ำ; รายการที่ยังเข้าไม่ได้แสดงเหตุผล และลบคิวได้ใน Auto-register queue
+
+Career systems
+- Press conference ก่อน/หลังแมตช์ในรายการ International/Elite ผ่าน ChoiceDialog
+- ตอบ Respect / Confident / Challenge ส่งผลจริงต่อ morale, ความใกล้ชิด/คู่ปรับ และพาดหัวข่าว; จำกัดครั้งเดียวต่อช่วงของแมตช์
+- ก่อนเริ่มเกมหลังสัมภาษณ์จะสร้าง profile/prediction จากค่าสถานะล่าสุด โดยคง seed เดิม
+- Federation & national teams > Team selection & boards: ผู้เล่น Elo สูงสุดที่ยังแข่งในประเทศและติดตัวจริงเป็นกัปตันได้
+- กัปตันจัดลำดับตัวจริงและเลือก Balanced / Solid board 1 / Attack lower boards; ไม่เปลี่ยนรายชื่อหรือข้ามโควตาเพศ/อายุ
+- แผนมีผลกับสไตล์และการคำนวณโอกาสผลแข่ง ไม่เพิ่ม Elo ให้ฟรี
+- ระบบย้ายสหพันธ์เดิมยังใช้ได้: ค่าใช้จ่าย $250, ดำเนินการ 30 วัน, คูลดาวน์หนึ่งปี และปรับสิทธิ์ทีมชาติ/รายการตามสหพันธ์ใหม่
+
+Travel logistics
+- Travel class ใน Upcoming เลือก Economy หรือ Business สำหรับการสมัครใหม่
+- คิดระยะทางจากพิกัดเมืองใน venue-cities.json ใช้เมืองบ้าน/เมืองที่เพิ่งแข่งหรือแผนเดินทางก่อนหน้า
+- เดินทางข้ามทวีปต่อเนื่องมีค่าตั๋วเพิ่มและ jetlag ลด AP ชั่วคราว; Business แพงกว่าและป้องกัน jetlag
+- เมืองที่ไม่มีพิกัดใช้ travel estimate ของรายการเดิม ไม่สร้างพิกัดปลอม
+- รายการที่จ่ายแล้วเก็บราคา ชั้นโดยสาร และข้อมูลการเดินทางเดิม เปลี่ยนชั้นโดยสารภายหลังไม่เปลี่ยนตั๋วที่จ่ายไปแล้ว
+
+Academy / transfer market
+- Career > Sponsors & legacy > Chess academy: เปิดได้เมื่อ Elo 1800 หรือเล่นครบ 3 ปี ใช้ $3,000
+- ตั้งอคาเดมีที่เมืองบ้านเกิด รับดาวรุ่งอายุ 7–15 ได้ 3 คน
+- สอนรายสัปดาห์ใช้ 2 AP + $25 ถ่ายทอดสไตล์ เพิ่มการฝึกและ potential; หลัง 4 บทเรียนเพิ่มจุดแข็งตาม focus โดยไม่ให้ Elo ฟรี
+- รับส่วนแบ่ง 10% จากเงินรางวัล NPC ที่บันทึกจากการแข่งขันจริง ไม่คิดย้อนหลังและไม่รับซ้ำ
+- Tournament > Esports > My team > Roster transfer market: ตลาดเปิดสัปดาห์ 1–4 และ 27–30
+- ค่าตัว/เงินเดือนอิง Elo, form, ผลห้านัดย้อนหลัง และ reputation; หักค่าตัวเมื่อยอมรับเท่านั้น
+- สัญญา 26 สัปดาห์ มีเงินเดือนรายสัปดาห์จริง บันทึกบัญชีและวันหมดสัญญา; ไม่จ่ายเงินซ้ำเมื่อโหลดใหม่
+- คงสัญญาองค์กร/ข้อเสนอ/รายชื่อที่ส่งแข่งไว้เดิม; ผู้เล่นที่หมดสัญญาหรือจ่ายค่าจ้างไม่ได้ออกจาก roster ปัจจุบัน
+
+Loading / empty states / compatibility
+- Splash แสดงขั้นตอน world worker และจำนวนผู้เล่นที่สร้างจริง
+- Engine loading แสดง manifest / worker / UCI readiness; งานที่ไม่มีเปอร์เซ็นต์จากแหล่งจริงใช้ progress แบบ indeterminate
+- Season progress แสดงงานปัจจุบัน จำนวนตาเดิน วัน/เกม/ฝึกซ้อม และส่วนต่าง Elo/เงิน
+- EmptyState มี action; Trophies แสดงปุ่มหา Local tournament; Shared memories มีทางไป Talk/Study; แผนที่โหลดไม่ได้มี Retry
+- เพิ่มคำแปลไทยสำหรับการตั้งค่าและระบบใหม่
+- เก็บเซฟเดิม ข้อมูลผู้เล่น เมือง เสียง เอนจิน ไลบรารี และระบบ Qualification/Sponsors/Wonderkids/Appearance เดิมไว้
+- ปรับ service worker cache version สำหรับไฟล์รุ่นใหม่
+
+การตรวจสอบ
+- TypeScript + production build จาก Lite staging
+- Unit/logic: deterministic match resume; queue/payment; academy/training/prize-share; travel/AP expiry; captain/roster quotas; press; transfer wages/expiry; coach factual motifs; MultiPV personas; backup roundtrip
+- ชุดเดิม: roadmap/preparation, national-team events, esports, match/registration, legal live broadcasts, shared sponsor calendar, ceremonies/news และ language
+- Full-season legal-game regression: 364 วัน, 98 เกม, 7,703 plies พร้อม PGN/replays/backup
+- Browser Playtest แยกภาพ Desktop, iPad และ Mobile: Standalone, live-match navigation/reload/resignation, themes/pieces, tournament finder/slides/timeline, academy, captain, openings และ multi-board broadcast
+
+
+---------------- Previous releases ----------------
+
 Chess Career Mode — Gender Wardrobes, Age Growth & Regional Faces (2026-11-14)
 
 - แยกชุดและทรงผมชาย/หญิงชัดเจนใน Look พร้อมตัวเลือกพื้นฐานร่วมกัน และ Open wardrobe สำหรับเพศอื่น สลับเพศ/อายุ สุ่มและรีเซ็ตด้วยเงื่อนไขเดียวกัน

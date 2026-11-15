@@ -6,11 +6,11 @@ export default {
     extend: {
       colors: {
         navy: {
-          950: "#151c19",
-          900: "#1a231e",
-          800: "#222d26",
-          700: "#2b382f",
-          600: "#3b4b3e",
+          950: "rgb(var(--bg-950) / <alpha-value>)",
+          900: "rgb(var(--bg-900) / <alpha-value>)",
+          800: "rgb(var(--bg-800) / <alpha-value>)",
+          700: "rgb(var(--bg-700) / <alpha-value>)",
+          600: "rgb(var(--bg-600) / <alpha-value>)",
         },
         charcoal: {
           900: "#14161b",
@@ -19,15 +19,15 @@ export default {
           600: "#323844",
         },
         gold: {
-          300: "#d0e2bf",
-          400: "#bdd5a7",
-          500: "#afc995",
-          600: "#829c77",
+          300: "rgb(var(--accent-300) / <alpha-value>)",
+          400: "rgb(var(--accent-400) / <alpha-value>)",
+          500: "rgb(var(--accent-500) / <alpha-value>)",
+          600: "rgb(var(--accent-600) / <alpha-value>)",
         },
         ink: {
-          DEFAULT: "#eeeae1",
-          muted: "#bbc7b9",
-          faint: "#9aaa9b",
+          DEFAULT: "rgb(var(--text) / <alpha-value>)",
+          muted: "rgb(var(--muted) / <alpha-value>)",
+          faint: "rgb(var(--faint) / <alpha-value>)",
         },
       },
       fontFamily: {

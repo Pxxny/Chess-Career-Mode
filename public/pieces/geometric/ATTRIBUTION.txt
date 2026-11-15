@@ -1,0 +1,3 @@
+Geometric chess pieces for Chess Career Mode.
+Original local SVG artwork created for this edition.
+Classic cburnett pieces retain their original attribution and license in the cburnett folder.

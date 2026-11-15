@@ -1,3 +1,4 @@
+import { EmptyState,Button } from "@/components/ui";
 import { sharedMemories, rivalryLabel } from "@/game/social/memories";
 import { dayLabel } from "@/game/competition/agenda";
 import type { GameSave } from "@/types";
@@ -22,10 +23,7 @@ export function SharedMemories({
           {r.ratedGames} rated meetings · {r.wins}W {r.draws}D {r.losses}L
         </p>
       )}
-      <p className="mt-1 text-xs text-ink-muted">
-        Competition builds a rivalry; friendship grows through social time
-        together.
-      </p>
+
       {r?.firstRatedMemory && (
         <p className="mt-2 text-xs text-ink-muted">
           First rated meeting: {dayLabel(r.firstRatedMemory.day).slice(0, 10)}
@@ -67,7 +65,7 @@ export function SharedMemories({
           ))}
         </ul>
       ) : (
-        <p className="mt-2 text-sm text-ink-muted">No shared memories yet.</p>
+        <EmptyState title="No shared memories yet." description="Talk, study or play a friendly game together." action={<Button variant="secondary" onClick={()=>{const panel=document.getElementById(`npc-social-${npcId}`);panel?.scrollIntoView({block:"center",behavior:"smooth"});panel?.querySelector("button")?.focus();}}>Talk or study</Button>}/>
       )}
     </section>
   );

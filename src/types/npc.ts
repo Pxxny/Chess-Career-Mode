@@ -60,6 +60,8 @@ export interface TrainingHabits {
 }
 
 export interface TournamentResult {
+  /** Actual recorded share of a tournament prize fund. */
+  prize?:number;
   qualificationEvaluated?: boolean;
   qualificationTarget?: string;
   eventId?: string;

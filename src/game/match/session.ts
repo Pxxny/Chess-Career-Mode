@@ -144,6 +144,8 @@ export interface MatchSessionOptions {
     ucis: string[];
     clocks: { white: number; black: number };
     rngState: number;
+    playerMoved?: boolean;
+    controllers?: Record<PieceColor, ControllerKind>;
   };
   setup: MatchSetup;
   engine: EngineHandle;
@@ -239,6 +241,7 @@ export class MatchSession {
   private playerMoved = false;
   private detached = false;
   private disposed = false;
+  private checkpointAt = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
   private readonly controlLog: ControlChange[] = [];
   private readonly lastEval: Record<PieceColor, number | null> = {
@@ -276,6 +279,8 @@ export class MatchSession {
       white: human === "white" ? "human" : "auto",
       black: human === "black" ? "human" : "auto",
     };
+    this.playerMoved = options.initialState?.playerMoved ?? false;
+    if (options.initialState?.controllers) this.controllers = {...options.initialState.controllers};
     this.snap = this.build();
   }
 
@@ -436,6 +441,7 @@ export class MatchSession {
   /** Checks for a fallen flag. Called by a timer; tests call it directly. */
   tick(): void {
     if (this.status !== "running") return;
+    if (this.now() - this.checkpointAt > 5000) this.checkpoint();
     const side = letterOf(
       this.game.positions[this.game.positions.length - 1].turn === "w"
         ? "white"
@@ -708,15 +714,16 @@ export class MatchSession {
     return true;
   }
 
+  saveCheckpoint(): void { if (this.status !== "over") this.checkpoint(); }
+
   private checkpoint(): void {
     if (!this.opts.onCheckpoint || this.detached) return;
-    const anyHuman =
-      this.controllers.white === "human" || this.controllers.black === "human";
-    if (!anyHuman && !this.playerMoved && this.game.ucis.length > 0) return;
+    this.checkpointAt = this.now();
     this.opts.onCheckpoint({
       setup: this.liteSetup(),
       ucis: [...this.game.ucis],
       playerMoved: this.playerMoved,
+      resume: {setup: this.setup, clocks: this.broadcastState().clocks, rngState: this.rng.getState?.() ?? 0, at: Date.now(), controllers: {...this.controllers}},
     });
   }
 

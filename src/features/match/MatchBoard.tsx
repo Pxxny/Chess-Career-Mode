@@ -1,3 +1,6 @@
+import { usePreferences } from '@/store/preferences';
+import { useGameStore } from '@/store/gameStore';
+import { unlockedBoardThemes } from '@/game/career/achievements';
 import { ChessPiece } from "@/components/game/ChessPiece";
 import {
   MoveAnnotation,
@@ -72,6 +75,8 @@ export function MatchBoard({
   drawSquares = [],
 }: MatchBoardProps) {
   useBoardSounds(position);
+  const boardTheme=usePreferences(s=>s.board),save=useGameStore(s=>s.save);
+  const effectiveTheme=unlockedBoardThemes(save).includes(boardTheme)?boardTheme:"green";
   const [selected, setSelected] = useState<number | null>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
   const [promotion, setPromotion] = useState<{
@@ -289,6 +294,7 @@ export function MatchBoard({
     >
       <div
         ref={boardRef}
+        data-board-theme={effectiveTheme}
         role="grid"
         aria-label="Chess board"
         onKeyDown={onKey}
@@ -321,13 +327,15 @@ export function MatchBoard({
               data-target={isTarget ? "true" : undefined}
               data-last={isLast ? "true" : undefined}
               data-check={i === checkSquare ? "true" : undefined}
+              data-mate={i===mateSquare?"true":undefined}
+              data-draw={drawSquares.includes(i)?"true":undefined}
               tabIndex={focus === i ? 0 : -1}
               aria-label={describe(i)}
               aria-selected={i === selected}
               onFocus={() => setFocus(i)}
               className={cn(
                 "relative flex items-center justify-center text-[clamp(1.6rem,8.6vw,3.6rem)] leading-none focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold-400",
-                dark ? "bg-[#005542]" : "bg-[#e4e2de]",
+                dark ? "board-square-dark" : "board-square-light",
                 isLast && (dark ? "bg-yellow-600/70" : "bg-yellow-300/90"),
                 i === selected && "bg-gold-500/80",
                 drawSquares.includes(i) && "bg-sky-400/70",

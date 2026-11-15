@@ -1,3 +1,4 @@
+import { travelQuote, arriveForEvent } from "@/game/competition/travel";
 import {
   predictionEnvironment,
   playerActor,
@@ -162,7 +163,8 @@ export function registerForEvent(
     week: event.week,
     fieldSize: event.fieldSize,
     entryFee: event.entryFee,
-    travelCost: event.details?.travelCost ?? 0,
+    travelCost: travelQuote(save,event).cost,
+    travel: travelQuote(save,event),
     minElo: event.minElo,
     minReputation: event.minReputation,
     details: event.details,
@@ -183,7 +185,7 @@ export function registerForEvent(
       ...save,
       player: addMoney(
         save.player,
-        -event.entryFee - (event.details?.travelCost ?? 0),
+        -event.entryFee - entry.travelCost!,
       ),
       registrations: [...save.registrations, entry],
     },
@@ -233,6 +235,7 @@ export function startRegisteredTournament(
     };
   if (diff < 0)
     return { ok: false, error: "The event has already taken place." };
+  save = arriveForEvent(save,reg);
   if (reg.details?.format === "team") {
     const result = playTeamCup(
       save,

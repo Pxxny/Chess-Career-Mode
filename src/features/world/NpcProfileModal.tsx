@@ -1,3 +1,4 @@
+import { PinNpcButton } from "./PinNpcButton";
 import { WonderkidTags } from "./WonderkidTags";
 import { EloChart } from "@/features/profile/EloChart";
 import { SharedMemories } from "./SharedMemories";
@@ -77,6 +78,7 @@ export function NpcProfileModal({
     >
       <div className="mb-4 flex items-center gap-3">
         <NpcAvatar npc={npc} size="lg" />
+        {save&&<PinNpcButton npc={npc}/>}
         <div className="flex min-w-0 flex-wrap gap-2">
           <Badge tone="gold">{tierLabel(npc.tier)}</Badge>
           {(npc.realProfile?.officialTitle || npc.title !== "none") && (

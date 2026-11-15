@@ -1,3 +1,4 @@
+import { GAME_CONFIG } from "@/data/config";
 import { competitionOf } from "./preparation";
 import { circuitAllocation } from "./rollDown";
 import type { ActiveTournament, GameSave, Npc } from "@/types";
@@ -108,6 +109,7 @@ function recordNpcBoards(
   boards: Array<{ white: string; black: string; score: number }>,
   npcs: Map<string, Npc>,
   ranks: Map<string, { rank: number; points: number }>,
+  prizeFund = 0,
 ) {
   const totals = new Map<
     string,
@@ -161,6 +163,7 @@ function recordNpcBoards(
         ...npc.tournamentHistory,
         {
           ...(event.qualifiedIds ? {qualificationEvaluated:true,qualificationTarget:event.qualifiedIds.includes(id)?event.qualificationTarget:undefined} : {}),
+          prize:Math.round(prizeFund*(GAME_CONFIG.match.prizeShares[(rank?.rank??0)-1]??0)),
           eventId: event.id,
           event: event.name,
           year: event.year,
@@ -283,6 +286,7 @@ export function advanceCalendarTournaments(
         ),
       byNpc,
       ranks,
+      t.prizeFund,
     );
     records.push(record);
     next = {

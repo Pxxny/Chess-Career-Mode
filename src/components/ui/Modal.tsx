@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { cn } from "@/utils/cn";
 import { LanguageSelector } from "@/i18n/LanguageSelector";
@@ -80,7 +81,7 @@ export function Modal({
     };
   }, [open]);
   if (!open) return null;
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/65 p-3 sm:items-center sm:p-5"
       onClick={onClose}
@@ -125,6 +126,6 @@ export function Modal({
         <div className={cn("mt-3", !!footer && "min-h-0 overflow-y-auto pr-1")}>{children}</div>
         {footer && <div className="mt-3 shrink-0 border-t border-white/10 pt-4">{footer}</div>}
       </div>
-    </div>
+    </div>, document.body
   );
 }

@@ -244,9 +244,10 @@ const basePath = (): string => {
 };
 
 /** Tries every engine build in the manifest. Resolves with the first one that starts, or rejects. */
-export async function loadStockfish(): Promise<StockfishBackend> {
+export async function loadStockfish(onPhase?: (phase:string)=>void): Promise<StockfishBackend> {
   if (typeof Worker === 'undefined') throw new Error('Web Workers are not available.');
   const folder = basePath();
+  onPhase?.("Reading engine manifest…");
   const response = await fetch(`${folder}manifest.json`, { cache: 'no-cache' });
   if (!response.ok) throw new Error('No engine files are installed (run npm install to copy them).');
   const manifest = (await response.json()) as Manifest;
@@ -257,8 +258,10 @@ export async function loadStockfish(): Promise<StockfishBackend> {
     if (build.requiresIsolation && !globalThis.crossOriginIsolated) continue;
     let backend: StockfishBackend | null = null;
     try {
+      onPhase?.(`Loading ${build.label} worker & engine files…`);
       const worker = new Worker(`${folder}${build.file}`);
       backend = new StockfishBackend(worker as unknown as UciWorker, build.label);
+      onPhase?.(`Initializing ${build.label} · waiting for UCI readiness…`);
       await backend.init();
       return backend;
     } catch (error) {

@@ -1,3 +1,4 @@
+import { AcademyPanel } from "@/features/career/systems/AcademyPanel";
 import { SimulateSeason } from "@/features/career/SimulateSeason";
 import { SeasonPlan } from "@/features/career/SeasonPlan";
 import { ChampionshipPath } from "@/features/career/ChampionshipPath";
@@ -113,7 +114,7 @@ export function CareerPage() {
         ) : view === "people" ? (
           <PeopleStories />
         ) : view === "business" ? (
-          <CareerBusiness />
+          <><CareerBusiness /><AcademyPanel /></>
         ) : view === "predictions" ? (
           <PredictionStatistics />
         ) : view === "years" ? (

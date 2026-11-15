@@ -337,7 +337,7 @@ export async function runSeason(port: SeasonPort): Promise<void> {
     if (!save || save.career.id !== id) return;
     const s = seasonOf(save);
     if (!s) return;
-    const checkpoint = captureHighlights(save, save, port.npcs());
+    const checkpoint = captureHighlights(save, save, port.npcs(), {simulation:true});
     if (checkpoint !== save) port.commit(checkpoint);
     if (highlightsOf(checkpoint).unread.length) return;
     if (gameDay(save) >= target) {
@@ -572,7 +572,7 @@ export async function runSeason(port: SeasonPort): Promise<void> {
     }
     const current = port.read();
     if (!current || current.career.id !== id) return;
-    const checked = captureHighlights(save, current, port.npcs());
+    const checked = captureHighlights(save, current, port.npcs(), {simulation:true});
     if (checked !== current) port.commit(checked);
     if (highlightsOf(checked).unread.length) return;
     await port.yield();

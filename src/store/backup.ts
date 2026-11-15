@@ -94,6 +94,7 @@ export async function parseBackup(raw: string): Promise<CareerBackup> {
     payload: z.object({ save: z.object({}).passthrough(), npcs: z.array(z.unknown()) }).passthrough(),
     checksum: z.string().min(1) }).passthrough().safeParse(value).success) fail();
   const { save, npcs } = value.payload;
+  if(save.npcWatchlist!==undefined&&!z.array(z.string().min(1).max(200)).max(500).safeParse(save.npcWatchlist).success)fail();
   if (save.highlights !== undefined && !highlightsSchema.safeParse(save.highlights).success) fail();
   if (
     value.payload.matchArchive !== undefined &&

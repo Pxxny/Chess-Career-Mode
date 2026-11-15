@@ -1,3 +1,5 @@
+import { systemsOf } from "@/game/career/systems";
+import { gameDay } from "@/game/competition/agenda";
 import { queueMatchRecords } from "@/store/matchArchive";
 import {
   finishSocialGame,
@@ -274,6 +276,7 @@ export function applyFinishedMatch(
         finish.playerMoved &&
         (finish.moves.length >= 12 || finish.termination === "checkmate"),
     );
+  if(tournamentFinished&&next.careerSystems?.location){const state=systemsOf(next);next={...next,careerSystems:{...state,location:{...state.location!,day:gameDay(next)}}};}
   return {
     save: queueMatchRecords(next, [record]),
     record,

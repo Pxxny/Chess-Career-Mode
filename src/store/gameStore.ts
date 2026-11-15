@@ -1,3 +1,5 @@
+import { toggleWatchlist } from "@/game/social/directory";
+import { careerCommand, settleActivities, type CareerCommand } from "@/game/career/activities";
 import type { Npc } from "@/types";
 import { applyNpcPlayerGame } from "@/game/npc/playerResults";
 import { acknowledgeArticle, highlightsOf, captureHighlights } from "@/game/career/highlights";
@@ -198,6 +200,8 @@ interface GameStore {
     id: string,
     eventId: string,
   ) => { ok: true } | { ok: false; error: string };
+  toggleNpcWatchlist:(npcId:string)=>void;
+  careerSystemAction:(command:CareerCommand)=>{ok:true;message:string}|{ok:false;error:string};
   save: GameSave | null;
   clearSave: () => Promise<void>;
   hireCoach: (
@@ -267,7 +271,7 @@ interface GameStore {
     archived?: MatchRecord,
   ) => void;
   checkpointMatch: (pending: PendingMatch | null) => void;
-  /** A game left open by a closed page is recorded as abandoned. */
+  /** Resume new match checkpoints; settle legacy checkpoints using the original abandonment rule. */
   recoverMatch: (db: OpeningDatabase) => void;
   /** Registers for an upcoming event and pays the entry fee. */
   registerForEvent: (
@@ -790,6 +794,20 @@ export const useGameStore = create<GameStore>()(
         return true;
       },
 
+      toggleNpcWatchlist: (npcId) => {
+        const save=get().save,world=useNpcStore.getState();
+        if(!save||world.careerId!==save.career.id||!world.npcs.some(n=>n.id===npcId))return;
+        set({save:toggleWatchlist(save,npcId)});
+      },
+      careerSystemAction: (command) => {
+        const save=get().save;if(!save)return {ok:false,error:"No career."};
+        if(get().calendarProgress)return {ok:false,error:"Pause calendar simulation first."};
+        const result=careerCommand(save,useNpcStore.getState().npcs,command);
+        if(!result.ok)return result;
+        if(result.changed.length)void useNpcStore.getState().updateNpcs(result.changed);
+        set({save:result.save});return {ok:true,message:result.message};
+      },
+
       addMoney: (amount) => {
         const { save } = get();
         if (save)
@@ -920,7 +938,8 @@ export const useGameStore = create<GameStore>()(
                 days: gameDay(bulletin.save) - season.startDay,
               })
             : bulletin.save;
-        set({ save: published });
+        const settled=settleActivities(published,useNpcStore.getState().npcs);
+        set({ save: settled.save });
         if (
           bulletin.changed.length &&
           useNpcStore.getState().careerId === save.career.id
@@ -1106,7 +1125,7 @@ export const useGameStore = create<GameStore>()(
             set({ save: cancelSocialInvitation(save) });
           return;
         }
-        set({ save: recoverPendingMatch(save, db).save });
+        if (!save.pendingMatch.resume) set({ save: recoverPendingMatch(save, db).save });
       },
 
       registerForEvent: (event) => {

@@ -1,3 +1,4 @@
+import { travelQuote } from "@/game/competition/travel";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Card, CardTitle, ProgressBar } from "@/components/ui";
@@ -116,7 +117,7 @@ export function SeasonPlan() {
                 <p>{reason}</p>
                 <p className="text-xs text-ink-muted">
                   {dayLabel(bookedStart(e)).slice(0, 10)} · {e.fieldSize}{" "}
-                  players · ${e.entryFee + (e.details?.travelCost ?? 0)}
+                  players · ${e.entryFee + travelQuote(save,e).cost}
                 </p>
                 <Link
                   className="mt-2 inline-block text-gold-300 underline"

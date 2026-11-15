@@ -1,3 +1,4 @@
+import { standardQualificationGrants } from "./advancement";
 import { circuitAllocation } from "./rollDown";
 import { queueArchives, archiveTournament } from "./archive";
 import { getCountry } from "@/data/world/countries";
@@ -298,17 +299,7 @@ export function archiveCompetition(save: GameSave): GameSave {
   if (circuit?.advanceKind && allocation.awards.includes("player") &&
     !state.qualifications.some((q) => q.kind === circuit.advanceKind && q.eventId === circuit.targetEventId))
     grants.push(circuit.advanceKind);
-  if (rank === 1 && category === "Open Tournaments") grants.push("grand-swiss");
-  if (rank <= 3 && category === "National Championships")
-    grants.push("continental");
-  if (rank <= 3 && category === "Continental Championships")
-    grants.push("world-cup", "grand-swiss");
-  if (rank <= 2 && (category === "World Cup" || category === "Grand Swiss"))
-    grants.push("candidates");
-  if (rank === 1 && category === "Candidates Tournament")
-    grants.push("world-championship");
-  if (rank === 1 && category === "World Chess Championship")
-    grants.push("world-championship");
+  grants.push(...standardQualificationGrants(category,rank));
   if (!circuit && rank <= 3 && t.level === "international") grants.push("super-invitation");
   return queueArchives(
     {

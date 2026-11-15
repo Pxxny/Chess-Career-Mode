@@ -33,10 +33,7 @@ export function SimulateSeason() {
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold-500/10 text-gold-400"><Sparkles size={20} aria-hidden /></span>
         <div className="min-w-0 flex-1">
       <CardTitle>Simulate Season</CardTitle>
-      <p className="mb-4 text-sm text-ink-muted">
-        Automatically train, rest, recover AP, earn entry money, enter suitable
-        tournaments and play through the rest of this year.
-      </p>
+
         </div>
       </div>
       <details className="mb-4 rounded-xl bg-navy-900/50 p-3"><summary className="cursor-pointer text-sm">Ask your coach before simulating</summary><div className="mt-3"><SeasonCoach/></div></details>
@@ -231,10 +228,7 @@ export function SeasonProgressDialog() {
           {season.games} games · {season.wins}W {season.draws}D {season.losses}L
           · {season.tournaments} tournaments
         </p>
-        <p>
-          {season.sessions} training sessions · Elo {save.player.rating} · $
-          {save.player.money}
-        </p>
+        <div className="grid grid-cols-3 gap-2 rounded-xl bg-navy-900 p-3 text-center" data-testid="season-progress-report">{[['Elo',`${save.player.rating-season.startRating>=0?'+':''}${save.player.rating-season.startRating}`],['Money',`${save.player.money-season.startMoney>=0?'+':''}$${save.player.money-season.startMoney}`],['Training',String(season.sessions)]].map(([label,value])=><div key={label}><p className="text-[10px] uppercase tracking-wider text-ink-faint">{label}</p><p className="mt-1 text-lg font-bold text-gold-300">{value}</p></div>)}</div>
         <p className="text-xs text-ink-muted">
           Completed actions are saved. Pause stops after the current action.
         </p>

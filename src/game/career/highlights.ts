@@ -10,7 +10,7 @@ import { CIRCUIT_LABELS } from "@/game/competition/qualificationCircuit";
 
 export const ceremonySchema = z.object({phase:z.enum(['opening','award']),sponsor:z.string().optional(),location:z.string().optional(),podium:z.array(z.object({name:z.string(),rank:z.number(),points:z.number().optional()})),playerRank:z.number().optional(),prize:z.number().optional()});
 export const articleSchema = z.object({
-  id: z.string(), kind: z.enum(["trophy", "national", "title", "qualification", "opening", "award"]),
+  id: z.string(), kind: z.enum(["trophy", "national", "title", "qualification", "opening", "award", "press"]),
   year: z.number().int(), week: z.number().int().min(1).max(52), day: z.number().int().min(1).max(7),
   headline: z.string(), body: z.string(), event: z.string(),
   eventId: z.string().optional(),
@@ -27,15 +27,18 @@ export function acknowledgeArticle(save: GameSave, id: string): GameSave {
 }
 
 /** Compare completed actions, never infer a win from ratings or replay an old headline. */
-export function captureHighlights(before: GameSave, after: GameSave, npcs: Npc[] = []): GameSave {
+export function captureHighlights(before: GameSave, after: GameSave, npcs: Npc[] = [], options: {simulation?: boolean} = {}): GameSave {
   if (before.career.id !== after.career.id) return after;
   const previous = highlightsOf(after), state = { items: [...previous.items], seen: [...previous.seen], unread: [...previous.unread] };
   const add = (id: string, kind: CareerArticle["kind"], event: string, headline: string, body: string, destination: Pick<CareerArticle, "eventId" | "qualification" | "ceremony"> = {}) => {
     if (state.seen.includes(id)) return;
     state.seen.push(id);
+    if (options.simulation && kind === "award") return;
+    if (options.simulation && destination.ceremony?.phase === "award") { const {ceremony, ...rest} = destination; destination = rest; }
     state.items.push({ id, kind, event, headline, body, ...destination, ...after.world.date, day: after.world.day ?? 1 });
     state.unread.push(id);
   };
+  if(options.simulation){const suppressed=new Set(state.items.filter(a=>a.kind==="award").map(a=>a.id));state.unread=state.unread.filter(id=>!suppressed.has(id));state.items=state.items.map(a=>{if(state.unread.includes(a.id)&&a.ceremony?.phase==="award"){const {ceremony,...plain}=a;return plain;}return a;});}
   const active=after.tournament;
   if(active?.status==='playing'&&hasOpeningCeremony(active)&&(before.tournament?.eventId!==active.eventId||active.round===1)){
     add(`opening:${active.year}:${active.eventId}`,'opening',active.name,`Opening ceremony · ${active.name}`,`The players gather for the opening ceremony at ${active.details?.location??'the tournament venue'}. The competition is ready to begin.`,{eventId:active.eventId,ceremony:{phase:'opening',sponsor:active.details?.sponsorship?.name??active.details?.qualificationCircuit?.sponsor,location:active.details?.location,podium:[]}});
@@ -93,7 +96,7 @@ export function captureHighlights(before: GameSave, after: GameSave, npcs: Npc[]
     add(id, "national", r.name, `${after.player.name} selected for the national team`,
       `You have been selected for the starting roster at ${r.name}. The registered event is ready to begin. Simulation paused before the team competition starts.`, { eventId: r.eventId });
   }
-  if (state.items.length === previous.items.length) return after;
+  if (state.items.length === previous.items.length && state.seen.length===previous.seen.length && state.unread.length===previous.unread.length && !state.items.some((a,i)=>a!==previous.items[i])) return after;
   const keep = state.items.filter((a, i) => i >= state.items.length - 300 || state.unread.includes(a.id));
   return { ...after, highlights: { ...state, items: keep } };
 }

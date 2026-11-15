@@ -7,7 +7,8 @@ import { nextEsportsGame } from "@/game/esports/core";
 import type { Npc, PieceColor } from "@/types";
 import type { Opponent } from "@/game/play/opponent";
 import type { CareerPredictionOptions } from "@/game/prediction/adapters";
-import { PredictionPanel } from "./PredictionPanel";
+import { TaleOfTape } from "./TaleOfTape";
+import { Button } from "@/components/ui";
 
 export function CareerPredictionPanel({
   opponent,
@@ -19,6 +20,7 @@ export function CareerPredictionPanel({
   chooseColor?: boolean;
 }) {
   const save = useSave();
+  const [open,setOpen] = useState(false);
   const [color, setColor] = useState<PieceColor | "unknown">(options.color);
   const actualColor = chooseColor ? color : options.color;
   const prediction = useMemo(
@@ -62,7 +64,8 @@ export function CareerPredictionPanel({
           </select>
         </label>
       )}
-      <PredictionPanel prediction={prediction} preview />
+      <Button variant="secondary" onClick={()=>setOpen(true)}>Match preview & comparison</Button>
+      {open&&<TaleOfTape prediction={prediction} onClose={()=>setOpen(false)}/>}
     </div>
   );
 }

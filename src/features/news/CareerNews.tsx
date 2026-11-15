@@ -12,7 +12,7 @@ import { translateUI as t } from "@/i18n/translate";
 import { LanguageContext } from "@/i18n/context";
 import { useNavigate } from "react-router-dom";
 
-const LABELS = { opening: "Opening ceremony", award: "Award ceremony", trophy: "Tournament victory", national: "National team", title: "New title", qualification: "Championship qualification" };
+const LABELS = { press: "Press conference", opening: "Opening ceremony", award: "Award ceremony", trophy: "Tournament victory", national: "National team", title: "New title", qualification: "Championship qualification" };
 function Reader({ article, close, resume, remaining = 0 }: { article: CareerArticle; close: () => void; resume?: () => void; remaining?: number }) {
   const reduced = useReducedMotion();
   const navigate = useNavigate();
@@ -86,7 +86,7 @@ export function CareerNewsroom() {
   const table = useReactTable({ data: filtered, columns, autoResetPageIndex: false, state: { sorting }, onSortingChange: setSorting, getCoreRowModel: getCoreRowModel(), getSortedRowModel: getSortedRowModel() });
   return <Card className="mb-4" data-testid="career-newsroom">
     <CardTitle>Career newsroom</CardTitle>
-    <p className="mb-4 text-sm text-ink-muted">Career milestones and tournament ceremonies pause simulation. Read your saved stories here.</p>
+    <p className="mb-4 text-sm text-ink-muted">Your career stories</p>
     {!articles.length ? <p className="text-sm text-ink-faint">Your first major career story will appear here.</p> : <>
       <input aria-label="Search career news" value={query} onChange={(e) => setQuery(e.target.value)} className="mb-3 w-full rounded-xl bg-navy-900 p-3 text-sm" placeholder={t("Search career news")} />
       <TableVirtuoso style={{ height: Math.min(360, Math.max(120, table.getRowModel().rows.length * 64 + 48)) }} data={table.getRowModel().rows} components={{ Table: (props) => <table {...props} aria-label={t("Career news archive")} className="w-full table-fixed text-left" /> }}

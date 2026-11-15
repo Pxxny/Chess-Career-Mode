@@ -1,3 +1,4 @@
+import { travelQuote } from "./travel";
 import { teamSpec,teamInfoOf } from "@/data/chess/nationalTeamEvents";
 import { teamSelection } from "./teamSelection";
 import { registrationWindow } from "./registrationWindow";
@@ -114,8 +115,8 @@ export function registrationIssue(
   if(npcs&&npcs.length===0)return "Wait for the NPC world to finish loading.";
   const selection=teamSelection(save,event,npcs);
   if(selection?.issue)return selection.issue;
-  if (save.player.money < event.entryFee + (event.details?.travelCost ?? 0))
-    return "You cannot afford the entry fee and travel.";
+  if (save.player.money < event.entryFee + travelQuote(save,event).cost)
+    return `Need $${event.entryFee + travelQuote(save,event).cost - save.player.money} more for entry and travel.`;
   return null;
 }
 export const requirementsText = (e: ScheduledEvent): string => {
@@ -137,3 +138,18 @@ export const requirementsText = (e: ScheduledEvent): string => {
     .filter(Boolean)
     .join(" · ");
 };
+
+export function eligibilityFeedback(save:GameSave,event:ScheduledEvent,npcs?:Npc[]):Array<{text:string;to?:string;action?:string}> {
+ const result:Array<{text:string;to?:string;action?:string}>=[];
+ if(save.player.rating<event.minElo)result.push({text:`Need ${event.minElo-save.player.rating} more Elo · ${event.minElo} required`,to:'/train',action:'Train'});
+ if(save.player.reputation<event.minReputation)result.push({text:`Need ${event.minReputation-save.player.reputation} more reputation`,to:'/complete',action:'Find a tournament'});
+ const owned=save.history.titles.reduce((best,t)=>Math.max(best,titles.indexOf(t.title)),0);
+ if(event.details?.minimumTitle&&owned<titles.indexOf(event.details.minimumTitle))result.push({text:`Requires ${event.details.minimumTitle} title`,to:'/career?view=championship',action:'Title requirements'});
+ if(event.details?.qualification&&!competitionOf(save).qualifications.some(q=>qualificationMatches(q,event,save.world.date.year)))result.push({text:`Qualification required · ${CIRCUIT_LABELS[event.details.qualification]??event.details.qualification}`,to:'/career?view=championship',action:'Qualification path'});
+ if(event.details?.federation&&save.expansion?.membershipYear!==save.world.date.year)result.push({text:'Renew federation membership for this year',to:'/complete?section=teams',action:'Federation & national teams'});
+ const selection=teamSelection(save,event,npcs);if(selection?.issue)result.push({text:selection.issue,to:'/complete?section=teams',action:'Team selection & boards'});
+ const cost=event.entryFee+travelQuote(save,event).cost;if(save.player.money<cost)result.push({text:`Need $${cost-save.player.money} more · entry & travel $${cost}`,to:'/train?tab=work',action:'Work & earn money'});
+ const issue=registrationIssue(save,event,npcs);
+ if(issue&&!result.length)result.push({text:issue});
+ return result;
+}

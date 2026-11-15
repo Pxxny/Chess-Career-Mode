@@ -1,3 +1,4 @@
+import { TableVirtuoso } from "react-virtuoso";
 import { WonderkidTags } from "./WonderkidTags";
 import { getCountry } from "@/data/world/countries";
 import { NpcAvatar } from "@/components/game/NpcAvatar";
@@ -19,20 +20,7 @@ export function NpcTable({ npcs, showRank = false, onSelect }: NpcTableProps) {
   const save = useSave(),
     world = useNpcs();
   const playerRank = playerDirectoryEntry(save, world).worldRank;
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left text-sm">
-        <thead className="text-ink-faint">
-          <tr className="border-b border-white/5">
-            {showRank && <th className="w-12 py-2 pr-2 font-medium">Rank</th>}
-            <th className="py-2 pr-2 font-medium">Player</th>
-            <th className="py-2 pr-2 font-medium">Country</th>
-            <th className="py-2 text-right font-medium">Elo</th>
-          </tr>
-        </thead>
-        <tbody>
-          {npcs.map((npc) => (
-            <tr key={npc.id} className="border-b border-white/5 last:border-0">
+  const cells = (npc:Npc) => (<>
               {showRank && (
                 <td className="py-2.5 pr-2 tabular-nums text-ink-muted">
                   {npcDirectoryRank(npc, playerRank) ?? "–"}
@@ -69,10 +57,8 @@ export function NpcTable({ npcs, showRank = false, onSelect }: NpcTableProps) {
               <td className="py-2.5 text-right font-semibold tabular-nums text-gold-400">
                 {npc.currentElo}
               </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+            </>);
+  const header = () => <tr className="border-b border-white/10">{showRank&&<th className="p-2 text-left">Rank</th>}<th className="p-2 text-left">Player</th><th className="p-2 text-left">Country</th><th className="p-2 text-right">Elo</th></tr>;
+  if(npcs.length>80)return <TableVirtuoso style={{height:560}} data={npcs} overscan={200} computeItemKey={(_,npc)=>npc.id} components={{Table:props=><table {...props} className="w-full min-w-[380px] text-sm"/>,TableHead:props=><thead {...props} className="bg-navy-800 text-ink-faint"/>}} fixedHeaderContent={header} itemContent={(_,npc)=>cells(npc)}/>;
+  return <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="text-ink-faint">{header()}</thead><tbody>{npcs.map(npc=><tr key={npc.id} className="border-b border-white/5">{cells(npc)}</tr>)}</tbody></table></div>;
 }

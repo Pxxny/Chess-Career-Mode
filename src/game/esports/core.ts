@@ -1,3 +1,5 @@
+import { transferQuote, transferWindow } from "./market";
+import { systemsOf } from "@/game/career/systems";
 import { trackYearActivity } from "@/game/career/yearReview";
 import type { GameSave, GameOutcome, Npc } from "@/types";
 import {
@@ -722,6 +724,7 @@ export function esportsCommand(
     next = money(save, -100, `Create esports team: ${name}`, "create");
     message = "Team created. Recruit teammates to complete your roster.";
   } else if (command.type === "recruit") {
+    if(!transferWindow(save))return fail("Transfer market opens in weeks 1–4 and 27–30.");
     if (state.entries.length)
       return fail("Cancel esports bookings before changing your roster.");
     const team = state.team,
@@ -735,6 +738,8 @@ export function esportsCommand(
       state.recruitAttempts.some((a) => a.npcId === npc.id && now - a.day < 14)
     )
       return fail("Wait 14 days before approaching this player again.");
+    const contract=transferQuote(save,npc);
+    if(save.player.money<contract.fee)return fail(`Transfer fee: $${contract.fee}. Weekly salary: $${contract.salary}.`);
     const chance = recruitmentChance(save, npc),
       accepted = createRng(
         hashString(`${save.career.id}:${npc.id}:${Math.floor(now / 14)}`),
@@ -749,8 +754,9 @@ export function esportsCommand(
         ? { ...team, members: [...team.members, memberFor(npc)] }
         : team,
     };
+    if(accepted){const systems=systemsOf(save);next=money(save,-contract.fee,`Transfer: ${npc.name}`,`transfer:${npc.id}:${now}`);next={...next,careerSystems:{...systems,contracts:[...systems.contracts.filter(c=>c.npcId!==npc.id),{npcId:npc.id,start:now,end:now+contract.days,fee:contract.fee,salary:contract.salary,paidWeek:Math.floor(now/7)}],transferLog:[...systems.transferLog,{day:now,name:npc.name,fee:contract.fee,salary:contract.salary}].slice(-60)}};}
     message = accepted
-      ? `${npc.name} accepted your invitation.`
+      ? `${npc.name} accepted. Transfer $${contract.fee}; weekly salary $${contract.salary}.`
       : `${npc.name} declined. You can approach them again in 14 days.`;
   } else if (command.type === "release") {
     if (

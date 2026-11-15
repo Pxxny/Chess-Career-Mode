@@ -67,6 +67,8 @@ export interface MatchSetupLite {
 }
 
 export interface PendingMatch {
+  /** Full deterministic setup and clock checkpoint for seamless resume. */
+  resume?: { setup: import("@/game/match/session").MatchSetup; clocks: {white:number;black:number}; rngState:number; at:number; controllers: Record<PieceColor,"human"|"auto"> };
   setup: MatchSetupLite;
   ucis: string[];
   /** True when the player moved at least once (the game was not a pure simulation) */
@@ -218,6 +220,7 @@ export interface TournamentPairing {
 
 /** A paid entry for an upcoming event. It becomes playable in the event's week. */
 export interface EventRegistration {
+  travel?: import("@/game/competition/travel").TravelQuote;
   registrationDay?: number;
   registrationCloseDay?: number;
   invitationAccepted?: boolean;

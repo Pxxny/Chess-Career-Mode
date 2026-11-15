@@ -1,3 +1,4 @@
+import { EligibilityFeedback } from "./EligibilityFeedback";
 import { useMatchRunning } from "@/store/matchLocks";
 import { useMemo, useState } from "react";
 import { useNpcs } from "@/hooks/useNpcs";
@@ -218,7 +219,7 @@ export function TournamentDetail({
           >
             {tab === "details" && (
               <>
-                {event && <div className="mb-5"><TournamentSpotlight event={event} /></div>}
+                {event && <div className="mb-5"><EligibilityFeedback event={event}/><TournamentSpotlight event={event} /></div>}
                 <dl className="grid grid-cols-2 gap-3 text-sm">
                   {rows.map(([label, value]) => (
                     <div key={label}>

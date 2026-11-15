@@ -1,3 +1,9 @@
+import { normOpportunity,tournamentValue } from "@/game/competition/finder";
+import { EligibilityFeedback } from '@/features/tournaments/EligibilityFeedback';
+import { RegistrationQueue } from '@/features/career/systems/RegistrationQueue';
+import { travelQuote } from '@/game/competition/travel';
+import { systemsOf } from '@/game/career/systems';
+import { eventAccent } from "@/game/competition/visuals";
 import { teamSelection } from "@/game/competition/teamSelection";
 import { hasOpeningCeremony } from "@/game/competition/presentation";
 import { CareerTools } from "@/features/career/CareerTools";
@@ -62,6 +68,7 @@ import type { ActiveTournament } from "@/types";
 export function EventFacts({ event }: { event: ScheduledEvent }) {
   const d = event.details;
   const save = useSave();
+  const travel=travelQuote(save,event);
   const facts = [
     [
       "Location",
@@ -91,8 +98,11 @@ export function EventFacts({ event }: { event: ScheduledEvent }) {
     ],
     ["Registration deadline", dayLabel(registrationWindow(save, event).close)],
     ["Entry fee", `$${event.entryFee}`],
-    ["Travel estimate", `$${d?.travelCost ?? 0}`],
-    ["Total to register", `$${event.entryFee + (d?.travelCost ?? 0)}`],
+    ["Travel estimate", `$${travel.cost}`],
+    ["From", `${travel.from.city}, ${getCountry(travel.from.country)?.name??travel.from.country}`],
+    ["Distance", travel.km===null?"Coordinates not recorded":`${travel.km.toLocaleString()} km`],
+    ["Arrival", travel.jetlag?`Jetlag · −${travel.jetlag} AP for 2 days`:"No jetlag"],
+    ["Total to register", `$${event.entryFee + travel.cost}`],
     ["Required Elo", `${event.minElo}+`],
     [
       "Participant limit",
@@ -304,6 +314,7 @@ export function TournamentPanel({
     start = useGameStore((s) => s.startTournament),
     withdraw = useGameStore((s) => s.withdrawTournament),
     close = useGameStore((s) => s.closeTournament);
+  const [quick,setQuick]=useState<"all"|"ready"|"norm"|"value">("all");
   const [location, setLocation] = useState("all");
   const [continent, setContinent] = useState("all");
   const [source, setSource] = useState("all");
@@ -370,6 +381,8 @@ export function TournamentPanel({
   const filtered = events.filter(
     (e) =>
       (!swissOnly || e.details?.format === "swiss") &&
+      (quick!=="ready"||registrationIssue(save,e,npcs)===null) &&
+      (!(quick==="norm"||search?.normOnly)||normOpportunity(save,e,npcs)) &&
       matchesOrganizer(e,organizer) && circuitVisible(save.player.country, e.details) && matchesQualificationFilter(e, qualificationFilter) &&
       matchesVenueContinent(e.details?.country, continent) &&
       (!search ||
@@ -387,9 +400,9 @@ export function TournamentPanel({
       (query
         ? e.name.toLowerCase().includes(query.toLowerCase())
         : !targetEvent || e.id === targetEvent.id),
-  );
+  ).sort((a,b)=>(quick==="value"||search?.sort==="value")?tournamentValue(save,b)-tournamentValue(save,a):0);
   return (
-    <div className="space-y-4" data-testid="tournament-panel"><Card><CardTitle>Competition hub</CardTitle><p className="mb-3 text-sm text-ink-muted">Play your current event, manage earned places or find your next tournament.</p><div className="flex flex-wrap gap-2">{[["current-tournament","Play & results"],["your-registrations",`Your entries (${regs.length+earned.length})`],["available-tournaments","Find a tournament"]].map(([id,label])=><Button key={id} variant="secondary" onClick={()=>document.getElementById(id)?.scrollIntoView({behavior:"smooth",block:"start"})}>{label}</Button>)}</div></Card>
+    <div className="space-y-4" data-testid="tournament-panel"><Card><CardTitle>Competition hub</CardTitle><div className="flex flex-wrap gap-2">{[["current-tournament","Play & results"],["your-registrations",`Your entries (${regs.length+earned.length})`],["available-tournaments","Find a tournament"]].map(([id,label])=><Button key={id} variant="secondary" onClick={()=>document.getElementById(id)?.scrollIntoView({behavior:"smooth",block:"start"})}>{label}</Button>)}</div></Card>
       {spotlight && <TournamentSpotlightDialog event={spotlight} onClose={() => setSpotlight(null)} />}
       {viewTournament && t && (
         <TournamentDetail
@@ -574,7 +587,7 @@ export function TournamentPanel({
           </p>
         </Card>
       )}
-      </div><Card id="your-registrations" tabIndex={-1} className="scroll-mt-24" data-testid="your-registrations">
+      </div><RegistrationQueue/><Card id="your-registrations" tabIndex={-1} className="scroll-mt-24" data-testid="your-registrations">
         <CardTitle aside={<Badge tone="gold">{regs.length + earned.length}</Badge>}>Your registrations</CardTitle>
         <p className="mb-4 text-sm text-ink-muted">Your qualified events and national team entries appear here automatically. Qualified entries still need registration confirmation.</p>
         {running && (
@@ -650,7 +663,7 @@ export function TournamentPanel({
               <p className="mt-2 text-xs text-ink-muted"><span>Qualified via</span>: <span translate="no">{qualification.source}</span> ({qualification.year})</p>
               <p className="mt-1 text-xs text-ink-muted"><span>Qualification valid through</span>: {event.details?.qualificationCircuit?.season ?? qualification.year + 2}</p>
               <p className="mt-2 text-xs text-ink-muted"><span>Registration opens</span>: {dayLabel(window.open)} · <span>Registration deadline</span>: {dayLabel(window.close)}</p>
-              <p className="mt-1 text-xs text-ink-muted"><span>Entry fee</span>: ${event.entryFee} · <span>Travel</span>: ${event.details?.travelCost ?? 0}</p>
+              <p className="mt-1 text-xs text-ink-muted"><span>Entry fee</span>: ${event.entryFee} · <span>Travel</span>: ${travelQuote(save,event).cost}</p>
               {issue && <p className="mt-3 text-xs text-gold-300">{issue}</p>}
               <details className="mt-3 text-sm"><summary className="cursor-pointer text-ink-muted">Entry details</summary><div className="mt-3"><EventFacts event={event} /></div></details>
               <Button className="mt-3" disabled={!!issue || running} onClick={() => result(register(event))}>Confirm registration</Button>
@@ -664,9 +677,7 @@ export function TournamentPanel({
         </p>
       </Card>
       <Card id="available-tournaments" className="scroll-mt-24">
-        <CardTitle>Upcoming tournaments</CardTitle>
-        <p className="mb-4 rounded-xl bg-gold-500/10 p-3 text-sm text-gold-300">Sponsored qualification circuits: Local → National → Continental → World. Each event publishes its advancing places and named World Finals destination. Places vary by event and season; federation and continent restrictions still apply.</p>
-        <p className="mb-3 text-sm text-ink-muted">Already qualified? Your place rolls down to the next eligible finisher until all available places are filled.</p>
+        <CardTitle>Upcoming tournaments</CardTitle><div className="mb-4 flex flex-wrap gap-2">{[["all","All tournaments"],["ready","Ready to enter"],["norm","Norm opportunities"],["value","Best travel value"]].map(([id,label])=><Button key={id} variant={quick===id?"primary":"secondary"} aria-pressed={quick===id} onClick={()=>{setQuick(id as typeof quick);setLimit(6);}}>{label}</Button>)}</div><label className="mb-4 flex flex-wrap items-center gap-2 text-xs text-ink-muted">Travel class<select aria-label="Travel class" value={systemsOf(save).travelClass} onChange={e=>useGameStore.getState().careerSystemAction({type:'travel-class',value:e.target.value as 'economy'|'business'})} className="rounded-lg bg-navy-900 p-2 text-sm"><option value="economy">Economy</option><option value="business">Business · no jetlag</option></select></label>
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <Button variant="secondary" onClick={() => setFinderOpen(true)}>
             Find suitable tournaments
@@ -690,14 +701,38 @@ export function TournamentPanel({
             </>
           )}
         </div>
-        <p className="mb-3 text-xs text-ink-muted">Continent filters use the host country. Annual venues target 20% in your birth city and 80% elsewhere; historical and national-team hosts keep their recorded locations.</p>
-        <p className="mb-3 text-xs text-ink-muted">
-          Career fields, fees, entry deadlines, requirements, prizes and results
-          are simulated. Dates and formats are generated unless a historical
-          source is cited. National teams use the separate four-board,
-          eight-team round-robin simulation.
-        </p>
-        <fieldset className="mb-4 grid gap-3 rounded-xl border border-white/10 p-3 sm:grid-cols-2 lg:grid-cols-3"><legend className="px-2 text-sm font-semibold">Narrow your tournament search</legend>
+
+        <div className="mb-3 grid gap-3 sm:grid-cols-3">
+          <input
+            aria-label="Search tournaments"
+            placeholder="Search tournaments…"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              if (selectedEventId)
+                setUrlParams((params) => {
+                  params.delete("event");
+                  return params;
+                });
+              setLimit(6);
+            }}
+            className="min-w-0 flex-1 rounded-lg bg-navy-900 p-3 text-sm text-ink"
+          />
+          <label className="min-w-0 text-xs text-ink-muted"><span className="mb-1 block">Organizer type</span><select aria-label="Tournament organizer" value={organizer??'all'} onChange={e=>{const value=e.target.value as TournamentSearch['organizer'];setOrganizer(value);setLimit(6);setSearch(previous=>previous?{...previous,organizer:value}:null);}} className="w-full rounded-lg bg-navy-900 p-3 text-sm text-ink"><option value="all">All organizers</option><option>Official</option><option>Unofficial</option><option value="Sponsor">Sponsor-hosted</option></select></label>
+          <label className="min-w-0 text-xs text-ink-muted"><span className="mb-1 block">Competition style</span><select
+            aria-label="Tournament category"
+            value={category}
+            onChange={(e) => {
+              setCategory(e.target.value);
+              setLimit(6);
+            }}
+            className="max-w-full rounded-lg bg-navy-900 p-3 text-sm text-ink"
+          >
+            <option value="all">Every competition format</option>
+            {[...new Set(events.map(tournamentCategory))].sort().map(c=><option key={c} value={c}>{c}</option>)}
+          </select></label>
+        </div>
+        <details className="mb-4 rounded-xl border border-white/10 p-3"><summary className="cursor-pointer text-sm font-semibold">More filters</summary><fieldset className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <label className="min-w-0 text-xs text-ink-muted"><span className="mb-1 block">Calendar origin</span><select
             aria-label="Tournament source"
             value={source}
@@ -707,7 +742,7 @@ export function TournamentPanel({
             }}
             className="max-w-full rounded-lg bg-navy-900 p-3 text-sm text-ink"
           >
-            <option value="all">Every organizer</option>
+            <option value="all">All calendar sources</option>
             <option value="fide">Published real-world calendars</option>
             <option value="fictional">Career-generated events</option>
           </select></label>
@@ -756,35 +791,7 @@ export function TournamentPanel({
                 </option>
               ))}
           </select></label>
-          <label className="min-w-0 text-xs text-ink-muted"><span className="mb-1 block">Organizer type</span><select aria-label="Tournament organizer" value={organizer??'all'} onChange={e=>{const value=e.target.value as TournamentSearch['organizer'];setOrganizer(value);setLimit(6);setSearch(previous=>previous?{...previous,organizer:value}:null);}} className="w-full rounded-lg bg-navy-900 p-3 text-sm text-ink"><option value="all">All organizers</option><option>Official</option><option>Unofficial</option><option value="Sponsor">Sponsor-hosted</option></select></label>
-          <input
-            aria-label="Search tournaments"
-            placeholder="Search tournaments…"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              if (selectedEventId)
-                setUrlParams((params) => {
-                  params.delete("event");
-                  return params;
-                });
-              setLimit(6);
-            }}
-            className="min-w-0 flex-1 rounded-lg bg-navy-900 p-3 text-sm text-ink"
-          />
-          <label className="min-w-0 text-xs text-ink-muted"><span className="mb-1 block">Competition style</span><select
-            aria-label="Tournament category"
-            value={category}
-            onChange={(e) => {
-              setCategory(e.target.value);
-              setLimit(6);
-            }}
-            className="max-w-full rounded-lg bg-navy-900 p-3 text-sm text-ink"
-          >
-            <option value="all">Every competition format</option>
-            {[...new Set(events.map(tournamentCategory))].sort().map(c=><option key={c} value={c}>{c}</option>)}
-          </select></label>
-        </fieldset>
+        </fieldset></details>
         <ul className="space-y-4" data-testid="open-events">
           {filtered.slice(0, limit).map((e) => {
             const totalEntrants = e.details?.showcase
@@ -814,7 +821,7 @@ export function TournamentPanel({
                 e.id,
               ),
               afford =
-                save.player.money >= e.entryFee + (e.details?.travelCost ?? 0);
+                save.player.money >= e.entryFee + travelQuote(save,e).cost;
             return (
               <li
                 key={e.id}
@@ -823,21 +830,13 @@ export function TournamentPanel({
                 data-host-city={e.details?.location ?? ""}
                 data-host-continent={getCountry(e.details?.country ?? "")?.continent ?? ""}
                 data-event-kind={eventKind(e)}
+                style={{borderLeft:`4px solid ${eventAccent(e.details,e.level).color}`}}
                 className="rounded-xl border border-white/10 bg-navy-900 p-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <h3 className="font-semibold text-ink">{e.name}</h3>
-                    <p className="mt-1 text-xs text-ink-faint">
-                      {e.details?.category} ·{" "}
-                      {e.details?.reference
-                        ? "FIDE-listed reference · career simulation"
-                        : e.details?.historicalSchedule
-                          ? "Verified dates & format · career simulation"
-                          : e.details?.provenance === "fictional"
-                            ? "Fictional event"
-                            : "Inspired format · game schedule"}
-                    </p>
+                    <p className="mt-1 text-xs text-ink-muted">{tournamentCategory(e)}</p>
                   </div>
                   <Badge tone={closed ? "neutral" : "gold"}>
                     {registered
@@ -855,11 +854,10 @@ export function TournamentPanel({
                               : "Registration open"}
                   </Badge>
                 </div>
-                <p className="mt-2 text-sm text-ink-muted">{dateLabel(e)} · {e.details?.location} · ${e.entryFee + (e.details?.travelCost??0)} total</p>
+                <p className="mt-2 text-sm text-ink-muted">{dateLabel(e)} · {e.details?.location} · ${e.entryFee + travelQuote(save,e).cost} total</p>
                 <p className="mt-1 text-xs text-gold-300">{tournamentCategory(e)} · {circuitAdvancement(e.details)}</p>
                 {e.details?.organizer?.sponsorId&&<p className="mt-2 text-xs font-semibold text-gold-300">Sponsor-hosted · {e.details.organizer.name} · {e.details.organizer.status}</p>}
                 {e.details?.sponsorship&&<p className="mt-2 text-xs text-gold-300">Event partner · {e.details.sponsorship.name} · Market share {e.details.sponsorship.marketShare.toFixed(2)}%</p>}
-                <p className="mt-1 text-xs text-ink-faint">{hasOpeningCeremony(e)?"Opening & award ceremonies":"Award ceremony after the final round"}</p>
                 <Button className="mt-2" variant="secondary" onClick={()=>setSpotlight(e)}>City map & tournament spotlight</Button><details className="mt-3"><summary className="cursor-pointer text-sm text-gold-300">Requirements, schedule & players</summary><EventFacts event={e} />
 
                 {e.details?.qualificationCircuit && <p className="mt-3 rounded-lg bg-gold-500/10 p-3 text-sm text-gold-300" data-testid="qualification-route">{circuitAdvancement(e.details) || "Final stage · qualifiers from all continents"}</p>}
@@ -946,6 +944,7 @@ export function TournamentPanel({
                                     ? "Full"
                                     : entryIssue?"Unavailable":"Register"}
                 </Button>
+                {!registered&&!played&&!closed&&<><EligibilityFeedback event={e}/><Button variant="secondary" className="ml-2" disabled={systemsOf(save).queue.some(q=>q.eventId===e.id)} onClick={()=>{const response=useGameStore.getState().careerSystemAction({type:"queue",eventId:e.id});if(!response.ok)setRegistrationError({id:e.id,message:response.error});}}>Queue registration</Button></>}
                 {registrationError?.id===e.id&&<p className="mt-2 text-sm text-red-300" role="alert">{registrationError.message}</p>}
               </li>
             );

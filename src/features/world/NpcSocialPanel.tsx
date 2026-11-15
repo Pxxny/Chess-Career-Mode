@@ -41,7 +41,7 @@ export function NpcSocialPanel({
     if (result.ok && result.accepted && action === "play") onPlayAccepted();
   };
   return (
-    <section
+    <section id={`npc-social-${npc.id}`}
       aria-label="Relationship and NPC actions"
       className="mb-5 rounded-lg border border-white/10 bg-navy-900/70 p-3 sm:p-4"
     >

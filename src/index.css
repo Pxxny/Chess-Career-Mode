@@ -1,17 +1,22 @@
+ :root { --scheme:dark; --bg-950:21 28 25; --bg-900:26 35 30; --bg-800:34 45 38; --bg-700:43 56 47; --bg-600:59 75 62; --accent-300:208 226 191; --accent-400:189 213 167; --accent-500:175 201 149; --accent-600:130 156 119; --text:238 234 225; --muted:187 199 185; --faint:154 170 155; --board-light:#e5e9df; --board-dark:#58745c; }
+:root[data-theme="light"] { --scheme:light; --bg-950:244 246 241; --bg-900:236 240 232; --bg-800:255 255 252; --bg-700:229 235 222; --bg-600:199 211 193; --accent-300:43 84 44; --accent-400:52 97 49; --accent-500:106 143 72; --accent-600:86 116 65; --text:30 44 32; --muted:72 90 75; --faint:91 109 92; }
+:root[data-board="wood"] {--board-light:#f0dbc0;--board-dark:#9c7051;}
+:root[data-board="ice"] {--board-light:#e0edf3;--board-dark:#698caa;}
+:root[data-board="royal"] {--board-light:#e9e2ed;--board-dark:#85708f;}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   html {
-    color-scheme: dark;
+    color-scheme: var(--scheme, dark);
   }
   body {
     @apply bg-navy-950 font-sans text-ink antialiased;
     line-height: 1.6;
     font-feature-settings: "ss01" on;
-    --accent: #a4ba99;
-    --surface: #282d28;
+    --accent: rgb(var(--accent-500));
+    --surface: rgb(var(--bg-800));
     background-image: radial-gradient(ellipse at 80% 0%, rgba(164,186,153,0.045), transparent 55%);
   }
   h1,
@@ -40,7 +45,7 @@
   input,
   select,
   textarea {
-    color-scheme: dark;
+    color-scheme: var(--scheme, dark);
   }
   :focus-visible {
     outline: 2px solid theme("colors.gold.400");
@@ -97,3 +102,34 @@
 .career-calendar .fc-daygrid-day-number { font-size: .8rem; }
 .career-calendar .fc-col-header-cell-cushion { font-size: .75rem; }
 @media(max-width: 480px) { .career-calendar .fc-daygrid-day-frame { min-height: 68px; } .career-calendar .fc-event-title { font-size: .65rem; } }
+
+.board-square-light {background-color:var(--board-light)}
+.board-square-dark {background-color:var(--board-dark)}
+[data-pieces="ivory"] [data-piece^="w"] {filter:sepia(.38) saturate(.7)}
+[data-pieces="ivory"] [data-piece^="b"] {filter:sepia(.8) saturate(.85) brightness(1.4)}
+[data-pieces="midnight"] [data-piece^="w"] {filter:sepia(.12) hue-rotate(160deg) saturate(.5)}
+[data-pieces="midnight"] [data-piece^="b"] {filter:sepia(.55) hue-rotate(165deg) saturate(1.6)}
+.stat-delta {position:absolute;top:-.8rem;right:.3rem;z-index:40;font-size:.82rem;font-weight:800;pointer-events:none;animation:stat-float 1.6s ease-out both;text-shadow:0 1px 6px rgb(var(--bg-950));}
+@keyframes stat-float {0%{opacity:0;transform:translateY(8px)}20%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translateY(-20px)}}
+[data-theme="light"] [class*="border-white"] {border-color:#203d291a;}
+[data-theme="light"] .season-card {background:linear-gradient(135deg,#eaf0e1,#f9fbf4);}
+[data-theme="light"] .career-calendar {--fc-border-color:#203d2922;--fc-page-bg-color:#fffffc;--fc-neutral-bg-color:#edf2e8;--fc-event-text-color:#203321;--fc-event-bg-color:#d8e4cd;--fc-button-bg-color:#48663c;--fc-today-bg-color:#7caa5520;}
+[data-theme="light"] [class*="text-emerald-300"], [data-theme="light"] [class*="text-green-300"] {color:#237650}
+[data-theme="light"] [class*="text-rose-300"], [data-theme="light"] [class*="text-red-300"] {color:#aa343b}
+[data-theme="light"] [class*="text-sky-300"] {color:#246896}
+[data-theme="light"] [class*="text-amber-300"] {color:#926400}
+
+.tape-portrait {display:inline-flex;justify-content:center}.tape-portrait [data-npc-portrait] > span {width:6rem;height:6rem}
+
+.host-banner {background:linear-gradient(120deg,rgb(var(--accent-500)/.12),rgb(var(--bg-900)));}
+
+[data-board-theme="green"] {--board-light:#e5e9df;--board-dark:#58745c;}
+[data-board-theme="wood"] {--board-light:#f0dbc0;--board-dark:#9c7051;}
+[data-board-theme="ice"] {--board-light:#e0edf3;--board-dark:#698caa;}
+[data-board-theme="royal"] {--board-light:#e9e2ed;--board-dark:#85708f;}
+
+[role="gridcell"][data-last="true"] {background:color-mix(in srgb,var(--board-light) 38%,#d6c45e);}
+[role="gridcell"][data-selected="true"] {background:#b2b967;}
+[role="gridcell"][data-draw="true"] {background:#7bb9d4;}
+[role="gridcell"][data-check="true"] {background:#d56c68;}
+[role="gridcell"][data-mate="true"] {background:#c85252;}

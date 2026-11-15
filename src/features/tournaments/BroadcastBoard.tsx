@@ -1,3 +1,4 @@
+import { RoundBroadcast } from "./RoundBroadcast";
 import {
   useEffect,
   useMemo,
@@ -98,12 +99,12 @@ export function BroadcastBoard({
   if (!setup)
     return <p>These NPCs are no longer available for a live board.</p>;
   return (
-    <LiveBoard
+    <><LiveBoard
       setup={setup}
       context={context}
       initial={pair.broadcast}
       onBack={onBack}
-    />
+    /><RoundBroadcast t={t} context={context}/></>
   );
 }
 function ClockPanel({

@@ -151,3 +151,32 @@ export function buildFeedback(input: FeedbackInput): FeedbackItem[] {
   if (swingAt > 0 && objective !== 'conversion') items.push({ tone: 'info', title: 'Turning point', text: `The evaluation changed sharply after move ${ply(swingAt - 1)} ${game.sans[swingAt - 1]}.` });
   return items;
 }
+
+/** Describe only motifs verified on the board / an engine reply; no guessed tactical stories. */
+export function explainCoachMove(input:{position?:import('@/game/chess/board').Position;uci?:string;bestUci?:string|null;replyUci?:string|null;loss:number;motif?:string|null}):string {
+ const {position,uci,bestUci,replyUci,loss,motif}=input;
+ const names:Record<string,string>={K:'king',Q:'queen',R:'rook',B:'bishop',N:'knight',P:'pawn'};
+ const played=position&&uci?coachParseUci(position,uci):null;
+ const next=played&&position?coachApplyMove(position,played):null;
+ const reply=next&&replyUci?coachParseUci(next,replyUci):null;
+ if(reply&&next) {
+  if(reply.piece.toUpperCase()==='N') {
+   const r=Math.floor(reply.to/8),f=reply.to%8;
+   const targets=next.board.flatMap((p,i)=>{
+    if(!p||(p===p.toUpperCase())===(reply.piece===reply.piece.toUpperCase())||p.toUpperCase()==='P')return [];
+    const dr=Math.abs(Math.floor(i/8)-r),df=Math.abs(i%8-f);
+    return dr*df===2?[`${names[p.toUpperCase()]} on ${coachSquare(i)}`]:[];
+   });
+   if(targets.length>=2)return `The engine reply places a knight on ${coachSquare(reply.to)}, attacking your ${targets.slice(0,2).join(' and ')}. Check this fork before committing.`;
+  }
+  if(reply.capture&&next.board[reply.to])return `The engine reply can capture your ${names[next.board[reply.to]!.toUpperCase()]} on ${coachSquare(reply.to)}. Compare that threat with your intended plan.`;
+ }
+ if(motif)return `${motif}. ${bestUci?`Revisit ${bestUci.slice(0,2)}–${bestUci.slice(2,4)} before playing this move.`:''}`;
+ const best=position&&bestUci?coachParseUci(position,bestUci):null;
+ if(best?.castle)return `The engine prefers castling: move your king to ${coachSquare(best.to)} and connect the rooks.`;
+ if(best&&best.capture)return `Check the capture on ${coachSquare(best.to)} first. The engine prefers it to the move played.`;
+ if(best&&['N','B'].includes(best.piece.toUpperCase()))return `The engine prefers the ${names[best.piece.toUpperCase()]} move to ${coachSquare(best.to)}. Compare the squares it controls and your opponent's forcing replies.`;
+ return loss>0?`This move gives away ${Math.round(loss)} percentage points of winning chances. ${bestUci?`Compare ${bestUci.slice(0,2)}–${bestUci.slice(2,4)}, then check the opponent's checks and captures.`:'Review the opponent’s checks and captures before choosing your next move.'}`:'Compare the activity of your pieces and the threats on the board.';
+}
+import { parseUci as coachParseUci } from '@/game/chess/rules';
+import { applyMove as coachApplyMove,squareName as coachSquare } from '@/game/chess/board';

@@ -1,3 +1,4 @@
+import { TransferMarket } from "@/features/career/systems/TransferMarket";
 import { confirmUI } from "@/i18n/translate";
 import { UpcomingPredictions } from "@/features/prediction/CareerPrediction";
 import { useMemo, useState } from "react";
@@ -725,75 +726,7 @@ export function EsportsPanel({
               </Button>
             </Card>
           )}
-          {state.team?.owner && (
-            <Card>
-              <CardTitle>Recruit teammates</CardTitle>
-              <input
-                aria-label="Search esports recruits"
-                placeholder="Search name or country…"
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  setNpcLimit(8);
-                }}
-                className="mb-3 w-full rounded-lg bg-navy-900 p-3 text-sm text-ink"
-              />
-              <ul className="space-y-2">
-                {market.slice(0, npcLimit).map((n) => {
-                  const attempt = state.recruitAttempts.find(
-                      (a) => a.npcId === n.id && now - a.day < 14,
-                    ),
-                    chance = recruitmentChance(save, n);
-                  return (
-                    <li
-                      key={n.id}
-                      data-npc-id={n.id}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-navy-900 p-3"
-                    >
-                      <button
-                        className="text-left text-sm text-ink"
-                        type="button"
-                        onClick={() => setSelected(n)}
-                      >
-                        {getCountry(n.nationality)?.flag}{" "}
-                        <span translate="no">{n.name}</span>
-                        <span className="block text-xs text-ink-faint">
-                          Elo {n.currentElo} · form {n.form} · {n.style}
-                        </span>
-                      </button>
-                      <Button
-                        variant="secondary"
-                        disabled={
-                          running ||
-                          !!attempt ||
-                          chance === 0 ||
-                          state.entries.length > 0 ||
-                          state.team!.members.length >= state.team!.size ||
-                          current?.status === "playing"
-                        }
-                        onClick={() => run({ type: "recruit", npcId: n.id })}
-                      >
-                        {attempt
-                          ? `Try again in ${14 - now + attempt.day} days`
-                          : chance === 0
-                            ? "Unavailable"
-                            : `Invite ${n.name}`}
-                      </Button>
-                    </li>
-                  );
-                })}
-              </ul>
-              {market.length > npcLimit && (
-                <Button
-                  variant="secondary"
-                  className="mt-3"
-                  onClick={() => setNpcLimit((n) => n + 12)}
-                >
-                  Show more recruits
-                </Button>
-              )}
-            </Card>
-          )}
+          {state.team?.owner && <TransferMarket/>}
         </>
       )}
       {view === "offers" && (

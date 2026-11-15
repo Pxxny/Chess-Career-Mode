@@ -1,3 +1,4 @@
+import { CaptainPanel } from "@/features/career/systems/CaptainPanel";
 import { ChessTeamCanvas } from "./ChessTeamCanvas";
 import { confirmUI } from "@/i18n/translate";
 import { useMemo, useState } from "react";
@@ -91,6 +92,7 @@ export function WorldHub({
       save.player.rating,
       save.player.gender,
       save.player.age,
+      save.careerSystems?.captain,
       npcs,
     ],
   );
@@ -250,7 +252,7 @@ export function WorldHub({
         <Card>
           <CardTitle>Your national chess team · {year}</CardTitle>
           <p className="mb-3 text-sm text-gold-300">{country?.name} · {selected ? "Selected for starting boards" : "Selection follows eligible federation rankings"}</p>
-          {eventHome && <ChessTeamCanvas players={eventHome.players}/>}
+          {eventHome && <><ChessTeamCanvas players={eventHome.players}/><CaptainPanel eventKey={spec.key} players={eventHome.players}/></>}
           <p className="text-sm text-ink-muted">
             Twenty national team competitions run each game year. Teams select
             their highest-rated eligible players for the boards; you represent

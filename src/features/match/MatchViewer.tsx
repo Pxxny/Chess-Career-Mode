@@ -1,5 +1,6 @@
+import { EngineLoadingNotice } from "./EngineLoadingNotice";
+import { PressConference } from "@/features/career/systems/PressConference";
 import { confirmUI } from "@/i18n/translate";
-import { PredictionPanel } from "@/features/prediction/PredictionPanel";
 import { TournamentDayClock } from "./TournamentTimetable";
 import { useSave } from "@/hooks/useGame";
 import { dayLabel, hhmm, roundSlot } from "@/game/competition/agenda";
@@ -199,22 +200,9 @@ export function MatchViewer({ setup, onExit }: Props) {
   );
 
   return (
-    <div className="space-y-4" data-testid="match-viewer">
-      {setup.prediction && (
-        <PredictionPanel
-          prediction={setup.prediction}
-          actual={
-            snap.end
-              ? snap.end.result === "draw"
-                ? "draw"
-                : snap.end.result === setup.playerColor
-                  ? "win"
-                  : "loss"
-              : undefined
-          }
-          compact
-        />
-      )}
+    <div className="space-y-4" data-testid="match-viewer" data-match-ply={snap.game.ucis.length} data-match-seed={setup.seed}>
+      {over&&record&&tournament&&<PressConference npcId={(setup.playerColor==="white"?setup.black.id:setup.white.id)??""} eventId={tournament.id} id={record.id} phase="post"/>}
+      <EngineLoadingNotice/>
       <Card className="py-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
@@ -505,6 +493,7 @@ export function MatchViewer({ setup, onExit }: Props) {
           )}
           {snap.analysis.status === "done" && (
             <ReviewReport
+              game={snap.game}
               report={snap.analysis.report}
               white={setup.white}
               black={setup.black}

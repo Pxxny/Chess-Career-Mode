@@ -1,3 +1,8 @@
+import { useGameStore } from "@/store/gameStore";
+import { useNpcStore } from "@/store/npcStore";
+import { buildMatchSetup } from "@/game/match/setup";
+import { useOpeningDb } from "@/store/openingStore";
+import { TaleOfTape } from "@/features/prediction/TaleOfTape";
 import { RankingsHub } from "@/features/world/RankingsHub";
 import { AnnualTournaments } from "@/features/tournaments/AnnualTournaments";
 import { EsportsPanel } from "@/features/esports/EsportsPanel";
@@ -38,6 +43,7 @@ type Tab =
 
 export function CompletePage() {
   const save = useSave();
+  const db=useOpeningDb();
   const [params] = useSearchParams();
   const route = useLocation();
   const [circuit, setCircuit] = useState<"traditional" | "esports">(
@@ -48,8 +54,11 @@ export function CompletePage() {
   const [selected, setSelected] = useState<Npc | null>(null);
   const [tab, setTab] = useState<Tab>("tournament");
   const [federationView,setFederationView]=useState<"federation"|"teams">("teams");
-  const [active, setActive] = useState<MatchSetup | null>(null);
+  const [active, setActive] = useState<MatchSetup | null>(() => save.pendingMatch?.resume?.setup ?? null);
+  const [queued, setQueued] = useState<MatchSetup|null>(null);
+  const previewStart = (setup: MatchSetup) => setup.prediction ? setQueued(setup) : setActive(setup);
   useEffect(() => {
+    if (params.get("section") === "teams") {setCircuit("traditional");setTab("tournament");setFederationView("teams");setTimeout(()=>document.getElementById("federation-teams")?.scrollIntoView({block:"start"}),100);return;}
     if (params.get("section") === "registrations") {
       setCircuit("traditional");
       setTab("tournament");
@@ -79,7 +88,7 @@ export function CompletePage() {
       <>
         <PageHeader
           title="Match"
-          description="Play it yourself, or let the simulator play and take control whenever you like."
+
         />
         <MatchViewer
           key={active.seed}
@@ -92,9 +101,10 @@ export function CompletePage() {
 
   return (
     <>
+      {queued?.prediction && <TaleOfTape prediction={queued.prediction} onClose={()=>setQueued(null)} onStart={()=>{const current=useGameStore.getState().save!,id=queued.playerColor==="white"?queued.black.id:queued.white.id,npc=useNpcStore.getState().npcs.find(n=>n.id===id);setActive(npc?{...queued,...buildMatchSetup({save:current,npc,playerColor:queued.playerColor,timeControl:queued.timeControl,rated:queued.rated,mode:queued.mode,speed:queued.speed,tournament:queued.tournament,seed:queued.seed,db}),social:queued.social,esports:queued.esports}:queued);setQueued(null);}}/>}
       <PageHeader
         title="Tournament"
-        description="Rated games, tournaments and matches against the players of your world."
+
       />
       <Tabs
         label="Tournament sections"
@@ -123,19 +133,19 @@ export function CompletePage() {
               ]}
             />
             {circuit === "esports" ? (
-              <EsportsPanel onStart={setActive} />
+              <EsportsPanel onStart={previewStart} />
             ) : (
               <>
-                <TournamentPanel onStart={setActive} />
+                <TournamentPanel onStart={previewStart} />
                 <details>
                   <summary className="cursor-pointer rounded-lg bg-navy-800 p-3 text-gold-400">
                     Individual match / free play
                   </summary>
                   <div className="mt-3">
-                    <MatchSetupPanel onStart={setActive} />
+                    <MatchSetupPanel onStart={previewStart} />
                   </div>
                 </details>
-                <details>
+                <details id="federation-teams" open={params.get("section")==="teams"?true:undefined}>
                   <summary className="cursor-pointer rounded-lg bg-navy-800 p-3 text-gold-400">
                     Federation & national teams
                   </summary>
@@ -149,7 +159,7 @@ export function CompletePage() {
         )}
         {tab === "calendar" && <AnnualTournaments />}
         {tab === "event-history" && <AnnualTournaments history />}
-        {tab === "swiss" && <TournamentPanel onStart={setActive} swissOnly />}
+        {tab === "swiss" && <TournamentPanel onStart={previewStart} swissOnly />}
         {tab === "prepare" && <PreparePanel />}
         {tab === "league" && (
           <Card>

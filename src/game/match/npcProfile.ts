@@ -304,6 +304,9 @@ interface Features {
   pawnPush: boolean;
   quiet: boolean;
   retreat: boolean;
+  central: boolean;
+  tension: boolean;
+  shelter: boolean;
 }
 
 function featuresOf(pos: Position, move: Move): Features {
@@ -315,6 +318,9 @@ function featuresOf(pos: Position, move: Move): Features {
   const capture = move.capture || !!move.enPassant;
   const isPawn = move.piece.toUpperCase() === "P";
   return {
+    central:rankTo>=2&&rankTo<=5&&move.to%8>=2&&move.to%8<=5,
+    tension: (()=>{const enemy=next.turn==='w'?(p:string)=>p===p.toUpperCase():(p:string)=>p!==p.toUpperCase();const file=move.to%8,row=Math.floor(move.to/8);return next.board.some((p,i)=>p&&enemy(p)&&Math.abs(Math.floor(i/8)-row)<=1&&Math.abs(i%8-file)<=1);})(),
+    shelter: !!move.castle || (!capture && !check && move.piece.toUpperCase()==='P' && Math.abs(rankTo-(pos.turn==='w'?6:1))<=1 && (move.to%8<=2||move.to%8>=5)),
     capture,
     check,
     castle: !!move.castle,
@@ -329,13 +335,13 @@ const STYLE_WEIGHTS: Record<
   PlayStyle,
   Partial<Record<keyof Features, number>>
 > = {
-  attacking: { capture: 12, check: 16, pawnPush: 6, castle: -2, retreat: -8 },
-  tactical: { capture: 10, check: 14 },
-  dynamic: { pawnPush: 8, capture: 6, retreat: -4 },
-  positional: { quiet: 7, pawnPush: 2, capture: -2 },
-  defensive: { castle: 12, quiet: 6, retreat: 6, capture: -4, check: -6 },
-  solid: { castle: 10, quiet: 6, retreat: 3, check: -4 },
-  prophylactic: { quiet: 8, retreat: 8, castle: 6, check: -6 },
+  attacking: { central:5,tension:12,capture: 12, check: 16, pawnPush: 6, castle: -2, retreat: -8 },
+  tactical: { tension:10,capture: 10, check: 14 },
+  dynamic: { central:8,tension:8,pawnPush: 8, capture: 6, retreat: -4 },
+  positional: { central:10,quiet: 7, pawnPush: 2, capture: -2 },
+  defensive: { shelter:14,tension:-8,castle: 12, quiet: 6, retreat: 6, capture: -4, check: -6 },
+  solid: { shelter:12,tension:-8,castle: 10, quiet: 6, retreat: 3, check: -4 },
+  prophylactic: { shelter:10,tension:-5,quiet: 8, retreat: 8, castle: 6, check: -6 },
   universal: {},
 };
 

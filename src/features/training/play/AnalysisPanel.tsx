@@ -1,3 +1,4 @@
+import { explainCoachMove } from "@/game/play/feedback";
 import { boardAnnotation } from "@/components/game/MoveAnnotation";
 import { useMemo, useState } from "react";
 import { Badge, Card, CardTitle, ProgressBar } from "@/components/ui";
@@ -134,6 +135,7 @@ export function AnalysisPanel({ game, analysis, feedback, color }: Props) {
     () => (data ? data.labels.split("").map((l) => labelOf(l)) : []),
     [data],
   );
+  const tactical=data as (typeof data & {best?:Array<string|null>;losses?:number[]});
   const position = game.positions[Math.min(ply, game.positions.length - 1)];
   const counts = useMemo(() => {
     const own = {
@@ -245,6 +247,7 @@ export function AnalysisPanel({ game, analysis, feedback, color }: Props) {
               </button>
             ))}
           </div>
+          {ply>0&&data&&<p className="my-2 rounded-xl bg-gold-500/10 p-3 text-xs text-gold-300" data-testid="coach-explanation">{explainCoachMove({position:game.positions[ply-1],uci:game.ucis[ply-1],bestUci:tactical?.best?.[ply-1],replyUci:tactical?.best?.[ply],loss:tactical?.losses?.[ply-1]??0})}</p>}
           <p className="mt-1 text-center text-xs text-ink-muted">
             {ply === 0
               ? "Start position"

@@ -23,3 +23,5 @@ export function awardAchievements(s:GameSave):GameSave {
  if(!added.length)return s;
  return {...s,history:{...s.history,trophies:[...s.history.trophies,...added.map(a=>({id:a.id,name:a.name,description:a.description,category:'special' as const,...s.world.date}))]}};
 }
+
+export function unlockedBoardThemes(s:GameSave|null) {return ['green','wood',...(s&&(s.player.ratedGames>=10||s.history.trophies.some(t=>t.id==='career30-games10'))?['ice']:[]),...(s?.history.tournaments.some(t=>t.rank===1)?['royal']:[])];}

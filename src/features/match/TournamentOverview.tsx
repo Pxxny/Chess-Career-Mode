@@ -1,3 +1,4 @@
+import { HostBanner } from "@/features/tournaments/HostBanner";
 import { getCountry } from "@/data/world/countries";
 import { useSave } from "@/hooks/useGame";
 import { dayLabel } from "@/game/competition/agenda";
@@ -80,6 +81,7 @@ export function TournamentOverview({ event }: { event: ScheduledEvent }) {
           Junior event: age {d.maxAge} and under.
         </p>
       )}
+      <HostBanner event={event}/>
       <dl className="grid gap-2 text-xs">
         <div>
           <dt className="text-ink-muted">Location</dt>

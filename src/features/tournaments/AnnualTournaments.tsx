@@ -1,3 +1,4 @@
+import { eventAccent } from "@/game/competition/visuals";
 import { isBackgroundCircuit, matchesOrganizer, type TournamentSearch } from "@/game/competition/finder";
 import { TOURNAMENT_CONTINENTS, matchesVenueContinent } from "@/game/competition/venues";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
@@ -235,7 +236,7 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
         )}
       </Card>
       {calendarView ? <Suspense fallback={<Card>Loading calendar…</Card>}><SeasonCalendar year={selectedYear}
-        events={filtered.map((r) => ({ id: r.id, name: r.name, start: r.record?.startDay ?? bookedStart(r.event!), end: r.record?.endDay ?? bookedEnd(r.event!) }))}
+        events={filtered.map((r) => ({ id: r.id, name: r.name, start: r.record?.startDay ?? bookedStart(r.event!), end: r.record?.endDay ?? bookedEnd(r.event!), details:r.event?.details, level:r.event?.level }))}
         onSelect={(id) => { const row = filtered.find((r) => r.id === id); if (row) setSelected({ event: row.event, record: row.record }); }} /></Suspense> : filtered.length ? (
         <ul className="space-y-3">
           {filtered.slice(0, limit).map((row) => {
@@ -268,7 +269,7 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
                 data-host-continent={getCountry(r?.country ?? e?.details?.country ?? "")?.continent ?? ""}
                 data-event-kind={row.kind}
               >
-                <Card>
+                <Card style={{borderLeft:`4px solid ${eventAccent(e?.details,e?.level).color}`}}>
                   <Button
                     variant="secondary"
                     className="max-w-full text-left"

@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { explainCoachMove } from '@/game/play/feedback';
+import type { GameState } from '@/game/chess/rules';
+const CoachGameContext=createContext<{game?:GameState;report:MatchAnalysisReport}|null>(null);
+import { createContext,useContext,useState } from "react";
 import { Badge, Card, CardTitle, ProgressBar, Tabs } from "@/components/ui";
 import { barPercent, formatEval } from "@/game/match/evalFormat";
 import {
@@ -144,6 +147,8 @@ function MomentRow({
   onSelect: (ply: number) => void;
   tag?: string;
 }) {
+  const context=useContext(CoachGameContext),game=context?.game;
+  const advice=explainCoachMove({position:game?.positions[m.ply-1],uci:game?.ucis[m.ply-1],bestUci:m.bestUci,replyUci:context?.report.moves[m.ply]?.bestUci,loss:m.loss,motif:m.motif});
   return (
     <li>
       <button
@@ -164,6 +169,7 @@ function MomentRow({
           </span>
         </p>
         <p className="mt-1 text-sm text-ink-muted">{text}</p>
+        <p className="mt-2 rounded-lg bg-gold-500/10 p-2 text-xs text-gold-300" data-testid="coach-explanation">{advice}</p>
         {m.line.length > 0 && (
           <p className="mt-1 break-words font-mono text-xs text-ink-faint">
             Engine line: {m.line.join(" ")}
@@ -175,6 +181,7 @@ function MomentRow({
 }
 
 interface Props {
+  game?:GameState;
   report: MatchAnalysisReport;
   white: MatchSide;
   black: MatchSide;
@@ -186,6 +193,7 @@ type Tab = "overview" | "moves" | "moments" | "mistakes" | "tactics";
 
 /** The full report of a finished game. Every judgement comes from the engine analysis stored with it. */
 export function ReviewReport({
+  game,
   report,
   white,
   black,
@@ -201,7 +209,7 @@ export function ReviewReport({
   const alternatives = betterAlternatives(report);
 
   return (
-    <Card data-testid="review-report">
+    <CoachGameContext.Provider value={{game,report}}><Card data-testid="review-report">
       <CardTitle
         aside={
           <span className="text-xs text-ink-faint">
@@ -449,6 +457,6 @@ export function ReviewReport({
           </ul>
         )}
       </Tabs>
-    </Card>
+    </Card></CoachGameContext.Provider>
   );
 }

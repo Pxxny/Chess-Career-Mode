@@ -26,6 +26,9 @@ export interface CareerRecord {
 }
 
 export interface GameSave {
+  /** NPC IDs pinned by this character, independent of NPC names and current rankings. */
+  npcWatchlist?: string[];
+  careerSystems?: import("@/game/career/systems").CareerSystems;
   highlights?: import("@/game/career/highlights").CareerHighlights;
   matchArchivePending?: MatchRecord[];
   seasonSimulation?: import("@/game/career/seasonSimulation").SeasonSimulation;
@@ -56,7 +59,7 @@ export interface GameSave {
   matches: MatchRecord[];
   /** The tournament the player is currently playing, or the one that just finished. Added in save version 7. */
   tournament: ActiveTournament | null;
-  /** Checkpoint of a human-played match, recovered as an abandoned game after a reload. Added in save version 7. */
+  /** Live match checkpoint. New checkpoints resume moves, clocks and RNG; legacy checkpoints retain their original recovery behavior. */
   pendingMatch: PendingMatch | null;
   /** Events the player has registered for and paid. */
   registrations: EventRegistration[];

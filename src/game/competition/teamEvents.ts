@@ -1,3 +1,4 @@
+import { systemsOf } from "@/game/career/systems";
 import {
   TEAM_EVENTS,
   teamSpec,
@@ -163,6 +164,9 @@ export function buildEventTeams(
     (a, b) => strength(b) - strength(a) || a.country.localeCompare(b.country),
   );
   const home = teams.find((t) => t.country === save.player.country);
+  const captainPlan=systemsOf(save).captain[info.key];
+  const captain=includePlayer&&!npcs.some(n=>n.nationality===save.player.country&&["active","semi-retired"].includes(n.careerStatus)&&n.currentElo>save.player.rating);
+  if(home&&captainPlan&&captain&&captainPlan.order.length===home.players.length&&new Set(captainPlan.order).size===home.players.length&&captainPlan.order.every(id=>home.players.some(p=>p.id===id)))home.players=captainPlan.order.map(id=>home.players.find(p=>p.id===id)!);
   const chosen = home
     ? [home, ...teams.filter((t) => t !== home).slice(0, info.teams - 1)]
     : teams.slice(0, info.teams);
@@ -236,12 +240,18 @@ export function simulateTeamEvent(
   const boards: NationalBoard[] = [];
   const samples: PredictionObservation[] = [];
   const power = teams.map(strength);
-  const actor = (m: TeamPlayer) =>
+  const originalActor = (m: TeamPlayer) =>
     m.id === "player"
       ? playerActor(save)
       : byNpc.has(m.id)
         ? npcActor(byNpc.get(m.id)!)
         : ratingActor(m.elo, m.name, m.id);
+  const actor = (m:TeamPlayer,team:NationalTeam,board:number) => {
+    const base=originalActor(m),plan=team.country===save.player.country&&team.players.some(p=>p.id==='player')?systemsOf(save).captain[info.key]:undefined;
+    if(plan?.strategy==='anchor'&&board===0)return {...base,style:'solid' as const};
+    if(plan?.strategy==='attack'&&board>=Math.floor(info.boards/2))return {...base,style:'attacking' as const};
+    return base;
+  };
   const lineup = (team: NationalTeam): TeamPlayer[] => {
     const rows = team.players.slice(0, boardsPerMatch);
     const rest = team.reserves?.[0];
@@ -275,12 +285,12 @@ export function simulateTeamEvent(
           ? predictMatch({
               id: `national:${save.career.id}:${year}:${info.key}:${round}:${ai}:${bi}:${k}`,
               stamp: predictionStamp(save),
-              player: actor(w),
-              opponent: actor(bl),
+              player: actor(w,wt,k),
+              opponent: actor(bl,bt,k),
               conditions: {
                 ...plannedOpeningConditions(
-                  actor(w),
-                  actor(bl),
+                  actor(w,wt,k),
+                  actor(bl,bt,k),
                   conditionsFor(spec.timeControl, "white", "national-team"),
                 ),
                 tournamentName: spec.name,

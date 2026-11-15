@@ -1,3 +1,4 @@
+import "./store/preferences";
 import { Toaster } from "sonner";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -18,7 +19,7 @@ createRoot(document.getElementById("root")!).render(
         <ErrorBoundary scope="app">
           <InstallProvider>
             <App />
-            <Toaster theme="dark" position="bottom-right" offset={96} closeButton toastOptions={{ style: { background: "#222d26", color: "#eeeae1", borderColor: "#3b4b3e" } }} />
+            <Toaster theme="system" position="bottom-right" offset={96} closeButton toastOptions={{ style: { background: "rgb(var(--bg-800))", color: "rgb(var(--text))", borderColor: "rgb(var(--bg-600))" } }} />
             <PerformanceMenu />
           </InstallProvider>
         </ErrorBoundary>

@@ -80,3 +80,24 @@ export function directoryEntries(
       a.id.localeCompare(b.id),
   );
 }
+
+
+/** Bounded, stable IDs; old saves simply start with an empty watchlist. */
+export function watchlistIds(save: Pick<GameSave, 'npcWatchlist'>): string[] {
+  return [...new Set((Array.isArray(save.npcWatchlist) ? save.npcWatchlist : [])
+    .filter((id): id is string => typeof id === 'string' && id.length > 0 && id.length <= 200))].slice(0, 500);
+}
+export function toggleWatchlist(save: GameSave, npcId: string): GameSave {
+  if (!npcId || npcId.length > 200 || npcId === save.player.id || npcId === 'player') return save;
+  const ids = watchlistIds(save);
+  if (!ids.includes(npcId) && ids.length >= 500) return save;
+  return {...save, npcWatchlist: ids.includes(npcId) ? ids.filter(id=>id!==npcId) : [...ids,npcId]};
+}
+export function watchlistEntries(save:GameSave, entries:DirectoryEntry[]):DirectoryEntry[] {
+  const pinned=new Set(watchlistIds(save));
+  return entries.filter(entry=>entry.kind==='npc'&&pinned.has(entry.id));
+}
+export function npcWatchSummary(npc:Npc) {
+  const latest=npc.tournamentHistory.map((result,index)=>({result,index})).sort((a,b)=>b.result.year-a.result.year||(b.result.week??0)-(a.result.week??0)||b.index-a.index).find(({result})=>result.rank>0)?.result;
+  return {latest,recent:(npc.recentGames??[]).slice(-5).map(g=>g.outcome)};
+}

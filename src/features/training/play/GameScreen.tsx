@@ -1,4 +1,3 @@
-import { PredictionPanel } from "@/features/prediction/PredictionPanel";
 import { boardAnnotation } from "@/components/game/MoveAnnotation";
 import { useMemo, useState } from "react";
 import { Badge, Button, Card, CardTitle } from "@/components/ui";
@@ -174,13 +173,6 @@ export function GameScreen({ config, title, onExit, extra, onAgain }: Props) {
 
   return (
     <>
-      {s.prediction && (
-        <PredictionPanel
-          prediction={s.prediction}
-          actual={s.recorded?.game.outcome}
-          compact
-        />
-      )}
       <Card>
         <CardTitle
           aside={

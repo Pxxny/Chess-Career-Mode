@@ -1,3 +1,5 @@
+import { PinNpcButton } from "./PinNpcButton";
+import { watchlistIds,watchlistEntries,npcWatchSummary } from "@/game/social/directory";
 import { WonderkidTags } from "./WonderkidTags";
 import { useMemo, useState } from "react";
 import { Avatar, Badge, Button } from "@/components/ui";
@@ -23,6 +25,8 @@ export function NpcDirectory() {
     save = useSave();
   const [query, setQuery] = useState(""),
     [tier, setTier] = useState<SkillTier | "all">("all");
+  const [watchOnly,setWatchOnly]=useState(false);
+  const pinned=watchlistIds(save);
   const [includeUnranked, setIncludeUnranked] = useState(false),
     [visible, setVisible] = useState(PAGE_SIZE);
   const [selected, setSelected] = useState<Npc | null>(null),
@@ -31,8 +35,8 @@ export function NpcDirectory() {
   const player = playerDirectoryEntry(save, npcs);
   const results = useMemo(() => {
     const q = normalizeText(query);
-    return entries
-      .filter((n) => includeUnranked || n.worldRank !== null)
+    return (watchOnly?watchlistEntries(save,entries):entries)
+      .filter((n) => watchOnly || includeUnranked || n.worldRank !== null)
       .filter((n) => tier === "all" || n.tier === tier)
       .filter(
         (n) =>
@@ -44,7 +48,7 @@ export function NpcDirectory() {
             translateUI(getCountry(n.nationality)?.name ?? "", "th"),
           ).includes(q),
       );
-  }, [entries, query, tier, includeUnranked]);
+  }, [entries, query, tier, includeUnranked,watchOnly,save.npcWatchlist]);
   const field =
     "rounded-lg border border-white/10 bg-navy-900 px-3 py-2.5 text-sm text-ink outline-none focus:border-gold-500";
   return (
@@ -68,6 +72,7 @@ export function NpcDirectory() {
         </div>
         <Badge tone="gold">You</Badge>
       </div>
+      <div className="mb-3 flex flex-wrap gap-2"><Button variant={!watchOnly?"primary":"secondary"} aria-pressed={!watchOnly} onClick={()=>{setWatchOnly(false);setVisible(PAGE_SIZE);}}>All players</Button><Button variant={watchOnly?"primary":"secondary"} aria-pressed={watchOnly} onClick={()=>{setWatchOnly(true);setQuery("");setTier("all");setVisible(PAGE_SIZE);}}>Watchlist ({pinned.length})</Button></div>
       <div className="mb-4 grid gap-3 sm:grid-cols-[1fr_auto]">
         <input
           type="search"
@@ -111,7 +116,7 @@ export function NpcDirectory() {
       </p>
       <div className="overflow-x-auto">
         <table
-          className="w-full text-left text-sm"
+          className="w-full min-w-[640px] text-left text-sm"
           aria-label="Player directory"
         >
           <thead className="text-ink-faint">
@@ -130,7 +135,7 @@ export function NpcDirectory() {
                 className={`border-b border-white/5 ${n.kind === "player" ? "bg-gold-500/5" : ""}`}
               >
                 <td className="py-2.5 pr-2 tabular-nums text-ink-muted">
-                  {n.worldRank ?? "–"}
+                  <div className="flex items-center gap-1">{n.kind==="npc"&&<PinNpcButton npc={n.npc}/>}<span>{n.worldRank ?? "–"}</span></div>
                 </td>
                 <td className="py-2.5 pr-2 font-semibold text-ink">
                   <div className="flex items-center gap-2">
@@ -167,6 +172,7 @@ export function NpcDirectory() {
                         </span>
                       )}
                       <WonderkidTags id={n.kind==='player'?'player':n.id}/>
+                      {watchOnly&&n.kind==="npc"&&<WatchActivity npc={n.npc}/>}
                     </div>
                   </div>
                 </td>
@@ -189,7 +195,7 @@ export function NpcDirectory() {
       </div>
       {!results.length && (
         <p className="py-4 text-sm text-ink-faint">
-          No players match these filters.
+          {watchOnly&&pinned.length===0?"Pin players to follow their Elo, form and tournament results here.":"No players match these filters."}
         </p>
       )}
       {visible < results.length && (
@@ -209,4 +215,9 @@ export function NpcDirectory() {
       />
     </div>
   );
+}
+
+function WatchActivity({npc}:{npc:Npc}) {
+ const {latest,recent}=npcWatchSummary(npc);
+ return <div className="mt-1 max-w-[20rem] text-[10px] font-normal text-ink-muted"><span>{npc.careerStatus==='active'?'Active':npc.careerStatus}</span>{recent.length>0&&<span className="ml-2 inline-flex gap-1">{recent.map((r,i)=><span key={i} className={r==='win'?'text-emerald-300':r==='loss'?'text-rose-300':'text-ink-muted'}>{r==='win'?'W':r==='loss'?'L':'D'}</span>)}</span>}{latest&&<p className="mt-1 truncate" title={latest.event}><span translate="no">{latest.event}</span> · #{latest.rank} · {latest.year}</p>}</div>;
 }

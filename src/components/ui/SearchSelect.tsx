@@ -50,6 +50,10 @@ export function SearchSelect({
   hint,
   virtualized = false,
 }: SearchSelectProps) {
+  const debounceRef=useRef<ReturnType<typeof setTimeout>>();
+  const searchPending=useRef(false);
+  const queryCallback=useRef(onQueryChange); queryCallback.current=onQueryChange;
+  useEffect(()=>()=>clearTimeout(debounceRef.current),[]);
   const id = useId();
   const language = useContext(LanguageContext);
   const [open, setOpen] = useState(false);
@@ -88,6 +92,8 @@ export function SearchSelect({
   }, [active, open, virtualized]);
 
   const close = () => {
+    clearTimeout(debounceRef.current);
+    searchPending.current=false;
     setOpen(false);
     setQuery("");
     onQueryChange("");
@@ -114,6 +120,7 @@ export function SearchSelect({
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if(e.key==="Enter"&&(searchPending.current||loading)){e.preventDefault();return;}
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setOpen(true);
@@ -177,7 +184,10 @@ export function SearchSelect({
         onChange={(e) => {
           setOpen(true);
           setQuery(e.target.value);
-          onQueryChange(e.target.value);
+          const next=e.target.value;
+          clearTimeout(debounceRef.current);
+          searchPending.current=true;
+          debounceRef.current=setTimeout(()=>{queryCallback.current(next);searchPending.current=false;},180);
         }}
         className="mt-1.5 w-full rounded-lg border border-white/10 bg-navy-900 px-3 py-2.5 text-ink outline-none placeholder:text-ink-faint focus:border-gold-500 disabled:cursor-not-allowed disabled:opacity-50"
       />

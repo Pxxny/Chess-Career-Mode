@@ -1,4 +1,8 @@
-import { useMemo, useState } from 'react';
+import { Virtuoso } from 'react-virtuoso';
+import { useSave } from '@/hooks/useGame';
+import { buildOpeningPerformance } from '@/game/openings/stats';
+import { MasteryBadge } from './MasteryBadge';
+import { useMemo, useState, useEffect } from 'react';
 import { Badge, Card, CardTitle, EmptyState } from '@/components/ui';
 import type { OpeningDatabase } from '@/game/openings/database';
 import type { FamilyInfo } from '@/game/openings/types';
@@ -9,6 +13,8 @@ const PAGE = 24;
 type Sort = 'eco' | 'popularity' | 'difficulty' | 'name';
 
 export function BrowseOpenings({ db }: { db: OpeningDatabase }) {
+  const save=useSave();
+  const performance=useMemo(()=>new Map(buildOpeningPerformance(save,db).map(p=>[p.family,p])),[save,db]);
   const [query, setQuery] = useState('');
   const [letter, setLetter] = useState('all');
   const [side, setSide] = useState('all');
@@ -19,7 +25,8 @@ export function BrowseOpenings({ db }: { db: OpeningDatabase }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [variationQuery, setVariationQuery] = useState('');
 
-  const q = query.trim().toLowerCase();
+  const [q,setQ]=useState('');
+  useEffect(()=>{const timer=setTimeout(()=>setQ(query.trim().toLowerCase()),180);return()=>clearTimeout(timer);},[query]);
   const families = useMemo(() => {
     const matchesEntries = new Set<string>();
     if (q) for (const e of db.entries) if (e.name.toLowerCase().includes(q) || e.eco.toLowerCase() === q || e.line.toLowerCase().includes(q)) matchesEntries.add(e.family);
@@ -85,19 +92,17 @@ export function BrowseOpenings({ db }: { db: OpeningDatabase }) {
           {families.length === 0 ? (
             <EmptyState title="No openings match" description="Try fewer filters or a different search." />
           ) : (
-            <ul>
-              {families.slice(0, limit).map((f) => (
-                <li key={f.name}>
+            <Virtuoso style={{height:520}} data={families} computeItemKey={(_,f)=>f.name} itemContent={(_,f) => (
+                <div>
                   <button type="button" aria-pressed={familyName === f.name} onClick={() => { setFamilyName(f.name); setSelected(null); setVariationQuery(''); }} className={cn('flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left', familyName === f.name ? 'bg-gold-500/10' : 'hover:bg-white/5')}>
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-semibold text-ink">{f.name}</span>
-                      <span className="block text-xs text-ink-muted">{f.ecoFrom}–{f.ecoTo} · {f.entryIds.length} lines · {f.side === 'white' ? 'White' : 'Black'}</span>
+                      <MasteryBadge perf={performance.get(f.name)}/><span className="block text-xs text-ink-muted">{f.ecoFrom}–{f.ecoTo} · {f.entryIds.length} lines · {f.side === 'white' ? 'White' : 'Black'}</span>
                     </span>
                     <span className="text-xs tabular-nums text-ink-faint" title="Popularity out of 5">★{f.popularity}</span>
                   </button>
-                </li>
-              ))}
-            </ul>
+                </div>
+              )}/>
           )}
           {families.length > limit && <button type="button" onClick={() => setLimit(limit + PAGE)} className="mt-2 w-full rounded-lg border border-white/10 py-2 text-sm font-semibold text-ink-muted hover:text-ink">Show more ({families.length - limit} left)</button>}
         </Card>
@@ -112,20 +117,7 @@ export function BrowseOpenings({ db }: { db: OpeningDatabase }) {
                 <CardTitle aside={<Badge>{family.entryIds.length} lines</Badge>}>{family.name}: all variations</CardTitle>
                 <label htmlFor="var-search" className="sr-only">Search within this family</label>
                 <input id="var-search" type="search" placeholder="Search within this family" value={variationQuery} onChange={(e) => setVariationQuery(e.target.value)} className={cn(control, 'mb-2 w-full')} />
-                <ul className="max-h-80 overflow-y-auto" aria-label="Variations">
-                  {variations.slice(0, 120).map((v) => {
-                    const depth = db.path(v.id).length - 1;
-                    return (
-                      <li key={v.id}>
-                        <button type="button" aria-current={entry.id === v.id} onClick={() => setSelected(v.id)} style={{ paddingLeft: `${0.5 + Math.min(depth, 6) * 0.9}rem` }} className={cn('flex w-full items-baseline gap-2 rounded py-1 pr-2 text-left text-sm', entry.id === v.id ? 'bg-gold-500/10 text-gold-300' : 'text-ink hover:bg-white/5')}>
-                          <span className="shrink-0 font-mono text-xs text-ink-faint">{v.eco}</span>
-                          <span className="min-w-0 flex-1 truncate">{v.variation ?? 'Main line'}{v.isMainLine ? ' ★' : ''}</span>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-                {variations.length > 120 && <p className="mt-1 text-xs text-ink-faint">Showing 120 of {variations.length}. Narrow the search to see the rest.</p>}
+                <Virtuoso style={{height:320}} data={variations} computeItemKey={(_,v)=>v.id} itemContent={(_,v)=><button type="button" aria-current={entry.id===v.id} onClick={()=>setSelected(v.id)} className={cn('flex min-h-10 w-full items-center gap-2 rounded px-2 text-left text-sm',entry.id===v.id?'bg-gold-500/10 text-gold-300':'text-ink hover:bg-white/5')}><span className="shrink-0 font-mono text-xs text-ink-faint">{v.eco}</span><span className="min-w-0 flex-1 truncate">{v.variation??'Main line'}{v.isMainLine?' ★':''}</span></button>}/>
               </Card>
             </>
           )}
