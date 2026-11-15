@@ -39,6 +39,15 @@ export interface EventDetails {
     advanceTop?: number;
     advanceKind?: Qualification;
     targetEventId?: string;
+    /** Sponsor select tour: National then World Finals only, one seat per country. */
+    selectTour?: {
+      type: string;
+      label: string;
+      /** Countries holding the winner's extra seat this year (World Finals only) */
+      quotaBoost?: string[];
+      /** Winner of last year's final hosts this event in their city */
+      hostedBy?: string;
+    };
   };
   /** Original display pattern, used when assigning a generated host. */
   venueNamePattern?: string;
@@ -85,6 +94,8 @@ export interface EventDetails {
   federation?: boolean;
   /** Oldest age allowed to enter (junior events); absent for open events */
   maxAge?: number;
+  /** Women-only entry */
+  gender?: "female";
   /** Concrete national-team edition (teams, boards, reserves) for team events */
   teamEvent?: TeamEventInfo;
 }
@@ -121,8 +132,23 @@ export interface ScoutingReport {
   npcId: string;
   stamp: number;
 }
+/** Winner of a sponsor select-tour World Final picks a reward for next year. */
+export interface SelectChoice {
+  finalId: string;
+  seriesId: string;
+  sponsorId: string;
+  sponsorName: string;
+  year: number;
+  winnerId: string;
+  winnerName: string;
+  country: string;
+  city: string;
+  choice?: "host" | "quota";
+  by: "player" | "npc";
+}
 export interface CompetitionState {
   circuitAwards?: Record<string,string[]>;
+  selectChoices?: Record<string, SelectChoice>;
   champion?: { id: string; name: string; year: number; eventId: string };
   target: string;
   plan: GamePlan;

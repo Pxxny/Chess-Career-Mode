@@ -1,6 +1,7 @@
 import { GAME_CONFIG } from "@/data/config";
 import { competitionOf } from "./preparation";
 import { circuitAllocation } from "./rollDown";
+import { recordSelectWinner } from "./selectTours";
 import type { ActiveTournament, GameSave, Npc } from "@/types";
 import type { NationalTeam } from "@/game/career/expansion";
 import { getCountry } from "@/data/world/countries";
@@ -275,6 +276,16 @@ export function advanceCalendarTournaments(
       record.players.map((p) => [p.id, { rank: p.rank, points: p.points }]),
     );
     if(t.details?.qualificationCircuit?.targetEventId) { const allocation=circuitAllocation(next,t); record.qualifiedIds=allocation.awards; record.qualificationTarget=t.details.qualificationCircuit.targetEventId;next={...next,competition:{...competitionOf(next),circuitAwards:allocation.ledger}}; }
+    const finalCircuit = t.details?.qualificationCircuit;
+    if (finalCircuit?.selectTour && finalCircuit.stage === "world" && finalCircuit.seriesId) {
+      const champion = record.players.find((p) => p.rank === 1);
+      const npc = champion ? byNpc.get(champion.id) : undefined;
+      if (champion && npc)
+        next = { ...next, competition: recordSelectWinner(competitionOf(next), {
+          finalId: t.eventId, seriesId: finalCircuit.seriesId, year: finalCircuit.season, winnerId: npc.id, winnerName: npc.name,
+          country: npc.nationality, city: npc.city, isPlayer: false,
+        }) };
+    }
     recordNpcBoards(
       record,
       t.pairings

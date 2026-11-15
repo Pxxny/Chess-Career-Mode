@@ -1,5 +1,7 @@
 import { standardQualificationGrants } from "./advancement";
 import { circuitAllocation } from "./rollDown";
+import { recordSelectWinner } from "./selectTours";
+import { standings } from "@/game/match/tournament";
 import { queueArchives, archiveTournament } from "./archive";
 import { getCountry } from "@/data/world/countries";
 import { compactTournament } from "@/game/prediction/adapters";
@@ -301,11 +303,23 @@ export function archiveCompetition(save: GameSave): GameSave {
     grants.push(circuit.advanceKind);
   grants.push(...standardQualificationGrants(category,rank));
   if (!t.team && !circuit && rank <= 3 && t.level === "international") grants.push("super-invitation");
+  let selectState = state;
+  if (circuit?.selectTour && circuit.stage === "world" && circuit.seriesId && !t.withdrawn) {
+    const top = standings(t)[0]?.player;
+    const playerWon = t.finalRank === 1 || !!top?.isPlayer;
+    const winner = playerWon ? t.players.find((p) => p.isPlayer) : top;
+    if (winner)
+      selectState = recordSelectWinner(state, {
+        finalId: t.eventId, seriesId: circuit.seriesId, year: circuit.season, winnerId: playerWon ? "player" : winner.id,
+        winnerName: winner.name, country: playerWon ? save.player.country : winner.countryCode,
+        city: playerWon ? save.player.city.name : undefined, isPlayer: playerWon,
+      });
+  }
   return queueArchives(
     {
       ...save,
       competition: {
-        ...state,
+        ...selectState,
         circuitAwards: allocation.ledger,
         ...(category === "World Chess Championship"
           ? {

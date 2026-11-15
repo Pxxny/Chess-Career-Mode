@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
-import { Crown, UserRound } from "lucide-react";
-import { NAV_ITEMS } from "@/data/navigation";
+import { Crown, ScrollText, UserRound } from "lucide-react";
+import { NAV_ITEMS, ROUTES } from "@/data/navigation";
 import { cn } from "@/utils/cn";
 
 export function BottomNav() {
@@ -45,6 +45,7 @@ export function BottomNav() {
         ))}
       </ul>
       <NavLink to="/profile" className={({ isActive }) => `mt-5 hidden min-h-12 items-center gap-3 rounded-xl border-t border-white/10 px-4 py-4 text-sm font-semibold lg:flex ${isActive ? "text-gold-300" : "text-ink-muted hover:text-ink"}`}><UserRound size={21} aria-hidden />Profile</NavLink>
+      <NavLink to={ROUTES.changelog} className={({ isActive }) => `mt-1 hidden min-h-12 items-center gap-3 rounded-xl px-4 py-4 text-sm font-semibold lg:flex ${isActive ? "text-gold-300" : "text-ink-muted hover:text-ink"}`}><ScrollText size={21} aria-hidden />Changelog</NavLink>
       <div className="mt-auto hidden rounded-2xl border border-gold-500/10 bg-gold-500/5 p-4 lg:block">
         <Crown size={20} className="mb-3 text-gold-400" aria-hidden />
         <p className="text-sm font-semibold text-ink">One move at a time.</p>

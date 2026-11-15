@@ -2,6 +2,7 @@ import { sponsorEvents } from "@/game/competition/sponsorEvents";
 import { withEventPartner } from "@/game/competition/presentation";
 import { distributeAnnualVenues } from "@/game/competition/venues";
 import { qualificationCircuitEvents } from "@/game/competition/qualificationCircuit";
+import { applySelectLegacy } from "@/game/competition/selectTours";
 import { registrationWindow } from "@/game/competition/registrationWindow";
 import { rotatingEvents } from "@/game/competition/agenda";
 import { showcaseEvents } from "@/game/competition/showcase";
@@ -198,7 +199,7 @@ export function preserveBookedVenues(save: GameSave, events: ScheduledEvent[]): 
     ...(save.calendarTournaments?.national ?? []).map((n) => [n.event.id, { ...n.event, eventId: n.event.id }] as const),
     ...(save.tournament ? [[save.tournament.eventId, save.tournament] as const] : []),
   ]);
-  return events.map((e) => {
+  return applySelectLegacy(events, save.competition?.selectChoices).map((e) => {
     const saved = snapshots.get(e.id);
     return saved?.details ? { ...e, name: saved.name, details: saved.details, entryFee: saved.entryFee } : e;
   });

@@ -9,6 +9,7 @@ import { EsportsHomeCard } from "@/features/esports/EsportsPanel";
 import { calendarLabel, calendarDate } from "@/game/qol/career";
 import { Card, CardTitle, PageHeader } from "@/components/ui";
 import { CompetitionsSection } from "@/features/home/CompetitionsSection";
+import { SelectTourReward } from "@/features/tournaments/SelectTourReward";
 import { LastResultSection } from "@/features/home/LastResultSection";
 import { MoraleSection } from "@/features/home/MoraleSection";
 import { NewsSection } from "@/features/home/NewsSection";
@@ -73,6 +74,7 @@ export function HomePage() {
           </div>
         </Card>
       </div>
+      <div className="mb-4 empty:hidden"><SelectTourReward /></div>
       <div className="mb-4 grid items-start gap-5 xl:grid-cols-[1.3fr_1fr]">
         <CompetitionsSection player={player} schedule={schedule} rankings={rankings} />
         <div className="grid gap-4">

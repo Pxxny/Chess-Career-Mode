@@ -118,7 +118,7 @@ export function TournamentDetail({
   const d = t?.details ?? event?.details,
     window = event ? registrationWindow(save, event) : null;
   const rows: Array<[string, string | number]> = [
-    ...(d?.qualificationCircuit ? [["Qualification route", circuitAdvancement(d) || "Final stage · qualifiers from all continents"], ["Qualification season", d.qualificationCircuit.season], ...(event ? [["Qualification requirements", requirementsText(event)]] : [])] as Array<[string, string | number]> : []),
+    ...(d?.qualificationCircuit ? [["Qualification route", circuitAdvancement(d) || "Final stage · qualifiers from all continents"], ["Qualification season", d.qualificationCircuit.season], ...(d.qualificationCircuit.selectTour?.quotaBoost?.length ? [["Extra seat this year", d.qualificationCircuit.selectTour.quotaBoost.join(", ")]] : []), ...(d.qualificationCircuit.selectTour?.hostedBy ? [["Hosted in the home city of", d.qualificationCircuit.selectTour.hostedBy]] : []), ...(event ? [["Qualification requirements", requirementsText(event)]] : [])] as Array<[string, string | number]> : []),
     [
       "Event type",
       (record?.kind ?? eventKind({ details: d })) === "national"

@@ -3,7 +3,7 @@ import type { GameSave,Npc,SkillKey } from '@/types';
 import { systemsOf, type TeamStrategy } from './systems';
 import { gameDay } from '@/game/competition/agenda';
 import { regionForSave } from '@/game/world/schedule';
-import { getSchedule } from '@/game/world/schedule';
+import { getSchedule, preserveBookedVenues } from '@/game/world/schedule';
 import { registrationWindow } from '@/game/competition/registrationWindow';
 import { registrationIssue } from '@/game/competition/eligibility';
 import { registerForEvent } from '@/game/match/registration';
@@ -33,7 +33,7 @@ export function careerCommand(save:GameSave,npcs:Npc[],command:CareerCommand):Ca
  else if(command.type==='queue') {
   if(state.queue.some(q=>q.eventId===command.eventId))return fail('This event is already in your queue.');
   if(state.queue.filter(q=>q.status==='waiting'||q.status==='blocked').length>=10)return fail('Your queue holds up to 10 events.');
-  const event=getSchedule(save.world.date,regionForSave(save),save.career.id,52).find(e=>e.id===command.eventId);
+  const event=preserveBookedVenues(save,getSchedule(save.world.date,regionForSave(save),save.career.id,52)).find(e=>e.id===command.eventId);
   if(!event)return fail('This event is no longer on the calendar.');
   if(save.registrations.some(r=>r.eventId===event.id))return fail('Already registered.');
   state={...state,queue:[...state.queue,{eventId:event.id,name:event.name,status:'waiting' as const}].slice(-20)};
@@ -120,7 +120,7 @@ export function settleActivities(save:GameSave,npcs:Npc[]):{save:GameSave;change
  if(activeContracts.length!==state.contracts.length)changed=true;
  if(changed)state={...state,contracts:activeContracts};
  if(state.queue.some(q=>q.status==='waiting'||q.status==='blocked')) {
-  const events=new Map(getSchedule(next.world.date,regionForSave(next),next.career.id,52).map(e=>[e.id,e]));
+  const events=new Map(preserveBookedVenues(next,getSchedule(next.world.date,regionForSave(next),next.career.id,52)).map(e=>[e.id,e]));
   const queue=state.queue.map(q=>{
    if(q.status==='registered'||q.status==='expired')return q;
    if(next.registrations.some(r=>r.eventId===q.eventId)){changed=true;return {...q,status:'registered' as const,reason:undefined};}

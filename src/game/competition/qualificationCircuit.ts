@@ -1,3 +1,4 @@
+import majorCities from '../../data/world/fideMajorCities.json' with { type: 'json' };
 import type { Npc } from '@/types';
 import type { CompetitionState, EventDetails, Qualification } from './types';
 import type { Region, ScheduledEvent } from '@/game/world/schedule';
@@ -5,10 +6,15 @@ import { COUNTRIES, getCountry } from '@/data/world/countries';
 import { getSeedCities } from '@/data/world/seedCities';
 import { hashString } from '@/utils/format';
 import { createRng } from '@/game/rng';
+import { SELECT_SPONSORS, SELECT_TOUR_TYPES, SELECT_WORLD_PRIZE, SELECT_WORLD_FIELD, SELECT_BASE_SEATS, SELECT_BOOST_SEATS, selectSeriesId, selectTourType, selectNpcEligible } from './selectTours';
 
 export const CIRCUIT_SPONSORS = [
   { id: '', name: 'Aurora Chess Foundation', final: 'Aurora World Qualification Finals' },
   { id: 'meridian', name: 'Meridian Strategy Group', final: 'Meridian World Qualification Finals' },
+  { id: 'silverbrook', name: 'Silverbrook', final: 'Silverbrook World Qualification Finals' },
+  { id: 'cobalt-lantern', name: 'Cobalt Lantern', final: 'Cobalt Lantern World Qualification Finals' },
+  { id: 'zenith-arc', name: 'Zenith Arc', final: 'Zenith Arc World Qualification Finals' },
+  { id: 'fide', name: 'FIDE Official Qualification Circuit', final: 'FIDE World Qualification Finals' },
 ] as const;
 export function circuitQuota(stage: Circuit['stage'], year: number, scope: string, heat = 0, series = '') {
   const key = hashString(`${series}:${year}:${scope}:${stage}:${heat}:quota`);
@@ -36,6 +42,8 @@ export function qualificationMatches(q: Earned, event: Pick<ScheduledEvent, 'id'
 }
 export function circuitAdvancement(details?: EventDetails) {
   const c = details?.qualificationCircuit;
+  if (c?.selectTour && c.stage === 'national') return `Top ${c.advanceTop ?? 1} from this country reach the ${c.worldFinalName ?? 'World Finals'}.`;
+  if (c?.selectTour && c.stage === 'world') return 'Final stage · one seat per country.';
   if (!c?.advanceTop || !c.advanceKind) return '';
   return `Top ${c.advanceTop} qualify for ${CIRCUIT_LABELS[c.advanceKind]}.`;
 }
@@ -52,18 +60,24 @@ export function qualificationCircuitEvents(year: number, region: Region): Schedu
     const advanceKind: Qualification | undefined = stage === 'local' ? 'circuit-national' : stage === 'national' ? 'circuit-continental' : stage === 'continental' ? 'circuit-world' : undefined;
     const nextStage = stage === 'local' ? 'national' : stage === 'national' ? 'continental' : 'world';
     const targetScope = stage === 'local' ? region.countryCode : stage === 'national' ? continent : 'all';
-    const host = domestic ? country : stage === 'continental' ? continentalHost : worldHost;
-    const location = domestic ? domesticCities[hashString(`${year}:${stage}:${heat}:${scope}`) % domesticCities.length] ?? region.city : host?.capital ?? region.city;
+    const cities=majorCities as Record<string,Array<{name:string;population:number}>>;
+    const majorHosts=worldHosts.filter(c=>cities[c.code]?.length);
+    const regionalMajors=majorHosts.filter(c=>c.continent===continent);
+    const fidePool=stage==='world'?majorHosts:regionalMajors.length?regionalMajors:majorHosts;
+    const fideHost=domestic&&cities[region.countryCode]?.length?country:fidePool[hashString(`${year}:${stage}:${scope}:fide-host`)%fidePool.length];
+    const host = sponsor.id==='fide'?fideHost:domestic?country:stage==='continental'?continentalHost:worldHost;
+    const cityChoices=cities[host?.code??'']??[];
+    const location = sponsor.id==='fide'?cityChoices[(hashString(`${year}:${stage}:${scope}`)+heat)%cityChoices.length].name:domestic?domesticCities[hashString(`${year}:${stage}:${heat}:${scope}`)%domesticCities.length]??region.city:host?.capital??region.city;
     const label = stage === 'local' ? `${country?.name ?? scope} Local Qualifier ${heat + 1}` : stage === 'national' ? `${country?.name ?? scope} National Qualifying Championship` : stage === 'continental' ? `${continent} Continental Qualifying Championship` : 'World Qualification Finals';
     return {
-      id: circuitEventId(stage, year, scope, heat, sponsor.id), name: `${sponsor.id ? 'Meridian' : 'Aurora'} ${label} ${year}`, year, week,
+      id: circuitEventId(stage, year, scope, heat, sponsor.id), name: `${sponsor.id === '' ? 'Aurora' : sponsor.id === 'meridian' ? 'Meridian' : sponsor.id === 'fide' ? 'FIDE' : sponsor.name} ${label} ${year}`, year, week,
       level: stage === 'local' ? 'local' : stage === 'national' ? 'national' : stage === 'continental' ? 'international' : 'elite',
       fieldSize: stage === 'local' ? 32 : stage === 'national' ? 64 : stage === 'continental' ? 256 : 193,
       entryFee: stage === 'local' ? 5 : stage === 'national' ? 10 : stage === 'continental' ? 20 : 0,
       minElo: 0, minReputation: 0, registrationDeadline: { year, week: week - 1 },
       weeksUntilStart: 0, weeksUntilDeadline: 0, invitational: stage !== 'local',
       details: {
-        qualificationCircuit: { stage, season: year, seriesId: sponsor.id, sponsor: sponsor.name, worldFinalId: circuitEventId('world', year, 'all', 0, sponsor.id), worldFinalName: `${sponsor.final} ${year}`, ...(domestic ? { country: scope } : stage === 'continental' ? { continent } : {}),
+        qualificationCircuit: { stage, season: year, seriesId: sponsor.id, ...(sponsor.id==='fide'?{}:{sponsor:sponsor.name}), worldFinalId: circuitEventId('world', year, 'all', 0, sponsor.id), worldFinalName: `${sponsor.final} ${year}`, ...(domestic ? { country: scope } : stage === 'continental' ? { continent } : {}),
           ...(stage === 'local' ? { heat } : {}), ...(advanceKind ? { advanceKind, advanceTop: circuitQuota(stage, year, scope, heat, sponsor.id), targetEventId: circuitEventId(nextStage, year, targetScope, 0, sponsor.id) } : {}) },
         ...(stage !== 'local' ? { qualification: `circuit-${stage}` as Qualification } : {}),
         ...(domestic ? { nationality: region.countryCode } : {}),
@@ -72,11 +86,47 @@ export function qualificationCircuitEvents(year: number, region: Region): Schedu
         timeControl: { id: 'qualifier-classical', label: '30+10', base: 1800, increment: 10, category: 'classical' },
         prize: stage === 'local' ? 100 : stage === 'national' ? 1000 : stage === 'continental' ? 10000 : 50000,
         prestige: stage === 'local' ? 10 : stage === 'national' ? 30 : stage === 'continental' ? 60 : 90,
-        provenance: 'fictional', organizer: { name: 'Career Qualification Circuit', status: 'Official', simulated: true },
+        provenance: sponsor.id==='fide'?'inspired':'fictional', organizer: { name: sponsor.id==='fide'?'FIDE':sponsor.name, status: 'Official', simulated: true, ...(sponsor.id==='fide'?{}:{sponsorId:sponsor.id||'aurora-horizon'}) },
       },
     };
   };
-  return CIRCUIT_SPONSORS.flatMap((sponsor, i) => [...Array.from({ length: 8 }, (_, heat) => make(sponsor, 'local', 4 + heat, heat)), make(sponsor, 'national', 20 + i * 2), make(sponsor, 'continental', 32 + i * 2), make(sponsor, 'world', 46 + i * 2)]);
+  const selectEvents = (): ScheduledEvent[] => SELECT_SPONSORS.flatMap((sponsor, si) => SELECT_TOUR_TYPES.flatMap((type, ti) => {
+    const series = selectSeriesId(sponsor.id, type.id), worldId = circuitEventId('world', year, 'all', 0, series);
+    const worldName = `${sponsor.name} ${type.label} World Finals ${year}`;
+    const worldHost = worldHosts[hashString(`${series}:${year}:select-world`) % worldHosts.length] ?? country;
+    const nationalWeek = 14 + ti * 2 + si, worldWeek = 32 + ti * 2 + si;
+    const base = { year, minElo: 0, minReputation: 0, weeksUntilStart: 0, weeksUntilDeadline: 0 };
+    const tc = { id: 'qualifier-classical', label: '30+10', base: 1800, increment: 10, category: 'classical' as const };
+    const common = { category: 'Qualification Circuit', host: { mode: 'rotation' as const }, format: 'swiss' as const, timeControl: tc, provenance: 'fictional' as const,
+      organizer: { name: sponsor.name, status: 'Official' as const, simulated: true, sponsorId: sponsor.id } };
+    const select = { type: type.id, label: type.label };
+    const national: ScheduledEvent = { ...base, id: circuitEventId('national', year, region.countryCode, 0, series), name: `${sponsor.name} ${country?.name ?? region.countryCode} ${type.label} National Selection ${year}`,
+      week: nationalWeek, level: 'national', fieldSize: 64, entryFee: 15, registrationDeadline: { year, week: nationalWeek - 1 }, invitational: false,
+      details: { ...common, qualificationCircuit: { stage: 'national', season: year, seriesId: series, sponsor: sponsor.name, worldFinalId: worldId, worldFinalName: worldName, country: region.countryCode,
+          advanceKind: 'circuit-world', advanceTop: SELECT_BASE_SEATS, targetEventId: worldId, selectTour: select },
+        nationality: region.countryCode, ...(type.gender ? { gender: type.gender } : {}), ...(type.maxAge !== undefined ? { maxAge: type.maxAge } : {}),
+        country: region.countryCode, location: domesticCities[hashString(`${year}:${series}:select-national:${region.countryCode}`) % domesticCities.length] ?? region.city,
+        end: { year, week: nationalWeek }, rounds: 7, prize: 5000, prestige: 35 } };
+    const world: ScheduledEvent = { ...base, id: worldId, name: worldName, week: worldWeek, level: 'elite', fieldSize: SELECT_WORLD_FIELD, entryFee: 0,
+      registrationDeadline: { year, week: worldWeek - 1 }, invitational: true,
+      details: { ...common, qualificationCircuit: { stage: 'world', season: year, seriesId: series, sponsor: sponsor.name, worldFinalId: worldId, worldFinalName: worldName, selectTour: select },
+        qualification: 'circuit-world', country: worldHost?.code ?? region.countryCode, location: worldHost?.capital ?? region.city,
+        end: { year, week: worldWeek }, rounds: 9, prize: SELECT_WORLD_PRIZE, prestige: 95 } };
+    return [national, world];
+  }));
+  return [...CIRCUIT_SPONSORS.flatMap((sponsor, i) => [...Array.from({ length: 8 }, (_, heat) => make(sponsor, 'local', (i<2?4:4+(i-1)*2) + heat, heat)), make(sponsor, 'national', i<2?20+i*2:24+(i-2)*2), make(sponsor, 'continental', i<2?32+i*2:36+(i-2)*2), make(sponsor, 'world', i<2?46+i*2:44+(i-2)*2)]), ...selectEvents()];
+}
+
+/** Calendar-only catalog: foreign editions are visible, never added to the entry schedule. */
+const globalCircuitCache=new Map<number,ScheduledEvent[]>();
+export function globalQualificationCalendar(year:number):ScheduledEvent[]{
+ const cached=globalCircuitCache.get(year);if(cached)return cached;
+ const events=new Map<string,ScheduledEvent>();
+ for(const country of COUNTRIES.filter(c=>c.capital&&c.continent!=='Antarctica')){
+  const region={countryCode:country.code,city:country.capital!,continent:country.continent,demonym:country.nationality};
+  for(const event of qualificationCircuitEvents(year,region))if(!events.has(event.id))events.set(event.id,event);
+ }
+ const result=[...events.values()];if(globalCircuitCache.size>3)globalCircuitCache.clear();globalCircuitCache.set(year,result);return result;
 }
 
 /** Background federation qualifiers use seeded game results. Real recorded results take precedence.
@@ -114,6 +164,15 @@ export function circuitNpcField(event: Pick<ScheduledEvent, 'details'>, npcs: Np
     }
     return sorted.sort((a,b) => points.get(b.id)! - points.get(a.id)! || hashString(`${id}:${a.id}`) - hashString(`${id}:${b.id}`) || a.id.localeCompare(b.id)).slice(0, count);
   };
+  const sel = c.selectTour;
+  if (sel) {
+    // Select tours: no Local/Continental rounds. National pool is every eligible player of the country.
+    const type = selectTourType(sel.type);
+    const eligible = (code: string) => (byCountry.get(code) ?? []).filter((n) => selectNpcEligible(n, type));
+    const seats = (code: string) => (sel.quotaBoost?.includes(code) ? SELECT_BOOST_SEATS : SELECT_BASE_SEATS);
+    if (c.stage === 'national') return remember(eligible(c.country!));
+    return remember([...byCountry.keys()].flatMap((code) => top(eligible(code), circuitEventId('national', c.season, code, 0, c.seriesId), seats(code))));
+  }
   const local = (pool: Npc[], heat: number) => pool.filter((n) => hashString(`${c.season}:${n.id}:heat`) % 8 === heat);
   const national = (country: string, pool: Npc[]) => Array.from({length:8},(_,heat) => top(local(pool,heat), circuitEventId('local',c.season,country,heat,c.seriesId),circuitQuota('local',c.season,country,heat,c.seriesId))).flat();
   const continental = (continent: string) => [...byCountry].filter(([code]) => getCountry(code)?.continent === continent).flatMap(([code,pool]) => top(national(code,pool),circuitEventId('national',c.season,code,0,c.seriesId),circuitQuota('national',c.season,code,0,c.seriesId)));

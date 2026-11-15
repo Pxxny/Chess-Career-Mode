@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
 import { SplashScreen } from "@/components/layout/SplashScreen";
@@ -17,6 +17,13 @@ import { useNpcStore } from "@/store/npcStore";
 import { useOpeningStore } from "@/store/openingStore";
 import { useSlotUi } from "@/store/slotUi";
 import { syncNpcSaveNames } from "@/game/npc/saveNames";
+
+// The changelog bundles CHANGELOG.txt, so it loads only when the menu is opened.
+const ChangelogPage = lazy(() =>
+  import("@/pages/ChangelogPage").then((module) => ({
+    default: module.ChangelogPage,
+  })),
+);
 
 export default function App() {
   const location = useLocation();
@@ -103,6 +110,14 @@ export default function App() {
         <Route path={ROUTES.complete} element={<CompletePage />} />
         <Route path={ROUTES.career} element={<CareerPage />} />
         <Route path={ROUTES.profile} element={<ProfilePage />} />
+        <Route
+          path={ROUTES.changelog}
+          element={
+            <Suspense fallback={null}>
+              <ChangelogPage />
+            </Suspense>
+          }
+        />
         <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
       </Route>
     </Routes>

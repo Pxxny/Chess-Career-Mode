@@ -1,3 +1,4 @@
+import { globalQualificationCalendar } from '@/game/competition/qualificationCircuit';
 import { eventAccent } from "@/game/competition/visuals";
 import { isBackgroundCircuit, matchesOrganizer, type TournamentSearch } from "@/game/competition/finder";
 import { TOURNAMENT_CONTINENTS, matchesVenueContinent } from "@/game/competition/venues";
@@ -5,7 +6,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Button, Card, CardTitle } from "@/components/ui";
 import { useSave } from "@/hooks/useGame";
 import { useNpcs } from "@/hooks/useNpcs";
-import { getCountry } from "@/data/world/countries";
+import { COUNTRIES, getCountry } from "@/data/world/countries";
 import { getSchedule, type ScheduledEvent } from "@/game/world/schedule";
 import {
   archiveTournament,
@@ -31,6 +32,7 @@ import { annualEvents } from "@/game/competition/worldCalendar";
 const SeasonCalendar = lazy(() => import("./SeasonCalendar"));
 export function AnnualTournaments({ history = false }: { history?: boolean }) {
   const [calendarView, setCalendarView] = useState(false);
+  const [qualifierCountry,setQualifierCountry]=useState('all'),[qualifierStage,setQualifierStage]=useState('all');
   const [showBackground,setShowBackground]=useState(false),[organizer,setOrganizer]=useState<TournamentSearch["organizer"]>("all");
   const save = useSave(),
     npcs = useNpcs(),
@@ -74,7 +76,7 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
     };
   }, [save.career.id, selectedYear, save.tournamentArchivePending, npcs]);
   const events = useMemo(
-    () => annualEvents(save, selectedYear),
+    () => [...new Map([...globalQualificationCalendar(selectedYear),...annualEvents(save, selectedYear)].map(e=>[e.id,e])).values()],
     [selectedYear, save.career.id, save.player.country, save.player.city.name],
   );
   const records = useMemo(() => {
@@ -95,6 +97,7 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
     save.tournament?.eventId,
     selectedYear,
   ]);
+  const recordById=new Map(records.map(r=>[r.id,r]));
   const source: Array<{
     id: string;
     name: string;
@@ -102,7 +105,7 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
     event?: ScheduledEvent;
     record?: ArchivedEvent;
   }> = events.map((event) => {
-    const record = records.find((r) => r.id === event.id);
+    const record = recordById.get(event.id);
     return {
       id: event.id,
       name: record?.name ?? event.name,
@@ -138,6 +141,8 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
   }
   const filtered = source.filter(
     (e) =>
+      (qualifierCountry==='all'||e.event?.details?.qualificationCircuit?.country===qualifierCountry) &&
+      (qualifierStage==='all'||e.event?.details?.qualificationCircuit?.stage===qualifierStage) &&
       (showBackground||!isBackgroundCircuit(e.record)) &&
       (organizer==='all'||!!e.event&&matchesOrganizer(e.event,organizer)) &&
       (kind === "all" || e.kind === kind) &&
@@ -182,6 +187,8 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
               </option>
             ))}
           </select>
+          <select aria-label="Qualification country" value={qualifierCountry} onChange={e=>{setQualifierCountry(e.target.value);setLimit(20);}} className="max-w-full rounded-lg bg-navy-900 p-3"><option value="all">All qualification countries</option>{COUNTRIES.filter(c=>c.capital&&c.continent!=='Antarctica').map(c=><option key={c.code} value={c.code}>{c.name}</option>)}</select>
+          <select aria-label="Qualification stage" value={qualifierStage} onChange={e=>{setQualifierStage(e.target.value);setLimit(20);}} className="max-w-full rounded-lg bg-navy-900 p-3"><option value="all">All qualification stages</option>{['local','national','continental','world'].map(stage=><option key={stage} value={stage}>{stage}</option>)}</select>
           <select data-testid="annual-continent-filter" aria-label="Annual tournament continent" value={continent} onChange={(e) => { setContinent(e.target.value); setLimit(20); }} className="max-w-full rounded-lg bg-navy-900 p-3">
             <option value="all">All continents</option>
             {TOURNAMENT_CONTINENTS.map((c) => <option key={c} value={c}>{c}</option>)}

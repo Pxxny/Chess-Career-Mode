@@ -78,6 +78,7 @@ import {
   archiveCompetition,
 } from "@/game/competition/preparation";
 import type { CompetitionState } from "@/game/competition/types";
+import { chooseSelectReward as applySelectReward } from "@/game/competition/selectTours";
 import {
   hireCoach,
   joinFederation,
@@ -195,6 +196,10 @@ interface GameStore {
   ) => void;
   prepareCompetition: (
     db: OpeningDatabase,
+  ) => { ok: true } | { ok: false; error: string };
+  chooseSelectReward: (
+    finalId: string,
+    choice: "host" | "quota",
   ) => { ok: true } | { ok: false; error: string };
   scoutCompetitionOpponent: (
     id: string,
@@ -668,6 +673,14 @@ export const useGameStore = create<GameStore>()(
       configureCompetition: (patch) => {
         const save = get().save;
         if (save) set({ save: setCompetitionConfig(save, patch) });
+      },
+      chooseSelectReward: (finalId, choice) => {
+        const save = get().save;
+        if (!save?.competition) return { ok: false, error: "No pending reward." };
+        const next = applySelectReward(save.competition, finalId, choice);
+        if (!next) return { ok: false, error: "This reward was already chosen." };
+        set({ save: { ...save, competition: next } });
+        return { ok: true };
       },
       prepareCompetition: (db) => {
         const save = get().save;

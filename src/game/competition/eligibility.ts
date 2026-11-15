@@ -52,6 +52,8 @@ export function eligibilityIssues(
   issues.push(...teamEntryIssues(save, d?.teamEvent));
   if (d?.maxAge !== undefined && save.player.age > d.maxAge)
     issues.push(`Age ${d.maxAge} or younger`);
+  if (d?.gender === "female" && save.player.gender !== "female")
+    issues.push("Women only");
   if (
     d?.qualification &&
     !competitionOf(save).qualifications.some(
@@ -132,6 +134,7 @@ export const requirementsText = (e: ScheduledEvent): string => {
     e.details?.minimumLeague ? `${e.details.minimumLeague} league` : null,
     e.details?.federation ? "federation member" : null,
     maxAge!==undefined?`age ${maxAge} or younger`:null,
+    e.details?.gender==='female'?'women only':null,
     spec?.minAge!==undefined?`age ${spec.minAge}+`:null,
     e.details?.format==='team'?"national-team starting-roster selection":null,
   ]
@@ -140,6 +143,7 @@ export const requirementsText = (e: ScheduledEvent): string => {
 };
 
 export function eligibilityFeedback(save:GameSave,event:ScheduledEvent,npcs?:Npc[]):Array<{text:string;to?:string;action?:string}> {
+ if(!circuitVisible(save.player.country,event.details))return [{text:"Your federation's qualification circuit only"}];
  const result:Array<{text:string;to?:string;action?:string}>=[];
  if(save.player.rating<event.minElo)result.push({text:`Need ${event.minElo-save.player.rating} more Elo · ${event.minElo} required`,to:'/train',action:'Train'});
  if(save.player.reputation<event.minReputation)result.push({text:`Need ${event.minReputation-save.player.reputation} more reputation`,to:'/complete',action:'Find a tournament'});

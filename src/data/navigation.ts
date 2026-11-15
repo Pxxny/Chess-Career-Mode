@@ -7,6 +7,7 @@ export const ROUTES = {
   complete: "/complete",
   career: "/career",
   profile: "/profile",
+  changelog: "/changelog",
 } as const;
 
 export const NAV_ITEMS: NavItem[] = [
