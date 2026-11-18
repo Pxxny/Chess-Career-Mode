@@ -118,6 +118,7 @@ export function EventFacts({ event }: { event: ScheduledEvent }) {
     ["Organization", d?.organizer?.status ?? "Not recorded"],
     ["Time control", d?.timeControl.label ?? "Classical"],
     ["Format", d?.format ?? "swiss"],
+    ...(d?.historicalSchedule ? [["Calendar origin", "Verified dates & format · career simulation"]] : []),
     ...(d?.format?.includes("round-robin")
       ? [
           [
