@@ -51,6 +51,7 @@ test("Complete: six menus, registration, paid plan/repertoire/scout, reload and 
     "More sections", "Tournament history", "Swiss", "Prepare", "Rankings", "League", "History",
   ]);
   await openSectionTab(tabs, "Swiss");
+  await page.getByRole("button", { name: "Ready to enter" }).click();
   const before = await stored(page);
   await page
     .locator('button[data-testid="register"]:enabled')
@@ -154,6 +155,7 @@ test("Complete: six menus, registration, paid plan/repertoire/scout, reload and 
       exact: true,
     })
     .click();
+  await page.getByRole("button", { name: "Begin match", exact: true }).click();
   await expect(page.getByTestId("match-viewer")).toBeVisible();
   await expect(
     page.getByTestId("move-list").locator('button[data-ply="2"]'),
@@ -176,9 +178,10 @@ test("2024 Candidates uses verified dates and venue while career rules are label
   await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page
     .getByLabel("Tournament category", { exact: true })
-    .selectOption("regular");
+    .selectOption({ label: "Round robin" });
   await page.getByLabel("Search tournaments",{exact:true}).fill("Candidates Tournament");
   const events = page.getByTestId("open-events");
+  await events.getByText("Requirements, schedule & players", { exact: true }).first().click();
   await expect(
     events.getByText("2024-04-03 (W14)", { exact: true }),
   ).toBeVisible();
@@ -224,6 +227,7 @@ test("national team participation requires registration and consumes the entry o
           s.player.rating = 3000;
           s.player.peakRating = 3000;
           s.player.reputation = 100;
+          s.player.money = 5_000; // Cover the international entry and travel costs.
           s.player.league = "legendary";
           // Olympiad entries open 35–63 days before their week-24 deadline.
           s.world.date.week = 20;
@@ -249,7 +253,7 @@ test("national team participation requires registration and consumes the entry o
   ).toBeDisabled();
   await page
     .getByLabel("Tournament category", { exact: true })
-    .selectOption("national");
+    .selectOption({ label: "National teams" });
   await page.getByLabel("Search tournaments",{exact:true}).fill("FIDE Chess Olympiad (Open)");
   await page.getByRole("button", { name: "Register", exact: true }).click();
   const entry = await stored(page);

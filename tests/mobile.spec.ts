@@ -65,8 +65,7 @@ test("mobile layouts keep the board, opening details and performance within the 
     await assertFits(page, width);
     await page
       .getByRole("tabpanel", { name: "Openings", exact: true })
-      .locator("ul button")
-      .first()
+      .getByRole("button", { name: /^English Opening / })
       .click();
     await expect(
       page.getByRole("heading", { name: "English Opening", exact: true }),
