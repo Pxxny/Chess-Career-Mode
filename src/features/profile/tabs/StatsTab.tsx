@@ -30,8 +30,9 @@ export function StatsTab() {
   ];
 
   return (
-    <><Card className="mb-4"><PerformanceHeatmap/></Card>
+    <>
       <Suspense fallback={<Card className="mb-5 min-h-64" aria-busy="true">Loading rating chart…</Card>}><EloChart /></Suspense>
+      <Card className="mb-4"><PerformanceHeatmap/></Card>
       {opening && (
         <OpeningHistoryDialog name={opening} onClose={() => setOpening(null)} />
       )}

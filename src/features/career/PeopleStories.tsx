@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+import { rivalryBonus, rivalryEventId } from "@/game/career/rivalryEvent";
 import { useState } from "react";
 import { Button, Card, CardTitle } from "@/components/ui";
 import { useSave } from "@/hooks/useGame";
@@ -14,7 +16,7 @@ export function PeopleStories() {
     .sort((a, b) => b.ratedGames - a.ratedGames || b.closeness - a.closeness)
     .slice(0, 12);
   const news = save.history.news
-    .filter((n) => n.id.startsWith("world-person-"))
+    .filter((n) => n.id.startsWith("world-person-") || n.id.startsWith("rivalry-"))
     .slice(-8)
     .reverse();
   return (
@@ -38,6 +40,10 @@ export function PeopleStories() {
                     >
                       <span translate="no">{npc.name}</span>
                     </Button>
+                    {!save.retirement && npc.careerStatus === "active" && rivalryEventId(save, npc.id) && <p className="mt-2 text-sm">
+                      <Link className="inline-flex min-h-11 items-center text-gold-300 underline" to={`/complete?section=match&opponent=${encodeURIComponent(npc.id)}`}>Challenge to a rematch</Link>
+                      <span className="ml-2 text-xs text-ink-muted">${rivalryBonus} for a win · morale at stake</span>
+                    </p>}
                     <p className="mt-2 text-sm">
                       {rivalryLabel(save, r.npcId)}
                     </p>

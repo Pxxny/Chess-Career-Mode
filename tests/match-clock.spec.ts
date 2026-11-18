@@ -56,6 +56,7 @@ test("Complete clocks update independently and live/review boards keep eight row
   await page.getByTestId("custom-minutes").fill("1");
   await page.getByTestId("custom-increment").fill("0");
   await page.getByTestId("start-game").click();
+  await page.getByRole("button", { name: "Begin match", exact: true }).click();
   await expect(page.getByTestId("match-viewer")).toBeVisible();
   const whiteClock = page.getByTestId("clock-white");
   const blackBefore = await page.getByTestId("clock-black").textContent();

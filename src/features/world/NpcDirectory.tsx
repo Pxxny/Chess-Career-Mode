@@ -1,8 +1,9 @@
+import { findRivals } from "@/game/history/stats";
 import { PinNpcButton } from "./PinNpcButton";
 import { watchlistIds,watchlistEntries,npcWatchSummary } from "@/game/social/directory";
-import { WonderkidTags } from "./WonderkidTags";
+import { useWonderkids } from "./WonderkidTags";
 import { useMemo, useState } from "react";
-import { Avatar, Badge, Button } from "@/components/ui";
+import { Avatar, Badge, Button, Card } from "@/components/ui";
 import { NpcAvatar } from "@/components/game/NpcAvatar";
 import { TIERS } from "@/data/chess/tiers";
 import { getCountry } from "@/data/world/countries";
@@ -25,6 +26,8 @@ export function NpcDirectory() {
     save = useSave();
   const [query, setQuery] = useState(""),
     [tier, setTier] = useState<SkillTier | "all">("all");
+  const [category, setCategory] = useState("all");
+  const wonderkids = useWonderkids();
   const [watchOnly,setWatchOnly]=useState(false);
   const pinned=watchlistIds(save);
   const [includeUnranked, setIncludeUnranked] = useState(false),
@@ -33,10 +36,20 @@ export function NpcDirectory() {
     [showPlayer, setShowPlayer] = useState(false);
   const entries = useMemo(() => directoryEntries(save, npcs), [save, npcs]);
   const player = playerDirectoryEntry(save, npcs);
+  const rivalryIds = useMemo(() => new Set(findRivals(save.history).map(rival => rival.key)), [save.history]);
   const results = useMemo(() => {
     const q = normalizeText(query);
     return (watchOnly?watchlistEntries(save,entries):entries)
       .filter((n) => watchOnly || includeUnranked || n.worldRank !== null)
+      .filter((n) => {
+        if (category === "all") return true;
+        if (category === "elite") return n.worldRank !== null && n.worldRank <= 100;
+        if (category === "wonderkid") {
+          const tag = wonderkids?.tags.get(n.kind === "player" ? "player" : n.id);
+          return Boolean(tag?.groups.length || tag?.overall);
+        }
+        return n.kind === "npc" && rivalryIds.has(n.id);
+      })
       .filter((n) => tier === "all" || n.tier === tier)
       .filter(
         (n) =>
@@ -48,7 +61,7 @@ export function NpcDirectory() {
             translateUI(getCountry(n.nationality)?.name ?? "", "th"),
           ).includes(q),
       );
-  }, [entries, query, tier, includeUnranked,watchOnly,save.npcWatchlist]);
+  }, [entries, query, tier, includeUnranked,watchOnly,save.npcWatchlist,category,wonderkids,rivalryIds]);
   const field =
     "rounded-lg border border-white/10 bg-navy-900 px-3 py-2.5 text-sm text-ink outline-none focus:border-gold-500";
   return (
@@ -102,6 +115,10 @@ export function NpcDirectory() {
           ))}
         </select>
       </div>
+      <div role="group" aria-label="Player categories" className="mb-4 flex flex-wrap gap-2">
+        {[["all", "All"], ["rival", "Rivals"], ["elite", "Top 100"], ["wonderkid", "Wonderkids"]].map(([id, label]) =>
+          <button key={id} className="section-tab bg-navy-700" aria-pressed={category === id} onClick={() => { setCategory(id); setVisible(PAGE_SIZE); }}>{label}</button>)}
+      </div>
       <label className="mb-4 flex items-center gap-2 text-sm text-ink-muted">
         <input
           type="checkbox"
@@ -114,84 +131,30 @@ export function NpcDirectory() {
       <p className="mb-2 text-sm text-ink-faint" aria-live="polite">
         {results.length} players
       </p>
-      <div className="overflow-x-auto">
-        <table
-          className="w-full min-w-[640px] text-left text-sm"
-          aria-label="Player directory"
-        >
-          <thead className="text-ink-faint">
-            <tr className="border-b border-white/5">
-              <th className="py-2 pr-2 font-medium">Rank</th>
-              <th className="py-2 pr-2 font-medium">Player</th>
-              <th className="py-2 pr-2 font-medium">Country</th>
-              <th className="py-2 pr-2 text-right font-medium">Elo</th>
-              <th className="py-2 pl-3 font-medium">Relationship</th>
-            </tr>
-          </thead>
-          <tbody>
-            {results.slice(0, visible).map((n) => (
-              <tr
-                key={`${n.kind}:${n.id}`}
-                className={`border-b border-white/5 ${n.kind === "player" ? "bg-gold-500/5" : ""}`}
-              >
-                <td className="py-2.5 pr-2 tabular-nums text-ink-muted">
-                  <div className="flex items-center gap-1">{n.kind==="npc"&&<PinNpcButton npc={n.npc}/>}<span>{n.worldRank ?? "–"}</span></div>
-                </td>
-                <td className="py-2.5 pr-2 font-semibold text-ink">
-                  <div className="flex items-center gap-2">
-                    {n.kind === "npc" ? (
-                      <NpcAvatar npc={n.npc} decorative />
-                    ) : (
-                      <span aria-hidden="true" className="shrink-0">
-                        <Avatar
-                          name={save.player.name}
-                          seed={save.player.avatarSeed}
-                          appearance={save.player.appearance}
-                          size="sm"
-                        />
-                      </span>
-                    )}
-                    <div className="min-w-0">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          n.kind === "player"
-                            ? setShowPlayer(true)
-                            : setSelected(n.npc)
-                        }
-                        className="text-left underline-offset-2 hover:text-gold-300 hover:underline"
-                      >
-                        <span translate="no">{n.name}</span>
-                      </button>
-                      {n.kind === "player" && (
-                        <span className="ml-2 text-xs text-gold-400">You</span>
-                      )}
-                      {n.title !== "none" && (
-                        <span className="ml-2 text-xs text-gold-500">
-                          {n.title}
-                        </span>
-                      )}
-                      <WonderkidTags id={n.kind==='player'?'player':n.id}/>
-                      {watchOnly&&n.kind==="npc"&&<WatchActivity npc={n.npc}/>}
-                    </div>
-                  </div>
-                </td>
-                <td className="py-2.5 pr-2 text-ink-muted">
-                  <span aria-hidden>{getCountry(n.nationality)?.flag}</span>{" "}
-                  {getCountry(n.nationality)?.name ?? n.nationality}
-                </td>
-                <td className="py-2.5 pr-2 text-right font-semibold tabular-nums text-gold-400">
-                  {n.currentElo}
-                </td>
-                <td className="py-2.5 pl-3 text-xs text-ink-muted">
-                  {n.kind === "player"
-                    ? "Your character"
-                    : relationshipLabel(relationshipAt(save, n.id))}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="grid gap-3 xl:grid-cols-2" role="group" aria-label="Player directory">
+        {results.slice(0, visible).map((n) => {
+          const country = getCountry(n.nationality);
+          const tag = wonderkids?.tags.get(n.kind === "player" ? "player" : n.id);
+          return <Card key={`${n.kind}:${n.id}`} className="bg-navy-900/65 p-4">
+            <div className="flex items-start gap-3">
+              {n.kind === "npc" ? <NpcAvatar npc={n.npc} decorative /> : <Avatar name={save.player.name} seed={save.player.avatarSeed} appearance={save.player.appearance} size="sm" />}
+              <div className="min-w-0 flex-1">
+                <button type="button" onClick={() => n.kind === "npc" ? setSelected(n.npc) : setShowPlayer(true)} className="min-h-8 break-words text-left font-display text-lg hover:text-gold-300 hover:underline" translate="no">{n.name}</button>
+                <p className="text-xs text-ink-muted">{country?.flag} {country?.name ?? n.nationality} · {n.worldRank ? `#${n.worldRank}` : "Unranked"}</p>
+              </div>
+              {n.kind === "npc" && <PinNpcButton npc={n.npc} />}
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <strong className="mr-auto text-xl tabular-nums text-gold-300">{n.currentElo} Elo</strong>
+              {n.title !== "none" && <Badge>{n.title}</Badge>}
+              {rivalryIds.has(n.id) && <Badge>Rival</Badge>}
+              {n.worldRank !== null && n.worldRank <= 100 && <Badge>Top 100</Badge>}
+              {(tag?.groups.length || tag?.overall) ? <Badge>Wonderkid</Badge> : null}
+              {tag?.hot && <Badge>{tag.hot}</Badge>}
+            </div>
+            {n.kind === "npc" && <div className="mt-2"><p className="text-xs text-ink-muted">{relationshipLabel(relationshipAt(save, n.id))}</p><WatchActivity npc={n.npc} /></div>}
+          </Card>;
+        })}
       </div>
       {!results.length && (
         <p className="py-4 text-sm text-ink-faint">

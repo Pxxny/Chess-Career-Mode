@@ -1,3 +1,4 @@
+import { recoveryDays } from "@/game/career/health";
 import { awardAchievements } from "@/game/career/achievements";
 import { advancePlanning } from "@/game/career/planning";
 import { settleSponsors } from "@/game/career/business";
@@ -235,6 +236,7 @@ export function performSession(
   sessionId: string,
   options: SessionOptions = {},
 ): SessionResult {
+  if (recoveryDays(save)) return { ok: false, error: "Rest before resuming training." };
   const def = getSession(sessionId);
   if (!def) return { ok: false, error: "Unknown training session." };
   const preview = previewSession(save, def);

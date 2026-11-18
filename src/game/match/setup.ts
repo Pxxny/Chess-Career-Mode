@@ -1,3 +1,4 @@
+import { recoveryDays } from "@/game/career/health";
 import { careerPrediction } from "@/game/prediction/adapters";
 import { standings } from "./tournament";
 import { applyPreparedProfile } from "@/game/competition/preparation";
@@ -109,7 +110,7 @@ export function buildMatchSetup(input: SetupInput): MatchSetup {
   const playerProfile = applyPreparedProfile(
     buildPlayerProfile(
       save.player,
-      save.training.fatigue,
+      Math.min(100, save.training.fatigue + (recoveryDays(save) ? 15 : save.training.fatigue >= 75 ? 8 : 0)),
       playerLines(db, save),
     ),
     save,

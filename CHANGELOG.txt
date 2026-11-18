@@ -1,3 +1,21 @@
+Chess Career Mode — Grandmaster Elite UI & Career Systems
+2026-11-18
+
+Grandmaster Elite
+- นำธีม Navy และ Champagne Gold จาก Prototype มาใช้ในเกมจริง พร้อม Fraunces, Manrope และ Noto Sans Thai
+- ปรับ Home Dashboard, Championship Path, Matchday VS, Hall of Fame, Elo Analytics, Player Directory, World Hub, Tournament Calendar และ Career Profile
+- เพิ่มทางลัดบน Sidebar และใช้ Bottom Navigation บนมือถือ ตัวเลือก Light, Dark และ System อยู่ใน Settings
+- Championship Path แสดงไทม์ไลน์จากสถานะจริง และเปิดผังแบบโต้ตอบหรือรายละเอียดทัวร์ได้
+- Elo Analytics เพิ่มช่วง 1 ปี, 5 ปี และตลอดอาชีพ ใช้ผล Elo ที่บันทึกจริง พร้อมเลือกรวมตามทัวร์ เดือน หรือปี
+- ปฏิทินเดือนแสดงรายการ ประเภท เงินรางวัลและสถานะรับสมัคร เปิดรายละเอียดผ่านระบบการแข่งขันเดิม
+- รายชื่อ NPC แสดงการ์ดผู้เล่นและฟอร์ม พร้อมค้นหา กรอง จัด Watchlist และเปิดโปรไฟล์เดิม
+
+ระบบอาชีพ
+- ความล้าสูงทำให้เล่นจำลองได้ด้อยลงและอาจต้องพัก 2 วัน ความล้ารุนแรงร่วมกับ jet lag อาจเจ็บป่วยและต้องพัก 3 วัน
+- คู่ปรับที่เจอกันในเกม Rated อย่างน้อย 3 ครั้งมีแมตช์แก้มือพร้อมข่าวและผลต่อขวัญกำลังใจ รางวัลชนะ $30 ใช้ได้ครั้งเดียวต่อคู่ปรับต่อสัปดาห์
+- เลือกจบอาชีพแข่งขันได้จาก Hall of Fame พร้อมแผ่นป้ายสรุป Elo สูงสุด ชัยชนะและจำนวนเกม
+- Finances แสดงกระแสเงินสดรายสัปดาห์และรายเดือน ค่าใช้จ่ายประมาณการจากคิวสมัคร และเป้าสัญญาสปอนเซอร์ที่ยังต้องทำ
+
 Chess Career Mode — Hall of Fame & Complete Changelog
 2026-11-18
 

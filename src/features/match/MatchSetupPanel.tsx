@@ -1,3 +1,5 @@
+import { useSearchParams } from "react-router-dom";
+import { competitionHealthIssue } from "@/game/career/health";
 import { CareerPredictionPanel } from "@/features/prediction/CareerPrediction";
 import { useMatchRunning } from "@/store/matchLocks";
 import { useMemo, useState } from "react";
@@ -61,6 +63,7 @@ export function MatchSetupPanel({
   onStart: (setup: MatchSetup) => void;
 }) {
   const save = useSave();
+  const [params] = useSearchParams();
   const db = useOpeningDb();
   const running = useMatchRunning(save.career.id);
   const npcs = useNpcs();
@@ -98,7 +101,7 @@ export function MatchSetupPanel({
         : [],
     [npcs, query],
   );
-  const chosen = npcs.find((n) => n.id === npcId) ?? nearby[0] ?? null;
+  const chosen = npcs.find((n) => n.id === (npcId ?? params.get("opponent"))) ?? nearby[0] ?? null;
 
   const applyCustom = (m: string, i: string) => {
     const mm = Number(m);
@@ -114,8 +117,9 @@ export function MatchSetupPanel({
       setTc(customTimeControl(mm, ii));
   };
 
+  const issue = rated ? competitionHealthIssue(save) : null;
   const start = () => {
-    if (!chosen || running) return;
+    if (!chosen || running || issue) return;
     const playerColor: PieceColor =
       color === "random" ? (Math.random() < 0.5 ? "white" : "black") : color;
     onStart(
@@ -344,9 +348,10 @@ export function MatchSetupPanel({
             }}
           />
         )}
+        {issue && <p role="status" className="text-sm text-rose-300">{issue}</p>}
         <Button
           onClick={start}
-          disabled={!chosen || running}
+          disabled={!chosen || running || Boolean(issue)}
           data-testid="start-game"
         >
           <Swords className="h-4 w-4" aria-hidden /> Start game

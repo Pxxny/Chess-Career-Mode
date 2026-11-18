@@ -19,9 +19,9 @@ export function AppShell() {
   const pending = useGameStore(s=>s.save?.pendingMatch);
 
   return (
-    <div className="app-shell flex min-h-dvh flex-col lg:pl-60">
+    <div className="app-shell flex min-h-dvh flex-col lg:pl-[246px]">
       <TopBar wakeStatus={wakeStatus} />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-6 sm:px-7 sm:pt-8 lg:pb-12">
+      <main className="mx-auto w-full max-w-[1370px] min-w-0 flex-1 px-4 pb-28 pt-6 sm:px-8 sm:pt-8 lg:pb-12">
         {pending&&pathname!=="/complete"&&<Link to="/complete" className="mb-4 flex items-center justify-between rounded-xl border border-gold-500/30 bg-gold-500/10 p-3 text-sm font-semibold text-gold-300"><span>Match in progress · {pending.ucis.length} plies</span><span>Resume match →</span></Link>}
         <div key={pathname} className="page-enter">
           <Outlet />

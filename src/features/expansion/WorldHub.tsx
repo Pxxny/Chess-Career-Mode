@@ -1,3 +1,11 @@
+import { Link } from "react-router-dom";
+import { EliteStats, eliteLink } from "@/features/elite/ElitePresentation";
+import { PageHeader } from "@/components/ui";
+import { useRankedNpcs } from "@/hooks/useNpcs";
+import { useDashboard } from "@/features/home/useDashboard";
+import { NpcTable } from "@/features/world/NpcTable";
+import { NpcProfileModal } from "@/features/world/NpcProfileModal";
+import type { Npc } from "@/types";
 import { CaptainPanel } from "@/features/career/systems/CaptainPanel";
 import { ChessTeamCanvas } from "./ChessTeamCanvas";
 import { confirmUI } from "@/i18n/translate";
@@ -52,7 +60,7 @@ function slotSummary(
 export function WorldHub({
   view,
 }: {
-  view: "federation" | "teams" | "coach" | "news";
+  view: "federation" | "teams" | "coach" | "news" | "overview";
 }) {
   const save = useSave(),
     npcs = useNpcs(),
@@ -101,6 +109,7 @@ export function WorldHub({
     result: { ok: true } | { ok: false; error: string },
     success: string,
   ) => setMessage(result.ok ? success : result.error);
+  if (view === "overview") return <WorldOverview />;
   if (view === "news")
     return (
       <Card>
@@ -505,4 +514,40 @@ export function WorldHub({
       </Card>
     </div>
   );
+}
+
+function WorldOverview() {
+  const { schedule } = useDashboard();
+  const npcs = useNpcs();
+  const ranked = useRankedNpcs();
+  const [selected, setSelected] = useState<Npc | null>(null);
+  const active = npcs.filter(player => player.careerStatus === "active");
+  const federations = new Set(active.map(player => player.nationality));
+  const upcoming = schedule.filter(event => event.weeksUntilStart > 0);
+  return <div className="space-y-4">
+    <PageHeader title="World Hub" eyebrow="Global chess" />
+    <EliteStats items={[["Active players", active.length.toLocaleString()], ["Upcoming events", upcoming.length], ["Active federations", federations.size], ["Top rating", ranked[0]?.currentElo ?? "—"]]} />
+    <div className="grid gap-4 xl:grid-cols-2">
+      <Card>
+        <CardTitle>World rankings</CardTitle>
+        <NpcTable npcs={ranked.slice(0, 5)} showRank onSelect={setSelected} />
+        <Link className={eliteLink + " mt-3"} to="/complete?tab=players">Explore player directory</Link>
+      </Card>
+      <Card>
+        <CardTitle>Upcoming tournaments</CardTitle>
+        <ul className="divide-y divide-navy-600">
+          {upcoming.slice(0, 5).map(event => <li key={event.id} className="py-2 text-sm">
+            <Link to={`/complete?event=${encodeURIComponent(event.id)}`} className="font-semibold hover:text-gold-300" translate="no">{event.name}</Link>
+            <p className="text-xs text-ink-muted">{event.year} / W{event.week} · {event.details?.location}</p>
+          </li>)}
+        </ul>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link className={eliteLink} to="/complete?tab=calendar">Tournament calendar</Link>
+          <Link className={eliteLink} to="/complete?section=teams">Federations</Link>
+        </div>
+      </Card>
+    </div>
+    <WorldHub view="news" />
+    <NpcProfileModal npc={selected} onClose={() => setSelected(null)} />
+  </div>;
 }

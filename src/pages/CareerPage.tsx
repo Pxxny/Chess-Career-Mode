@@ -1,3 +1,4 @@
+import { FinancePanel } from "@/features/career/FinancePanel";
 import { HallOfFame } from "@/features/career/HallOfFame";
 import { AcademyPanel } from "@/features/career/systems/AcademyPanel";
 import { SimulateSeason } from "@/features/career/SimulateSeason";
@@ -43,6 +44,7 @@ export function CareerPage() {
     "hall-of-fame",
     "people",
     "business",
+    "finance",
     "predictions",
     "years",
   ] as const;
@@ -106,6 +108,7 @@ export function CareerPage() {
           { id: "hall-of-fame", label: "Hall of Fame" },
           { id: "people", label: "People & stories" },
           { id: "business", label: "Sponsors & legacy" },
+          { id: "finance", label: "Finances" },
           { id: "predictions", label: "Match predictions" },
           { id: "years", label: "Year in review" },
         ]}
@@ -120,6 +123,8 @@ export function CareerPage() {
           <PeopleStories />
         ) : view === "business" ? (
           <><CareerBusiness /><AcademyPanel /></>
+        ) : view === "finance" ? (
+          <FinancePanel />
         ) : view === "predictions" ? (
           <PredictionStatistics />
         ) : view === "years" ? (

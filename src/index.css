@@ -1,5 +1,24 @@
- :root { --scheme:dark; --bg-950:21 28 25; --bg-900:26 35 30; --bg-800:34 45 38; --bg-700:43 56 47; --bg-600:59 75 62; --accent-300:208 226 191; --accent-400:189 213 167; --accent-500:175 201 149; --accent-600:130 156 119; --text:238 234 225; --muted:187 199 185; --faint:154 170 155; --board-light:#e5e9df; --board-dark:#58745c; }
-:root[data-theme="light"] { --scheme:light; --bg-950:244 246 241; --bg-900:236 240 232; --bg-800:255 255 252; --bg-700:229 235 222; --bg-600:199 211 193; --accent-300:43 84 44; --accent-400:52 97 49; --accent-500:106 143 72; --accent-600:86 116 65; --text:30 44 32; --muted:72 90 75; --faint:91 109 92; }
+/* Grandmaster Elite design tokens. */
+:root {
+  --scheme: dark;
+  --bg-950: 11 18 32;
+  --bg-900: 16 27 43;
+  --bg-800: 24 37 56;
+  --bg-700: 34 50 73;
+  --bg-600: 53 68 91;
+  --accent-300: 232 201 138;
+  --accent-400: 221 188 126;
+  --accent-500: 199 167 107;
+  --accent-600: 163 133 81;
+  --text: 243 232 209;
+  --muted: 157 170 192;
+  --faint: 144 157 178;
+  --success: 54 183 154;
+  --danger: 229 125 125;
+  --board-light: #e5e9df;
+  --board-dark: #58745c;
+}
+:root[data-theme="light"] { --scheme:light; --bg-950:248 245 238; --bg-900:240 234 221; --bg-800:255 252 246; --bg-700:234 225 207; --bg-600:205 193 171; --accent-300:104 70 24; --accent-400:116 82 37; --accent-500:184 144 78; --accent-600:143 105 54; --text:33 43 60; --muted:70 82 106; --faint:89 100 120; }
 :root[data-board="wood"] {--board-light:#f0dbc0;--board-dark:#9c7051;}
 :root[data-board="ice"] {--board-light:#e0edf3;--board-dark:#698caa;}
 :root[data-board="royal"] {--board-light:#e9e2ed;--board-dark:#85708f;}
@@ -17,7 +36,7 @@
     font-feature-settings: "ss01" on;
     --accent: rgb(var(--accent-500));
     --surface: rgb(var(--bg-800));
-    background-image: radial-gradient(ellipse at 80% 0%, rgba(164,186,153,0.045), transparent 55%);
+    background-image: radial-gradient(ellipse at 80% 0%, rgba(199,167,107,0.045), transparent 55%);
   }
   h1,
   h2,
@@ -85,7 +104,7 @@
     @apply border-gold-500/15 bg-gold-500/10 text-gold-300;
   }
   .surface-card { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-  .season-card { background: linear-gradient(135deg, #29382b, #222d26 75%); }
+  .season-card { background: rgb(var(--bg-800)); }
   .dashboard-disclosure {
     @apply mb-4 rounded-2xl border border-white/[0.07] bg-navy-800;
   }
@@ -96,7 +115,32 @@
   .dashboard-disclosure > .disclosure-body { @apply px-3 pb-3 sm:px-4; }
 }
 
-.career-calendar { --fc-border-color: #ffffff14; --fc-page-bg-color: #222d26; --fc-neutral-bg-color: #1a231e; --fc-today-bg-color: #afc99512; --fc-event-bg-color: #42533b; --fc-event-border-color: #637b55; --fc-event-text-color: #eeeae1; --fc-button-bg-color: #2b382f; --fc-button-border-color: #3b4b3e; --fc-button-hover-bg-color: #3b4b3e; --fc-button-active-bg-color: #42533b; }
+.career-calendar {
+  --fc-border-color: rgb(var(--bg-600));
+  --fc-page-bg-color: rgb(var(--bg-800));
+  --fc-neutral-bg-color: rgb(var(--bg-700));
+  --fc-today-bg-color: rgb(var(--accent-500)/.17);
+  --fc-button-bg-color: rgb(var(--bg-700));
+  --fc-button-border-color: rgb(var(--bg-600));
+  --fc-button-hover-bg-color: rgb(var(--bg-600));
+  --fc-button-active-bg-color: rgb(var(--bg-600));
+  --fc-button-text-color: rgb(var(--text));
+  --fc-event-bg-color: rgb(var(--accent-500));
+  --fc-event-border-color: rgb(var(--accent-500));
+}
+.surface-card { border-color: rgb(var(--bg-600)); border-radius: 18px; }
+.elite-hero {
+  border-color: rgb(var(--accent-600)/.72);
+  background: radial-gradient(ellipse at top right, rgb(var(--accent-500)/.18), transparent 45%), rgb(var(--bg-800));
+}
+.elite-matchup { background: rgb(var(--bg-700)/.45); border: 1px solid rgb(var(--bg-600)); border-radius: 18px; }
+[data-theme="dark"] .text-emerald-300 { color: rgb(var(--success)); }
+[data-theme="dark"] .text-rose-300 { color: rgb(var(--danger)); }
+@media (max-width: 480px) {
+  .career-calendar .fc-toolbar { gap: .5rem; flex-wrap: wrap; }
+  .career-calendar .fc-toolbar-title { font-size: 1rem; }
+  .career-calendar .fc-popover { max-width: min(260px, 78vw); }
+}
 .career-calendar .fc-toolbar-title { font-size: 1.15rem; }
 .career-calendar .fc-daygrid-event { cursor: pointer; padding: 2px 4px; }
 .career-calendar .fc-daygrid-day-number { font-size: .8rem; }
@@ -111,15 +155,17 @@
 [data-pieces="midnight"] [data-piece^="b"] {filter:sepia(.55) hue-rotate(165deg) saturate(1.6)}
 .stat-delta {position:absolute;top:-.8rem;right:.3rem;z-index:40;font-size:.82rem;font-weight:800;pointer-events:none;animation:stat-float 1.6s ease-out both;text-shadow:0 1px 6px rgb(var(--bg-950));}
 @keyframes stat-float {0%{opacity:0;transform:translateY(8px)}20%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translateY(-20px)}}
-[data-theme="light"] [class*="border-white"] {border-color:#203d291a;}
-[data-theme="light"] .season-card {background:linear-gradient(135deg,#eaf0e1,#f9fbf4);}
-[data-theme="light"] .career-calendar {--fc-border-color:#203d2922;--fc-page-bg-color:#fffffc;--fc-neutral-bg-color:#edf2e8;--fc-event-text-color:#203321;--fc-event-bg-color:#d8e4cd;--fc-button-bg-color:#48663c;--fc-today-bg-color:#7caa5520;}
+[data-theme="light"] [class*="border-white"] {border-color:rgb(var(--bg-600)/.55);}
+[data-theme="light"] .season-card {background:rgb(var(--bg-800));}
+[data-theme="light"] .career-calendar {--fc-button-text-color:#182538;}
 [data-theme="light"] [class*="text-emerald-300"], [data-theme="light"] [class*="text-green-300"] {color:#237650}
 [data-theme="light"] [class*="text-rose-300"], [data-theme="light"] [class*="text-red-300"] {color:#aa343b}
 [data-theme="light"] [class*="text-sky-300"] {color:#246896}
 [data-theme="light"] [class*="text-amber-300"] {color:#926400}
 
-.tape-portrait {display:inline-flex;justify-content:center}.tape-portrait [data-npc-portrait] > span {width:6rem;height:6rem}
+.tape-portrait { display: block; width: min(100%, 6rem); margin-inline: auto; }
+.tape-portrait > [data-npc-portrait] { display: block; width: 100%; }
+.tape-portrait [data-npc-portrait] > span { display: block; width: 100%; height: auto; aspect-ratio: 1; }
 
 .host-banner {background:linear-gradient(120deg,rgb(var(--accent-500)/.12),rgb(var(--bg-900)));}
 

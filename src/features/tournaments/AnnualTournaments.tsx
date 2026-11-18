@@ -1,3 +1,4 @@
+import { useSearchParams } from "react-router-dom";
 import { globalQualificationCalendar } from '@/game/competition/qualificationCircuit';
 import { eventAccent } from "@/game/competition/visuals";
 import { isBackgroundCircuit, matchesOrganizer, type TournamentSearch } from "@/game/competition/finder";
@@ -31,7 +32,8 @@ import { TournamentDetail } from "./TournamentDetail";
 import { annualEvents } from "@/game/competition/worldCalendar";
 const SeasonCalendar = lazy(() => import("./SeasonCalendar"));
 export function AnnualTournaments({ history = false }: { history?: boolean }) {
-  const [calendarView, setCalendarView] = useState(false);
+  const [params] = useSearchParams();
+  const [calendarView, setCalendarView] = useState(() => !history && params.get("tab") === "calendar");
   const [qualifierCountry,setQualifierCountry]=useState('all'),[qualifierStage,setQualifierStage]=useState('all');
   const [showBackground,setShowBackground]=useState(false),[organizer,setOrganizer]=useState<TournamentSearch["organizer"]>("all");
   const save = useSave(),
@@ -243,7 +245,7 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
         )}
       </Card>
       {calendarView ? <Suspense fallback={<Card>Loading calendar…</Card>}><SeasonCalendar year={selectedYear}
-        events={filtered.map((r) => ({ id: r.id, name: r.name, start: r.record?.startDay ?? bookedStart(r.event!), end: r.record?.endDay ?? bookedEnd(r.event!), details:r.event?.details, level:r.event?.level }))}
+        events={filtered.map((r) => ({ id: r.id, name: r.name, start: r.record?.startDay ?? bookedStart(r.event!), end: r.record?.endDay ?? bookedEnd(r.event!), details:r.event?.details, level:r.event?.level, event:r.event }))}
         onSelect={(id) => { const row = filtered.find((r) => r.id === id); if (row) setSelected({ event: row.event, record: row.record }); }} /></Suspense> : filtered.length ? (
         <ul className="space-y-3">
           {filtered.slice(0, limit).map((row) => {

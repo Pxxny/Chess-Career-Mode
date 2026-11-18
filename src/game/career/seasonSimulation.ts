@@ -1,3 +1,4 @@
+import { competitionHealthIssue } from "@/game/career/health";
 import { buildEventTeams } from "@/game/competition/teamEvents";
 import { teamInfoOf } from "@/data/chess/nationalTeamEvents";
 import { captureHighlights, highlightsOf } from "./highlights";
@@ -337,6 +338,11 @@ export async function runSeason(port: SeasonPort): Promise<void> {
     if (!save || save.career.id !== id) return;
     const s = seasonOf(save);
     if (!s) return;
+    const healthIssue = competitionHealthIssue(save);
+    if (healthIssue) {
+      port.commit(updateSeason(save, { status: "paused", action: healthIssue }));
+      return;
+    }
     const checkpoint = captureHighlights(save, save, port.npcs(), {simulation:true});
     if (checkpoint !== save) port.commit(checkpoint);
     if (highlightsOf(checkpoint).unread.length) return;

@@ -4,7 +4,7 @@ export type Theme = 'dark'|'light'|'system';
 export const usePreferences = create(persist<{
   theme:Theme; board:'green'|'wood'|'ice'|'royal'; pieces:'classic'|'ivory'|'midnight'|'geometric';
   setTheme:(theme:Theme)=>void; setBoard:(board:'green'|'wood'|'ice'|'royal')=>void; setPieces:(pieces:'classic'|'ivory'|'midnight'|'geometric')=>void;
-}>(set=>({theme:'system',board:'green',pieces:'classic',setTheme:theme=>set({theme}),setBoard:board=>set({board}),setPieces:pieces=>set({pieces})}),{name:'chess-career-appearance'}));
+}>(set=>({theme:'dark',board:'green',pieces:'classic',setTheme:theme=>set({theme}),setBoard:board=>set({board}),setPieces:pieces=>set({pieces})}),{name:'chess-career-appearance'}));
 export function applyTheme() {
   if (typeof document === 'undefined') return;
   const {theme,board,pieces} = usePreferences.getState();

@@ -1,3 +1,4 @@
+import { competitionHealthIssue } from "@/game/career/health";
 import { normOpportunity,tournamentValue } from "@/game/competition/finder";
 import { EligibilityFeedback } from '@/features/tournaments/EligibilityFeedback';
 import { RegistrationQueue } from '@/features/career/systems/RegistrationQueue';
@@ -363,7 +364,7 @@ export function TournamentPanel({
   const next = t ? playerOpponentId(t) : null,
     npc = next ? npcs.find((n) => n.id === next.id) : undefined;
   const play = (mode: "play" | "simulate") => {
-    if (!t || !next || !npc || running || !tournamentReady(save)) return;
+    if (!t || !next || !npc || running || !tournamentReady(save) || !!competitionHealthIssue(save)) return;
     onStart(
       buildMatchSetup({
         save,
@@ -532,14 +533,14 @@ export function TournamentPanel({
               <UpcomingPredictions circuit="traditional" />
               <div className="flex flex-wrap gap-2">
                 <Button
-                  disabled={!npc || running || !tournamentReady(save)}
+                  disabled={!npc || running || !tournamentReady(save) || !!competitionHealthIssue(save)}
                   onClick={() => play("play")}
                   data-testid="play-round"
                 >
                   Play the game
                 </Button>
                 <Button
-                  disabled={!npc || running || !tournamentReady(save)}
+                  disabled={!npc || running || !tournamentReady(save) || !!competitionHealthIssue(save)}
                   variant="secondary"
                   onClick={() => play("simulate")}
                 >

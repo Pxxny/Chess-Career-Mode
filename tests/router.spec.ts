@@ -8,10 +8,10 @@ test("career links, history, deep links and unknown routes on mobile", async ({ 
   await expect(heading("Train")).toBeVisible();
 
   for (const [label, path, title] of [
-    ["Home", "/", "Welcome, Browser Test Player"],
+    ["Home", "/", "Home Dashboard"],
     ["Tournament", "/complete", "Tournament"],
     ["Career", "/career", "Career"],
-    ["Open profile for Browser Test Player", "/profile", "Profile"],
+    ["Open profile for Browser Test Player", "/profile", "Career Profile"],
   ]) {
     await page.getByRole("link", { name: label, exact: true }).click();
     await expect(page).toHaveURL(path);
@@ -24,10 +24,10 @@ test("career links, history, deep links and unknown routes on mobile", async ({ 
   await page.reload();
   await expect(heading("Changelog")).toBeVisible();
   await page.goBack();
-  await expect(heading("Profile")).toBeVisible();
+  await expect(heading("Career Profile")).toBeVisible();
   await page.goForward();
   await expect(heading("Changelog")).toBeVisible();
   await page.goto("/missing-route");
   await expect(page).toHaveURL("/");
-  await expect(heading("Welcome, Browser Test Player")).toBeVisible();
+  await expect(heading("Home Dashboard")).toBeVisible();
 });

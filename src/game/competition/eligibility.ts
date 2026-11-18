@@ -29,6 +29,7 @@ export function eligibilityIssues(
   event: ScheduledEvent,
 ): string[] {
   const issues: string[] = [];
+  if (save.retirement) issues.push("Your competitive career has ended.");
   const d = event.details;
   if (!circuitVisible(save.player.country, d)) issues.push("Your federation's qualification circuit only");
   if (save.player.rating < event.minElo) issues.push(`${event.minElo}+ Elo`);

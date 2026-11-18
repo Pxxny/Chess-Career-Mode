@@ -95,6 +95,11 @@ export async function parseBackup(raw: string): Promise<CareerBackup> {
     payload: z.object({ save: z.object({}).passthrough(), npcs: z.array(z.unknown()) }).passthrough(),
     checksum: z.string().min(1) }).passthrough().safeParse(value).success) fail();
   const { save, npcs } = value.payload;
+  if (save.health !== undefined && !z.object({ restUntil: z.number().int().nonnegative(), condition: z.enum(["illness", "exhaustion"]) }).safeParse(save.health).success) fail();
+  if (save.retirement !== undefined && !z.object({
+    year: z.number().int(), week: z.number().int().min(1).max(52), day: z.number().int().min(1).max(7),
+    peakElo: z.number().finite(), wins: z.number().int().nonnegative(), ratedGames: z.number().int().nonnegative(),
+  }).safeParse(save.retirement).success) fail();
   if(save.npcWatchlist!==undefined&&!z.array(z.string().min(1).max(200)).max(500).safeParse(save.npcWatchlist).success)fail();
   if (save.highlights !== undefined && !highlightsSchema.safeParse(save.highlights).success) fail();
   if (

@@ -1,3 +1,6 @@
+import { CareerHealthCard } from "@/features/career/CareerHealthCard";
+import { EliteHero, EliteStats, eliteLink } from "@/features/elite/ElitePresentation";
+import { registrationWindow } from "@/game/competition/registrationWindow";
 import { CareerNewsroom } from "@/features/news/CareerNews";
 import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
@@ -32,11 +35,38 @@ export function HomePage() {
   const { player, history } = save;
   const [selected, setSelected] = useState<Npc | null>(null);
   const progress = getCareerProgress(player.rating);
+  const nextEvent = schedule.find(event => event.weeksUntilStart > 0 && (!event.details?.nationality || event.details.nationality === player.country));
   return (
     <>
       <InstallSuggestion />
-      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-gold-400">Your chess journey</p>
-      <PageHeader title={`Welcome, ${player.name}`} description="A little progress. Every day." />
+      <CareerHealthCard />
+      <PageHeader title="Home Dashboard" eyebrow="Career command center" />
+      <EliteHero title={player.name} label={<>{titles.currentLabel} · World #{rankings.world.rank}</>}>
+        <p className="mb-4 text-sm text-ink-muted">{player.rating.toLocaleString()} Elo · {player.city.name} · {save.world.date.year}</p>
+        <Link className={eliteLink} to="/profile">View career profile</Link>
+      </EliteHero>
+      <div className="mb-5">
+        <CardTitle>Career overview</CardTitle>
+        <EliteStats items={[["Career Elo", player.rating.toLocaleString()], ["World rank", `#${rankings.world.rank}`], ["Career titles", history.titles.length], ["Career age", player.age]]} />
+      </div>
+      <div className="mb-5 grid gap-4 lg:grid-cols-2">
+        <Card className="elite-hero">
+          <CardTitle>Next tournament</CardTitle>
+          {nextEvent ? <><p className="font-display text-xl" translate="no">{nextEvent.name}</p>
+            <p className="my-2 text-sm text-ink-muted">{nextEvent.details?.timeControl?.label} · {nextEvent.year} / W{nextEvent.week}
+              {nextEvent.details?.prize !== undefined && ` · $${nextEvent.details.prize.toLocaleString()}`}
+              {registrationWindow(save, nextEvent).status === "open" && <span> · Registration open</span>}
+            </p></> : <p className="mb-3 text-sm text-ink-muted">No upcoming tournament in this schedule.</p>}
+          <Link to="/complete?tab=calendar" className={eliteLink}>View tournament schedule</Link>
+        </Card>
+        <Card>
+          <CardTitle>Quick actions</CardTitle>
+          <div className="grid gap-2">
+            {([["/career?view=championship", "Championship path"], ["/profile?tab=stats", "Elo analytics"], ["/complete?tab=world", "World Hub"]] as const).map(([to, label]) =>
+              <Link key={to} to={to} className="rounded-xl border border-navy-600 bg-navy-700 px-4 py-2.5 text-sm font-semibold hover:border-gold-500">{label}</Link>)}
+          </div>
+        </Card>
+      </div>
       <div className="mb-6 flex flex-wrap items-center gap-2 text-xs text-ink-muted">
         <CalendarDays size={15} className="text-gold-400" aria-hidden />
         <time dateTime={calendarDate(save).toISOString().slice(0, 10)} data-testid="home-date">

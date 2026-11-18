@@ -1,3 +1,4 @@
+import { competitionHealthIssue } from "@/game/career/health";
 import { travelQuote, arriveForEvent } from "@/game/competition/travel";
 import {
   predictionEnvironment,
@@ -142,6 +143,7 @@ export function registerForEvent(
   npcs?: Npc[],
   acceptInvitation = false,
 ): Result<GameSave> {
+  if (save.retirement) return { ok: false, error: "Your competitive career has ended." };
   if (event.details?.showcase && !acceptInvitation)
     return {
       ok: false,
@@ -214,6 +216,8 @@ export function startRegisteredTournament(
   npcs: Npc[],
   seed: number,
 ): Result<GameSave> {
+  const healthIssue = competitionHealthIssue(save);
+  if (healthIssue) return { ok: false, error: healthIssue };
   if (save.esports?.active?.status === "playing")
     return {
       ok: false,

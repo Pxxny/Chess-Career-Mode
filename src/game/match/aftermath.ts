@@ -1,3 +1,5 @@
+import { updateHealthAfterMatch } from "@/game/career/health";
+import { settleRivalry } from "@/game/career/rivalryEvent";
 import { systemsOf } from "@/game/career/systems";
 import { gameDay } from "@/game/competition/agenda";
 import { queueMatchRecords } from "@/store/matchArchive";
@@ -183,6 +185,11 @@ export function applyFinishedMatch(
       morale: clamp(next.player.morale + moraleShift, 0, 100),
     },
   };
+
+  if (setup.rated && finish.termination !== "abandoned") {
+    next = updateHealthAfterMatch(next);
+    if (opponent.id) next = settleRivalry(save, next, { id: opponent.id, name: opponent.name }, outcome);
+  }
 
   if (setup.prediction)
     next = recordPredictions(next, [

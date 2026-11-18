@@ -1,3 +1,5 @@
+import { competitionHealthIssue } from "@/game/career/health";
+import { retirementIssue } from "@/game/career/retirement";
 import { toggleWatchlist } from "@/game/social/directory";
 import { careerCommand, settleActivities, type CareerCommand } from "@/game/career/activities";
 import type { Npc } from "@/types";
@@ -150,6 +152,7 @@ let calendarOwned = false;
 let calendarDaySave: GameSave | null = null;
 let calendarSync: Promise<unknown> = Promise.resolve();
 interface GameStore {
+  retireCareer: () => { ok: true } | { ok: false; error: string };
   readArticle: (id: string) => void;
   seasonRunning: boolean;
   simulateSeason: (
@@ -322,6 +325,19 @@ function migrateSave(
 export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
+      retireCareer: () => {
+        const save = get().save;
+        if (!save || get().seasonRunning || get().calendarProgress || matchRunning(save.career.id))
+          return { ok: false, error: "Finish the running activity first." };
+        const issue = retirementIssue(save);
+        if (issue) return { ok: false, error: issue };
+        set({ save: { ...save, retirement: {
+          ...save.world.date, day: save.world.day, peakElo: save.player.peakRating,
+          wins: save.history.tournaments.filter(event => event.rank === 1).length,
+          ratedGames: save.player.ratedGames,
+        } } });
+        return { ok: true };
+      },
       readArticle: (id) => {
         const save = get().save;
         if (save && !get().seasonRunning) set({ save: acknowledgeArticle(save, id) });
@@ -341,6 +357,8 @@ export const useGameStore = create<GameStore>()(
           matchRunning(start.career.id)
         )
           return { ok: false, error: "Finish the running activity first." };
+        const healthIssue = competitionHealthIssue(start);
+        if (healthIssue) return { ok: false, error: healthIssue };
         if (world.status !== "ready" || world.careerId !== start.career.id)
           return {
             ok: false,

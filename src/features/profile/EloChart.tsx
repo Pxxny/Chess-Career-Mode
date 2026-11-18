@@ -1,3 +1,6 @@
+import { EliteStats } from "@/features/elite/ElitePresentation";
+import { useRankedNpcs } from "@/hooks/useNpcs";
+import { computeRankings } from "@/game/world/standings";
 import { useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Chart, LineController, LineElement, PointElement, CategoryScale, LinearScale, Filler, Tooltip } from "chart.js";
 import { TrendingUp } from "lucide-react";
@@ -20,9 +23,28 @@ export function EloChart({npc}:{npc?:Npc}={}) {
   const PERIODS: {id:NpcEloPeriod;label:string}[] = npc ? [{id:"match",label:"Match"},...PLAYER_PERIODS] : PLAYER_PERIODS;
   const language = useContext(LanguageContext);
   const [period, setPeriod] = useState<NpcEloPeriod>(npc?.ratingHistory?.length?"match":"month");
+  const [range, setRange] = useState<1 | 5 | null>(null);
+  const ranked = useRankedNpcs();
+  const year = save?.world.date.year ?? 0;
+  const rank = save && !npc ? computeRankings(save.player, ranked).world.rank : null;
   const canvas = useRef<HTMLCanvasElement>(null);
   const descriptionId = useId();
-  const points = useMemo(() => npc?npcEloSeries(npc,period,language === "th" ? "th-TH" : "en-GB"):buildEloSeries(history!, period as EloPeriod, language === "th" ? "th-TH" : "en-GB"), [npc,history, period, language]);
+  const points = useMemo(() => {
+    const locale = language === "th" ? "th-TH" : "en-GB";
+    if (npc) return npcEloSeries(npc, period, locale);
+    if (!history || !save) return [];
+    if (!range) return buildEloSeries(history, period as EloPeriod, locale);
+    const current = new Date(Date.UTC(year, 0, (save.world.date.week - 1) * 7 + save.world.day));
+    current.setUTCFullYear(current.getUTCFullYear() - range);
+    const cutoff = current.getTime();
+    const recent = (stamp: { year: number; week: number; day?: number }) =>
+      Date.UTC(stamp.year, 0, (stamp.week - 1) * 7 + (stamp.day ?? 1)) > cutoff;
+    return buildEloSeries({
+      ...history,
+      games: history.games.filter(recent),
+      ratingHistory: history.ratingHistory.filter(recent),
+    }, period as EloPeriod, locale);
+  }, [npc, history, period, language, range, year, save?.world.date.week, save?.world.day]);
   const change = points.length > 1 ? points.at(-1)!.elo - points[0].elo : null;
 
   useEffect(() => {
@@ -32,17 +54,17 @@ export function EloChart({npc}:{npc?:Npc}={}) {
       data: {
         labels: points.map((p, i) => period === "tournament" ? `#${i + 1}` : p.label),
         datasets: [{
-          label: "Elo", data: points.map((p) => p.elo), borderColor: "#b9d6ae", borderWidth: 2.5,
+          label: "Elo", data: points.map((p) => p.elo), borderColor: "#c7a76b", borderWidth: 2.5,
           backgroundColor: (context) => {
             const area = context.chart.chartArea;
-            if (!area) return "rgba(164,186,153,0.12)";
+            if (!area) return "rgba(199,167,107,0.12)";
             const gradient = context.chart.ctx.createLinearGradient(0, area.top, 0, area.bottom);
-            gradient.addColorStop(0, "rgba(164,186,153,0.24)");
-            gradient.addColorStop(1, "rgba(164,186,153,0)");
+            gradient.addColorStop(0, "rgba(199,167,107,0.24)");
+            gradient.addColorStop(1, "rgba(199,167,107,0)");
             return gradient;
           },
           fill: true, tension: 0.2, pointRadius: points.length > 30 ? 0 : 3,
-          pointHoverRadius: 6, pointHitRadius: 18, pointBackgroundColor: "#b9d6ae",
+          pointHoverRadius: 6, pointHitRadius: 18, pointBackgroundColor: "#c7a76b",
         }],
       },
       options: {
@@ -50,12 +72,12 @@ export function EloChart({npc}:{npc?:Npc}={}) {
         interaction: { mode: "index", intersect: false },
         layout: { padding: { top: 12, right: 12 } },
         plugins: { tooltip: {
-          displayColors: false, backgroundColor: "#303a32", titleColor: "#f1f3e9", bodyColor: "#c7d5bf", padding: 12,
+          displayColors: false, backgroundColor: "#223249", titleColor: "#f3e8d1", bodyColor: "#ddd1ba", padding: 12,
           callbacks: { title: (items) => points[items[0].dataIndex].label },
         } },
         scales: {
-          x: { border: { display: false }, grid: { display: false }, ticks: { color: "#a4aea3", maxTicksLimit: 6, maxRotation: 0, font: { family: "Manrope Variable, Noto Sans Thai Variable, sans-serif", size: 11 } } },
-          y: { border: { display: false }, grace: "15%", grid: { color: "rgba(255,255,255,0.06)" }, ticks: { color: "#a4aea3", maxTicksLimit: 5, precision: 0, font: { size: 11 } } },
+          x: { border: { display: false }, grid: { display: false }, ticks: { color: "#9daac0", maxTicksLimit: 6, maxRotation: 0, font: { family: "Manrope Variable, Noto Sans Thai Variable, sans-serif", size: 11 } } },
+          y: { border: { display: false }, grace: "15%", grid: { color: "rgba(255,255,255,0.06)" }, ticks: { color: "#9daac0", maxTicksLimit: 5, precision: 0, font: { size: 11 } } },
         },
       },
     });
@@ -64,9 +86,15 @@ export function EloChart({npc}:{npc?:Npc}={}) {
 
   return (
     <Card className="mb-5" data-testid={npc?"npc-elo-chart":"elo-chart"}>
-      <CardTitle aside={<TrendingUp size={20} className="text-gold-400" aria-hidden />}>{npc?"NPC Elo History":"Elo progress"}</CardTitle>
+      <CardTitle aside={<TrendingUp size={20} className="text-gold-400" aria-hidden />}>{npc?"NPC Elo History":"Elo Analytics"}</CardTitle>
+      {!npc && save && <div className="mb-5 space-y-4">
+        <EliteStats items={[["Current Elo", player.rating], ["Peak Elo", save.player.peakRating], ["Rating gain in view", change === null ? "—" : `${change > 0 ? "+" : ""}${change}`], ["World rank", `#${rank}`]]} />
+        <div role="group" aria-label="Elo chart range" className="flex flex-wrap gap-2">
+          {([1, 5, null] as const).map((value) => <button key={value ?? "all"} className="section-tab bg-navy-700" aria-pressed={range === value} onClick={() => setRange(value)}>{value === null ? "Career" : value === 1 ? "1 Year" : "5 Years"}</button>)}
+        </div>
+      </div>}
       <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
-        <div className="flex items-baseline gap-3">
+        <div className={npc ? "flex items-baseline gap-3" : "sr-only"}>
           <strong className="font-display text-4xl tabular-nums text-ink">{player.rating.toLocaleString()}</strong>
           <span className="text-xs text-ink-muted">Current Elo</span>
           {change !== null && <span className={`rounded-full px-2 py-1 text-xs font-semibold tabular-nums ${change >= 0 ? "bg-gold-500/10 text-gold-300" : "bg-red-500/10 text-red-300"}`} aria-label={`${translateUI("Change in view")}: ${change > 0 ? "+" : ""}${change} Elo`}>{change > 0 ? "+" : ""}{change}</span>}

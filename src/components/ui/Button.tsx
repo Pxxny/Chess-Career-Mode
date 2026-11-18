@@ -5,11 +5,11 @@ import { cn } from '@/utils/cn';
 type Variant = 'primary' | 'secondary' | 'danger';
 
 const base =
-  'inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50';
+  'inline-flex items-center justify-center gap-2 min-h-11 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50';
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-gold-500 text-navy-950 hover:bg-gold-400',
-  secondary: 'border border-white/10 bg-navy-700 text-ink hover:bg-navy-600',
+  primary: 'bg-gold-500 text-[#0b1220] hover:bg-gold-400',
+  secondary: 'border border-navy-600 bg-navy-700 text-ink hover:bg-navy-600',
   danger: 'border border-red-400/30 bg-red-500/10 text-red-300 hover:bg-red-500/20',
 };
 

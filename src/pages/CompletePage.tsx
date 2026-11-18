@@ -1,3 +1,5 @@
+import { CareerHealthCard } from "@/features/career/CareerHealthCard";
+import { competitionHealthIssue } from "@/game/career/health";
 import { useGameStore } from "@/store/gameStore";
 import { useNpcStore } from "@/store/npcStore";
 import { buildMatchSetup } from "@/game/match/setup";
@@ -38,8 +40,14 @@ type Tab =
   | "rankings"
   | "league"
   | "history"
+  | "world"
+  | "players"
   | "calendar"
   | "event-history";
+
+function landingTab(value: string | null): Tab | undefined {
+  return value === "calendar" || value === "world" || value === "players" || value === "rankings" ? value : undefined;
+}
 
 export function CompletePage() {
   const save = useSave();
@@ -52,12 +60,22 @@ export function CompletePage() {
   const player = usePlayer();
   const ranked = useRankedNpcs();
   const [selected, setSelected] = useState<Npc | null>(null);
-  const [tab, setTab] = useState<Tab>("tournament");
+  const [tab, setTab] = useState<Tab>(() => landingTab(params.get("tab")) ?? "tournament");
   const [federationView,setFederationView]=useState<"federation"|"teams">("teams");
   const [active, setActive] = useState<MatchSetup | null>(() => save.pendingMatch?.resume?.setup ?? null);
   const [queued, setQueued] = useState<MatchSetup|null>(null);
-  const previewStart = (setup: MatchSetup) => setup.prediction ? setQueued(setup) : setActive(setup);
+  const previewStart = (setup: MatchSetup) => {
+    if ((setup.rated || setup.tournament || setup.esports) && competitionHealthIssue(save)) return;
+    if (setup.prediction) setQueued(setup);
+    else setActive(setup);
+  };
   useEffect(() => {
+    const linkedTab = landingTab(params.get("tab"));
+    if (params.get("section") === "match") {
+      setTab("tournament");
+      setCircuit("traditional");
+    }
+    setTab(linkedTab ?? "tournament");
     if (params.get("section") === "teams") {setCircuit("traditional");setTab("tournament");setFederationView("teams");setTimeout(()=>document.getElementById("federation-teams")?.scrollIntoView({block:"start"}),100);return;}
     if (params.get("section") === "registrations") {
       setCircuit("traditional");
@@ -101,7 +119,8 @@ export function CompletePage() {
 
   return (
     <>
-      {queued?.prediction && <TaleOfTape prediction={queued.prediction} onClose={()=>setQueued(null)} onStart={()=>{const current=useGameStore.getState().save!,id=queued.playerColor==="white"?queued.black.id:queued.white.id,npc=useNpcStore.getState().npcs.find(n=>n.id===id);setActive(npc?{...queued,...buildMatchSetup({save:current,npc,playerColor:queued.playerColor,timeControl:queued.timeControl,rated:queued.rated,mode:queued.mode,speed:queued.speed,tournament:queued.tournament,seed:queued.seed,db}),social:queued.social,esports:queued.esports}:queued);setQueued(null);}}/>}
+      {queued?.prediction && <TaleOfTape setup={queued} prediction={queued.prediction} onClose={()=>setQueued(null)} onStart={()=>{const current=useGameStore.getState().save!,id=queued.playerColor==="white"?queued.black.id:queued.white.id,npc=useNpcStore.getState().npcs.find(n=>n.id===id);setActive(npc?{...queued,...buildMatchSetup({save:current,npc,playerColor:queued.playerColor,timeControl:queued.timeControl,rated:queued.rated,mode:queued.mode,speed:queued.speed,tournament:queued.tournament,seed:queued.seed,db}),social:queued.social,esports:queued.esports}:queued);setQueued(null);}}/>}
+      <CareerHealthCard />
       <PageHeader
         title="Tournament"
 
@@ -113,6 +132,8 @@ export function CompletePage() {
         tabs={[
           { id: "tournament", label: "Tournament" },
           { id: "calendar", label: "Annual calendar" },
+          { id: "world", label: "World Hub" },
+          { id: "players", label: "Player directory" },
           { id: "event-history", label: "Tournament history" },
           { id: "swiss", label: "Swiss" },
           { id: "prepare", label: "Prepare" },
@@ -137,7 +158,7 @@ export function CompletePage() {
             ) : (
               <>
                 <TournamentPanel onStart={previewStart} />
-                <details>
+                <details open={params.get("section") === "match" ? true : undefined}>
                   <summary className="cursor-pointer rounded-lg bg-navy-800 p-3 text-gold-400">
                     Individual match / free play
                   </summary>
@@ -157,6 +178,8 @@ export function CompletePage() {
             )}
           </div>
         )}
+        {tab === "world" && <WorldHub view="overview" />}
+        {tab === "players" && <NpcDirectory />}
         {tab === "calendar" && <AnnualTournaments />}
         {tab === "event-history" && <AnnualTournaments history />}
         {tab === "swiss" && <TournamentPanel onStart={previewStart} swissOnly />}

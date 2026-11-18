@@ -32,10 +32,10 @@ export default {
       },
       fontFamily: {
         display: [
-          "Manrope Variable",
+          "Fraunces Variable",
           "Noto Sans Thai Variable",
-          "system-ui",
-          "sans-serif",
+          "Georgia",
+          "serif",
         ],
         sans: [
           "Manrope Variable",

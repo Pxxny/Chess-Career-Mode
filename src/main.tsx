@@ -9,6 +9,7 @@ import { InstallProvider } from "./features/install/InstallProvider";
 import { LanguageProvider } from "./i18n/LanguageProvider";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import "@fontsource-variable/manrope";
+import "@fontsource-variable/fraunces";
 import "@fontsource-variable/noto-sans-thai";
 import "./index.css";
 

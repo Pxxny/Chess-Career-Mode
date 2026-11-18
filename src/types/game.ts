@@ -26,6 +26,8 @@ export interface CareerRecord {
 }
 
 export interface GameSave {
+  health?: import("@/game/career/health").CareerHealth;
+  retirement?: { year: number; week: number; day: number; peakElo: number; wins: number; ratedGames: number };
   /** NPC IDs pinned by this character, independent of NPC names and current rankings. */
   npcWatchlist?: string[];
   careerSystems?: import("@/game/career/systems").CareerSystems;

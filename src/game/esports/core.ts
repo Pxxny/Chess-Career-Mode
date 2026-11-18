@@ -1,3 +1,4 @@
+import { competitionHealthIssue } from "@/game/career/health";
 import { transferQuote, transferWindow } from "./market";
 import { systemsOf } from "@/game/career/systems";
 import { trackYearActivity } from "@/game/career/yearReview";
@@ -690,6 +691,8 @@ export function esportsCommand(
     message = "Saved.";
   const now = gameDay(save);
   const fail = (error: string): EsportsResult => ({ ok: false, error });
+  const healthIssue = competitionHealthIssue(save);
+  if ((command.type === "start" || (save.retirement && command.type === "register")) && healthIssue) return fail(healthIssue);
   if (
     state.active?.status === "playing" &&
     !["withdraw", "focus", "register", "cancel"].includes(command.type)

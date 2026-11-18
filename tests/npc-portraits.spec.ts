@@ -2,6 +2,11 @@ import { openSectionTab } from "./navigation";
 import { expect, test, type Page } from "@playwright/test";
 import { createCareer } from "./helpers";
 
+const artwork = (svg: string) => svg.replace(/ccm-r[0-9a-z]+-/gi, "ccm-portrait-");
+function expectPortrait(actual: string, expected: string) {
+  expect(artwork(actual)).toBe(artwork(expected));
+}
+
 const ranks = (page: Page) =>
   page
     .getByRole("tablist", { name: "Ranking scope", exact: true })
@@ -37,7 +42,7 @@ test("phone rankings show character faces for every NPC and the saved player, st
     .getByRole("banner")
     .getByRole("img", { name: "Browser Test Player portrait", exact: true })
     .innerHTML();
-  expect(await playerRow.locator("svg").innerHTML()).toBe(playerFace);
+  expectPortrait(await playerRow.locator("svg").innerHTML(), playerFace);
   await ranking.evaluate((el) =>
     window.scrollTo(0, el.getBoundingClientRect().top + scrollY - 140),
   );
@@ -49,19 +54,22 @@ test("phone rankings show character faces for every NPC and the saved player, st
     expect(
       await ranking.locator("[data-npc-portrait]").count(),
     ).toBeGreaterThan(0);
-    expect(await playerRow.locator("svg").innerHTML()).toBe(playerFace);
+    expectPortrait(await playerRow.locator("svg").innerHTML(), playerFace);
     for (const width of [320, 390]) {
       await page.setViewportSize({ width, height: 844 });
       await fits(page);
     }
   }
-  expect(
+  expectPortrait(
     await ranking.locator(`[data-npc-portrait="${id}"] svg`).innerHTML(),
-  ).toBe(face);
+    face,
+  );
   await page.reload();
-  expect(
+  await page.getByText("Rankings & world players", { exact: true }).click();
+  expectPortrait(
     await ranks(page).locator(`[data-npc-portrait="${id}"] svg`).innerHTML(),
-  ).toBe(face);
+    face,
+  );
   expect(errors).toEqual([]);
 });
 
@@ -86,9 +94,10 @@ test("ranking, directory and NPC profile use the same face and preserve name but
   await expect(profile.getByText("Real player", { exact: true })).toHaveCount(
     0,
   );
-  expect(
+  expectPortrait(
     await profile.locator(`[data-npc-portrait="${id}"] svg`).innerHTML(),
-  ).toBe(face);
+    face,
+  );
   await page.screenshot({ path: "artifacts/npc-portrait-profile-mobile.png" });
   await profile
     .getByRole("button", { name: "Close dialog", exact: true })
@@ -101,17 +110,19 @@ test("ranking, directory and NPC profile use the same face and preserve name but
       exact: true,
     })
     .fill(name);
-  const directory = page.getByRole("table", {
+  const directory = page.getByRole("group", {
     name: "Player directory",
     exact: true,
   });
-  expect(
+  expectPortrait(
     await directory.locator(`[data-npc-portrait="${id}"] svg`).innerHTML(),
-  ).toBe(face);
+    face,
+  );
   await directory.getByRole("button", { name, exact: true }).click();
-  expect(
+  expectPortrait(
     await profile.locator(`[data-npc-portrait="${id}"] svg`).innerHTML(),
-  ).toBe(face);
+    face,
+  );
   await profile
     .getByRole("button", { name: "Close dialog", exact: true })
     .click();
@@ -125,12 +136,13 @@ test("ranking, directory and NPC profile use the same face and preserve name but
     .getByRole("banner")
     .getByRole("img", { name: "Browser Test Player portrait", exact: true })
     .innerHTML();
-  expect(
+  expectPortrait(
     await directory
-      .getByRole("row")
+      .locator("section")
       .filter({ hasText: "Browser Test Player" })
       .locator("svg")
       .innerHTML(),
-  ).toBe(ownFace);
+    ownFace,
+  );
   await fits(page);
 });

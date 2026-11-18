@@ -1,3 +1,4 @@
+import { competitionHealthIssue } from "@/game/career/health";
 import { queueArchives, retainedArchives } from "@/game/competition/archive";
 import { personalWorldNews } from "@/game/social/memories";
 import { simulateWorldCircuit } from "@/game/npc/activity";
@@ -325,6 +326,8 @@ export function playTeamCup(
   npcs: Npc[],
   opts: { eventId?: string; key?: string } = {},
 ): { ok: true; save: GameSave } | { ok: false; error: string } {
+  const healthIssue = competitionHealthIssue(save);
+  if (healthIssue) return { ok: false, error: healthIssue };
   const state = stateOf(save),
     year = save.world.date.year;
   if (state.membershipYear !== year)

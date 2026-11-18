@@ -71,7 +71,7 @@ async function openNpc(page: Page, npc: Npc) {
     .getByRole("searchbox", { name: "Search players by name, city or country" })
     .fill(npc.name);
   await page
-    .getByRole("table", { name: "Player directory", exact: true })
+    .getByRole("group", { name: "Player directory", exact: true })
     .getByRole("button", { name: npc.name, exact: true })
     .click();
   return page.getByRole("dialog", { name: npc.name, exact: true });
@@ -98,7 +98,7 @@ test("mobile directory includes the saved player and an actual detailed player p
   await page
     .getByRole("searchbox", { name: "Search players by name, city or country" })
     .fill(save.player.name);
-  const table = page.getByRole("table", {
+  const table = page.getByRole("group", {
     name: "Player directory",
     exact: true,
   });

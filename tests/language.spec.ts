@@ -277,7 +277,7 @@ test("NPC actions and a running friendly board retain their state when switching
     })
     .fill(npc.name);
   await page
-    .getByRole("table", { name: "Player directory", exact: true })
+    .getByRole("group", { name: "Player directory", exact: true })
     .getByRole("button", { name: npc.name, exact: true })
     .click();
   const profile = page.getByRole("dialog", { name: npc.name, exact: true });
