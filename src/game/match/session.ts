@@ -620,8 +620,17 @@ export class MatchSession {
       else if (wait === 0) await this.sleep(0);
       if (stale()) return;
       this.thinking = null;
-      if (this.commit(uci, spent))
+      if (this.commit(uci, spent)) {
         measuredMove({ speed: speedAtStart, book: fromBook, status: "ok" });
+      } else if (!stale()) {
+        const fallback = legalMoves(currentPosition(this.game))[0];
+        if (fallback) {
+          this.notice = "The selected move was rejected. A fallback move was played.";
+          if (this.commit(moveToUci(fallback), undefined)) {
+            measuredMove({ speed: speedAtStart, status: "fallback" });
+          }
+        }
+      }
     } catch (error) {
       if (stale()) return;
       logWarn(
