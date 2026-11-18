@@ -1,3 +1,4 @@
+import { openChampions, refreshSeriesEdition } from "@/game/competition/selectTours";
 import { withTeamHost } from "@/game/competition/hosts";
 import { socialOf } from "@/game/social/relationships";
 import { yearReviewOf } from "@/game/career/yearReview";
@@ -28,7 +29,7 @@ export function upgradeSave(save: GameSave): GameSave {
     prediction: normalizePredictionState(raw.prediction),
     esports: esportsOf(save),
     qol: qolOf(save),
-    competition: competitionOf(save),
+    competition: { ...competitionOf(save), hallOfFame: openChampions(save.competition) },
     expansion: { ...emptyExpansion(), ...raw.expansion },
     world: { ...raw.world, day: raw.world.day ?? 1 },
     player: {
@@ -56,14 +57,15 @@ export function upgradeSave(save: GameSave): GameSave {
       },
     },
     matches: raw.matches ?? [],
+    calendarTournaments: raw.calendarTournaments && { ...raw.calendarTournaments, active: raw.calendarTournaments.active.map(refreshSeriesEdition) },
     tournament: raw.tournament
-      ? {
+      ? refreshSeriesEdition({
           ...raw.tournament,
           details: withTeamHost(raw.tournament.details, raw.tournament.year),
-        }
+        })
       : null,
     pendingMatch: raw.pendingMatch ?? null,
-    registrations: (raw.registrations ?? []).map((r) => ({
+    registrations: (raw.registrations ?? []).map((r) => refreshSeriesEdition({
       ...r,
       details: withTeamHost(r.details, r.year),
     })),

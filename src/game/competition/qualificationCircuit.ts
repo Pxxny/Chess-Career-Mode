@@ -7,7 +7,7 @@ import { getSeedCities } from '@/data/world/seedCities';
 import { hashString } from '@/utils/format';
 import { createRng } from '@/game/rng';
 import { span } from '@/diagnostics/spanSink';
-import { SELECT_SPONSORS, SELECT_TOUR_TYPES, SELECT_WORLD_PRIZE, SELECT_WORLD_FIELD, SELECT_BASE_SEATS, SELECT_BOOST_SEATS, selectSeriesId, selectTourType, selectNpcEligible } from './selectTours';
+import { SELECT_SPONSORS, SELECT_TOUR_TYPES, seriesName, SELECT_WORLD_FIELD, SELECT_BASE_SEATS, SELECT_BOOST_SEATS, selectSeriesId, selectTourType, selectNpcEligible } from './selectTours';
 
 export const CIRCUIT_SPONSORS = [
   { id: '', name: 'Aurora Chess Foundation', final: 'Aurora World Qualification Finals' },
@@ -93,26 +93,27 @@ export function qualificationCircuitEvents(year: number, region: Region): Schedu
   };
   const selectEvents = (): ScheduledEvent[] => SELECT_SPONSORS.flatMap((sponsor, si) => SELECT_TOUR_TYPES.flatMap((type, ti) => {
     const series = selectSeriesId(sponsor.id, type.id), worldId = circuitEventId('world', year, 'all', 0, series);
-    const worldName = `${sponsor.name} ${type.label} World Finals ${year}`;
+    const name = seriesName(sponsor, type);
+    const worldName = `${name} — World Finals`;
     const worldHost = worldHosts[hashString(`${series}:${year}:select-world`) % worldHosts.length] ?? country;
     const nationalWeek = 14 + ti * 2 + si, worldWeek = 32 + ti * 2 + si;
     const base = { year, minElo: 0, minReputation: 0, weeksUntilStart: 0, weeksUntilDeadline: 0 };
     const tc = { id: 'qualifier-classical', label: '30+10', base: 1800, increment: 10, category: 'classical' as const };
-    const common = { category: 'Qualification Circuit', host: { mode: 'rotation' as const }, format: 'swiss' as const, timeControl: tc, provenance: 'fictional' as const,
+    const common = { gender: type.gender, maxAge: type.maxAge, category: 'Qualification Circuit', host: { mode: 'rotation' as const }, format: 'swiss' as const, timeControl: tc, provenance: 'fictional' as const,
       organizer: { name: sponsor.name, status: 'Official' as const, simulated: true, sponsorId: sponsor.id } };
     const select = { type: type.id, label: type.label };
-    const national: ScheduledEvent = { ...base, id: circuitEventId('national', year, region.countryCode, 0, series), name: `${sponsor.name} ${country?.name ?? region.countryCode} ${type.label} National Selection ${year}`,
+    const national: ScheduledEvent = { ...base, id: circuitEventId('national', year, region.countryCode, 0, series), name: `${name} — National Qualifier`,
       week: nationalWeek, level: 'national', fieldSize: 64, entryFee: 15, registrationDeadline: { year, week: nationalWeek - 1 }, invitational: false,
       details: { ...common, qualificationCircuit: { stage: 'national', season: year, seriesId: series, sponsor: sponsor.name, worldFinalId: worldId, worldFinalName: worldName, country: region.countryCode,
           advanceKind: 'circuit-world', advanceTop: SELECT_BASE_SEATS, targetEventId: worldId, selectTour: select },
-        nationality: region.countryCode, ...(type.gender ? { gender: type.gender } : {}), ...(type.maxAge !== undefined ? { maxAge: type.maxAge } : {}),
+        nationality: region.countryCode,
         country: region.countryCode, location: domesticCities[hashString(`${year}:${series}:select-national:${region.countryCode}`) % domesticCities.length] ?? region.city,
         end: { year, week: nationalWeek }, rounds: 7, prize: 5000, prestige: 35 } };
     const world: ScheduledEvent = { ...base, id: worldId, name: worldName, week: worldWeek, level: 'elite', fieldSize: SELECT_WORLD_FIELD, entryFee: 0,
       registrationDeadline: { year, week: worldWeek - 1 }, invitational: true,
       details: { ...common, qualificationCircuit: { stage: 'world', season: year, seriesId: series, sponsor: sponsor.name, worldFinalId: worldId, worldFinalName: worldName, selectTour: select },
         qualification: 'circuit-world', country: worldHost?.code ?? region.countryCode, location: worldHost?.capital ?? region.city,
-        end: { year, week: worldWeek }, rounds: 9, prize: SELECT_WORLD_PRIZE, prestige: 95 } };
+        end: { year, week: worldWeek }, rounds: 9, prize: type.worldPrize, prestige: 95 } };
     return [national, world];
   }));
   return [...CIRCUIT_SPONSORS.flatMap((sponsor, i) => [...Array.from({ length: 8 }, (_, heat) => make(sponsor, 'local', (i<2?4:4+(i-1)*2) + heat, heat)), make(sponsor, 'national', i<2?20+i*2:24+(i-2)*2), make(sponsor, 'continental', i<2?32+i*2:36+(i-2)*2), make(sponsor, 'world', i<2?46+i*2:44+(i-2)*2)]), ...selectEvents()];

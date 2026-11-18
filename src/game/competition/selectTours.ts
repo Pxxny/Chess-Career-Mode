@@ -3,35 +3,54 @@ import { COUNTRIES, getCountry } from '@/data/world/countries';
 import { hashString } from '@/utils/format';
 import type { Npc } from '@/types';
 import type { ScheduledEvent } from '@/game/world/schedule';
-import type { CompetitionState, SelectChoice } from './types';
+import type { CompetitionState, EventDetails, HallOfFameEntry, SelectChoice } from './types';
 
 /**
  * Sponsor "Select Tours": nationwide selection tours run only by high-budget sponsors.
  * Stages are National and World Finals only (no Local or Continental). Each country sends
  * one player to the World Finals, unless last year's winner raised that country's seats.
  */
-export interface SelectTourType { id: string; label: string; gender?: 'female'; maxAge?: number }
+type SeriesSponsor = 'cobalt-lantern' | 'zenith-arc';
+export interface SelectTourType {
+  id: string;
+  label: string;
+  gender?: 'male' | 'female';
+  maxAge?: number;
+  worldPrize: number;
+  titles: Record<SeriesSponsor, string>;
+}
 
 export const SELECT_TOUR_TYPES: readonly SelectTourType[] = [
-  { id: 'open', label: 'Nationwide Select' },
-  { id: 'women', label: "Women's Select", gender: 'female' },
-  { id: 'u10', label: 'U10 Select', maxAge: 10 },
-  { id: 'u12', label: 'U12 Select', maxAge: 12 },
-  { id: 'u14', label: 'U14 Select', maxAge: 14 },
-  { id: 'u16', label: 'U16 Select', maxAge: 16 },
-  { id: 'u18', label: 'U18 Select', maxAge: 18 },
-  { id: 'u20', label: 'U20 Select', maxAge: 20 },
+  { id: "open", label: "Open", gender: "male", worldPrize: 30_000_000,
+    titles: { "cobalt-lantern": "Sovereign Crown", "zenith-arc": "Apex Dominion" } },
+  { id: "women", label: "Women", gender: "female", worldPrize: 2_500_000,
+    titles: { "cobalt-lantern": "Women's Aurora Queens", "zenith-arc": "Women's Celestial Empress" } },
+  { id: "u10", label: "U10", maxAge: 10, worldPrize: 250_000,
+    titles: { "cobalt-lantern": "U10 Little Sparks", "zenith-arc": "U10 Starborn Cup" } },
+  { id: "u12", label: "U12", maxAge: 12, worldPrize: 400_000,
+    titles: { "cobalt-lantern": "U12 Rising Flames", "zenith-arc": "U12 Nova Challenge" } },
+  { id: "u14", label: "U14", maxAge: 14, worldPrize: 650_000,
+    titles: { "cobalt-lantern": "U14 Blue Horizon", "zenith-arc": "U14 Orbit Masters" } },
+  { id: "u16", label: "U16", maxAge: 16, worldPrize: 1_000_000,
+    titles: { "cobalt-lantern": "U16 Luminous Knights", "zenith-arc": "U16 Astral Vanguard" } },
+  { id: "u18", label: "U18", maxAge: 18, worldPrize: 1_500_000,
+    titles: { "cobalt-lantern": "U18 Radiant Masters", "zenith-arc": "U18 Summit Conquest" } },
+  { id: "u20", label: "U20", maxAge: 20, worldPrize: 2_000_000,
+    titles: { "cobalt-lantern": "U20 Eternal Legacy", "zenith-arc": "U20 Infinity Crown" } },
 ];
+
+export const seriesName = (sponsor: { id: SeriesSponsor; name: string }, type: SelectTourType) =>
+  `${sponsor.name} ${type.titles[sponsor.id]}`;
 
 /** A sponsor needs a large market share to fund a full family of select tours. */
 export const SELECT_MIN_MARKET_WEIGHT = 8;
 const CANDIDATE_IDS = ['cobalt-lantern', 'zenith-arc'] as const;
 export const SELECT_SPONSORS = CANDIDATE_IDS
-  .map((id) => SPONSORSHIPS.find((s) => s.id === id))
-  .filter((s): s is NonNullable<typeof s> => !!s && s.marketWeight >= SELECT_MIN_MARKET_WEIGHT)
-  .map((s) => ({ id: s.id, name: s.name }));
+  .flatMap((id) => {
+    const sponsor = SPONSORSHIPS.find((s) => s.id === id);
+    return sponsor && sponsor.marketWeight >= SELECT_MIN_MARKET_WEIGHT ? [{ id, name: sponsor.name }] : [];
+  });
 
-export const SELECT_WORLD_PRIZE = 3_000_000;
 export const SELECT_BASE_SEATS = 1;
 export const SELECT_BOOST_SEATS = 2;
 export const SELECT_WORLD_FIELD = 256;
@@ -47,7 +66,28 @@ export function parseSelectSeries(seriesId?: string) {
 }
 export const allSelectSeries = () =>
   SELECT_SPONSORS.flatMap((sponsor) =>
-    SELECT_TOUR_TYPES.map((type) => ({ id: selectSeriesId(sponsor.id, type.id), sponsor, type, name: `${sponsor.name} ${type.label}` })));
+    SELECT_TOUR_TYPES.map((type) => ({ id: selectSeriesId(sponsor.id, type.id), sponsor, type, name: seriesName(sponsor, type) })));
+
+/** Refresh booked editions from older saves without moving their host or changing their ID. */
+export function refreshSeriesEdition<T extends { name: string; details?: EventDetails; status?: string }>(event: T): T {
+  const details = event.details;
+  const circuit = details?.qualificationCircuit;
+  const parsed = parseSelectSeries(circuit?.seriesId);
+  if (!details || !circuit?.selectTour || !parsed || event.status === "finished") return event;
+  const final = circuit.stage === "world";
+  const name = seriesName(parsed.sponsor, parsed.type);
+  const worldFinalName = `${name} — World Finals`;
+  const prize = final ? parsed.type.worldPrize : details.prize;
+  return {
+    ...event,
+    name: final ? worldFinalName : `${name} — National Qualifier`,
+    ...("prizeFund" in event && final ? { prizeFund: prize } : {}),
+    details: {
+      ...details, prize, gender: parsed.type.gender, maxAge: parsed.type.maxAge,
+      qualificationCircuit: { ...circuit, worldFinalName, selectTour: { ...circuit.selectTour, label: parsed.type.label } },
+    },
+  };
+}
 
 export const selectNpcEligible = (n: Pick<Npc, 'gender' | 'age'>, type?: SelectTourType) =>
   !type || ((!type.gender || n.gender === type.gender) && (type.maxAge === undefined || n.age <= type.maxAge));
@@ -98,6 +138,20 @@ export function applySelectLegacy(events: ScheduledEvent[], choices: Record<stri
   });
 }
 
+/** Older saves retain recent winners in their reward history. */
+export function openChampions(state: CompetitionState | undefined): Record<string, HallOfFameEntry> {
+  const champions = { ...state?.hallOfFame };
+  for (const winner of Object.values(state?.selectChoices ?? {})) {
+    if (parseSelectSeries(winner.seriesId)?.type.id === "open")
+      champions[winner.finalId] ??= hallOfFameEntry(winner);
+  }
+  return champions;
+}
+
+function hallOfFameEntry({ finalId, seriesId, year, winnerId, winnerName, country, by }: HallOfFameEntry): HallOfFameEntry {
+  return { finalId, seriesId, year, winnerId, winnerName, country, by };
+}
+
 /** NPC winners pick deterministically. */
 export const npcSelectChoice = (finalId: string): 'host' | 'quota' => (hashString(`${finalId}:select-reward`) % 2 === 0 ? 'host' : 'quota');
 
@@ -121,7 +175,9 @@ export function recordSelectWinner(state: CompetitionState, input: SelectWinnerI
     winnerId: input.winnerId, winnerName: input.winnerName, country: input.country, city,
     ...(input.isPlayer ? {} : { choice: npcSelectChoice(input.finalId) }), by: input.isPlayer ? 'player' : 'npc',
   };
-  return { ...state, selectChoices: Object.fromEntries(Object.entries({ ...(state.selectChoices ?? {}), [input.finalId]: entry }).slice(-60)) };
+  const hallOfFame = openChampions(state);
+  if (parsed.type.id === "open") hallOfFame[entry.finalId] ??= hallOfFameEntry(entry);
+  return { ...state, hallOfFame, selectChoices: Object.fromEntries(Object.entries({ ...(state.selectChoices ?? {}), [input.finalId]: entry }).slice(-60)) };
 }
 
 export const pendingSelectChoices = (state: CompetitionState | undefined) =>

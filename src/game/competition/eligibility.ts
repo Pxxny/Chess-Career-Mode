@@ -52,6 +52,7 @@ export function eligibilityIssues(
   issues.push(...teamEntryIssues(save, d?.teamEvent));
   if (d?.maxAge !== undefined && save.player.age > d.maxAge)
     issues.push(`Age ${d.maxAge} or younger`);
+  if (d?.gender === "male" && save.player.gender !== "male") issues.push("Men only");
   if (d?.gender === "female" && save.player.gender !== "female")
     issues.push("Women only");
   if (
@@ -134,7 +135,7 @@ export const requirementsText = (e: ScheduledEvent): string => {
     e.details?.minimumLeague ? `${e.details.minimumLeague} league` : null,
     e.details?.federation ? "federation member" : null,
     maxAge!==undefined?`age ${maxAge} or younger`:null,
-    e.details?.gender==='female'?'women only':null,
+    e.details?.gender==='female'?'women only':e.details?.gender==='male'?'men only':null,
     spec?.minAge!==undefined?`age ${spec.minAge}+`:null,
     e.details?.format==='team'?"national-team starting-roster selection":null,
   ]

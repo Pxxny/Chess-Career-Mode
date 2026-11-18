@@ -78,6 +78,7 @@ export function pickEventField(
       (n.careerStatus === "active" || n.careerStatus === "semi-retired") &&
       n.currentElo >= (event.minElo??0) &&
       (!d?.nationality || n.nationality === d.nationality) &&
+      (!d?.gender || n.gender === d.gender) &&
       (d?.maxAge === undefined || n.age <= d.maxAge),
   );
   if (d?.nationality)
@@ -132,6 +133,8 @@ export function createTournament(
         .filter(
           (n): n is Npc =>
             !!n &&
+            (!event.details?.gender || n.gender === event.details.gender) &&
+            (!event.details?.qualificationCircuit?.selectTour || event.details.maxAge === undefined || n.age <= event.details.maxAge) &&
             (n.careerStatus === "active" || n.careerStatus === "semi-retired"),
         )
         .slice(0, event.fieldSize - (input.npcOnly ? 0 : 1))

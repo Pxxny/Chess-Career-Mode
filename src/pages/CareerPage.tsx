@@ -1,3 +1,4 @@
+import { HallOfFame } from "@/features/career/HallOfFame";
 import { AcademyPanel } from "@/features/career/systems/AcademyPanel";
 import { SimulateSeason } from "@/features/career/SimulateSeason";
 import { SeasonPlan } from "@/features/career/SeasonPlan";
@@ -39,6 +40,7 @@ export function CareerPage() {
     "overview",
     "plan",
     "championship",
+    "hall-of-fame",
     "people",
     "business",
     "predictions",
@@ -101,6 +103,7 @@ export function CareerPage() {
           { id: "overview", label: "Overview" },
           { id: "plan", label: "Season plan" },
           { id: "championship", label: "Championship path" },
+          { id: "hall-of-fame", label: "Hall of Fame" },
           { id: "people", label: "People & stories" },
           { id: "business", label: "Sponsors & legacy" },
           { id: "predictions", label: "Match predictions" },
@@ -111,6 +114,8 @@ export function CareerPage() {
           <SeasonPlan />
         ) : view === "championship" ? (
           <ChampionshipPath />
+        ) : view === "hall-of-fame" ? (
+          <HallOfFame />
         ) : view === "people" ? (
           <PeopleStories />
         ) : view === "business" ? (

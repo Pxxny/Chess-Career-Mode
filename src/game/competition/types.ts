@@ -95,7 +95,7 @@ export interface EventDetails {
   /** Oldest age allowed to enter (junior events); absent for open events */
   maxAge?: number;
   /** Women-only entry */
-  gender?: "female";
+  gender?: "male" | "female";
   /** Concrete national-team edition (teams, boards, reserves) for team events */
   teamEvent?: TeamEventInfo;
 }
@@ -146,8 +146,13 @@ export interface SelectChoice {
   choice?: "host" | "quota";
   by: "player" | "npc";
 }
+export type HallOfFameEntry = Pick<SelectChoice,
+  "finalId" | "seriesId" | "year" | "winnerId" | "winnerName" | "country" | "by"
+>;
+
 export interface CompetitionState {
   circuitAwards?: Record<string,string[]>;
+  hallOfFame?: Record<string, HallOfFameEntry>;
   selectChoices?: Record<string, SelectChoice>;
   champion?: { id: string; name: string; year: number; eventId: string };
   target: string;

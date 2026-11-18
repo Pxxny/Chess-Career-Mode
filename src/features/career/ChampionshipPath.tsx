@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { QualificationMap } from "./QualificationMap";
 import { Card, CardTitle } from "@/components/ui";
 import { useSave } from "@/hooks/useGame";
@@ -11,6 +12,7 @@ export function ChampionshipPath() {
     titles = getTitleStatus(save.player, save.history);
   return (
     <div className="space-y-4" data-testid="championship-path">
+      <Link to="/career?view=hall-of-fame" className="inline-flex min-h-11 items-center font-semibold text-gold-300 underline">Hall of Fame</Link>
       <QualificationMap/>
       <Card><details><summary className="cursor-pointer font-semibold">Earned qualifications ({state.qualifications.length})</summary>{state.qualifications.length?<ul className="mt-3 space-y-2 text-sm">{state.qualifications.map((q,i)=><li key={i}><span>{CIRCUIT_LABELS[q.kind]??q.kind}</span> · {q.year}–{q.eventId?q.year:q.year+2} · <span translate="no">{q.source}</span></li>)}</ul>:<p className="mt-3 text-sm text-ink-muted">No qualifications earned yet.</p>}</details></Card>
       <Card data-testid="title-requirements">

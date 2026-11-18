@@ -235,6 +235,14 @@ export function startRegisteredTournament(
     };
   if (diff < 0)
     return { ok: false, error: "The event has already taken place." };
+  const d = reg.details;
+  if (d?.qualificationCircuit?.selectTour &&
+      ((d.gender && d.gender !== save.player.gender) || (d.maxAge !== undefined && save.player.age > d.maxAge))) {
+    const refunded = { ...save, player: addMoney(save.player, reg.entryFee + (reg.travelCost ?? 0)),
+      registrations: save.registrations.filter(r => r.eventId !== eventId) };
+    return { ok: true, save: news(refunded, `ineligible-${eventId}`, reg.name,
+      "You no longer meet this division’s entry requirements. Your registration and travel costs were refunded.") };
+  }
   save = arriveForEvent(save,reg);
   if (reg.details?.format === "team") {
     const result = createTeamTournament(
@@ -278,6 +286,8 @@ export function startRegisteredTournament(
   const eligible = npcs.filter(
     (n) =>
       (n.careerStatus === "active" || n.careerStatus === "semi-retired") &&
+      (!d?.gender || n.gender === d.gender) &&
+      (!d?.qualificationCircuit?.selectTour || d.maxAge === undefined || n.age <= d.maxAge) &&
       (!finalIds || finalIds.includes(n.id)),
   );
   if (!eligible.length) {
