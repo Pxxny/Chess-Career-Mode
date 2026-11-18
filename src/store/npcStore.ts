@@ -24,6 +24,13 @@ import {
   readNpcDatabase,
   writeNpcDatabase,
 } from "./npcRepository";
+import { rememberNpcWrites } from "./simulationJournal";
+
+async function persistChanged(careerId: string | null, dirty: Npc[]) {
+  if (!careerId || !dirty.length) return;
+  if (rememberNpcWrites(careerId, dirty)) return;
+  await putNpcs(dirty, careerId).catch(() => undefined);
+}
 
 interface NpcStore {
   status: "idle" | "loading" | "ready" | "error";
@@ -81,10 +88,10 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
       const npcs = upgradeNpcIdentities(merged.npcs);
       set({ npcs });
       const before = new Map(previous.map((n) => [n.id, n]));
-      await putNpcs(
-        npcs.filter((n) => before.get(n.id) !== n),
+      await persistChanged(
         careerId,
-      ).catch(() => undefined);
+        npcs.filter((n) => before.get(n.id) !== n),
+      );
     }
   },
   loadDatabase: async (career) => {
@@ -203,7 +210,7 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
     const changed = next.filter((npc, i) => npc !== previous[i]);
     if (changed.length) {
       set({ npcs: next });
-      if (careerId) await putNpcs(changed, careerId).catch(() => undefined);
+      await persistChanged(careerId, changed);
     }
     return { joined, retired };
   },
@@ -215,8 +222,7 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
     const dirty = npcs.filter((n, i) => n !== previous[i]);
     if (!dirty.length) return;
     set({ npcs });
-    const careerId = get().careerId;
-    if (careerId) await putNpcs(dirty, careerId).catch(() => undefined);
+    await persistChanged(get().careerId, dirty);
   },
 
   forgetCareer: async (careerId) => {

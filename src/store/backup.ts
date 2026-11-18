@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { highlightsSchema } from "@/game/career/highlights";
 import { readMatchArchive, mergeMatches, matchKey } from "./matchArchive";
+import { putEventIndex, putMatchIndex } from "./matchIndex";
 import { seasonOf } from "@/game/career/seasonSimulation";
 import { readEventArchive, archiveKey } from "./tournamentArchive";
 import {
@@ -242,6 +243,7 @@ export async function restoreBackup(
         STORES.meta,
         STORES.tournamentArchive,
         STORES.matchArchive,
+        STORES.matchIndex,
       ],
       "readwrite",
     );
@@ -275,6 +277,17 @@ export async function restoreBackup(
           key: archiveKey(id, event),
           event,
         });
+      const index = tx.objectStore(STORES.matchIndex);
+      putEventIndex(index, id, validated.payload.tournamentArchive ?? []);
+      putMatchIndex(
+        index,
+        id,
+        mergeMatches(
+          validated.payload.matchArchive ?? [],
+          save.matchArchivePending ?? [],
+          save.matches,
+        ),
+      );
     };
     tx.oncomplete = () => resolve();
     tx.onerror = tx.onabort = () =>

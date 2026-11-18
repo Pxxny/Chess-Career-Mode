@@ -11,6 +11,7 @@ import { getOpening } from "@/data/chess/openings";
 import { getCountry } from "@/data/world/countries";
 import type { Npc } from "@/types";
 import type { ReactNode } from "react";
+import { NpcHistoryPanel } from "@/features/history/HistoryBrowser";
 import { NpcSocialPanel } from "./NpcSocialPanel";
 import {
   playerDirectoryEntry,
@@ -169,6 +170,10 @@ export function NpcProfileModal({
         </div>
         <div className="sm:col-span-2">
           <p className="mb-1 text-sm text-ink-muted">Preferred openings</p>
+          <p className="text-xs text-ink-faint">
+            Repertoire preferences, not a win rate. Opening results appear only
+            when a game has real moves.
+          </p>
           <p className="text-sm font-semibold text-ink">{openings}</p>
         </div>
         <div>
@@ -217,6 +222,7 @@ export function NpcProfileModal({
         </div>
       )}
 
+      {save && <NpcHistoryPanel npcId={npc.id} npcName={npc.name} />}
       {save && <SharedMemories save={save} npcId={npc.id} />}
       <div className="mt-5">
         <p className="mb-2 text-sm text-ink-muted">Tournament history</p>

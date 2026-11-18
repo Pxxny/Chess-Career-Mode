@@ -1,4 +1,5 @@
 import type { GameSave, MatchRecord } from "@/types";
+import { putMatchIndex } from "@/store/matchIndex";
 import { STORES, transact } from "@/utils/idb";
 const listeners = new Set<() => void>();
 export const subscribeMatchArchive = (listener: () => void) => {
@@ -63,19 +64,25 @@ export async function writeMatchArchive(
   records: MatchRecord[],
 ) {
   if (typeof indexedDB === "undefined" || !records.length) return;
-  await transact([STORES.matchArchive], "readwrite", (tx) => {
-    for (const match of records) {
-      const store = tx.objectStore(STORES.matchArchive),
-        key = matchKey(careerId, match.id),
-        read = store.get(key);
-      read.onsuccess = () =>
-        store.put({
-          key,
-          match: mergeMatches(read.result ? [read.result.match] : [], [
-            match,
-          ])[0],
-        });
-    }
-  });
+  await transact(
+    [STORES.matchArchive, STORES.matchIndex],
+    "readwrite",
+    (tx) => {
+      const store = tx.objectStore(STORES.matchArchive);
+      const index = tx.objectStore(STORES.matchIndex);
+      for (const match of records) {
+        const key = matchKey(careerId, match.id),
+          read = store.get(key);
+        read.onsuccess = () => {
+          const stored = mergeMatches(
+            read.result ? [read.result.match] : [],
+            [match],
+          )[0];
+          store.put({ key, match: stored });
+          putMatchIndex(index, careerId, [stored]);
+        };
+      }
+    },
+  );
   listeners.forEach((fn) => fn());
 }

@@ -6,6 +6,7 @@ import { useGameStore } from "@/store/gameStore";
 import type { MatchAnalysisReport } from "@/types";
 import { translateUI } from "@/i18n/translate";
 import { useMatchRecords } from "@/hooks/useMatchRecords";
+import { OpeningReport } from "@/features/history/OpeningReport";
 import { downloadPgn } from "@/game/match/pgn";
 import {
   PredictionPanel,
@@ -301,14 +302,20 @@ export function MatchHistory() {
   const save = useSave();
   const [open, setOpen] = useState<string | null>(null);
   const records = useMatchRecords();
-  const [limit, setLimit] = useState(60);
+  const [limit, setLimit] = useState(50);
   const [query, setQuery] = useState(""),
-    [order, setOrder] = useState("newest");
-  const filtered = records.filter((m) =>
-    `${m.setup.white.name} ${m.setup.black.name} ${m.setup.tournament?.name ?? ""} ${m.openingName ?? ""} ${m.openingEco ?? ""} ${m.year}`
+    [order, setOrder] = useState("newest"),
+    [outcome, setOutcome] = useState("all"),
+    [timeControl, setTimeControl] = useState("all");
+  const times = [...new Set(records.map((m) => describeTimeControl(m.setup.timeControl)))];
+  const filtered = records.filter((m) => {
+    if (outcome !== "all" && m.outcome !== outcome) return false;
+    if (timeControl !== "all" && describeTimeControl(m.setup.timeControl) !== timeControl)
+      return false;
+    return `${m.setup.white.name} ${m.setup.black.name} ${m.setup.tournament?.name ?? ""} ${m.openingName ?? ""} ${m.openingEco ?? ""} ${m.year}`
       .toLowerCase()
-      .includes(query.toLowerCase()),
-  );
+      .includes(query.toLowerCase());
+  });
   const matches = order === "oldest" ? filtered : [...filtered].reverse();
   const match = matches.find((m) => m.id === open);
   if (match) return <Replay match={match} onClose={() => setOpen(null)} />;
@@ -323,10 +330,40 @@ export function MatchHistory() {
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
-            setLimit(60);
+            setLimit(50);
           }}
           className="min-w-0 flex-1 rounded-lg bg-navy-900 p-3"
         />
+        <select
+          aria-label="Result"
+          value={outcome}
+          onChange={(e) => {
+            setOutcome(e.target.value);
+            setLimit(50);
+          }}
+          className="rounded-lg bg-navy-900 p-3"
+        >
+          <option value="all">All results</option>
+          <option value="win">Wins</option>
+          <option value="draw">Draws</option>
+          <option value="loss">Losses</option>
+        </select>
+        <select
+          aria-label="Time control"
+          value={timeControl}
+          onChange={(e) => {
+            setTimeControl(e.target.value);
+            setLimit(50);
+          }}
+          className="rounded-lg bg-navy-900 p-3"
+        >
+          <option value="all">All time controls</option>
+          {times.map((time) => (
+            <option key={time} value={time}>
+              {time}
+            </option>
+          ))}
+        </select>
         <select
           aria-label="Match order"
           value={order}
@@ -343,10 +380,14 @@ export function MatchHistory() {
       >
         {matches.length} saved matches
       </p>
+      <div className="mb-4">
+        <p className="mb-1 text-sm text-ink-muted">Opening record</p>
+        <OpeningReport matches={records} />
+      </div>
       {matches.length > limit && (
         <button
           type="button"
-          onClick={() => setLimit((n) => n + 60)}
+          onClick={() => setLimit((n) => n + 50)}
           className="mb-3 text-gold-300 underline"
         >
           Show more saved matches
@@ -369,7 +410,9 @@ export function MatchHistory() {
               <li key={m.id}>
                 <button
                   type="button"
-                  onClick={() => setOpen(m.id)}
+                  onClick={() => {
+                    if (m.moves.length || m.recording?.ucis.length) setOpen(m.id);
+                  }}
                   className="flex w-full flex-wrap items-center gap-3 py-3 text-left hover:bg-white/5"
                 >
                   <ResultBadge outcome={m.outcome} />
@@ -384,6 +427,10 @@ export function MatchHistory() {
                       {m.setup.rated ? "Rated" : "Friendly"} ·{" "}
                       {describeTimeControl(m.setup.timeControl)} ·{" "}
                       {m.openingName ?? "Unknown opening"}
+                      {m.openingEco ? ` (${m.openingEco})` : ""}
+                      {m.moves.length || m.recording?.ucis.length
+                        ? " · replay"
+                        : " · no moves"}
                       {m.simulated ? " · simulated" : ""}
                     </span>
                   </span>

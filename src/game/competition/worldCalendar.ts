@@ -1,4 +1,5 @@
 import { GAME_CONFIG } from "@/data/config";
+import { span } from "@/diagnostics/spanSink";
 import { competitionOf } from "./preparation";
 import { circuitAllocation } from "./rollDown";
 import { recordSelectWinner } from "./selectTours";
@@ -104,6 +105,36 @@ export function calendarField(
   return previewEntrants(save, event, available);
 }
 
+/** Copies Elo values that applyNpcResult just produced. It does not rate the game again. */
+function writeBoardRatings(
+  event: ArchivedEvent,
+  stamps: ReadonlyArray<{
+    whiteEloBefore: number;
+    whiteEloAfter: number;
+    blackEloBefore: number;
+    blackEloAfter: number;
+  } | null>,
+) {
+  const targets = event.pairings.some((round) =>
+    round.some((board) => board.black !== "bye" && board.result !== null),
+  )
+    ? event.pairings.flatMap((round) =>
+        round.filter((board) => board.black !== "bye" && board.result !== null),
+      )
+    : (event.teamBoards ?? []).filter(
+        (board) => !board.forfeit && board.whiteId && board.blackId,
+      );
+  stamps.forEach((stamp, index) => {
+    const board = targets[index];
+    if (!stamp || !board) return;
+    board.matchKind = "result-only";
+    board.whiteEloBefore = stamp.whiteEloBefore;
+    board.whiteEloAfter = stamp.whiteEloAfter;
+    board.blackEloBefore = stamp.blackEloBefore;
+    board.blackEloAfter = stamp.blackEloAfter;
+  });
+}
+
 /** Apply exactly the recorded boards; never give a free random rating change. */
 function recordNpcBoards(
   event: ArchivedEvent,
@@ -122,10 +153,21 @@ function recordNpcBoards(
       before: number;
     }
   >();
-  for (const [boardIndex,b] of boards.entries()) {
+  const stamps: Array<{
+    whiteEloBefore: number;
+    whiteEloAfter: number;
+    blackEloBefore: number;
+    blackEloAfter: number;
+  } | null> = [];
+  for (const [boardIndex, b] of boards.entries()) {
     const w = npcs.get(b.white),
       bl = npcs.get(b.black);
-    if (!w || !bl) continue;
+    if (!w || !bl) {
+      stamps.push(null);
+      continue;
+    }
+    const whiteEloBefore = w.currentElo,
+      blackEloBefore = bl.currentElo;
     for (const [n, score, opponent] of [
       [w, b.score, bl],
       [bl, 1 - b.score, w],
@@ -154,7 +196,14 @@ function recordNpcBoards(
         ),
       );
     }
+    stamps.push({
+      whiteEloBefore,
+      whiteEloAfter: npcs.get(b.white)!.currentElo,
+      blackEloBefore,
+      blackEloAfter: npcs.get(b.black)!.currentElo,
+    });
   }
+  writeBoardRatings(event, stamps);
   for (const [id, s] of totals) {
     const npc = npcs.get(id)!,
       rank = ranks.get(id);
@@ -215,15 +264,19 @@ export function advanceCalendarTournaments(
     ...state.national.map((n) => n.event.id),
   ]);
   const sameDay = { ...before, calendarTournaments: state };
-  for (const event of annualEvents(before, before.world.date.year)) {
+  const roster = [...byNpc.values()];
+  for (const event of span("calendar.schedule", () =>
+    annualEvents(before, before.world.date.year),
+  )) {
     if (
       bookedStart(event) !== day ||
       reserved.has(event.id) ||
       already.has(event.id)
     )
       continue;
+    span("calendar.start", () => {
     const busy = calendarBusyIds(sameDay, event);
-    const available = [...byNpc.values()].filter((n) => !busy.has(n.id));
+    const available = roster.filter((n) => !busy.has(n.id));
     if (event.details?.format === "team") {
       const teams = buildEventTeams(
         before,
@@ -233,8 +286,8 @@ export function advanceCalendarTournaments(
       );
       if (teams.length >= 2) state.national.push({ event, teams });
     } else {
-      const field = calendarField(sameDay, event, [...byNpc.values()]);
-      if (field.length < 2) continue;
+      const field = calendarField(sameDay, event, roster);
+      if (field.length < 2) return;
       state.active.push({
         ...createTournament({
           npcOnly: true,
@@ -256,14 +309,20 @@ export function advanceCalendarTournaments(
         startedOnDay: day,
       });
     }
+    });
   }
   const active: ActiveTournament[] = [];
   for (let t of state.active) {
-    while (t.status === "playing" && tournamentSlot(t).absoluteDay <= day)
-      t = completeRound(t, null, {
-        ...predictionEnvironment(before),
-        player: undefined,
-      });
+    const played = span("calendar.rounds", () => {
+      let nextT = t;
+      while (nextT.status === "playing" && tournamentSlot(nextT).absoluteDay <= day)
+        nextT = completeRound(nextT, null, {
+          ...predictionEnvironment(before),
+          player: undefined,
+        });
+      return nextT;
+    });
+    t = played;
     if (t.status === "playing") {
       active.push(t);
       continue;
@@ -286,7 +345,8 @@ export function advanceCalendarTournaments(
           country: npc.nationality, city: npc.city, isPlayer: false,
         }) };
     }
-    recordNpcBoards(
+    span("calendar.record", () =>
+      recordNpcBoards(
       record,
       t.pairings
         .flat()
@@ -298,6 +358,7 @@ export function advanceCalendarTournaments(
       byNpc,
       ranks,
       t.prizeFund,
+      ),
     );
     records.push(record);
     next = {
@@ -312,7 +373,8 @@ export function advanceCalendarTournaments(
       national.push(entry);
       continue;
     }
-    const result = simulateTeamEvent(
+    const result = span("calendar.national", () =>
+      simulateTeamEvent(
       before,
       [...byNpc.values()],
       teamInfoOf(event.details),
@@ -324,6 +386,7 @@ export function advanceCalendarTournaments(
         ),
       ),
       true,
+      ),
     );
     const record: ArchivedEvent = {
       id: event.id,
@@ -354,6 +417,9 @@ export function advanceCalendarTournaments(
         white: b.white,
         black: b.black,
         score: b.score,
+        ...(b.whiteId ? { whiteId: b.whiteId } : {}),
+        ...(b.blackId ? { blackId: b.blackId } : {}),
+        ...(b.forfeit ? { forfeit: true } : {}),
       })),
       players: result.teams.map((t, i) => ({
         id: t.country,
@@ -374,13 +440,15 @@ export function advanceCalendarTournaments(
         ),
       ),
     );
-    recordNpcBoards(
+    span("calendar.record", () =>
+      recordNpcBoards(
       record,
       result.boards
         .filter((b) => !b.forfeit)
         .map((b) => ({ white: b.whiteId!, black: b.blackId!, score: b.score })),
       byNpc,
       ranks,
+      ),
     );
     records.push(record);
     next = {

@@ -6,6 +6,7 @@ import { COUNTRIES, getCountry } from '@/data/world/countries';
 import { getSeedCities } from '@/data/world/seedCities';
 import { hashString } from '@/utils/format';
 import { createRng } from '@/game/rng';
+import { span } from '@/diagnostics/spanSink';
 import { SELECT_SPONSORS, SELECT_TOUR_TYPES, SELECT_WORLD_PRIZE, SELECT_WORLD_FIELD, SELECT_BASE_SEATS, SELECT_BOOST_SEATS, selectSeriesId, selectTourType, selectNpcEligible } from './selectTours';
 
 export const CIRCUIT_SPONSORS = [
@@ -131,16 +132,61 @@ export function globalQualificationCalendar(year:number):ScheduledEvent[]{
 
 /** Background federation qualifiers use seeded game results. Real recorded results take precedence.
  * No NPC gains entry solely from a rating threshold; every selected ID has an advancing rank.
+ * The cache key is the circuit, the seed, and every field this function reads (identity, status,
+ * age, gender, baseline, and each history row's event, rank and qualification target). History
+ * length is not a key: two rows with the same count but different ranks must not collide.
+ * Stored values are ids, mapped back onto the array passed in, so a later rating change is visible.
  */
-const npcPools = new WeakMap<Npc[], Map<string, Npc[]>>();
+const fieldCache = new Map<string, string[]>();
+const dependencyByRoster = new WeakMap<Npc[], number>();
+function mixHash(hash: number, value: number): number {
+  return Math.imul(hash ^ value, 16777619);
+}
+function circuitDependency(npcs: Npc[]): number {
+  const known = dependencyByRoster.get(npcs);
+  if (known !== undefined) return known;
+  const text = (value: unknown) =>
+    hashString(typeof value === "string" ? value : "");
+  let hash = 2166136261;
+  for (const n of npcs) {
+    hash = mixHash(hash, text(n.id));
+    hash = mixHash(hash, text(n.nationality));
+    hash = mixHash(hash, text(n.careerStatus));
+    hash = mixHash(hash, n.age | 0);
+    hash = mixHash(hash, text(n.gender));
+    hash = mixHash(hash, (n.simulationPeakBase ?? n.potentialRating) | 0);
+    for (const row of n.tournamentHistory ?? []) {
+      hash = mixHash(hash, text(row.eventId));
+      hash = mixHash(hash, row.rank | 0);
+      hash = mixHash(hash, row.qualificationEvaluated ? 1 : 0);
+      hash = mixHash(hash, text(row.qualificationTarget));
+    }
+    hash = mixHash(hash, 0x9e3779b9);
+  }
+  const done = hash >>> 0;
+  dependencyByRoster.set(npcs, done);
+  return done;
+}
 export function circuitNpcField(event: Pick<ScheduledEvent, 'details'>, npcs: Npc[], seed: number): Npc[] {
+  return span("calendar.qualifiers", () => {
+    const c = event.details?.qualificationCircuit;
+    if (!c) return npcs;
+    const key = `${seed}:${circuitDependency(npcs)}:${JSON.stringify(c)}`;
+    const cached = fieldCache.get(key);
+    if (cached) {
+      const byId = new Map(npcs.map((n) => [n.id, n]));
+      const resolved = cached.map((id) => byId.get(id));
+      if (resolved.every((n): n is Npc => !!n)) return resolved;
+    }
+    const pool = circuitNpcFieldUncached(event, npcs, seed);
+    if (fieldCache.size > 64) fieldCache.clear();
+    fieldCache.set(key, pool.map((n) => n.id));
+    return pool;
+  });
+}
+function circuitNpcFieldUncached(event: Pick<ScheduledEvent, 'details'>, npcs: Npc[], seed: number): Npc[] {
   const c = event.details?.qualificationCircuit;
   if (!c) return npcs;
-  let cache = npcPools.get(npcs);
-  if (!cache) { cache = new Map(); npcPools.set(npcs, cache); }
-  const key = JSON.stringify([c, seed]);
-  const cached = cache.get(key); if (cached) return cached;
-  const remember = (pool: Npc[]) => { cache!.set(key, pool); return pool; };
   const active = npcs.filter((n) => n.careerStatus === 'active' || n.careerStatus === 'semi-retired');
   const byCountry = new Map<string, Npc[]>();
   for (const n of active) { const pool = byCountry.get(n.nationality) ?? []; pool.push(n); byCountry.set(n.nationality, pool); }
@@ -170,15 +216,15 @@ export function circuitNpcField(event: Pick<ScheduledEvent, 'details'>, npcs: Np
     const type = selectTourType(sel.type);
     const eligible = (code: string) => (byCountry.get(code) ?? []).filter((n) => selectNpcEligible(n, type));
     const seats = (code: string) => (sel.quotaBoost?.includes(code) ? SELECT_BOOST_SEATS : SELECT_BASE_SEATS);
-    if (c.stage === 'national') return remember(eligible(c.country!));
-    return remember([...byCountry.keys()].flatMap((code) => top(eligible(code), circuitEventId('national', c.season, code, 0, c.seriesId), seats(code))));
+    if (c.stage === 'national') return (eligible(c.country!));
+    return ([...byCountry.keys()].flatMap((code) => top(eligible(code), circuitEventId('national', c.season, code, 0, c.seriesId), seats(code))));
   }
   const local = (pool: Npc[], heat: number) => pool.filter((n) => hashString(`${c.season}:${n.id}:heat`) % 8 === heat);
   const national = (country: string, pool: Npc[]) => Array.from({length:8},(_,heat) => top(local(pool,heat), circuitEventId('local',c.season,country,heat,c.seriesId),circuitQuota('local',c.season,country,heat,c.seriesId))).flat();
   const continental = (continent: string) => [...byCountry].filter(([code]) => getCountry(code)?.continent === continent).flatMap(([code,pool]) => top(national(code,pool),circuitEventId('national',c.season,code,0,c.seriesId),circuitQuota('national',c.season,code,0,c.seriesId)));
-  if (c.stage === 'local') return remember(local(byCountry.get(c.country!) ?? [], c.heat!));
-  if (c.stage === 'national') return remember(national(c.country!,byCountry.get(c.country!) ?? []));
-  if (c.stage === 'continental') return remember(continental(c.continent!));
+  if (c.stage === 'local') return (local(byCountry.get(c.country!) ?? [], c.heat!));
+  if (c.stage === 'national') return (national(c.country!,byCountry.get(c.country!) ?? []));
+  if (c.stage === 'continental') return (continental(c.continent!));
   const continents = [...new Set([...byCountry.keys()].map((code) => getCountry(code)?.continent).filter((s): s is NonNullable<typeof s> => !!s && s !== 'Antarctica'))];
-  return remember(continents.flatMap((continent) => top(continental(continent),circuitEventId('continental',c.season,continent,0,c.seriesId),circuitQuota('continental',c.season,continent,0,c.seriesId))));
+  return (continents.flatMap((continent) => top(continental(continent),circuitEventId('continental',c.season,continent,0,c.seriesId),circuitQuota('continental',c.season,continent,0,c.seriesId))));
 }

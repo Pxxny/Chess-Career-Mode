@@ -1,4 +1,5 @@
 import type { ArchivedEvent } from "@/game/competition/archive";
+import { putEventIndex } from "@/store/matchIndex";
 import { STORES, transact } from "@/utils/idb";
 export const archiveKey = (
   careerId: string,
@@ -25,13 +26,13 @@ export async function writeEventArchive(
   careerId: string,
   records: ArchivedEvent[],
 ) {
-  if (typeof indexedDB === "undefined") return;
-  await transact([STORES.tournamentArchive], "readwrite", (tx) => {
+  if (typeof indexedDB === "undefined" || !records.length) return;
+  await transact([STORES.tournamentArchive, STORES.matchIndex], "readwrite", (tx) => {
+    const events = tx.objectStore(STORES.tournamentArchive);
+    const index = tx.objectStore(STORES.matchIndex);
     for (const event of records)
-      tx.objectStore(STORES.tournamentArchive).put({
-        key: archiveKey(careerId, event),
-        event,
-      });
+      events.put({ key: archiveKey(careerId, event), event });
+    putEventIndex(index, careerId, records);
   });
 }
 /** Legacy summaries may fill gaps, but must never replace an archive with full pairings. */
@@ -40,14 +41,21 @@ export async function writeMissingEventArchive(
   records: ArchivedEvent[],
 ) {
   if (typeof indexedDB === "undefined" || !records.length) return;
-  await transact([STORES.tournamentArchive], "readwrite", (tx) => {
-    const store = tx.objectStore(STORES.tournamentArchive);
-    for (const event of records) {
-      const key = archiveKey(careerId, event),
-        request = store.get(key);
-      request.onsuccess = () => {
-        if (request.result === undefined) store.put({ key, event });
-      };
-    }
-  });
+  await transact(
+    [STORES.tournamentArchive, STORES.matchIndex],
+    "readwrite",
+    (tx) => {
+      const store = tx.objectStore(STORES.tournamentArchive);
+      const index = tx.objectStore(STORES.matchIndex);
+      for (const event of records) {
+        const key = archiveKey(careerId, event),
+          request = store.get(key);
+        request.onsuccess = () => {
+          if (request.result !== undefined) return;
+          store.put({ key, event });
+          putEventIndex(index, careerId, [event]);
+        };
+      }
+    },
+  );
 }

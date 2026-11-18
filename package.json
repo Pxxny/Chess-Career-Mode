@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "postinstall": "node scripts/build-world-data.mjs && node scripts/copy-engine.mjs",
     "build:data": "node scripts/build-world-data.mjs --force",
-    "test": "vitest run"
+    "test": "vitest run",
+    "profile:advance": "PROFILE_ADVANCE=1 vitest run src/diagnostics/advanceProfile.test.ts"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.3.0",

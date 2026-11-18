@@ -16,6 +16,7 @@ import { swissPairings } from "@/game/competition/swiss";
 import { GAME_CONFIG } from "@/data/config";
 import { expectedScore } from "@/game/history/elo";
 import { createRng, mixSeed, type Rng } from "@/game/rng";
+import { span } from "@/diagnostics/spanSink";
 import type { ScheduledEvent } from "@/game/world/schedule";
 import type {
   ActiveTournament,
@@ -316,7 +317,7 @@ export function startRound(
   const next: ActiveTournament = freezeTournamentRound(
     {
       ...t,
-      pairings: [...t.pairings, pairRound(t)],
+      pairings: [...t.pairings, span("calendar.pair", () => pairRound(t))],
     },
     env,
   );
@@ -358,7 +359,8 @@ export function simulateResult(
   elite: boolean,
   rng: Rng,
 ): number {
-  const prediction = predictMatch({
+  const prediction = span("calendar.predict", () =>
+    predictMatch({
     id: "ratings-only-npc",
     player: ratingActor(whiteElo, "White"),
     opponent: ratingActor(blackElo, "Black"),
@@ -367,7 +369,8 @@ export function simulateResult(
       "white",
       "tournament",
     ),
-  });
+    }),
+  );
   return scoreOf(sampleOutcome(prediction.adjusted, rng.next()));
 }
 
@@ -390,8 +393,8 @@ export function completeRound(
     opponents: [...p.opponents],
     colors: [...p.colors],
   }));
-  const get = (id: string): TournamentPlayer =>
-    players.find((p) => p.id === id)!;
+  const byPlayer = new Map(players.map((p) => [p.id, p]));
+  const get = (id: string): TournamentPlayer => byPlayer.get(id)!;
   const rng = createRng(mixSeed(t.seed, 0x1000 + t.round));
   const roundPairings = t.pairings[t.round - 1].map((p) => ({ ...p }));
   for (const p of roundPairings) {

@@ -77,39 +77,52 @@ export function maximumMatching(graph: readonly number[][]): number[] {
   for (let v = 0; v < n; v++) if (match[v] === -1) augment(v);
   return match;
 }
-const balance = (p: TournamentPlayer): number =>
-  p.colors.reduce((s, c) => s + c, 0);
-const colorPenalty = (p: TournamentPlayer, color: number): number => {
-  const played = p.colors.filter((c) => c !== 0),
-    last = played.slice(-2);
+const balanceOf = (colors: readonly number[]): number => {
+  let sum = 0;
+  for (const c of colors) sum += c;
+  return sum;
+};
+interface PairSide {
+  met: Set<string>;
+  balance: number;
+  lastTwo: number[];
+}
+const sideOf = (p: TournamentPlayer): PairSide => {
+  const lastTwo: number[] = [];
+  for (const c of p.colors) if (c !== 0) lastTwo.push(c);
+  return {
+    met: new Set(p.opponents),
+    balance: balanceOf(p.colors),
+    lastTwo: lastTwo.slice(-2),
+  };
+};
+const colorPenaltyOf = (side: PairSide, color: number): number => {
+  const last = side.lastTwo;
   return (
-    Math.abs(balance(p) + color) * 3 +
-    (last.length === 2 && last.every((c) => c === color) ? 20 : 0)
+    Math.abs(side.balance + color) * 3 +
+    (last.length === 2 && last[0] === color && last[1] === color ? 20 : 0)
   );
 };
-function orientation(
-  a: TournamentPlayer,
-  b: TournamentPlayer,
+function orientationOf(
+  a: PairSide,
+  b: PairSide,
+  aElo: number,
+  bElo: number,
   round: number,
-): [TournamentPlayer, TournamentPlayer] {
-  const ab = colorPenalty(a, 1) + colorPenalty(b, -1),
-    ba = colorPenalty(a, -1) + colorPenalty(b, 1);
-  return ab < ba ||
-    (ab === ba && (round % 2 === 1 ? a.elo >= b.elo : a.elo < b.elo))
+): [PairSide, PairSide] {
+  const ab = colorPenaltyOf(a, 1) + colorPenaltyOf(b, -1),
+    ba = colorPenaltyOf(a, -1) + colorPenaltyOf(b, 1);
+  return ab < ba || (ab === ba && (round % 2 === 1 ? aElo >= bElo : aElo < bElo))
     ? [a, b]
     : [b, a];
 }
-const compatible = (
-  a: TournamentPlayer,
-  b: TournamentPlayer,
-  round: number,
-): boolean => {
-  const [w, bk] = orientation(a, b, round);
+const compatibleOf = (a: PairSide, b: PairSide, aElo: number, bElo: number, round: number): boolean => {
+  const [w, bk] = orientationOf(a, b, aElo, bElo, round);
   return (
-    colorPenalty(w, 1) < 20 &&
-    colorPenalty(bk, -1) < 20 &&
-    Math.abs(balance(w) + 1) <= 2 &&
-    Math.abs(balance(bk) - 1) <= 2
+    colorPenaltyOf(w, 1) < 20 &&
+    colorPenaltyOf(bk, -1) < 20 &&
+    Math.abs(w.balance + 1) <= 2 &&
+    Math.abs(bk.balance - 1) <= 2
   );
 };
 /** Score-group matching, colour preferences, one bye per player where possible, rematches only if unavoidable.
@@ -141,29 +154,45 @@ export function swissPairings(
           if (Boolean(bye?.opponents.includes("bye")) !== repeatedBye) continue;
           const pool = sorted.filter((p) => p !== bye),
             half = pool.length / 2;
-          const graph = pool.map((a, i) =>
-            pool
-              .map((b, j) => j)
-              .filter(
-                (j) =>
-                  j !== i &&
-                  (allowRepeats ||
-                    (!a.opponents.includes(pool[j].id) &&
-                      !pool[j].opponents.includes(a.id))) &&
-                  (!strictColors || compatible(a, pool[j], round)),
+          const sides = pool.map(sideOf);
+          const graph = sides.map((a, i) => {
+            const edges: number[] = [];
+            for (let j = 0; j < pool.length; j++) {
+              if (j === i) continue;
+              const b = sides[j];
+              if (
+                !allowRepeats &&
+                (a.met.has(pool[j].id) || b.met.has(pool[i].id))
               )
-              .sort((j, k) => {
-                const cost = (x: number): number =>
-                  Math.abs(a.points - pool[x].points) * 10000 +
-                  (a.opponents.includes(pool[x].id) ? 1000000 : 0) +
-                  (round === 1
-                    ? Math.abs((i < half ? i + half : i - half) - x) * 100
-                    : Math.abs(i - x) * 10) +
-                  colorPenalty(orientation(a, pool[x], round)[0], 1) +
-                  colorPenalty(orientation(a, pool[x], round)[1], -1);
-                return cost(j) - cost(k) || j - k;
-              }),
-          );
+                continue;
+              if (
+                strictColors &&
+                !compatibleOf(a, b, pool[i].elo, pool[j].elo, round)
+              )
+                continue;
+              edges.push(j);
+            }
+            const cost = (x: number): number => {
+              const [w, bk] = orientationOf(
+                a,
+                sides[x],
+                pool[i].elo,
+                pool[x].elo,
+                round,
+              );
+              return (
+                Math.abs(pool[i].points - pool[x].points) * 10000 +
+                (a.met.has(pool[x].id) ? 1000000 : 0) +
+                (round === 1
+                  ? Math.abs((i < half ? i + half : i - half) - x) * 100
+                  : Math.abs(i - x) * 10) +
+                colorPenaltyOf(w, 1) +
+                colorPenaltyOf(bk, -1)
+              );
+            };
+            edges.sort((j, k) => cost(j) - cost(k) || j - k);
+            return edges;
+          });
           const matching = maximumMatching(graph);
           if (matching.some((m) => m < 0)) continue;
           const result: TournamentPairing[] = bye
@@ -171,8 +200,16 @@ export function swissPairings(
             : [];
           matching.forEach((j, i) => {
             if (j > i) {
-              const [w, b] = orientation(pool[i], pool[j], round);
-              result.push({ white: w.id, black: b.id, result: null });
+              const [w, b] = orientationOf(
+                sides[i],
+                sides[j],
+                pool[i].elo,
+                pool[j].elo,
+                round,
+              );
+              const white = w === sides[i] ? pool[i] : pool[j];
+              const black = w === sides[i] ? pool[j] : pool[i];
+              result.push({ white: white.id, black: black.id, result: null });
             }
           });
           return result;

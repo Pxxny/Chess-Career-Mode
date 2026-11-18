@@ -184,6 +184,10 @@ function buildSchedule(
 }
 
 const annualCache = new Map<string, ScheduledEvent[]>();
+/** Test and baseline runs start from an empty host cache. Gameplay never needs this. */
+export function clearScheduleCache(): void {
+  annualCache.clear();
+}
 export function regionForSave(save: GameSave): Region {
   const country = getCountry(save.player.country);
   return { city: save.player.city.name, countryCode: save.player.country,

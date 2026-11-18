@@ -90,7 +90,7 @@ import {
   type CoachTerm,
 } from "@/game/career/expansion";
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import { persist, type StorageValue } from "zustand/middleware";
 import { GAME_CONFIG } from "@/data/config";
 import { createNewSave } from "@/game/createNewSave";
 import { upgradeSave } from "@/game/training/migrate";
@@ -142,6 +142,7 @@ import type {
   SituationId,
 } from "@/types";
 import { slotManager, summarize } from "./saveSlots";
+import { rememberSave, holdSimulation, releaseSimulation, simulationActive, simulationPending, flushSimulation } from "./simulationJournal";
 import { useNpcStore } from "./npcStore";
 
 let calendarCancelled = false;
@@ -360,6 +361,7 @@ export const useGameStore = create<GameStore>()(
           runMs: 0,
         };
         calendarCancelled = false;
+        holdSimulation();
         const progress = (save: GameSave) => ({
           days: Math.max(0, gameDay(save) - state.startDay),
           total: state.targetDay - state.startDay,
@@ -373,6 +375,7 @@ export const useGameStore = create<GameStore>()(
         const client = createSeasonGameClient();
         const runStarted = performance.now();
         const pastRunMs = state.timing?.runMs ?? 0;
+        let outcome: { ok: true } | { ok: false; error: string } = { ok: true };
         try {
           const db = getBaseOpeningDatabase();
           await runSeason({
@@ -418,7 +421,6 @@ export const useGameStore = create<GameStore>()(
             },
             yield: () => new Promise<void>((r) => setTimeout(r, 0)),
           });
-          return { ok: true };
         } catch (error) {
           const message =
             error instanceof Error
@@ -432,7 +434,7 @@ export const useGameStore = create<GameStore>()(
                 notes: [message],
               }),
             });
-          return { ok: false, error: message };
+          outcome = { ok: false, error: message };
         } finally {
           client.dispose();
           const current = get().save;
@@ -449,7 +451,21 @@ export const useGameStore = create<GameStore>()(
               });
           }
           set({ seasonRunning: false, calendarProgress: null });
+          try {
+            await releaseSimulation();
+            flushTournamentArchive();
+            flushMatches();
+          } catch (error) {
+            outcome = {
+              ok: false,
+              error:
+                error instanceof Error
+                  ? `${error.message} The previous save is unchanged.`
+                  : "Could not save the season. The previous save is unchanged.",
+            };
+          }
         }
+        return outcome;
       },
       broadcastCheckpoint: (context, state) => {
         const save = get().save;
@@ -589,6 +605,7 @@ export const useGameStore = create<GameStore>()(
           notes: [],
         };
         calendarCancelled = false;
+        holdSimulation();
         set({ calendarProgress: { days: 0, total, target: stop.name } });
         try {
           for (let day = 0; day < total; day++) {
@@ -643,6 +660,19 @@ export const useGameStore = create<GameStore>()(
           calendarOwned = false;
           calendarDaySave = null;
           set({ calendarProgress: null });
+          try {
+            await releaseSimulation();
+            flushTournamentArchive();
+            flushMatches();
+          } catch (error) {
+            return {
+              ok: false,
+              error:
+                error instanceof Error
+                  ? `${error.message} Completed days stay in memory; the previous save is unchanged.`
+                  : "Could not save the calendar. The previous save is unchanged.",
+            };
+          }
         }
       },
       clearSave: async () => {
@@ -1264,7 +1294,24 @@ export const useGameStore = create<GameStore>()(
     {
       name: GAME_CONFIG.saveKey,
       version: GAME_CONFIG.saveVersion,
-      storage: createJSONStorage(() => slotManager.storage),
+      storage: {
+        getItem: async () => {
+          const raw = await slotManager.storage.getItem();
+          return raw ? (JSON.parse(raw) as StorageValue<unknown>) : null;
+        },
+        setItem: async (name, value: StorageValue<unknown>) => {
+          if (
+            rememberSave(name, {
+              state: value.state,
+              version: value.version ?? 0,
+            })
+          )
+            return;
+          if (simulationPending()) await flushSimulation();
+          return slotManager.storage.setItem(name, JSON.stringify(value));
+        },
+        removeItem: () => slotManager.storage.removeItem(),
+      },
       partialize: (state) => ({ save: state.save }),
       migrate: migrateSave,
       // `migrate` only runs when the stored version differs from the current one, so a save written by an earlier build of
@@ -1325,7 +1372,9 @@ useNpcStore.subscribe((state, previous) => {
 
 // A single flush per career. Outbox records remain in the save if storage fails.
 const archiveFlushes = new Set<string>();
+const archiveAttempts = new Map<string, number>();
 function flushTournamentArchive() {
+  if (simulationActive()) return;
   const save = useGameStore.getState().save;
   if (
     !save?.tournamentArchivePending?.length ||
@@ -1338,6 +1387,7 @@ function flushTournamentArchive() {
   archiveFlushes.add(careerId);
   void writeEventArchive(careerId, pending)
     .then(() => {
+      archiveAttempts.delete(careerId);
       const current = useGameStore.getState().save;
       if (current?.career.id !== careerId) return;
       const written = new Map(pending.map((e) => [e.id, e]));
@@ -1350,13 +1400,17 @@ function flushTournamentArchive() {
         },
       });
     })
-    .catch(() => undefined)
+    .catch(() => {
+      const attempt = (archiveAttempts.get(careerId) ?? 0) + 1;
+      archiveAttempts.set(careerId, attempt);
+    })
     .finally(() => {
       archiveFlushes.delete(careerId);
       const current = useGameStore.getState().save;
+      const retry = (archiveAttempts.get(careerId) ?? 0) > 0 && (archiveAttempts.get(careerId) ?? 0) < 3;
       if (
         current?.career.id === careerId &&
-        current.tournamentArchivePending?.some((e) => !pending.includes(e))
+        (retry || current.tournamentArchivePending?.some((e) => !pending.includes(e)))
       )
         flushTournamentArchive();
     });
@@ -1382,7 +1436,9 @@ useGameStore.subscribe((state, previous) => {
 });
 
 const matchFlushes = new Set<string>();
+const matchAttempts = new Map<string, number>();
 function flushMatches() {
+  if (simulationActive()) return;
   const save = useGameStore.getState().save;
   if (
     !save ||
@@ -1396,6 +1452,7 @@ function flushMatches() {
   matchFlushes.add(id);
   void writeMatchArchive(id, pending)
     .then(() => {
+      matchAttempts.delete(id);
       const current = useGameStore.getState().save;
       if (current?.career.id !== id) return;
       const written = new Map(pending.map((m) => [m.id, m]));
@@ -1408,13 +1465,16 @@ function flushMatches() {
         },
       });
     })
-    .catch(() => {})
+    .catch(() => {
+      matchAttempts.set(id, (matchAttempts.get(id) ?? 0) + 1);
+    })
     .finally(() => {
       matchFlushes.delete(id);
       const current = useGameStore.getState().save;
+      const retry = (matchAttempts.get(id) ?? 0) > 0 && (matchAttempts.get(id) ?? 0) < 3;
       if (
         current?.career.id === id &&
-        current.matchArchivePending?.some((m) => !pending.includes(m))
+        (retry || current.matchArchivePending?.some((m) => !pending.includes(m)))
       )
         flushMatches();
     });

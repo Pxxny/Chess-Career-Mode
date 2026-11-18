@@ -127,7 +127,6 @@ export function simulateWorldCircuit(save: GameSave, npcs: Npc[]) {
         });
         const result = sampleOutcome(prediction.adjusted, rng.next()),
           score = scoreOf(result);
-        pairings.push({ white: wId, black: bkId, result: score });
         observations.push({
           prediction,
           result,
@@ -146,11 +145,33 @@ export function simulateWorldCircuit(save: GameSave, npcs: Npc[]) {
           totals.draws += Number(s === 0.5);
           totals.losses += Number(s === 0);
         }
-        byId.set(wId, applyNpcResult(white, result, black.currentElo,{id:`${eventId}:${round}:${wId}`,at:gameDay(save)*1440+round+1}));
-        byId.set(
-          bkId,
-          applyNpcResult(black, outcomeOf(1 - score), white.currentElo,{id:`${eventId}:${round}:${bkId}`,at:gameDay(save)*1440+round+1}),
+        const whiteBefore = white.currentElo,
+          blackBefore = black.currentElo;
+        const whiteNext = applyNpcResult(white, result, black.currentElo, {
+          id: `${eventId}:${round}:${wId}`,
+          at: gameDay(save) * 1440 + round + 1,
+        });
+        const blackNext = applyNpcResult(
+          black,
+          outcomeOf(1 - score),
+          white.currentElo,
+          {
+            id: `${eventId}:${round}:${bkId}`,
+            at: gameDay(save) * 1440 + round + 1,
+          },
         );
+        byId.set(wId, whiteNext);
+        byId.set(bkId, blackNext);
+        pairings.push({
+          white: wId,
+          black: bkId,
+          result: score,
+          matchKind: "result-only",
+          whiteEloBefore: whiteBefore,
+          whiteEloAfter: whiteNext.currentElo,
+          blackEloBefore: blackBefore,
+          blackEloAfter: blackNext.currentElo,
+        });
       }
       seats.splice(1, 0, seats.pop()!);
     }

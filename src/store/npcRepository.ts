@@ -92,11 +92,12 @@ export const idbNpcBackend: NpcBackend = {
 
   deleteAll: async (careerId) => {
     await transact(
-      [STORES.careerNpcs, STORES.meta, STORES.tournamentArchive, STORES.matchArchive],
+      [STORES.careerNpcs, STORES.meta, STORES.tournamentArchive, STORES.matchArchive, STORES.matchIndex],
       "readwrite",
       (tx) => {
         tx.objectStore(STORES.tournamentArchive).delete(careerRange(careerId));
         tx.objectStore(STORES.matchArchive).delete(careerRange(careerId));
+        tx.objectStore(STORES.matchIndex).delete(careerRange(careerId));
         tx.objectStore(STORES.careerNpcs).delete(careerRange(careerId));
         tx.objectStore(STORES.meta).delete(metaKeyFor(careerId));
       },

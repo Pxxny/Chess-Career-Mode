@@ -37,21 +37,35 @@ export interface ArchivedEvent {
       boardPoints?: number;
     }
   >;
-  pairings: Array<
-    Array<
-      Pick<
-        TournamentPairing,
-        "white" | "black" | "result" | "tiebreakWinner" | "broadcast"
-      >
-    >
-  >;
+  pairings: ArchivedBoard[][];
   gamesPerEntrant?: number;
   teamBoards?: Array<{
     round: number;
     white: string;
     black: string;
     score: number;
+    whiteId?: string;
+    blackId?: string;
+    forfeit?: boolean;
+    matchKind?: "result-only";
+    whiteEloBefore?: number;
+    whiteEloAfter?: number;
+    blackEloBefore?: number;
+    blackEloAfter?: number;
   }>;
+}
+/** One stored board. Result-only games carry no moves, ECO or opening. */
+export interface ArchivedBoard {
+  white: string;
+  black: string;
+  result: number | null;
+  tiebreakWinner?: string;
+  broadcast?: TournamentPairing["broadcast"];
+  matchKind?: "result-only" | "full-replay";
+  whiteEloBefore?: number;
+  whiteEloAfter?: number;
+  blackEloBefore?: number;
+  blackEloAfter?: number;
 }
 export const eventKind = (e: {
   details?: { format?: string; teamEvent?: unknown };

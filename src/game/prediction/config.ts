@@ -56,9 +56,11 @@ export const bounded = (
   fallback = lo,
 ): number => (Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fallback);
 /** Runtime validation also covers imported save data; NaN and missing fields never enter probability arithmetic. */
+let defaultPredictionConfig: PredictionConfig | null = null;
 export function normalizePredictionConfig(
   raw?: Partial<PredictionConfig>,
 ): PredictionConfig {
+  if (!raw && defaultPredictionConfig) return defaultPredictionConfig;
   const c = {
     ...DEFAULT_PREDICTION_CONFIG,
     timeDraw: { ...DEFAULT_PREDICTION_CONFIG.timeDraw },
@@ -82,5 +84,6 @@ export function normalizePredictionConfig(
       c.whiteElo[time],
     );
   }
+  if (!raw) defaultPredictionConfig = c;
   return c;
 }

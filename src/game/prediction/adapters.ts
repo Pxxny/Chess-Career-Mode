@@ -1,4 +1,5 @@
 import { openingEvidence, evidenceCode } from "./openingEvidence";
+import { span } from "@/diagnostics/spanSink";
 import { getBookOpening } from "@/data/chess/openingBook";
 import type {
   ActiveTournament,
@@ -359,23 +360,23 @@ export function freezeTournamentRound(
                   }
                 : original;
             };
+            const white = actor(w),
+              black = actor(b);
+            const base = conditionsFor(
+              t.timeControl.category,
+              "white",
+              t.details?.category ?? t.details?.format ?? "swiss",
+            );
             return {
               ...p,
-              prediction: predictMatch({
+              prediction: span("calendar.predict", () =>
+                predictMatch({
                 id: `t:${t.year}:${t.eventId}:${t.seed}:${t.round}:${p.white}:${p.black}`,
                 stamp: env?.stamp ?? { year: t.year, week: t.week, day: 1 },
-                player: actor(w),
-                opponent: actor(b),
+                player: white,
+                opponent: black,
                 conditions: {
-                  ...plannedOpeningConditions(
-                    actor(w),
-                    actor(b),
-                    conditionsFor(
-                      t.timeControl.category,
-                      "white",
-                      t.details?.category ?? t.details?.format ?? "swiss",
-                    ),
-                  ),
+                  ...plannedOpeningConditions(white, black, base),
                   importance:
                     t.level === "elite" ? 1 : t.level === "local" ? 0.3 : 0.65,
                   pressure: t.round / t.rounds,
@@ -386,6 +387,7 @@ export function freezeTournamentRound(
                 },
                 state: env?.state,
               }),
+              ),
             };
           }),
     ),
