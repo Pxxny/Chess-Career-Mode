@@ -1,0 +1,24 @@
+{
+  "builds": [
+    {
+      "file": "stockfish-nnue-16-single.js",
+      "label": "Stockfish",
+      "requiresIsolation": false
+    },
+    {
+      "file": "stockfish-nnue-16-no-simd.js",
+      "label": "Stockfish (multi-thread)",
+      "requiresIsolation": true
+    },
+    {
+      "file": "stockfish-nnue-16-no-Worker.js",
+      "label": "Stockfish (multi-thread)",
+      "requiresIsolation": true
+    },
+    {
+      "file": "stockfish-nnue-16.js",
+      "label": "Stockfish (multi-thread)",
+      "requiresIsolation": true
+    }
+  ]
+}

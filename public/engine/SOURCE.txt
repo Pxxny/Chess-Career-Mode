@@ -1,0 +1,11 @@
+# Stockfish 16.0.0
+
+These generated engine files come from the stockfish npm package, version 16.0.0.
+
+Upstream project and source: https://github.com/nmrugg/stockfish.js
+Exact npm package: https://registry.npmjs.org/stockfish/-/stockfish-16.0.0.tgz
+Official Stockfish source: https://github.com/official-stockfish/Stockfish
+
+License: GPLv3; see license.txt, Copying.txt and AUTHORS in this directory.
+The installed single-thread build defaults to classical evaluation (Use NNUE = false).
+This app preserves that default and does not load the optional neural-network file.

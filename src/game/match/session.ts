@@ -622,6 +622,21 @@ export class MatchSession {
       this.thinking = null;
       if (this.commit(uci, spent))
         measuredMove({ speed: speedAtStart, book: fromBook, status: "ok" });
+      else if (!stale()) {
+        // The chosen move was rejected (for example the referees disagreed). Play any other legal move, or resign.
+        const remaining = legalMoves(currentPosition(this.game));
+        const fallback =
+          remaining.find((m) => moveToUci(m) !== uci) ?? remaining[0];
+        if (fallback && this.commit(moveToUci(fallback), spent)) {
+          this.notice = "The engine had a problem. A fallback move was played.";
+          measuredMove({ speed: speedAtStart, status: "fallback" });
+        } else if (!stale() && this.status === "running") {
+          this.finishGame({
+            result: color === "white" ? "black" : "white",
+            reason: "resignation",
+          });
+        }
+      }
     } catch (error) {
       if (stale()) return;
       logWarn(

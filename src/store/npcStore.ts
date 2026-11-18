@@ -26,7 +26,9 @@ import {
 } from "./npcRepository";
 
 interface NpcStore {
-  status: "idle" | "loading" | "ready";
+  status: "idle" | "loading" | "ready" | "error";
+  /** Why the last load failed, when status is "error" */
+  error: string | null;
   /** Career whose NPC database is currently loaded */
   careerId: string | null;
   startYear: number;
@@ -54,6 +56,7 @@ interface NpcStore {
 
 export const useNpcStore = create<NpcStore>()((set, get) => ({
   status: "idle",
+  error: null,
   careerId: null,
   startYear: 0,
   playerDatabase: undefined,
@@ -85,68 +88,81 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
     }
   },
   loadDatabase: async (career) => {
-    if (get().careerId === career.id && get().status !== "idle") return;
+    if (get().careerId === career.id && get().status !== "idle" && get().status !== "error") return;
     set({
       status: "loading",
+      error: null,
       careerId: career.id,
       startYear: career.startYear,
       playerDatabase: career.playerDatabase,
     });
     try {
-      const stored = await readNpcDatabase(career);
-      // The player may have switched characters while this one was loading.
-      if (get().careerId !== career.id) return;
-      const growing =
-        stored.meta?.databaseKey === career.databaseKey &&
-        stored.meta?.schemaVersion === GAME_CONFIG.world.npcDatabaseVersion &&
-        stored.meta.fictionalCount < fictionalCountFor(career);
-      if (
-        (growing || isMetaCurrent(stored.meta, career)) &&
-        stored.npcs.length > 0
-      ) {
-        const grow =
-          !!stored.meta &&
+      try {
+        const stored = await readNpcDatabase(career);
+        // The player may have switched characters while this one was loading.
+        if (get().careerId !== career.id) return;
+        const growing =
+          stored.meta?.databaseKey === career.databaseKey &&
+          stored.meta?.schemaVersion === GAME_CONFIG.world.npcDatabaseVersion &&
           stored.meta.fictionalCount < fictionalCountFor(career);
-        const candidates = [
-          ...(!realOnly(career)
-            ? grow
-              ? buildWorldNpcs(career.startYear, fictionalCountFor(career))
-              : buildLegendNpcs()
-            : []),
-          ...(!realOnly(career)
-            ? localCompetitors(
-                career.countryCode,
-                career.city.name,
-                career.startYear,
-              )
-            : []),
-        ];
-        const merged = mergeNpcAdditions(stored.npcs, candidates);
-        const upgraded = upgradeNpcIdentities(merged.npcs);
-        set({ npcs: upgraded });
-        if (grow)
-          await writeNpcDatabase(upgraded, career).catch(() => undefined);
-        else if (merged.added.length || upgraded !== merged.npcs) {
-          const oldById = new Map(stored.npcs.map((n) => [n.id, n]));
-          await putNpcs(
-            upgraded.filter((n) => oldById.get(n.id) !== n),
-            career.id,
-          ).catch(() => undefined);
+        if (
+          (growing || isMetaCurrent(stored.meta, career)) &&
+          stored.npcs.length > 0
+        ) {
+          const grow =
+            !!stored.meta &&
+            stored.meta.fictionalCount < fictionalCountFor(career);
+          const candidates = [
+            ...(!realOnly(career)
+              ? grow
+                ? buildWorldNpcs(career.startYear, fictionalCountFor(career))
+                : buildLegendNpcs()
+              : []),
+            ...(!realOnly(career)
+              ? localCompetitors(
+                  career.countryCode,
+                  career.city.name,
+                  career.startYear,
+                )
+              : []),
+          ];
+          const merged = mergeNpcAdditions(stored.npcs, candidates);
+          const upgraded = upgradeNpcIdentities(merged.npcs);
+          set({ npcs: upgraded });
+          if (grow)
+            await writeNpcDatabase(upgraded, career).catch(() => undefined);
+          else if (merged.added.length || upgraded !== merged.npcs) {
+            const oldById = new Map(stored.npcs.map((n) => [n.id, n]));
+            await putNpcs(
+              upgraded.filter((n) => oldById.get(n.id) !== n),
+              career.id,
+            ).catch(() => undefined);
+          }
+          // Publish ready only after the base upgrade is stored. History reconciliation may
+          // write newer results immediately; an older upgrade write must never overwrite them.
+          if (get().careerId === career.id) set({ status: "ready", error: null });
+          return;
         }
-        // Publish ready only after the base upgrade is stored. History reconciliation may
-        // write newer results immediately; an older upgrade write must never overwrite them.
-        if (get().careerId === career.id) set({ status: "ready" });
-        return;
+      } catch {
+        // Storage unavailable: fall through and keep an in-memory world.
       }
-    } catch {
-      // Storage unavailable: fall through and keep an in-memory world.
+      if (get().careerId !== career.id) return;
+      const npcs = await createNpcPopulation(career);
+      if (get().careerId !== career.id) return;
+      set({ npcs });
+      await writeNpcDatabase(npcs, career).catch(() => undefined);
+      if (get().careerId === career.id) set({ status: "ready", error: null });
+    } catch (error) {
+      if (get().careerId !== career.id) return;
+      set({
+        status: "error",
+        npcs: [],
+        error:
+          error instanceof Error
+            ? error.message
+            : "Could not generate players.",
+      });
     }
-    if (get().careerId !== career.id) return;
-    const npcs = await createNpcPopulation(career);
-    if (get().careerId !== career.id) return;
-    set({ npcs });
-    await writeNpcDatabase(npcs, career).catch(() => undefined);
-    if (get().careerId === career.id) set({ status: "ready" });
   },
 
   resetDatabase: async (career, progress) => {
@@ -155,6 +171,7 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
     set({
       npcs,
       status: "ready",
+      error: null,
       careerId: career.id,
       startYear: career.startYear,
       playerDatabase: career.playerDatabase,
@@ -204,7 +221,7 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
 
   forgetCareer: async (careerId) => {
     if (get().careerId === careerId)
-      set({ status: "idle", careerId: null, npcs: [] });
+      set({ status: "idle", error: null, careerId: null, npcs: [] });
     await deleteNpcDatabase(careerId).catch(() => undefined);
   },
 }));

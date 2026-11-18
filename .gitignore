@@ -1,9 +1,6 @@
-node_modules
-dist
-*.local
-.DS_Store
-public/data/cities
-public/engine
-artifacts/
+node_modules/
+dist/
+.git/
 test-results/
 playwright-report/
+artifacts/
