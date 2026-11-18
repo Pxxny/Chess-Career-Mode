@@ -261,14 +261,28 @@ test("national team participation requires registration and consumes the entry o
   expect(entry.registrations[0].entrantIds.length).toBeGreaterThan(0);
   await stored(page, true);
   await page.reload();
+  await page.addLocatorHandler(page.getByRole("dialog", { name: "Career news" }), async dialog => {
+    await dialog.getByRole("button", { name: "Close news", exact: true }).click();
+  }, { noWaitAfter: true });
   await page
     .getByRole("button", { name: "Play national teams event", exact: true })
     .click();
+  await expect(page.getByTestId("team-standings")).toBeVisible();
+  const started = await stored(page);
+  expect(started.registrations).toHaveLength(0);
+  expect(started.tournament.eventId).toBe(entry.registrations[0].eventId);
+  expect(started.tournament.status).toBe("playing");
+  expect(started.expansion.cups).toHaveLength(0);
+  // Selected players now play a multi-round event. Forfeit the remaining boards
+  // through the UI to settle this edition and verify its single archive entry.
+  page.once("dialog", dialog => dialog.accept());
+  await page.getByRole("button", { name: "Withdraw from the tournament" }).click();
+  await expect(page.getByRole("button", { name: "Close results" })).toBeVisible();
   const done = await stored(page);
   expect(done.registrations).toHaveLength(0);
   expect(done.expansion.cups).toHaveLength(1);
   expect(done.expansion.cups[0].represented).toBe(true);
-  expect(done.player.ap.current).toBe(entry.player.ap.current - 2);
+  expect(done.player.ap.current).toBe(entry.player.ap.current - entry.registrations[0].travel.jetlag - 2);
   await page.getByText("Federation & national teams", { exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Cup finished this year", exact: true }),
