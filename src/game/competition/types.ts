@@ -25,6 +25,10 @@ export type Qualification =
   | "world-championship"
   | "super-invitation";
 export interface EventDetails {
+  pointsSeries?: { id: import("./seasonSeries").PointsSeries; stage: "leg" | "final"; year: number; seats?: number };
+  invitedNpcIds?: string[];
+  twoGameRematch?: boolean;
+  leagueDivision?: number;
   sponsorship?: { id:string; name:string; marketShare:number };
   qualificationCircuit?: {
     seriesId?: string;

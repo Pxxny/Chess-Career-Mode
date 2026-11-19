@@ -1,82 +1,74 @@
-import {ageAtStart} from "@/game/player/birth";
-import { Dices, RotateCcw } from 'lucide-react';
-import { CharacterPortrait } from '@/components/game/CharacterPortrait';
-import { Button } from '@/components/ui';
-import { appearanceFor, optionsForGender, DEFAULT_APPEARANCE, randomAppearance } from '@/data/appearance';
-import type { AppearanceField } from '@/types';
-import { cn } from '@/utils/cn';
-import type { CharacterDraft } from '../useCharacterDraft';
+import { useState } from "react";
+import { Dices, RotateCcw } from "lucide-react";
+import { CharacterPortrait } from "@/components/game/CharacterPortrait";
+import { Button } from "@/components/ui";
+import { appearanceFor, optionsForGender, DEFAULT_APPEARANCE, randomAppearance } from "@/data/appearance";
+import { ageAtStart } from "@/game/player/birth";
+import { translateUI } from "@/i18n/translate";
+import type { AppearanceField } from "@/types";
+import { cn } from "@/utils/cn";
+import type { CharacterDraft } from "../useCharacterDraft";
 
-const GROUPS: Array<{ field: AppearanceField; label: string; swatches?: boolean }> = [
-  { field: 'facePreset', label: 'Face' },
-  { field: 'skinTone', label: 'Skin tone', swatches: true },
-  { field: 'hairStyle', label: 'Hairstyle' },
-  { field: 'hairColor', label: 'Hair color', swatches: true },
-  { field: 'eyeColor', label: 'Eye color', swatches: true },
-  { field: 'facialHair', label: 'Facial hair' },
-  { field: 'clothing', label: 'Clothing' },
-  { field: 'clothingColor', label: 'Clothing color', swatches: true },
-  { field: 'glasses', label: 'Glasses' },
-  { field: 'accessory', label: 'Accessory' },
+type Field = readonly [AppearanceField, string];
+const SECTIONS: { label: string; fields: Field[] }[] = [
+  { label: "Face", fields: [["facePreset", "Face shape"], ["skinTone", "Skin tone"], ["browStyle", "Eyebrows"], ["eyeShape", "Eye shape"], ["eyeColor", "Eye color"], ["noseShape", "Nose shape"], ["expression", "Expression"], ["faceDetail", "Face details"]] },
+  { label: "Hair", fields: [["hairStyle", "Hairstyle"], ["hairColor", "Hair color"], ["facialHair", "Facial hair"]] },
+  { label: "Wardrobe", fields: [["clothing", "Clothing"], ["clothingColor", "Clothing color"], ["glasses", "Glasses"], ["frameColor", "Frame color"], ["accessory", "Accessory"]] },
+  { label: "Portrait background", fields: [["portraitBackground", "Background color"]] },
 ];
 
-export function LookStep({ draft, update }: { draft: CharacterDraft; update: (p: Partial<CharacterDraft>) => void }) {
-  const age=ageAtStart(draft.birthDate,draft.startYear),look=appearanceFor(draft.appearance,draft.gender,age);
-  const set = (field: AppearanceField, id: string) => update({ appearance: { ...look, [field]: id } });
+export function LookStep({ draft, update }: { draft: CharacterDraft; update: (patch: Partial<CharacterDraft>) => void }) {
+  const [section, setSection] = useState(0);
+  const age = ageAtStart(draft.birthDate, draft.startYear);
+  const look = appearanceFor(draft.appearance, draft.gender, age);
 
   return (
-    <div className="grid gap-6 md:grid-cols-[220px_1fr]">
-      <div className="md:sticky md:top-4 md:self-start">
-        <CharacterPortrait appearance={look} age={age} gender={draft.gender} label={`${draft.name || 'Your player'} portrait`} className="mx-auto h-44 w-44 border-2 border-gold-500/70 md:h-52 md:w-52" />
-        <div className="mt-4 flex justify-center gap-2">
-          <Button variant="secondary" onClick={() => update({ appearance: randomAppearance(Math.random, draft.gender,age) })}>
-            <Dices size={16} aria-hidden /> Randomize
-          </Button>
-          <Button variant="secondary" onClick={() => update({ appearance: appearanceFor(DEFAULT_APPEARANCE,draft.gender,age) })}>
-            <RotateCcw size={16} aria-hidden /> Reset
-          </Button>
+    <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(200px,245px)_minmax(0,1fr)]">
+      <aside className="look-preview grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-2xl border border-navy-600 bg-navy-900 p-3 lg:top-6 lg:grid-cols-1 lg:justify-items-center lg:self-start lg:p-4">
+        <CharacterPortrait appearance={look} age={age} gender={draft.gender} label="Portrait preview" className="h-20 w-20 border border-gold-500/60 sm:h-28 sm:w-28 lg:h-44 lg:w-44" />
+        <div className="min-w-0 lg:text-center">
+          <p className="break-words font-semibold">{draft.name || translateUI("Your player")}</p>
+          <p className="text-xs text-ink-muted">{draft.gender === "female" ? "Female wardrobe" : draft.gender === "male" ? "Male wardrobe" : "Open wardrobe"} · {translateUI(`Age ${age}`)}</p>
+          <div className="mt-2 flex flex-wrap gap-1.5 lg:justify-center">
+            <Button variant="secondary" onClick={() => update({ appearance: randomAppearance(Math.random, draft.gender, age, true) })}>
+              <Dices size={16} aria-hidden /> Randomize
+            </Button>
+            <Button variant="secondary" onClick={() => update({ appearance: appearanceFor(DEFAULT_APPEARANCE, draft.gender, age) })}>
+              <RotateCcw size={16} aria-hidden /> Reset
+            </Button>
+          </div>
         </div>
-      </div>
+      </aside>
 
-      <div className="flex flex-col gap-5"><p className="text-sm text-ink-muted">Male and female wardrobes use separate hairstyles and outfits. Faces grow with age. Regional face presets are optional and can be chosen for any nationality.</p>
-        <p className="text-sm font-semibold text-gold-300">{draft.gender==='female'?'Female wardrobe':draft.gender==='male'?'Male wardrobe':'Open wardrobe'} · Age {age}</p>{age<16&&<p className="text-xs text-ink-muted">Facial hair is unavailable before age 16.</p>}
-        {GROUPS.map(({ field, label, swatches }) => (
-          <fieldset key={field}>
-            <legend className="mb-2 text-sm text-ink-muted">{label}</legend>
-            <div role="radiogroup" aria-label={label} className="flex flex-wrap gap-2">
-              {optionsForGender(field, draft.gender,age).map((opt) => {
-                const active = look[field] === opt.id;
-                return swatches ? (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={active}
-                    aria-label={opt.label}
-                    title={opt.label}
-                    onClick={() => set(field, opt.id)}
-                    className={cn('h-8 w-8 rounded-full border-2 transition-transform', active ? 'scale-110 border-gold-400' : 'border-white/15 hover:border-white/40')}
-                    style={{ background: opt.color }}
-                  />
-                ) : (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={active}
-                    onClick={() => set(field, opt.id)}
-                    className={cn(
-                      'rounded-full border px-3 py-1 text-sm font-semibold transition-colors',
-                      active ? 'border-gold-500 bg-gold-500/10 text-gold-300' : 'border-white/10 text-ink-muted hover:text-ink',
-                    )}
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
-          </fieldset>
-        ))}
+      <div className="min-w-0">
+        <div role="group" aria-label="Look sections" className="mb-4 grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap">
+          {SECTIONS.map(({ label }, index) => (
+            <button key={label} type="button" aria-pressed={section === index} onClick={() => setSection(index)}
+              className={cn("min-h-11 rounded-xl px-3 py-2 text-sm font-semibold", section === index ? "bg-gold-500/15 text-gold-300" : "bg-navy-900 text-ink-muted hover:text-ink")}>
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="grid gap-4 rounded-2xl border border-navy-600 bg-navy-900 p-3 sm:p-4">
+          {SECTIONS[section].fields.map(([field, label]) => {
+            const options = optionsForGender(field, draft.gender, age);
+            if (options.length < 2 || (field === "frameColor" && look.glasses === "none")) return null;
+            return (
+              <fieldset key={field} className="min-w-0">
+                <legend className="mb-2 text-sm font-semibold text-ink">{label}</legend>
+                <div className="flex flex-wrap gap-1.5">
+                  {options.map(option => (
+                    <button key={option.id} type="button" aria-pressed={look[field] === option.id} aria-label={option.label} title={translateUI(option.label)}
+                      className={cn("grid min-h-11 place-items-center rounded-lg border px-2.5 text-sm", option.color && "w-11 px-0", look[field] === option.id ? "border-gold-400 bg-gold-500/15 text-gold-300" : "border-navy-600 text-ink-muted hover:text-ink")}
+                      onClick={() => update({ appearance: { ...look, [field]: option.id } })}>
+                      {option.color ? <span aria-hidden className="h-6 w-6 rounded-full border border-white/20" style={{ background: option.color }} /> : option.label}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

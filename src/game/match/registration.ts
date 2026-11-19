@@ -1,3 +1,4 @@
+import { seriesFinalists } from "@/game/competition/seasonSeries";
 import { competitionHealthIssue } from "@/game/career/health";
 import { travelQuote, arriveForEvent } from "@/game/competition/travel";
 import {
@@ -41,6 +42,13 @@ export function projectedEntrants(
   event: Pick<ScheduledEvent, "id" | "level" | "fieldSize" | "details"> & Partial<Pick<ScheduledEvent,"minElo">>,
   npcs: Npc[],
 ): Npc[] {
+  if (event.details?.pointsSeries?.stage === "final") {
+    const byId = new Map(npcs.map(npc => [npc.id, npc]));
+    return seriesFinalists(save, npcs, event.details).flatMap(row => {
+      const npc = byId.get(row.id);
+      return npc && (npc.careerStatus === "active" || npc.careerStatus === "semi-retired") ? [npc] : [];
+    });
+  }
   let cache = rosters.get(npcs);
   if (!cache) {
     cache = new Map();
@@ -66,7 +74,13 @@ export function projectedEntrants(
     if (cache.size >= 256) cache.clear();
     cache.set(key, field);
   }
-  return field;
+  const invitations = event.details?.invitedNpcIds;
+  if (!invitations?.length) return field;
+  const invited = invitations.flatMap(id => {
+    const npc = npcs.find(n => n.id === id && n.careerStatus === "active");
+    return npc ? [npc] : [];
+  });
+  return [...invited, ...field.filter(npc => !invitations.includes(npc.id))].slice(0, event.fieldSize);
 }
 
 /** Weeks since year 0, to compare dates. */
@@ -111,6 +125,7 @@ export function previewEntrants(
   event: import("@/game/competition/entries").EntryEvent,
   npcs: Npc[],
 ): Npc[] {
+  if (event.details?.pointsSeries?.stage === "final") return projectedEntrants(save, event, npcs);
   const reg = save.registrations.find((r) => r.eventId === event.id);
   if (reg?.entrantIds) {
     const byId = new Map(npcs.map((n) => [n.id, n]));
@@ -284,7 +299,7 @@ export function startRegisteredTournament(
     entryFee: reg.entryFee,
   } as ScheduledEvent;
   const finalIds =
-    reg.details?.showcase || !reg.entrantIds
+    reg.details?.showcase || reg.details?.pointsSeries?.stage === "final" || reg.details?.leagueDivision || !reg.entrantIds
       ? reg.entrantIds
       : reg.entrantIds.slice(0, registrationCount(save, event, npcs));
   const eligible = npcs.filter(

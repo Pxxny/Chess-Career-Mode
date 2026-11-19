@@ -1,3 +1,4 @@
+import { seriesFinalists } from "./seasonSeries";
 import { registrationWindow } from "./registrationWindow";
 import type { GameSave, Npc } from "@/types";
 import type { ScheduledEvent } from "@/game/world/schedule";
@@ -40,6 +41,8 @@ export function registrationCount(
   event: EntryEvent,
   npcs?: Npc[],
 ): number {
+  if (event.details?.pointsSeries?.stage === "final")
+    return npcs ? seriesFinalists(save, npcs, event.details).filter(row => row.id !== "player").length : 0;
   const reg = save.registrations.find((r) => r.eventId === event.id);
   if (reg && reg.registrationDay === undefined && reg.entrantIds)
     return reg.entrantIds.length;
@@ -67,9 +70,10 @@ export function registrationCount(
   const poolSize =
     reg?.entrantIds?.length ??
     (npcs ? event.details?.qualificationCircuit ? circuitNpcField(event, npcs, save.world.seed).length : eligibleCount(npcs, event.details?.nationality,event.minElo??0) : capacity);
+  const invited = event.details?.invitedNpcIds?.length ?? 0;
   return Math.min(
     event.details?.qualificationCircuit && event.details.qualificationCircuit.stage !== "local" ? Math.min(capacity, event.fieldSize - 1) : capacity,
     poolSize,
-    Math.floor(event.fieldSize * Math.min(1, progress / fillAt) * popularity),
+    Math.max(invited, Math.floor(event.fieldSize * Math.min(1, progress / fillAt) * popularity)),
   );
 }

@@ -1,3 +1,4 @@
+import { TournamentSeriesHistory } from "./TournamentSeriesHistory";
 import { EligibilityFeedback } from "./EligibilityFeedback";
 import { useMatchRunning } from "@/store/matchLocks";
 import { useMemo, useState } from "react";
@@ -118,6 +119,8 @@ export function TournamentDetail({
   const d = t?.details ?? event?.details,
     window = event ? registrationWindow(save, event) : null;
   const rows: Array<[string, string | number]> = [
+    ...(d?.pointsSeries?.stage === "final" ? [["Eligibility", `Top ${d.pointsSeries.seats} in the FIDE Season Points Circuit`] as [string, string]] : []),
+    ...(d?.twoGameRematch ? [["Match format", "Two games with reversed colours, plus a tiebreak if level"] as [string, string]] : []),
     ...(d?.qualificationCircuit?.selectTour && d.prize !== undefined ? [["Prize fund", `$${d.prize.toLocaleString("en-US")}`] as [string, string]] : []),
     ...(d?.qualificationCircuit ? [["Qualification route", circuitAdvancement(d) || "Final stage · qualifiers from all continents"], ["Qualification season", d.qualificationCircuit.season], ...(d.qualificationCircuit.selectTour?.quotaBoost?.length ? [["Extra seat this year", d.qualificationCircuit.selectTour.quotaBoost.join(", ")]] : []), ...(d.qualificationCircuit.selectTour?.hostedBy ? [["Hosted in the home city of", d.qualificationCircuit.selectTour.hostedBy]] : []), ...(event ? [["Qualification requirements", requirementsText(event)]] : [])] as Array<[string, string | number]> : []),
     [
@@ -241,6 +244,7 @@ export function TournamentDetail({
                     </div>
                   ))}
                 </dl>
+                <TournamentSeriesHistory key={id} save={save} name={t?.name ?? record?.name ?? event!.name} current={record} />
                 {event && (
                   <p className="mt-4 text-xs text-ink-muted">
                     Calendar entries describe the career schedule. Results

@@ -94,6 +94,7 @@ export function renderPortraitSvg(input: Partial<Appearance> | undefined, label 
   if(stage==='teen'){p.h*=.94;p.jaw*=.7;p.nose*=.9;}
   if(stage==='senior'){p.h*=1.02;p.jaw*=.9;}
 
+  p.nose *= ({ small: 0.72, wide: 1.4, defined: 1.15 } as Record<string, number>)[a.noseShape] ?? 1;
   const { w, h, jaw } = p;
   const skin = getOption('skinTone', a.skinTone).color!;
   let hair = getOption('hairColor', a.hairColor).color!;
@@ -180,20 +181,31 @@ export function renderPortraitSvg(input: Partial<Appearance> | undefined, label 
   }
 
   // ---------- eyes, brows, nose, mouth ----------
+  const naturalEyeHeight = family === 'east-asian' ? (stage === 'child' ? 3.7 : 3.1) : (stage === 'child' ? 4.9 : 4.3);
+  const eyeHeight = ({ wide: 5.2, almond: 3.4, hooded: 2.8 } as Record<string, number>)[a.eyeShape] ?? naturalEyeHeight;
+  const browArc = a.browStyle === 'straight' ? 11 : a.browStyle === 'arched' ? 17 : 14.5;
   for (const s of [-1, 1]) {
     const ex = CX + s * p.eye;
-    out.push(`<ellipse cx="${ex}" cy="${ey}" rx="6.4" ry="${family==='east-asian'?(stage==='child'?3.7:3.1):stage==='child'?4.9:4.3}" fill="#fbfbfa"/><circle cx="${ex}" cy="${ey}" r="${family==='east-asian'?(stage==='child'?3:2.7):3.5}" fill="${eye}"/><circle cx="${ex}" cy="${ey}" r="1.6" fill="#15110f"/><circle cx="${n(ex + 1.2)}" cy="${n(ey - 1.2)}" r="0.9" fill="#fff"/>`);
-    out.push(`<path d="M${n(ex - 6.8)} ${ey}C${n(ex - 3)} ${n(ey - (family==='east-asian'?4.1:5.8))} ${n(ex + 3)} ${n(ey - (family==='east-asian'?4.1:5.8))} ${n(ex + 6.8)} ${ey}" fill="none" stroke="${skinDeep}" stroke-width="1.4" stroke-linecap="round"/>`);
-    out.push(`<path d="M${n(ex - 7.5)} ${n(ey - 10.5 + (s === 1 ? 0.5 : 0))}Q${ex} ${n(ey - 14.5)} ${n(ex + 7.5)} ${n(ey - 10.5 + (s === -1 ? 0.5 : 0))}" fill="none" stroke="${browColor}" stroke-width="2.9" stroke-linecap="round"/>`);
+    out.push(`<ellipse cx="${ex}" cy="${ey}" rx="6.4" ry="${eyeHeight}" fill="#fbfbfa"/><circle cx="${ex}" cy="${ey}" r="${family==='east-asian'?(stage==='child'?3:2.7):3.5}" fill="${eye}"/><circle cx="${ex}" cy="${ey}" r="1.6" fill="#15110f"/><circle cx="${n(ex + 1.2)}" cy="${n(ey - 1.2)}" r="0.9" fill="#fff"/>`);
+    out.push(`<path d="M${n(ex - 6.8)} ${ey}C${n(ex - 3)} ${n(ey - (a.eyeShape === 'natural' ? (family === 'east-asian' ? 4.1 : 5.8) : eyeHeight + 1))} ${n(ex + 3)} ${n(ey - (a.eyeShape === 'natural' ? (family === 'east-asian' ? 4.1 : 5.8) : eyeHeight + 1))} ${n(ex + 6.8)} ${ey}" fill="none" stroke="${skinDeep}" stroke-width="1.4" stroke-linecap="round"/>`);
+    out.push(`<path d="M${n(ex - 7.5)} ${n(ey - 10.5 + (s === 1 ? 0.5 : 0))}Q${ex} ${n(ey - browArc)} ${n(ex + 7.5)} ${n(ey - 10.5 + (s === -1 ? 0.5 : 0))}" fill="none" stroke="${browColor}" stroke-width="${a.browStyle === 'bold' ? 4.3 : 2.9}" stroke-linecap="round"/>`);
   }
   out.push(`<path d="M${CX} ${n(ey + 3)}L${n(CX - p.nose * 0.4)} ${n(ny - 2)}Q${n(CX - p.nose)} ${n(ny + 2)} ${n(CX - p.nose * 0.2)} ${n(ny + 2.5)}Q${CX} ${n(ny + 3.5)} ${n(CX + p.nose * 0.2)} ${n(ny + 2.5)}Q${n(CX + p.nose)} ${n(ny + 2)} ${n(CX + p.nose * 0.4)} ${n(ny - 2)}" fill="none" stroke="${skinDeep}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>`);
+  if (a.faceDetail === 'freckles') {
+    for (const [x, y] of [[79, 10], [83, 13], [87, 10], [113, 10], [117, 13], [121, 10]]) {
+      out.push(`<circle cx="${x}" cy="${ey + y}" r="1.3" fill="${skinDeep}" opacity=".75"/>`);
+    }
+  }
+  if (a.faceDetail === 'beauty-mark') out.push(`<circle cx="118" cy="${my - 3}" r="1.8" fill="${skinDeep}"/>`);
+  if (a.faceDetail === 'scar') out.push(`<path d="M117 ${ey - 17}l4 9" stroke="${skinShade}" stroke-width="2.8"/>`);
+  const smile = ({ neutral: 0, smile: 10, focused: -4 } as Record<string, number>)[a.expression] ?? 4.5;
   const lip = mix(skin, '#a83a40', 0.6);
-  out.push(`<path d="M${n(CX - p.mouth)} ${n(my)}Q${CX} ${n(my + 4.5)} ${n(CX + p.mouth)} ${n(my)}" fill="none" stroke="${lip}" stroke-width="2.8" stroke-linecap="round"/><path d="M${n(CX - p.mouth * 0.65)} ${n(my - 0.8)}Q${CX} ${n(my - 3)} ${n(CX + p.mouth * 0.65)} ${n(my - 0.8)}" fill="none" stroke="${lip}" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>`);
+  out.push(`<path d="M${n(CX - p.mouth)} ${n(my)}Q${CX} ${n(my + smile)} ${n(CX + p.mouth)} ${n(my)}" fill="none" stroke="${lip}" stroke-width="2.8" stroke-linecap="round"/><path d="M${n(CX - p.mouth * 0.65)} ${n(my - 0.8)}Q${CX} ${n(my - 3)} ${n(CX + p.mouth * 0.65)} ${n(my - 0.8)}" fill="none" stroke="${lip}" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>`);
 
   if(stage==='mature'||stage==='senior')out.push(`<g data-age-lines="${stage}" fill="none" stroke="${skinShade}" stroke-width="${stage==='senior'?1.1:.7}" opacity=".65"><path d="M84 68Q100 65 116 68M84 72Q100 69 116 72M74 102l-6 3M126 102l6 3"/>${stage==='senior'?'<path d="M81 119l-5 8M119 119l5 8M86 133q14 4 28 0"/>':''}</g>`);
   // ---------- glasses ----------
   if (a.glasses !== 'none') {
-    const frame = '#24252b';
+    const frame = getOption('frameColor', a.frameColor).color;
     const r = 10.5;
     const lens = (cx: number) =>
       a.glasses === 'round'
@@ -268,7 +280,8 @@ export function renderPortraitSvg(input: Partial<Appearance> | undefined, label 
     default: break;
   }
 
-  const defs = `<defs><radialGradient id="${uid}-bg" cx="50%" cy="35%" r="75%"><stop offset="0" stop-color="#2b3d63"/><stop offset="1" stop-color="#121b30"/></radialGradient><clipPath id="${uid}-clip"><circle cx="100" cy="100" r="100"/></clipPath></defs>`;
+  const background = getOption('portraitBackground', a.portraitBackground).color!;
+  const defs = `<defs><radialGradient id="${uid}-bg" cx="50%" cy="35%" r="75%"><stop offset="0" stop-color="${background}"/><stop offset="1" stop-color="${a.portraitBackground === 'navy' ? '#121b30' : shade(background, -58)}"/></radialGradient><clipPath id="${uid}-clip"><circle cx="100" cy="100" r="100"/></clipPath></defs>`;
   if (hairVariant) {
     const v = Number(hairVariant[2]);
     out.push(`<path d="M${65+v} ${59+v%3} Q100 ${38+v} ${135-v} ${64+v%4}" fill="none" stroke="${shade(hair,25)}" stroke-width="${1+v%3}"/>`);

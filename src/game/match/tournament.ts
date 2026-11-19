@@ -280,7 +280,7 @@ export function pairRound(t: ActiveTournament): TournamentPairing[] {
             sum + (p.white === a!.id ? (p.result ?? 0) : 1 - (p.result ?? 0)),
           0,
         );
-        if (previous.length === 2 && (score === 2 || score === 0)) continue;
+        if (previous.length === 2 && (t.details?.twoGameRematch ? score !== 1 : score === 2 || score === 0)) continue;
       }
       pairs.push({ white: a.id, black: b.id, result: null });
     }
@@ -548,8 +548,11 @@ export function standings(t: ActiveTournament): StandingRow[] {
           (sum, g) => sum + (g.white === a ? g.result! : 1 - g.result!),
           0,
         );
-        if (games.length < 3 && score !== 2 && games.length - score !== 2)
+        if (t.details?.twoGameRematch) {
+          if (games.length < 2 || (games.length === 2 && score === 1)) continue;
+        } else if (games.length < 3 && score !== 2 && games.length - score !== 2) {
           continue;
+        }
         const winner =
           games.at(-1)?.tiebreakWinner ?? (score > games.length / 2 ? a : b);
         scores.set(winner, scores.get(winner)! + 1);

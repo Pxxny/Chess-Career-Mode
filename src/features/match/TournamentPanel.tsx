@@ -1,3 +1,6 @@
+import { TournamentSeriesHistory } from "@/features/tournaments/TournamentSeriesHistory";
+import { NationalTeamCamp } from "./NationalTeamCamp";
+import { SeasonCompetitionTools } from "@/features/tournaments/SeasonCompetitionTools";
 import { competitionHealthIssue } from "@/game/career/health";
 import { normOpportunity,tournamentValue } from "@/game/competition/finder";
 import { EligibilityFeedback } from '@/features/tournaments/EligibilityFeedback';
@@ -304,9 +307,11 @@ function Entrants({ event }: { event: EntryEvent }) {
 export function TournamentPanel({
   onStart,
   swissOnly = false,
+  leagueOnly = false,
 }: {
   onStart: (setup: MatchSetup) => void;
   swissOnly?: boolean;
+  leagueOnly?: boolean;
 }) {
   const save = useSave(),
     npcs = useNpcs(),
@@ -338,13 +343,14 @@ export function TournamentPanel({
   const route = useLocation();
   const selectedEventId = urlParams.get("event");
   const events = useMemo(() => {
+    if (leagueOnly) return [];
     return preserveBookedVenues(save, getSchedule(save.world.date, regionForSave(save), save.career.id, 52));
-  }, [save.world.date, save.player.country, save.player.city.name, save.player.birthPlace, save.career.id, save.registrations, save.tournament, save.calendarTournaments]);
+  }, [save.world.date, save.player.country, save.player.city.name, save.player.birthPlace, save.career.id, save.registrations, save.tournament, save.calendarTournaments, save.hostedEvents, leagueOnly]);
   const targetEvent = selectedEventId
     ? events.find((e) => e.id === selectedEventId)
     : undefined;
   const regs = registrationStates(save).filter(
-    (r) => !swissOnly || (r.details?.format ?? "swiss") === "swiss",
+    (r) => Boolean(r.details?.leagueDivision) === leagueOnly && (!swissOnly || (r.details?.format ?? "swiss") === "swiss"),
   ).sort((a, b) => Number(b.status === "ready") - Number(a.status === "ready") || bookedStart(a) - bookedStart(b));
   const hasReadyEntry = regs.some(entry => entry.status === "ready");
   const earned = useMemo(() => earnedEntries(save, events).filter(
@@ -362,7 +368,7 @@ export function TournamentPanel({
   }, [urlParams, route.key]);
   const t = save.tournament;
   const showCurrent =
-    t && (!swissOnly || (t.details?.format ?? "swiss") === "swiss");
+    t && Boolean(t.details?.leagueDivision) === leagueOnly && (!swissOnly || (t.details?.format ?? "swiss") === "swiss");
   const next = t ? playerOpponentId(t) : null,
     npc = next ? npcs.find((n) => n.id === next.id) : undefined;
   const play = (mode: "play" | "simulate") => {
@@ -415,6 +421,7 @@ export function TournamentPanel({
   ).sort((a,b)=>(quick==="value"||search?.sort==="value")?tournamentValue(save,b)-tournamentValue(save,a):0);
   return (
     <div className="space-y-3" data-testid="tournament-panel">
+      {!swissOnly && !leagueOnly && <SeasonCompetitionTools />}
       {spotlight && <TournamentSpotlightDialog event={spotlight} onClose={() => setSpotlight(null)} />}
       {viewTournament && t && (
         <TournamentDetail
@@ -614,6 +621,7 @@ export function TournamentPanel({
                 {r.status === "missed" ? "Event missed" : r.status === "ready" ? "Registered · ready to play" : "Registered · waiting to play"}
               </p>
               {r.details?.format === "team" && <p className="mt-1 text-xs text-gold-300">{save.highlights?.seen.includes(`national-selected:${r.eventId}`) ? "Selected for the national team" : "National team entry"}</p>}
+              {r.details?.format === "team" && <NationalTeamCamp save={save} entry={r} />}
               {r.details && <p className="mt-1 text-xs text-ink-muted">{r.details.location} · {getCountry(r.details.country)?.name ?? r.details.country}</p>}
               <p className="my-2 text-xs text-ink-muted">
                 {dateLabel(r)} · {r.status} · fee paid ${r.entryFee} · travel $
@@ -677,6 +685,7 @@ export function TournamentPanel({
         </ul>}
         </div>
       </details>
+      {!leagueOnly && <>
       <details className="home-section">
         <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">Registration queue</summary>
         <div className="px-3 pb-3"><RegistrationQueue /></div>
@@ -869,6 +878,7 @@ export function TournamentPanel({
                 {circuitAdvancement(e.details) && <p className="mt-1 text-xs text-gold-300">{circuitAdvancement(e.details)}</p>}
                 {e.details?.organizer?.sponsorId&&<p className="mt-2 text-xs font-semibold text-gold-300">Sponsor-hosted · {e.details.organizer.name} · {e.details.organizer.status}</p>}
                 {e.details?.sponsorship&&<p className="mt-2 text-xs text-gold-300">Event partner · {e.details.sponsorship.name} · Market share {e.details.sponsorship.marketShare.toFixed(2)}%</p>}
+                <TournamentSeriesHistory save={save} name={e.name} />
                 <Button className="mt-2" variant="secondary" onClick={()=>setSpotlight(e)}>City map & tournament spotlight</Button><details className="mt-3"><summary className="cursor-pointer text-sm text-gold-300">Requirements, schedule & players</summary><EventFacts event={e} />
 
                 {e.details?.qualificationCircuit && <p className="mt-3 rounded-lg bg-gold-500/10 p-3 text-sm text-gold-300" data-testid="qualification-route">{circuitAdvancement(e.details) || "Final stage · qualifiers from all continents"}</p>}
@@ -981,6 +991,7 @@ export function TournamentPanel({
         <div className="px-3 pb-3"><CareerTools /></div>
       </details>
 
+      </>}
     </div>
   );
 }

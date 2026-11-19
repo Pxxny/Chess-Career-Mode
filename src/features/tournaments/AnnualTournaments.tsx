@@ -82,7 +82,7 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
   }, [save.career.id, selectedYear, save.tournamentArchivePending, npcs]);
   const events = useMemo(
     () => [...new Map([...globalQualificationCalendar(selectedYear),...annualEvents(save, selectedYear)].map(e=>[e.id,e])).values()],
-    [selectedYear, save.career.id, save.player.country, save.player.city.name],
+    [selectedYear, save.career.id, save.player.country, save.player.city.name, save.hostedEvents],
   );
   const records = useMemo(() => {
     const map = new Map(stored.map((e) => [e.id, e]));

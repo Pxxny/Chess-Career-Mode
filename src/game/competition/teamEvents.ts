@@ -1,3 +1,4 @@
+import { RESERVE_ROTATION, rotateTeamRoster } from "./teamRotation";
 import { systemsOf } from "@/game/career/systems";
 import {
   TEAM_EVENTS,
@@ -40,8 +41,6 @@ type TeamPlayer = NationalTeam["players"][number];
 
 /** Abstract rosters (events whose eligibility is not modelled) are weaker than the open field. */
 const ABSTRACT_ELO_PENALTY = 250;
-/** Chance per match that a reserve replaces the last board. */
-const RESERVE_ROTATION = 0.2;
 /** Detailed rosters kept only for the strongest finishers and the player's team. */
 const KEEP_ROSTERS = 16;
 
@@ -252,12 +251,11 @@ export function simulateTeamEvent(
     if(plan?.strategy==='attack'&&board>=Math.floor(info.boards/2))return {...base,style:'attacking' as const};
     return base;
   };
-  const lineup = (team: NationalTeam): TeamPlayer[] => {
-    const rows = team.players.slice(0, boardsPerMatch);
-    const rest = team.reserves?.[0];
-    if (rest && rows.length && rng.next() < RESERVE_ROTATION)
-      rows[rows.length - 1] = rest;
-    return rows;
+  const lineup = (team: NationalTeam, opponent: NationalTeam): TeamPlayer[] => {
+    const starters = team.players.slice(0, boardsPerMatch);
+    return team.reserves?.length && rng.next() < RESERVE_ROTATION
+      ? rotateTeamRoster(starters, team.reserves, opponent.players, id => byNpc.get(id)?.style)
+      : starters;
   };
   const unfilled = (team: NationalTeam): TeamPlayer => ({
     id: "bye",
@@ -267,8 +265,8 @@ export function simulateTeamEvent(
   const playMatch = (ai: number, bi: number, round: number): void => {
     const a = teams[ai],
       b = teams[bi],
-      la = lineup(a),
-      lb = lineup(b);
+      la = lineup(a, b),
+      lb = lineup(b, a);
     const keep =
       recordAll ||
       a.country === save.player.country ||

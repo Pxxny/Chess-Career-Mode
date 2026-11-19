@@ -29,7 +29,7 @@ export function useDashboard() {
   );
   const schedule = useMemo(
     () => preserveBookedVenues(save, getSchedule(world.date, regionForSave(save), career.id)),
-    [world.date, player.city.name, player.country, player.birthPlace, career.id, save.registrations, save.tournament, save.calendarTournaments],
+    [world.date, player.city.name, player.country, player.birthPlace, career.id, save.registrations, save.tournament, save.calendarTournaments, save.hostedEvents],
   );
   const news = useMemo(
     () => buildNews(save, schedule, ranked),

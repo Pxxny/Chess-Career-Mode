@@ -59,3 +59,33 @@ export async function writeMissingEventArchive(
     },
   );
 }
+
+/** Read only the summary fields needed by the series history. */
+export async function readSeriesArchive(careerId: string, key: string) {
+  if (typeof indexedDB === "undefined") return [];
+  const { eventSeriesKey } = await import("@/game/competition/eventSeries");
+  const events: SeriesEdition[] = [];
+  await transact([STORES.tournamentArchive], "readonly", tx => {
+    const cursor = tx.objectStore(STORES.tournamentArchive).openCursor(range(careerId));
+    cursor.onsuccess = () => {
+      const row = cursor.result;
+      if (!row) return;
+      const event = row.value.event as ArchivedEvent;
+      if (eventSeriesKey(event.name) === key) events.push(seriesEdition(event));
+      row.continue();
+    };
+  });
+  return events;
+}
+
+export function seriesEdition(event: ArchivedEvent) {
+  return {
+    id: event.id, year: event.year, week: event.week,
+    city: event.location, country: event.country,
+    fieldSize: event.fieldSize, rounds: event.rounds,
+    winner: event.players.find(player => player.rank === 1)?.name,
+    playerRank: event.players.find(player => player.id === "player")?.rank,
+  };
+}
+
+type SeriesEdition = ReturnType<typeof seriesEdition>;

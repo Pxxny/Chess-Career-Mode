@@ -194,11 +194,17 @@
   @apply bg-gold-500/15 text-gold-300;
 }
 @media (min-width: 1024px) {
-  .workspace-rail { @apply inset-y-0 left-0 right-auto flex w-[72px] flex-col items-center gap-2 border-r border-t-0 px-0 py-4; }
-  .workspace-brand { @apply mb-3 grid h-10 w-10 place-items-center rounded-xl bg-gold-500 text-[#15191d]; }
-  .workspace-nav-item { @apply h-11 min-h-11 w-11 p-0; }
+  .workspace-rail { @apply inset-y-0 left-0 right-auto flex w-[72px] flex-col items-center gap-2 overflow-y-auto overscroll-contain border-r border-t-0 px-0;
+    padding-block: calc(12px + env(safe-area-inset-top, 0px)) calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+  .workspace-brand { @apply mb-3 grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gold-500 text-[#15191d]; }
+  .workspace-nav-item { @apply h-11 min-h-11 w-11 shrink-0 p-0; }
   .workspace-nav-label { @apply sr-only; }
   .workspace-more { @apply mt-auto; }
+}
+@media (min-width: 1024px) and (max-height: 540px) {
+  .workspace-rail { gap: 3px; }
+  .workspace-brand { display: none; }
 }
 :root:not([data-theme="light"]) {
   --bg-950: 20 23 27;
@@ -256,3 +262,7 @@
 .home-section > summary::-webkit-details-marker { display: none; }
 .home-section > summary:hover { color: rgb(var(--accent-300)); }
 .home-section[open] > summary { border-bottom: 1px solid rgb(var(--bg-600)/.6); color: rgb(var(--accent-300)); }
+
+@media (min-width: 1024px) and (min-height: 750px) {
+  .look-preview { position: sticky; }
+}

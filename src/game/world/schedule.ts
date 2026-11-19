@@ -1,3 +1,4 @@
+import { annualSeriesEvents } from "@/game/competition/seasonSeries";
 import { sponsorEvents } from "@/game/competition/sponsorEvents";
 import { withEventPartner } from "@/game/competition/presentation";
 import { distributeAnnualVenues } from "@/game/competition/venues";
@@ -174,6 +175,7 @@ function buildSchedule(
   return [
     ...events,
     ...Array.from({length:normalize(now.year,now.week+horizon).year-now.year+1},(_,i)=>sponsorEvents(now.year+i)).flat(),
+    ...Array.from({length:normalize(now.year,now.week+horizon).year-now.year+1},(_,i)=>annualSeriesEvents(now.year+i)).flat(),
     ...Array.from({ length: normalize(now.year, now.week + horizon).year - now.year + 1 }, (_, i) => qualificationCircuitEvents(now.year + i, region)).flat(),
     ...careerEvents(now, region, horizon),
     ...sourcedEvents(now, region, horizon),
@@ -203,7 +205,12 @@ export function preserveBookedVenues(save: GameSave, events: ScheduledEvent[]): 
     ...(save.calendarTournaments?.national ?? []).map((n) => [n.event.id, { ...n.event, eventId: n.event.id }] as const),
     ...(save.tournament ? [[save.tournament.eventId, save.tournament] as const] : []),
   ]);
-  return applySelectLegacy(events, save.competition?.selectChoices).map((e) => {
+  const years = new Set(events.map(event => event.year));
+  const now = save.world.date;
+  const hosted = (save.hostedEvents ?? []).filter(event => years.has(event.year) && (years.size === 1 || weeksBetween(now, event) >= 0)).map(event => ({
+    ...event, weeksUntilStart: weeksBetween(now, event), weeksUntilDeadline: weeksBetween(now, event.registrationDeadline),
+  }));
+  return applySelectLegacy([...events, ...hosted].sort((a, b) => a.year - b.year || a.week - b.week), save.competition?.selectChoices).map((e) => {
     const saved = snapshots.get(e.id);
     return saved?.details ? { ...e, name: saved.name, details: saved.details, entryFee: saved.entryFee } : e;
   });

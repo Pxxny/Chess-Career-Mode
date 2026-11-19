@@ -43,6 +43,9 @@ export function qualificationMatches(q: Earned, event: Pick<ScheduledEvent, 'id'
 }
 export function circuitAdvancement(details?: EventDetails) {
   const c = details?.qualificationCircuit;
+  if (c?.seriesId?.startsWith("sponsor-hybrid-")) {
+    return c.stage === "local" ? `Top ${c.advanceTop} advance to the live finals. No travel for this qualifier.` : "Live finals · only qualified players can enter.";
+  }
   if (c?.selectTour && c.stage === 'national') return `Top ${c.advanceTop ?? 1} from this country reach the ${c.worldFinalName ?? 'World Finals'}.`;
   if (c?.selectTour && c.stage === 'world') return 'Final stage · one seat per country.';
   if (!c?.advanceTop || !c.advanceKind) return '';
@@ -211,6 +214,12 @@ function circuitNpcFieldUncached(event: Pick<ScheduledEvent, 'details'>, npcs: N
     }
     return sorted.sort((a,b) => points.get(b.id)! - points.get(a.id)! || hashString(`${id}:${a.id}`) - hashString(`${id}:${b.id}`) || a.id.localeCompare(b.id)).slice(0, count);
   };
+  if (c.seriesId?.startsWith("sponsor-hybrid-")) {
+    if (c.stage === "local") return active;
+    const qualifier = `${c.seriesId}-${c.season}-online`;
+    return active.filter(npc => npc.tournamentHistory.some(result => result.eventId === qualifier &&
+      (result.qualificationEvaluated ? result.qualificationTarget === c.worldFinalId : result.rank > 0 && result.rank <= 8)));
+  }
   const sel = c.selectTour;
   if (sel) {
     // Select tours: no Local/Continental rounds. National pool is every eligible player of the country.

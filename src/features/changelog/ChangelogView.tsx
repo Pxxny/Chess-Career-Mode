@@ -2,6 +2,9 @@ import { Fragment, useContext, useId, useMemo, useState } from "react";
 import { ChevronDown, ListChecks, Package, Search, X } from "lucide-react";
 import { Badge } from "@/components/ui";
 import { LanguageContext } from "@/i18n/context";
+import { translateUI } from "@/i18n/translate";
+import type { Language } from "@/i18n/language";
+import releaseTranslations from "./releaseTranslations.json";
 import { cn } from "@/utils/cn";
 import changelogSource from "../../../CHANGELOG.txt?raw";
 import {
@@ -14,8 +17,21 @@ import {
 const RELEASES = parseChangelog(changelogSource);
 const TOTAL_CHANGES = RELEASES.reduce((sum, r) => sum + r.changeCount, 0);
 
-const plural = (n: number, one: string, many: string) =>
-  n === 1 ? `1 ${one}` : `${n} ${many}`;
+const translations: Record<string, { en: string; th: string; detailsEn?: string[] }> = releaseTranslations;
+
+function localizeRelease(release: ChangelogRelease, language: Language): ChangelogRelease {
+  const copy = translations[release.title];
+  return {
+    ...release,
+    title: copy?.[language] ?? release.title,
+    blocks: language === "en" && copy?.detailsEn
+      ? [{ type: "list", kind: "change", title: null, items: copy.detailsEn }]
+      : release.blocks,
+  };
+}
+
+const countLabel = (n: number, unit: "release" | "change", language: Language) =>
+  language === "th" ? `${n} ${unit === "release" ? "รุ่น" : "รายการ"}` : `${n} ${unit}${n === 1 ? "" : "s"}`;
 
 function formatDate(iso: string, language: "en" | "th"): string {
   const date = new Date(`${iso}T00:00:00`);
@@ -98,7 +114,7 @@ function Block({ block, query }: { block: ChangelogBlock; query: string }) {
           translate="no"
           className="mb-2.5 text-sm font-bold text-gold-300"
         >
-          <Highlight text={block.title} query={query} />
+          <Highlight text={translateUI(block.title)} query={query} />
         </h4>
       )}
       <ul className="space-y-2">
@@ -179,6 +195,7 @@ function ReleaseCard({
   query: string;
 }) {
   const bodyId = useId();
+  const language = useContext(LanguageContext);
   return (
     <article className="overflow-hidden rounded-2xl border border-white/[0.07] bg-navy-800">
       <h3 className="m-0">
@@ -198,7 +215,7 @@ function ReleaseCard({
             </span>
             <span className="mt-2 flex flex-wrap items-center gap-2">
               {isLatest && <Badge tone="gold">Latest</Badge>}
-              <Badge>{plural(changeCount, "change", "changes")}</Badge>
+              <Badge>{countLabel(changeCount, "change", language)}</Badge>
             </span>
           </span>
           <ChevronDown
@@ -258,13 +275,14 @@ export function ChangelogView() {
     () =>
       RELEASES.flatMap(
         (release): Array<{ release: ChangelogRelease; total: number }> => {
-          const filtered = filterRelease(release, q);
+          const localized = localizeRelease(release, language);
+          const filtered = filterRelease(localized, q);
           return filtered
             ? [{ release: filtered, total: release.changeCount }]
             : [];
         },
       ),
-    [q],
+    [q, language],
   );
 
   const groups = useMemo(() => {
@@ -287,9 +305,10 @@ export function ChangelogView() {
 
   return (
     <div>
+      <p className="mb-3 text-sm text-ink-muted">Older release details are shown in their original language.</p>
       <div className="mb-6 flex flex-wrap items-center gap-2">
-        <Badge tone="gold">{plural(RELEASES.length, "release", "releases")}</Badge>
-        <Badge>{plural(TOTAL_CHANGES, "change", "changes")}</Badge>
+        <Badge tone="gold">{countLabel(RELEASES.length, "release", language)}</Badge>
+        <Badge>{countLabel(TOTAL_CHANGES, "change", language)}</Badge>
       </div>
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -340,7 +359,9 @@ export function ChangelogView() {
         <p className="mb-4 text-sm text-ink-muted" role="status">
           {shown.length === 0
             ? "No changes match your search."
-            : `${shown.length} of ${RELEASES.length} releases match`}
+            : language === "th"
+              ? `พบ ${shown.length} จาก ${RELEASES.length} รุ่น`
+              : `${shown.length} of ${RELEASES.length} releases match`}
         </p>
       )}
 
@@ -356,7 +377,7 @@ export function ChangelogView() {
                 {formatDate(group.date, language)}
               </time>
               <span className="text-xs font-medium text-ink-faint">
-                {plural(group.items.length, "release", "releases")}
+                {countLabel(group.items.length, "release", language)}
               </span>
             </h2>
             <div className="space-y-3">

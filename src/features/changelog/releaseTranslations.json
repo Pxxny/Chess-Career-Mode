@@ -1,0 +1,279 @@
+{
+  "Sponsor Market and Competition Expansion": {
+    "en": "Sponsor Market and Competition Expansion",
+    "th": "ตลาดสปอนเซอร์และระบบการแข่งขัน",
+    "detailsEn": [
+      "Five new sponsors and monthly market shares, with headquarters and executives for every sponsor.",
+      "Personal inbox, tournament edition histories and player-funded hometown events.",
+      "Meridian home and away legs, FIDE points standings and variable Finals quotas.",
+      "Newcomer I–X divisions, promotion playoffs, two-game rematches, national-team camp and online qualifiers."
+    ]
+  },
+  "iPad Navigation and Character Studio": {
+    "th": "เมนู iPad และการแต่งตัวละคร",
+    "en": "iPad Navigation and Character Studio",
+    "detailsEn": [
+      "The sidebar respects the iPad status bar and scrolls to keep every menu item reachable.",
+      "Release titles, dates, labels and new summaries follow the game's language. Original release details remain available.",
+      "Look now has four categories, with options for brows, eyes, noses, expressions, face markings, glasses frames and portrait backgrounds."
+    ]
+  },
+  "Startup Recovery Page": {
+    "th": "หน้ากู้การเปิดเกม",
+    "en": "Startup Recovery Page",
+    "detailsEn": [
+      "Open a standalone recovery page and choose which career to resume.",
+      "Reconnect to the latest game files without deleting saved careers.",
+      "Optional files no longer block the service worker update."
+    ]
+  },
+  "Safe Start": {
+    "th": "ทางเข้าเล่นสำรอง",
+    "en": "Safe Start",
+    "detailsEn": [
+      "Reload the game when a module fails to load.",
+      "Start a temporary career when save storage is unavailable.",
+      "Build the NPC world on the main thread if its worker stalls."
+    ]
+  },
+  "Module Reload Recovery": {
+    "th": "กู้ไฟล์เกมที่โหลดไม่สำเร็จ",
+    "en": "Module Reload Recovery",
+    "detailsEn": [
+      "Reload the page after a JavaScript module fails.",
+      "Fetch fresh application HTML and reject HTML served in place of a module."
+    ]
+  },
+  "Saved Career Loading Retry": {
+    "th": "อ่านเซฟอีกครั้ง",
+    "en": "Saved Career Loading Retry",
+    "detailsEn": [
+      "Limit the wait for a save-slot read and offer a retry from the loading screen.",
+      "Retries use the same save storage."
+    ]
+  },
+  "Tournament Page Priorities": {
+    "th": "จัดลำดับหน้าทัวร์นาเมนต์",
+    "en": "Tournament Page Priorities"
+  },
+  "Train Page Priorities": {
+    "th": "จัดลำดับหน้าฝึกซ้อม",
+    "en": "Train Page Priorities"
+  },
+  "Home Dashboard Priorities": {
+    "th": "จัดลำดับหน้าหลัก",
+    "en": "Home Dashboard Priorities"
+  },
+  "Android Phone UI": {
+    "th": "หน้าจอมือถือ Android",
+    "en": "Android Phone UI"
+  },
+  "Loading Percentage and Ready Screen": {
+    "th": "เปอร์เซ็นต์โหลดและหน้าพร้อมเล่น",
+    "en": "Loading Percentage and Ready Screen"
+  },
+  "Startup Recovery": {
+    "th": "กู้การเริ่มเกม",
+    "en": "Startup Recovery"
+  },
+  "Match Day AP Recovery": {
+    "th": "ฟื้น AP ในวันแข่ง",
+    "en": "Match Day AP Recovery"
+  },
+  "Dark Workspace": {
+    "th": "ธีมเข้มและเมนูใหม่",
+    "en": "Dark Workspace"
+  },
+  "Grandmaster Elite UI & Career Systems": {
+    "th": "หน้าตา Grandmaster Elite และระบบอาชีพ",
+    "en": "Grandmaster Elite UI and Career Systems"
+  },
+  "Hall of Fame & Complete Changelog": {
+    "th": "หอเกียรติยศและประวัติการอัปเดต",
+    "en": "Hall of Fame and Complete Changelog"
+  },
+  "Cobalt Lantern & Zenith Arc — Named Series and World Finals Prizes": {
+    "th": "ชื่อรายการและรางวัลรอบโลกของ Cobalt Lantern และ Zenith Arc",
+    "en": "Cobalt Lantern and Zenith Arc Series and World Finals Prizes"
+  },
+  "Changelog Menu": {
+    "th": "เมนูประวัติการอัปเดต",
+    "en": "Changelog Menu"
+  },
+  "Sponsor Select Tours": {
+    "th": "ทัวร์คัดเลือกของสปอนเซอร์",
+    "en": "Sponsor Select Tours"
+  },
+  "Global Qualifier Calendar, New Sponsors & FIDE": {
+    "th": "ปฏิทินคัดเลือกระดับโลก สปอนเซอร์ใหม่ และ FIDE",
+    "en": "Global Qualifier Calendar, New Sponsors and FIDE"
+  },
+  "Playable National Team Tournaments": {
+    "th": "เล่นทัวร์ทีมชาติเองได้",
+    "en": "Playable National Team Tournaments"
+  },
+  "NPC Watchlist & Interactive Qualification Path": {
+    "th": "ติดตาม NPC และผังเส้นทางคัดเลือก",
+    "en": "NPC Watchlist and Interactive Qualification Path"
+  },
+  "Calm UI, Themes, Match Resume & Career QoL": {
+    "th": "หน้าตาเรียบง่าย ธีม เล่นแมตช์ต่อ และปรับระบบอาชีพ",
+    "en": "Calm UI, Themes, Match Resume and Career Improvements"
+  },
+  "Gender Wardrobes, Age Growth & Regional Faces": {
+    "th": "ตู้เสื้อผ้าแยกตามเพศ ใบหน้าตามวัยและภูมิภาค",
+    "en": "Gender Wardrobes, Age Growth and Regional Faces"
+  },
+  "National Team Registration Feedback Fix": {
+    "th": "แจ้งเหตุผลที่สมัครทีมชาติไม่ได้",
+    "en": "National Team Registration Feedback"
+  },
+  "Wonderkid Rankings & Hot / Cold Tags": {
+    "th": "อันดับดาวรุ่งและป้ายฟอร์มร้อนแรง/ตก",
+    "en": "Wonderkid Rankings and Hot/Cold Tags"
+  },
+  "Shared Sponsor Calendar & Reduced World Circuit": {
+    "th": "ปฏิทินสปอนเซอร์และลด World Circuit",
+    "en": "Shared Sponsor Calendar and Reduced World Circuit"
+  },
+  "NPC Live Elo & History Charts": {
+    "th": "Elo ของ NPC และกราฟย้อนหลัง",
+    "en": "NPC Live Elo and History Charts"
+  },
+  "Tournament Sponsors & Ceremonies": {
+    "th": "สปอนเซอร์ทัวร์และพิธีการแข่งขัน",
+    "en": "Tournament Sponsors and Ceremonies"
+  },
+  "20 New Sponsors & Market Share": {
+    "th": "สปอนเซอร์ใหม่ 20 รายและส่วนแบ่งตลาด",
+    "en": "20 New Sponsors and Market Share"
+  },
+  "Tournament Refresh, Roll-down & 30 Achievements": {
+    "th": "ปรับหน้าทัวร์ เลื่อนสิทธิ์ และ 30 ความสำเร็จ",
+    "en": "Tournament Refresh, Roll-down and 30 Achievements"
+  },
+  "Generated Game Atlas": {
+    "th": "แผนที่โลกที่เกมสร้างขึ้น",
+    "en": "Generated Game Atlas"
+  },
+  "Sponsors, Scouting & Maps": {
+    "th": "สปอนเซอร์ แมวมอง และแผนที่",
+    "en": "Sponsors, Scouting and Maps"
+  },
+  "Qualified Registrations": {
+    "th": "แสดงรายการที่คัดผ่านในหน้าลงทะเบียน",
+    "en": "Qualified Registrations"
+  },
+  "Qualification Circuit": {
+    "th": "เส้นทางทัวร์คัดเลือก",
+    "en": "Qualification Circuit"
+  },
+  "Important Career News, UI Libraries และบทสอนที่ปิดถาวร": {
+    "th": "ข่าวสำคัญ ไลบรารี UI และบทสอน",
+    "en": "Career News, UI Libraries and Tour Preferences"
+  },
+  "UI Refresh, Screen Wake Lock, Learning Focus และ Elo Charts": {
+    "th": "หน้าตาใหม่ เปิดหน้าจอค้างไว้ แผนเรียนรู้ และกราฟ Elo",
+    "en": "UI Refresh, Screen Wake Lock, Learning Focus and Elo Charts"
+  },
+  "Season replays, Opening, Match archive และเวลา": {
+    "th": "รีเพลย์ฤดูกาล หมากเปิด ประวัติแมตช์ และเวลา",
+    "en": "Season Replays, Openings, Match Archive and Time"
+  },
+  "Player Database และคู่แข่งในประเทศ": {
+    "th": "ฐานข้อมูลนักแข่งและคู่แข่งในประเทศ",
+    "en": "Player Database and Domestic Opponents"
+  },
+  "เมนูลับตรวจความเร็วและประสิทธิภาพ": {
+    "th": "เมนูตรวจประสิทธิภาพ",
+    "en": "Performance Diagnostics Menu"
+  },
+  "เลื่อนดูและค้นหาเมืองครบทั้งฐานข้อมูล": {
+    "th": "ค้นหาเมืองจากฐานข้อมูล",
+    "en": "City Database Search"
+  },
+  "ทัวร์ทั้งปี รายชื่อใน Standings และเมืองเพิ่มเติม": {
+    "th": "ทัวร์ทั้งปี รายชื่อในตารางอันดับ และเมืองเพิ่มเติม",
+    "en": "Annual Tournaments, Standings and More Cities"
+  },
+  "ชมคู่ NPC สด ปฏิทินและประวัติทัวร์รายปี": {
+    "th": "กระดานถ่ายทอดสดและประวัติทัวร์",
+    "en": "Live NPC Boards and Tournament History"
+  },
+  "Simulate Season": {
+    "th": "จำลองฤดูกาล",
+    "en": "Simulate Season"
+  },
+  "ระบบพัฒนาลำดับ 2–6 และชื่อเมนู Tournament": {
+    "th": "ระบบพัฒนาอาชีพช่วง 2–6 และเมนูทัวร์",
+    "en": "Career Progression Stages 2–6 and Tournament Menu"
+  },
+  "เจ้าภาพภูมิภาค คู่มือทัวร์ สำรองเซฟและยอดสะสม": {
+    "th": "เจ้าภาพภูมิภาค คู่มือทัวร์ และสำรองเซฟ",
+    "en": "Regional Hosts, Tournament Guide and Save Backups"
+  },
+  "เพิ่มเกมในทัวร์หลายวันบางรุ่น": {
+    "th": "เพิ่มเกมในบางทัวร์หลายวัน",
+    "en": "More Rounds for Selected Multi-day Tournaments"
+  },
+  "Popup แนะนำติดตั้งเกม": {
+    "th": "หน้าต่างแนะนำการติดตั้งเกม",
+    "en": "Game Installation Prompt"
+  },
+  "ลักษณะคล้ายนักหมากรุกตัวจริง": {
+    "th": "รูปตัวละครอ้างอิงนักหมากรุก",
+    "en": "Chess Player Likenesses"
+  },
+  "รูปหน้าตัวละครในอันดับและโปรไฟล์ NPC": {
+    "th": "รูปในอันดับและโปรไฟล์ NPC",
+    "en": "Portraits in Rankings and NPC Profiles"
+  },
+  "เสียงหมากจากกระดานจริง": {
+    "th": "เสียงเดินหมาก",
+    "en": "Chessboard Sounds"
+  },
+  "ทัวร์เยาวชน/Open, เสียง, ป้อม, อันดับ, ติดตั้งลงเครื่อง": {
+    "th": "ทัวร์เยาวชน/Open เสียง และอันดับ",
+    "en": "Youth and Open Tournaments, Audio and Rankings"
+  },
+  "ภาษาอังกฤษ/ไทย": {
+    "th": "รองรับภาษาอังกฤษและไทย",
+    "en": "English and Thai Language Support"
+  },
+  "ไดเรกทอรีผู้เล่นและความสัมพันธ์ NPC (เซฟ v15)": {
+    "th": "รายชื่อผู้เล่นและความสัมพันธ์ NPC",
+    "en": "Player Directory and NPC Relationships"
+  },
+  "โลกที่มีชีวิต และสรุปประจำปี (เซฟ v14)": {
+    "th": "โลกที่มีชีวิตและสรุปประจำปี",
+    "en": "Living World and Year Reviews"
+  },
+  "ทีมชาติ 20 รายการ": {
+    "th": "ทัวร์ทีมชาติ 20 รายการ",
+    "en": "20 National Team Events"
+  },
+  "คาดการณ์ผลและสถิติความแม่นยำ (เซฟ v13)": {
+    "th": "คาดการณ์ผลและสถิติความแม่นยำ",
+    "en": "Match Predictions and Accuracy Stats"
+  },
+  "ทัวร์หลายวันและ Esports (เซฟ v12)": {
+    "th": "ทัวร์หลายวันและ Esports",
+    "en": "Multi-day Tournaments and Esports"
+  },
+  "ชื่อประเทศ ภูมิลำเนา ตัวหมาก SVG (เซฟ v11)": {
+    "th": "ประเทศ ภูมิลำเนา และตัวหมาก SVG",
+    "en": "Countries, Hometowns and SVG Pieces"
+  },
+  "QoL, World Circuit (เซฟ v10) · Complete (v9) · โลกอาชีพ (v8)": {
+    "th": "World Circuit และโลกอาชีพ",
+    "en": "World Circuit and Career World"
+  },
+  "Match Viewer (เซฟ v7) และประสิทธิภาพหมากรุก": {
+    "th": "ดูย้อนหลังและประสิทธิภาพกระดาน",
+    "en": "Match Viewer and Chess Performance"
+  },
+  "ฐานของเกม (เซฟ v4–v6)": {
+    "th": "ระบบพื้นฐานของเกม",
+    "en": "Core Game Systems"
+  }
+}

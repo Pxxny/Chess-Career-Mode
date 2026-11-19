@@ -3,6 +3,13 @@ import type { Appearance, AppearanceField, AppearanceOption } from '@/types';
 const o = (id: string, label: string, color?: string): AppearanceOption => ({ id, label, color });
 
 export const APPEARANCE_OPTIONS: Record<AppearanceField, AppearanceOption[]> = {
+  browStyle: [o('natural', 'Natural'), o('straight', 'Straight brows'), o('arched', 'Arched brows'), o('bold', 'Bold brows')],
+  eyeShape: [o('natural', 'Natural'), o('wide', 'Wide eyes'), o('almond', 'Almond eyes'), o('hooded', 'Hooded eyes')],
+  noseShape: [o('natural', 'Natural'), o('small', 'Small nose'), o('wide', 'Wide nose'), o('defined', 'Defined bridge')],
+  expression: [o('soft', 'Soft smile'), o('neutral', 'Neutral expression'), o('smile', 'Bright smile'), o('focused', 'Focused expression')],
+  faceDetail: [o('none', 'None'), o('freckles', 'Freckles'), o('beauty-mark', 'Beauty mark'), o('scar', 'Brow scar')],
+  frameColor: [o('black', 'Black', '#24252b'), o('gold', 'Gold', '#b88739'), o('silver', 'Silver', '#aab4bf'), o('red', 'Red', '#8b344b'), o('blue', 'Blue', '#396c9e')],
+  portraitBackground: [o('navy', 'Navy', '#2b3d63'), o('teal', 'Teal', '#257669'), o('plum', 'Plum', '#673c69'), o('sand', 'Sand', '#9a7347'), o('slate', 'Slate', '#4c596a')],
   facePreset: [o('classic', 'Classic'), o('round', 'Round'), o('square', 'Square'), o('long', 'Long'), o('soft', 'Soft'), o('angular', 'Angular')],
   skinTone: [
     o('porcelain', 'Porcelain', '#f8dccb'), o('fair', 'Fair', '#f1c9a5'), o('light', 'Light', '#e6b48a'), o('tan', 'Tan', '#cf9363'),
@@ -57,6 +64,7 @@ export function optionsForGender(field: AppearanceField, gender?: string | null,
 
 export const DEFAULT_APPEARANCE: Appearance = {
   facePreset: 'classic', skinTone: 'light', hairStyle: 'short', hairColor: 'darkbrown', eyeColor: 'brown',
+  browStyle: 'natural', eyeShape: 'natural', noseShape: 'natural', expression: 'soft', faceDetail: 'none', frameColor: 'black', portraitBackground: 'navy',
   facialHair: 'none', clothing: 'sweater', clothingColor: 'navy', glasses: 'none', accessory: 'none',
 };
 
@@ -77,19 +85,24 @@ export function sanitizeAppearance(value: Partial<Appearance> | undefined): Appe
   return out;
 }
 
-export function randomAppearance(random: () => number = Math.random, gender?: string | null, age?:number): Appearance {
+export const STUDIO_FIELDS = ['browStyle', 'eyeShape', 'noseShape', 'expression', 'faceDetail', 'frameColor', 'portraitBackground'] as const;
+
+export function randomAppearance(random: () => number = Math.random, gender?: string | null, age?:number, studio = false): Appearance {
   const pick = (field: AppearanceField) => {
     const list = optionsForGender(field, gender, age);
     return list[Math.floor(random() * list.length)].id;
   };
   const result = { ...DEFAULT_APPEARANCE };
-  for (const field of APPEARANCE_FIELDS) result[field] = pick(field);
+  for (const field of APPEARANCE_FIELDS) {
+    if (!STUDIO_FIELDS.some(studioField => studioField === field)) result[field] = pick(field);
+  }
   if (gender === 'female') { result.facialHair = 'none'; result.hairStyle = `female-hair-${Math.floor(random()*10)}`; result.clothing = `female-outfit-${Math.floor(random()*10)}`; }
   if (gender === 'male') { result.hairStyle = `male-hair-${Math.floor(random()*10)}`; result.clothing = `male-outfit-${Math.floor(random()*10)}`; }
   // Keep the extremes rare so random looks stay natural.
   if (random() < 0.6) result.glasses = 'none';
   if (random() < 0.6) result.accessory = 'none';
   if (random() < 0.7) result.hairColor = ['black', 'darkbrown', 'brown', 'blond', 'auburn'][Math.floor(random() * 5)];
+  if (studio) for (const field of STUDIO_FIELDS) result[field] = pick(field);
   return result;
 }
 

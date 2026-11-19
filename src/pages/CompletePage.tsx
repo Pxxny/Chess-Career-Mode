@@ -1,3 +1,4 @@
+import { DivisionLeaguePanel } from "@/features/match/DivisionLeaguePanel";
 import { CareerHealthCard } from "@/features/career/CareerHealthCard";
 import { competitionHealthIssue } from "@/game/career/health";
 import { useGameStore } from "@/store/gameStore";
@@ -46,7 +47,7 @@ type Tab =
   | "event-history";
 
 function landingTab(value: string | null): Tab | undefined {
-  return value === "calendar" || value === "world" || value === "players" || value === "rankings" ? value : undefined;
+  return value === "calendar" || value === "world" || value === "players" || value === "rankings" || value === "league" ? value : undefined;
 }
 
 export function CompletePage() {
@@ -184,20 +185,7 @@ export function CompletePage() {
         {tab === "event-history" && <AnnualTournaments history />}
         {tab === "swiss" && <TournamentPanel onStart={previewStart} swissOnly />}
         {tab === "prepare" && <PreparePanel />}
-        {tab === "league" && (
-          <Card>
-            <CardTitle>Your league</CardTitle>
-            <p className="text-sm text-ink">
-              {player.league} · Elo {player.rating}
-            </p>
-            <p className="mt-3 text-sm text-ink-muted">
-              League follows your career rating tier. Some invitations require
-              an elite league, a chess title and previous qualification.
-              Tournament and Swiss results contribute to your career through
-              rated games.
-            </p>
-          </Card>
-        )}
+        {tab === "league" && <DivisionLeaguePanel onStart={previewStart} />}
         {tab === "history" && (
           <div className="space-y-4">
             <MatchHistory />

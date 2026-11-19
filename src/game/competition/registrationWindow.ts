@@ -16,7 +16,7 @@ export function registrationWindow(save: GameSave, event: EntryEvent) {
     `${save.world.seed}:${save.career.id}:${event.id}:arrivals`,
   );
   const days = 35 + (seed % 29);
-  const open = close - days;
+  const open = close - (event.details?.pointsSeries?.stage === "final" ? 28 : days);
   const now = stampIndex(save.world.date) * 7 + (save.world.day ?? 1) - 1;
   return {
     open,

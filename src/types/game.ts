@@ -26,6 +26,8 @@ export interface CareerRecord {
 }
 
 export interface GameSave {
+  hostedEvents?: import("@/game/world/schedule").ScheduledEvent[];
+  teamCamps?: Record<string, { openingId: string; goals: number[] }>;
   health?: import("@/game/career/health").CareerHealth;
   retirement?: { year: number; week: number; day: number; peakElo: number; wins: number; ratedGames: number };
   /** NPC IDs pinned by this character, independent of NPC names and current rankings. */

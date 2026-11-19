@@ -8,7 +8,7 @@ import type { Appearance } from "@/types";
  * See public/portraits/REFERENCES.json for the inspected reference collection.
  */
 export const LEGEND_APPEARANCES: Readonly<
-  Record<string, Readonly<Appearance>>
+  Record<string, Readonly<Partial<Appearance>>>
 > = {
   "legend-paul-morphy": {
     facePreset: "classic",

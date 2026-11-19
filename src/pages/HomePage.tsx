@@ -1,3 +1,4 @@
+import { CareerInbox } from "@/features/home/CareerInbox";
 import { lazy, Suspense, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, CalendarDays, ChevronDown, Dumbbell, Swords } from "lucide-react";
@@ -64,9 +65,9 @@ export function HomePage() {
     ? schedule.find(event => event.weeksUntilStart > 0 && eligibilityIssues(save, event).length === 0)
     : undefined;
   const next = resting ? null
-    : active ? { label: "Current tournament", name: active.name, detail: `Round ${active.round} / ${active.rounds}`, to: "/complete", action: "Open current tournament" }
+    : active ? { label: "Current tournament", name: active.name, detail: `Round ${active.round} / ${active.rounds}`, to: active.details?.leagueDivision ? "/complete?tab=league" : "/complete", action: "Open current tournament" }
     : esports?.status === "playing" ? { label: "Current tournament", name: esports.event.name, detail: `Round ${esports.round}`, to: "/complete?circuit=esports", action: "Open current tournament" }
-    : registration ? { label: "Your next registered tournament", name: registration.name, detail: dayLabel(bookedStart(registration)).slice(0, 10), to: "/complete?section=registrations", action: "View registration" }
+    : registration ? { label: "Your next registered tournament", name: registration.name, detail: dayLabel(bookedStart(registration)).slice(0, 10), to: registration.details?.leagueDivision ? "/complete?tab=league" : "/complete?section=registrations", action: "View registration" }
     : recommended ? { label: "Next tournament", name: recommended.name, detail: dayLabel(bookedStart(recommended)).slice(0, 10), to: `/complete?event=${encodeURIComponent(recommended.id)}`, action: "View tournament" } : null;
 
   return <>
@@ -81,6 +82,7 @@ export function HomePage() {
       </div>
     </header>
     <CareerHealthCard />
+    <CareerInbox save={save} schedule={schedule} />
     <div className="mb-3 empty:hidden"><SelectTourReward /></div>
     {next && !save.pendingMatch && <Card className="mb-3 border-gold-500/40" data-testid="home-next-action">
       <div className="flex flex-wrap items-center justify-between gap-3">

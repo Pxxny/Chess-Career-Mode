@@ -1,3 +1,4 @@
+import { RESERVE_ROTATION, rotateTeamRoster } from "./teamRotation";
 import { getCountry } from '@/data/world/countries';
 import { teamInfoOf, teamSpec } from '@/data/chess/nationalTeamEvents';
 import { stateOf, cupKey, type NationalTeam, type TeamCup } from '@/game/career/expansion';
@@ -65,14 +66,16 @@ export function pairTeamRound(t: ActiveTournament): TournamentPairing[] {
     if(pairing.bye!==null)fixtures.push([teams[pairing.bye],null]);
   }
   const rng=createRng(mixSeed(t.seed,0x2000+t.round));
-  const lineup=(team:NationalTeam)=>{
-    const members=team.players.slice(0,state.info.boards), reserve=team.reserves?.[0];
-    // A selected human keeps their board. NPCs can rotate their reserve as before.
-    if(reserve&&members.length&&members.at(-1)!.id!=='player'&&rng.next()<.2)members[members.length-1]=reserve;
-    return Array.from({length:state.info.boards},(_,i)=>members[i]?.id??`unfilled:${team.country}:${i}`);
+  const byId = new Map(t.players.map(player => [player.id, player]));
+  const lineup = (team: NationalTeam, opposing: NationalTeam | null) => {
+    const starters = team.players.slice(0, state.info.boards);
+    const members = opposing && team.reserves?.length && rng.next() < RESERVE_ROTATION
+      ? rotateTeamRoster(starters, team.reserves, opposing.players, id => byId.get(id)?.predictionActor?.style)
+      : starters;
+    return Array.from({length: state.info.boards}, (_, i) => members[i]?.id ?? `unfilled:${team.country}:${i}`);
   };
   return fixtures.flatMap(([a,b])=>{
-    const la=lineup(a), lb=b?lineup(b):[];
+    const la=lineup(a,b), lb=b?lineup(b,a):[];
     return la.map((id,board):TournamentPairing=>{
       const metadata={a:a.country,b:b?.country??null,board:board+1};
       if(!b)return {white:id,black:'bye',result:state.format === 'swiss' ? 0.5 : 0,teamMatch:metadata};

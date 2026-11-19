@@ -1,3 +1,4 @@
+import { seriesFinalists } from "./seasonSeries";
 import { travelQuote } from "./travel";
 import { teamSpec,teamInfoOf } from "@/data/chess/nationalTeamEvents";
 import { teamSelection } from "./teamSelection";
@@ -106,7 +107,12 @@ export function registrationIssue(
     return "You already entered another competition starting this week.";
   if (bookingConflict(save, bookedStart(event), reservedUntil(event)))
     return "Schedule conflict with another traditional or esports event.";
-  if (event.details?.showcase) {
+  if (event.details?.pointsSeries?.stage === "final") {
+    if (!npcs || !seriesFinalists(save, npcs, event.details).some(row => row.id === "player"))
+      return "Season Finals are restricted to the highest points scorers.";
+  } else if (event.details?.leagueDivision) {
+    if (!npcs || event.details.invitedNpcIds?.length !== event.fieldSize - 1) return "The league roster is incomplete.";
+  } else if (event.details?.showcase) {
     if (!npcs || !showcaseSelection(save, event, npcs).invited)
       return "Invitation only: the organizer has not selected you.";
   } else if (
