@@ -16,6 +16,32 @@
   </head>
   <body>
     <div id="root"></div>
+    <section id="boot-recovery" hidden role="alert" style="max-width:32rem;margin:20vh auto;padding:1.5rem;font:16px system-ui;color:#f3e8d1;background:#182538;border-radius:1rem">
+      <p>The game is taking longer to open. Reload to request fresh game files.</p>
+      <button type="button" id="boot-reload">Reload game</button>
+    </section>
+    <script>
+      (() => {
+        const reveal = () => {
+          if (!document.getElementById('root').hasChildNodes()) {
+            document.getElementById('boot-recovery').hidden = false;
+          }
+        };
+        document.getElementById('boot-reload').onclick = () => {
+          const url = new URL(location.href);
+          url.searchParams.set('retry-load', Date.now());
+          location.replace(url);
+        };
+        window.addEventListener('error', ({ target }) => {
+          if (target instanceof HTMLScriptElement && target.type === 'module') reveal();
+        }, true);
+        new MutationObserver((_, observer) => {
+          document.getElementById('boot-recovery').hidden = true;
+          observer.disconnect();
+        }).observe(document.getElementById('root'), { childList: true });
+        setTimeout(reveal, 20000);
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

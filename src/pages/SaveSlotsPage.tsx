@@ -1,3 +1,6 @@
+import { temporaryCareer } from "@/utils/temporaryCareer";
+import { startCareer } from "@/features/creation/startCareer";
+import { randomAppearance } from "@/data/appearance";
 import { LoadingReveal, SplashScreen } from "@/components/layout/SplashScreen";
 import { ImportBackup } from "@/features/career/ImportBackup";
 import { InstallSuggestion } from "@/features/install/InstallSuggestion";
@@ -61,6 +64,21 @@ export function SaveSlotsPage() {
     await refresh();
   };
 
+  const startTemporary = async () => {
+    setBusy(1);
+    setError(null);
+    try {
+      await startCareer({
+        name: "Temporary Player", gender: "undisclosed", countryCode: "TH",
+        city: { name: "Bangkok", custom: false }, archetype: "balanced",
+        appearance: randomAppearance(), startYear: 2026, alternateHistory: false, playerDatabase: "small",
+      }, 1);
+    } catch {
+      setError("The temporary world could not be created. Try again.");
+      setBusy(null);
+    }
+  };
+
   const deleteName =
     toDelete?.kind === "character"
       ? toDelete.summary.name
@@ -89,7 +107,14 @@ export function SaveSlotsPage() {
         career, NPC world and progress, saved automatically in this browser.
       </p>
 
-      <ImportBackup onImported={refresh} />
+      {temporaryCareer ? <div className="mb-4 space-y-3">
+        <p className="text-sm text-gold-300">Temporary careers stay in this tab. Export a backup to keep your progress.</p>
+        {slots?.[0]?.kind === "empty" && <Button disabled={busy !== null} onClick={() => void startTemporary()}>
+          {busy === 1 ? "Creating temporary career…" : "Start temporary career"}
+        </Button>}
+        <a href="/" className="inline-flex min-h-11 items-center px-3 text-sm underline">Return to saved careers</a>
+      </div> : <ImportBackup onImported={refresh} />}
+      {error && !temporaryCareer && <a href="/?temporary=1" className="mb-3 inline-flex min-h-11 items-center underline">Play a temporary career</a>}
       {error && (
         <p role="alert" className="mb-4 text-sm text-red-300">
           {error}

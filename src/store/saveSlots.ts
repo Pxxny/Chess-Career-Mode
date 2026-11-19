@@ -1,3 +1,4 @@
+import { temporaryCareer } from "@/utils/temporaryCareer";
 import type { StateStorage } from 'zustand/middleware';
 import { GAME_CONFIG } from '@/data/config';
 import type { Appearance, GameSave } from '@/types';
@@ -10,13 +11,15 @@ export interface SlotBackend {
   remove(key: string): Promise<void>;
 }
 
+const SLOT_TIMEOUT = { timeoutMs: 10000 };
+
 export const idbSlotBackend: SlotBackend = {
-  get: async (key) => (await transact<string>([STORES.keyval], 'readonly', (tx) => tx.objectStore(STORES.keyval).get(key))) ?? undefined,
+  get: async (key) => (await transact<string>([STORES.keyval], 'readonly', (tx) => tx.objectStore(STORES.keyval).get(key), SLOT_TIMEOUT)) ?? undefined,
   set: async (key, value) => {
-    await transact([STORES.keyval], 'readwrite', (tx) => tx.objectStore(STORES.keyval).put(value, key));
+    await transact([STORES.keyval], 'readwrite', (tx) => tx.objectStore(STORES.keyval).put(value, key), SLOT_TIMEOUT);
   },
   remove: async (key) => {
-    await transact([STORES.keyval], 'readwrite', (tx) => tx.objectStore(STORES.keyval).delete(key));
+    await transact([STORES.keyval], 'readwrite', (tx) => tx.objectStore(STORES.keyval).delete(key), SLOT_TIMEOUT);
   },
 };
 
@@ -131,7 +134,10 @@ export function createSlotManager(backend: SlotBackend, slotCount: number = GAME
         active = null;
         await saveMeta();
       }
-    })();
+    })().catch(error => {
+      ready = null;
+      throw error;
+    });
     return ready;
   };
 
@@ -214,4 +220,4 @@ export function createSlotManager(backend: SlotBackend, slotCount: number = GAME
   };
 }
 
-export const slotManager = createSlotManager(idbSlotBackend);
+export const slotManager = createSlotManager(temporaryCareer ? createMemorySlotBackend() : idbSlotBackend);

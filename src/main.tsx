@@ -13,6 +13,12 @@ import "@fontsource-variable/fraunces";
 import "@fontsource-variable/noto-sans-thai";
 import "./index.css";
 
+const startupUrl = new URL(window.location.href);
+if (startupUrl.searchParams.has("retry-load")) {
+  startupUrl.searchParams.delete("retry-load");
+  window.history.replaceState(window.history.state, "", startupUrl);
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <LanguageProvider>

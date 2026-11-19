@@ -1,3 +1,4 @@
+import { temporaryCareer } from "@/utils/temporaryCareer";
 import { z } from "zod";
 import { highlightsSchema } from "@/game/career/highlights";
 import { readMatchArchive, mergeMatches, matchKey } from "./matchArchive";
@@ -50,9 +51,9 @@ export async function createBackup(
 ): Promise<CareerBackup> {
   if (!npcs.length)
     throw new Error("Wait for the NPC world to finish loading.");
-  const archived = await readEventArchive(save.career.id);
+  const archived = temporaryCareer ? [] : await readEventArchive(save.career.id);
   const matches = mergeMatches(
-    await readMatchArchive(save.career.id),
+    temporaryCareer ? [] : await readMatchArchive(save.career.id),
     save.matchArchivePending ?? [],
     save.matches,
   );

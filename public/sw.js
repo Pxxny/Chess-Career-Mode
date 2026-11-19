@@ -1,5 +1,5 @@
 /* Offline support: the app shell and every same-origin file it loads are cached as you play. */
-const VERSION = "v34-tournament-priorities";
+const VERSION = "v37-career-safe-start";
 const CACHE = `chess-career-${VERSION}`;
 const SHELL = [
   "/data/game-atlas.json", "/data/venue-cities.json",
@@ -19,7 +19,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(CACHE)
-      .then((cache) => cache.addAll(SHELL))
+      .then((cache) => cache.addAll(SHELL.map(path => new Request(path, { cache: "reload" }))))
       .then(() => self.skipWaiting()),
   );
 });
@@ -30,7 +30,7 @@ self.addEventListener("activate", (event) => {
       .keys()
       .then((keys) =>
         Promise.all(
-          keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)),
+          keys.filter((k) => k.startsWith("chess-career-v") && k !== CACHE).map((k) => caches.delete(k)),
         ),
       )
       .then(() => self.clients.claim()),
@@ -45,14 +45,31 @@ self.addEventListener("fetch", (event) => {
   if (request.mode === "navigate") {
     // Pages: the network first so updates arrive, the cached shell when offline.
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: "no-cache" })
         .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE).then((cache) => cache.put("/", copy));
+          if (response.ok && response.headers.get("content-type")?.includes("text/html")) {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put("/", copy)).catch(() => {});
+          }
           return response;
         })
-        .catch(() => caches.match("/")),
+        .catch(async () => (await caches.match("/")) ?? Response.error()),
     );
+    return;
+  }
+  // Vite's hashed modules must never be replaced by an SPA HTML fallback.
+  if (url.pathname.startsWith("/assets/") && /\.m?js$/.test(url.pathname)) {
+    event.respondWith((async () => {
+      const isModule = response => response?.ok &&
+        /(?:java|ecma)script/i.test(response.headers.get("content-type") ?? "");
+      const cached = await caches.match(request);
+      if (isModule(cached)) return cached;
+      const response = await fetch(request, { cache: "no-cache" });
+      if (!isModule(response)) return Response.error();
+      const copy = response.clone();
+      caches.open(CACHE).then(cache => cache.put(request, copy)).catch(() => {});
+      return response;
+    })());
     return;
   }
   // Files: cached copy first, refreshed in the background.

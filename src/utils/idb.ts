@@ -1,3 +1,4 @@
+import { temporaryCareer } from "./temporaryCareer";
 import { beginMeasurement } from "@/diagnostics/performance";
 const DB_NAME = "chess-career-mode";
 const DB_VERSION = 7;
@@ -17,14 +18,14 @@ export const STORES = {
 let dbPromise: Promise<IDBDatabase> | null = null;
 
 export function openDb(): Promise<IDBDatabase> {
-  dbPromise ??= new Promise((resolve, reject) => {
+  if (temporaryCareer) return Promise.reject(new Error("Browser storage is disabled in a temporary career."));
+  dbPromise ??= new Promise<IDBDatabase>((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     let abandoned = false;
     const fail = (error: unknown) => {
       if (abandoned) return;
       abandoned = true;
       clearTimeout(timeout);
-      dbPromise = null;
       reject(error);
     };
     const timeout = setTimeout(() => fail(new Error("Browser storage is taking too long to respond.")), 15000);
@@ -69,6 +70,9 @@ export function openDb(): Promise<IDBDatabase> {
       resolve(request.result);
     };
     request.onerror = () => fail(request.error);
+  }).catch(error => {
+    dbPromise = null;
+    throw error;
   });
   return dbPromise;
 }
@@ -78,6 +82,7 @@ export async function transact<T = undefined>(
   storeNames: string[],
   mode: IDBTransactionMode,
   work: (tx: IDBTransaction) => IDBRequest<T> | void,
+  options?: { timeoutMs: number },
 ): Promise<T | undefined> {
   const measured = beginMeasurement(
     mode === "readonly" ? "storage.read" : "storage.write",
@@ -88,9 +93,22 @@ export async function transact<T = undefined>(
     const result = await new Promise<T | undefined>((resolve, reject) => {
       const tx = db.transaction(storeNames, mode);
       const request = work(tx);
-      tx.oncomplete = () => resolve(request ? request.result : undefined);
-      tx.onerror = () => reject(tx.error);
-      tx.onabort = () => reject(tx.error);
+      const timer = options && setTimeout(() => {
+        reject(new Error("Saved careers are taking too long to read or save. Try again."));
+        // Stop this request so a later retry cannot race a pending migration write.
+        try { tx.abort(); } catch { /* Already completed or aborted. */ }
+      }, options.timeoutMs);
+      const finish = () => clearTimeout(timer);
+      tx.oncomplete = () => {
+        finish();
+        resolve(request ? request.result : undefined);
+      };
+      const fail = () => {
+        finish();
+        reject(tx.error ?? new Error("Browser storage could not complete the request."));
+      };
+      tx.onerror = fail;
+      tx.onabort = fail;
     });
     status = "ok";
     return result;
