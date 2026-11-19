@@ -30,9 +30,12 @@ import {
 } from "@/game/competition/agenda";
 import { TournamentDetail } from "./TournamentDetail";
 import { annualEvents } from "@/game/competition/worldCalendar";
+const TournamentAtlas = lazy(() => import("./TournamentAtlas"));
 const SeasonCalendar = lazy(() => import("./SeasonCalendar"));
 export function AnnualTournaments({ history = false }: { history?: boolean }) {
   const [params] = useSearchParams();
+  const [atlasView, setAtlasView] = useState(() => !history && params.get("display") === "atlas");
+  useEffect(() => setAtlasView(!history && params.get("display") === "atlas"), [history, params]);
   const [calendarView, setCalendarView] = useState(() => !history && params.get("tab") === "calendar");
   const [qualifierCountry,setQualifierCountry]=useState('all'),[qualifierStage,setQualifierStage]=useState('all');
   const [showBackground,setShowBackground]=useState(false),[organizer,setOrganizer]=useState<TournamentSearch["organizer"]>("all");
@@ -163,6 +166,7 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
             ? "Tournament history by year"
             : "Annual tournament calendar"}
         </CardTitle>
+        {!atlasView && <>
         <p className="mb-4 text-sm text-ink-muted">
           {history
             ? "Every tournament scheduled in this year, together with recorded results. Events without results stay visible. Future years stay hidden until your career reaches them."
@@ -171,6 +175,9 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
         <p className="mb-4 text-xs text-ink-muted">
           Calendar events are open to eligible players and NPCs. Background NPC-only circuit results are hidden unless enabled.
         </p>
+        </>}
+        <details key={atlasView ? "atlas" : "calendar"} open={!atlasView || undefined}>
+          <summary className="mb-2 cursor-pointer text-sm font-semibold text-ink-muted">Filters</summary>
         <div className="flex flex-wrap gap-2">
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showBackground} onChange={e=>{setShowBackground(e.target.checked);setLimit(20);}}/>Show NPC-only background events</label>
           <select aria-label="Annual tournament organizer" value={organizer??'all'} onChange={e=>{setOrganizer(e.target.value as TournamentSearch['organizer']);setLimit(20);}} className="max-w-full rounded-lg bg-navy-900 p-3"><option value="all">All organizers</option><option>Official</option><option>Unofficial</option><option value="Sponsor">Sponsor-hosted</option></select>
@@ -208,16 +215,6 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
             <option value="regular">Regular tournaments</option>
             <option value="national">National teams</option>
           </select>
-          <input
-            aria-label="Search annual tournaments"
-            className="min-w-0 flex-1 rounded-lg bg-navy-900 p-3"
-            placeholder="Search tournaments…"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setLimit(20);
-            }}
-          />
           {history && (
             <select
               aria-label="Tournament results filter"
@@ -233,9 +230,23 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
             </select>
           )}
         </div>
-        <div role="group" aria-label="Calendar display" className="mt-4 flex gap-2">
-          <Button variant={calendarView ? "secondary" : "primary"} aria-pressed={!calendarView} onClick={() => setCalendarView(false)}>List view</Button>
-          <Button variant={calendarView ? "primary" : "secondary"} aria-pressed={calendarView} onClick={() => setCalendarView(true)}>Calendar view</Button>
+        </details>
+        <div className="mt-3 flex">
+          <input
+            aria-label="Search annual tournaments"
+            className="min-w-0 flex-1 rounded-lg bg-navy-900 p-3"
+            placeholder="Search tournaments…"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setLimit(20);
+            }}
+          />
+        </div>
+        <div role="group" aria-label="Calendar display" className="mt-4 flex flex-wrap gap-2">
+          <Button variant={!atlasView && !calendarView ? "primary" : "secondary"} aria-pressed={!atlasView && !calendarView} onClick={() => { setAtlasView(false); setCalendarView(false); }}>List view</Button>
+          <Button variant={!atlasView && calendarView ? "primary" : "secondary"} aria-pressed={!atlasView && calendarView} onClick={() => { setAtlasView(false); setCalendarView(true); }}>Calendar view</Button>
+          {!history && <Button variant={atlasView ? "primary" : "secondary"} aria-pressed={atlasView} onClick={() => setAtlasView(true)}>Tournament atlas</Button>}
         </div>
         <p className="mt-3 text-xs text-ink-muted">{filtered.length} events</p>
         {error && (
@@ -244,7 +255,10 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
           </p>
         )}
       </Card>
-      {calendarView ? <Suspense fallback={<Card>Loading calendar…</Card>}><SeasonCalendar year={selectedYear}
+      {atlasView ? <Suspense fallback={<Card>Drawing the game map…</Card>}>
+        <TournamentAtlas events={filtered.flatMap(row => row.event ? [row.event] : [])}
+          onDetails={event => setSelected({ event, record: recordById.get(event.id) })} />
+      </Suspense> : calendarView ? <Suspense fallback={<Card>Loading calendar…</Card>}><SeasonCalendar year={selectedYear}
         events={filtered.map((r) => ({ id: r.id, name: r.name, start: r.record?.startDay ?? bookedStart(r.event!), end: r.record?.endDay ?? bookedEnd(r.event!), details:r.event?.details, level:r.event?.level, event:r.event }))}
         onSelect={(id) => { const row = filtered.find((r) => r.id === id); if (row) setSelected({ event: row.event, record: row.record }); }} /></Suspense> : filtered.length ? (
         <ul className="space-y-3">
@@ -330,7 +344,7 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
           </p>
         </Card>
       )}
-      {!calendarView && filtered.length > limit && (
+      {!atlasView && !calendarView && filtered.length > limit && (
         <Button variant="secondary" onClick={() => setLimit((n) => n + 20)}>
           Show more events
         </Button>

@@ -179,3 +179,41 @@
 [role="gridcell"][data-draw="true"] {background:#7bb9d4;}
 [role="gridcell"][data-check="true"] {background:#d56c68;}
 [role="gridcell"][data-mate="true"] {background:#c85252;}
+
+/* Compact workspace navigation. On phones the same destinations become a labeled dock. */
+.workspace-rail {
+  @apply fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 gap-1 border-t border-navy-600 bg-navy-900/95 px-2 pt-1 backdrop-blur-xl;
+  padding-bottom: max(4px, env(safe-area-inset-bottom));
+}
+.workspace-brand { @apply hidden; }
+.workspace-nav-item {
+  @apply relative flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl py-1 text-ink-muted transition-colors hover:bg-navy-700 hover:text-ink;
+}
+.workspace-nav-label { @apply max-w-full truncate text-[10px] font-semibold; }
+.workspace-nav-item[aria-current="page"], .workspace-nav-item[aria-expanded="true"] {
+  @apply bg-gold-500/15 text-gold-300;
+}
+@media (min-width: 1024px) {
+  .workspace-rail { @apply inset-y-0 left-0 right-auto flex w-[72px] flex-col items-center gap-2 border-r border-t-0 px-0 py-4; }
+  .workspace-brand { @apply mb-3 grid h-10 w-10 place-items-center rounded-xl bg-gold-500 text-[#15191d]; }
+  .workspace-nav-item { @apply h-11 min-h-11 w-11 p-0; }
+  .workspace-nav-label { @apply sr-only; }
+  .workspace-more { @apply mt-auto; }
+}
+:root:not([data-theme="light"]) {
+  --bg-950: 20 23 27;
+  --bg-900: 25 30 36;
+  --bg-800: 32 40 48;
+  --bg-700: 44 54 63;
+  --bg-600: 64 77 88;
+  --accent-300: 169 237 218;
+  --accent-400: 142 222 202;
+  --accent-500: 122 209 186;
+  --accent-600: 92 167 149;
+  --text: 240 245 247;
+  --muted: 177 190 202;
+  --faint: 149 165 178;
+}
+.workspace-heading { @apply font-sans text-3xl font-bold tracking-tight text-ink sm:text-4xl; }
+.workspace-atlas [data-atlas-country] { fill: #343b3e; stroke: #869091; }
+.workspace-atlas [data-testid="game-atlas"] svg[role="group"] { background-color: #20282c; }

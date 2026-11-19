@@ -17,7 +17,7 @@ const PLAYER_PERIODS: { id: EloPeriod; label: string }[] = [
   { id: "tournament", label: "Tournament" }, { id: "month", label: "Month" }, { id: "year", label: "Year" },
 ];
 
-export function EloChart({npc}:{npc?:Npc}={}) {
+export function EloChart({npc, compact = false}:{npc?:Npc; compact?: boolean}={}) {
   const save = useGameStore(s=>s.save);
   const player = npc ? {rating:npc.currentElo} : save!.player, history=save?.history;
   const PERIODS: {id:NpcEloPeriod;label:string}[] = npc ? [{id:"match",label:"Match"},...PLAYER_PERIODS] : PLAYER_PERIODS;
@@ -54,17 +54,17 @@ export function EloChart({npc}:{npc?:Npc}={}) {
       data: {
         labels: points.map((p, i) => period === "tournament" ? `#${i + 1}` : p.label),
         datasets: [{
-          label: "Elo", data: points.map((p) => p.elo), borderColor: "#c7a76b", borderWidth: 2.5,
+          label: "Elo", data: points.map((p) => p.elo), borderColor: "#aaaef0", borderWidth: 2.5,
           backgroundColor: (context) => {
             const area = context.chart.chartArea;
-            if (!area) return "rgba(199,167,107,0.12)";
+            if (!area) return "rgba(170,174,240,0.12)";
             const gradient = context.chart.ctx.createLinearGradient(0, area.top, 0, area.bottom);
-            gradient.addColorStop(0, "rgba(199,167,107,0.24)");
-            gradient.addColorStop(1, "rgba(199,167,107,0)");
+            gradient.addColorStop(0, "rgba(170,174,240,0.24)");
+            gradient.addColorStop(1, "rgba(170,174,240,0)");
             return gradient;
           },
           fill: true, tension: 0.2, pointRadius: points.length > 30 ? 0 : 3,
-          pointHoverRadius: 6, pointHitRadius: 18, pointBackgroundColor: "#c7a76b",
+          pointHoverRadius: 6, pointHitRadius: 18, pointBackgroundColor: "#c4c8ff",
         }],
       },
       options: {
@@ -85,9 +85,9 @@ export function EloChart({npc}:{npc?:Npc}={}) {
   }, [points, period, language]);
 
   return (
-    <Card className="mb-5" data-testid={npc?"npc-elo-chart":"elo-chart"}>
+    <Card className={compact ? "h-full" : "mb-5"} data-testid={npc?"npc-elo-chart":"elo-chart"}>
       <CardTitle aside={<TrendingUp size={20} className="text-gold-400" aria-hidden />}>{npc?"NPC Elo History":"Elo Analytics"}</CardTitle>
-      {!npc && save && <div className="mb-5 space-y-4">
+      {!compact && !npc && save && <div className="mb-5 space-y-4">
         <EliteStats items={[["Current Elo", player.rating], ["Peak Elo", save.player.peakRating], ["Rating gain in view", change === null ? "—" : `${change > 0 ? "+" : ""}${change}`], ["World rank", `#${rank}`]]} />
         <div role="group" aria-label="Elo chart range" className="flex flex-wrap gap-2">
           {([1, 5, null] as const).map((value) => <button key={value ?? "all"} className="section-tab bg-navy-700" aria-pressed={range === value} onClick={() => setRange(value)}>{value === null ? "Career" : value === 1 ? "1 Year" : "5 Years"}</button>)}
@@ -104,13 +104,13 @@ export function EloChart({npc}:{npc?:Npc}={}) {
         </div>
       </div>
       {points.length ? (
-        <div className="relative h-64 w-full sm:h-72" data-testid="elo-chart-plot">
+        <div className={compact ? "relative h-48 w-full sm:h-56" : "relative h-64 w-full sm:h-72"} data-testid="elo-chart-plot">
           <canvas ref={canvas} role="img" aria-label={`${translateUI("Elo progress")} · ${translateUI(PERIODS.find((p) => p.id === period)!.label)}`} aria-describedby={descriptionId} />
         </div>
       ) : <EmptyState title="No rating history yet" description={npc?"NPC ratings are recorded from played games and saved tournament results.":period === "tournament" ? "Play a rated tournament to see its closing Elo here." : "Finish a rated game to start your Elo chart."} />}
-      <p id={descriptionId} className="mt-3 text-xs text-ink-faint">{npc?"Career results only. Match view shows up to 100 recorded games against you; period views also include saved NPC tournament results.":"Closing Elo for each period with recorded games. Older saves use the start of the recorded week when the day is unknown."}</p>
+      <p id={descriptionId} className={compact ? "sr-only" : "mt-3 text-xs text-ink-faint"}>{npc?"Career results only. Match view shows up to 100 recorded games against you; period views also include saved NPC tournament results.":"Closing Elo for each period with recorded games. Older saves use the start of the recorded week when the day is unknown."}</p>
       {!npc&&period === "tournament" && <p className="mt-1 text-xs text-ink-faint">Tournament view uses retained rated games, including events in progress. Monthly and yearly views use the full rating history.</p>}
-      {points.length > 0 && <details className="mt-4 border-t border-white/10 pt-3">
+      {!compact && points.length > 0 && <details className="mt-4 border-t border-white/10 pt-3">
         <summary className="cursor-pointer text-sm font-semibold text-gold-300">View chart data</summary>
         <div className="mt-3 max-h-64 overflow-auto">
           <table className="w-full text-left text-sm" data-testid={npc?"npc-elo-chart-data":"elo-chart-data"}>

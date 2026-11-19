@@ -4825,6 +4825,8 @@ export const TH_MESSAGES: Record<string, string> = {
   "Targets met": "ครบเป้าหมายแล้ว",
   "At risk · review within one week": "เสี่ยงพลาดเป้าหมาย · ตรวจในหนึ่งสัปดาห์",
   "Upcoming costs": "ค่าใช้จ่ายที่กำลังจะมาถึง",
+  "Tournament atlas": "แผนที่ทัวร์นาเมนต์",
+  "All menus": "เมนูทั้งหมด",
   "Hall of Fame": "หอเกียรติยศ",
   "Men’s Open World Finals champions in this career.": "ทำเนียบแชมป์ World Finals รุ่น Open ชายในเซฟนี้",
   "Your champion": "แชมป์ของคุณ",

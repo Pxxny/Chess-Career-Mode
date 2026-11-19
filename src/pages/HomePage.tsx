@@ -1,16 +1,16 @@
 import { CareerHealthCard } from "@/features/career/CareerHealthCard";
-import { EliteHero, EliteStats, eliteLink } from "@/features/elite/ElitePresentation";
+import { eliteLink } from "@/features/elite/ElitePresentation";
 import { registrationWindow } from "@/game/competition/registrationWindow";
 import { CareerNewsroom } from "@/features/news/CareerNews";
-import { useContext, useState } from "react";
+import { lazy, Suspense, useContext, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowUpRight, CalendarDays, Dumbbell, Swords } from "lucide-react";
+import { ArrowUpRight, CalendarDays, Dumbbell, Swords, TrendingUp, Compass } from "lucide-react";
 import { LanguageContext } from "@/i18n/context";
 import { SimulateSeason } from "@/features/career/SimulateSeason";
 import { InstallSuggestion } from "@/features/install/InstallSuggestion";
 import { EsportsHomeCard } from "@/features/esports/EsportsPanel";
 import { calendarLabel, calendarDate } from "@/game/qol/career";
-import { Card, CardTitle, PageHeader } from "@/components/ui";
+import { Card, CardTitle, Avatar } from "@/components/ui";
 import { CompetitionsSection } from "@/features/home/CompetitionsSection";
 import { SelectTourReward } from "@/features/tournaments/SelectTourReward";
 import { LastResultSection } from "@/features/home/LastResultSection";
@@ -29,6 +29,8 @@ import { GAME_CONFIG } from "@/data/config";
 import { lastGame, recentGames } from "@/game/history/stats";
 import type { Npc } from "@/types";
 
+const EloChart = lazy(() => import("@/features/profile/EloChart").then(module => ({ default: module.EloChart })));
+
 export function HomePage() {
   useContext(LanguageContext);
   const { save, ranked, rankings, titles, morale, schedule, news } = useDashboard();
@@ -40,19 +42,40 @@ export function HomePage() {
     <>
       <InstallSuggestion />
       <CareerHealthCard />
-      <PageHeader title="Home Dashboard" eyebrow="Career command center" />
-      <EliteHero title={player.name} label={<>{titles.currentLabel} · World #{rankings.world.rank}</>}>
-        <p className="mb-4 text-sm text-ink-muted">{player.rating.toLocaleString()} Elo · {player.city.name} · {save.world.date.year}</p>
-        <Link className={eliteLink} to="/profile">View career profile</Link>
-      </EliteHero>
-      <div className="mb-5">
-        <CardTitle>Career overview</CardTitle>
-        <EliteStats items={[["Career Elo", player.rating.toLocaleString()], ["World rank", `#${rankings.world.rank}`], ["Career titles", history.titles.length], ["Career age", player.age]]} />
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+        <h1 className="workspace-heading">Home Dashboard</h1>
+        <div className="flex items-center gap-2 text-xs text-ink-muted">
+          <CalendarDays size={15} aria-hidden />
+          <time dateTime={calendarDate(save).toISOString().slice(0, 10)} data-testid="home-date">
+            {calendarLabel(save)} · W{save.world.date.week}
+          </time>
+        </div>
+      </div>
+      <div className="mb-5 grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]" data-testid="workspace-dashboard">
+        <Card className="flex flex-col justify-between">
+          <div>
+            <div className="mb-4 flex items-center gap-3">
+              <Avatar name={player.name} seed={player.avatarSeed} appearance={player.appearance} />
+              <div className="min-w-0">
+                <h2 className="break-words text-lg font-bold" translate="no">{player.name}</h2>
+                <p className="text-xs text-ink-muted">{titles.currentLabel} · {player.city.name}</p>
+              </div>
+            </div>
+            <dl className="divide-y divide-navy-600">
+              {([["Current Elo", player.rating.toLocaleString()], ["World ranking", `#${rankings.world.rank}`], ["Peak Elo", player.peakRating.toLocaleString()], ["Rated games", player.ratedGames]] as const).map(([label, value]) =>
+                <div key={label} className="flex justify-between gap-3 py-2 text-sm">
+                  <dt className="text-ink-muted">{label}</dt><dd className="font-bold tabular-nums text-gold-300">{value}</dd>
+                </div>)}
+            </dl>
+          </div>
+          <Link className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-gold-300" to="/profile">View career profile <ArrowUpRight size={15} aria-hidden /></Link>
+        </Card>
+        <Suspense fallback={<Card aria-busy="true">Loading rating chart…</Card>}><EloChart compact /></Suspense>
       </div>
       <div className="mb-5 grid gap-4 lg:grid-cols-2">
-        <Card className="elite-hero">
+        <Card>
           <CardTitle>Next tournament</CardTitle>
-          {nextEvent ? <><p className="font-display text-xl" translate="no">{nextEvent.name}</p>
+          {nextEvent ? <><p className="text-lg font-bold" translate="no">{nextEvent.name}</p>
             <p className="my-2 text-sm text-ink-muted">{nextEvent.details?.timeControl?.label} · {nextEvent.year} / W{nextEvent.week}
               {nextEvent.details?.prize !== undefined && ` · $${nextEvent.details.prize.toLocaleString()}`}
               {registrationWindow(save, nextEvent).status === "open" && <span> · Registration open</span>}
@@ -61,17 +84,11 @@ export function HomePage() {
         </Card>
         <Card>
           <CardTitle>Quick actions</CardTitle>
-          <div className="grid gap-2">
-            {([["/career?view=championship", "Championship path"], ["/profile?tab=stats", "Elo analytics"], ["/complete?tab=world", "World Hub"]] as const).map(([to, label]) =>
-              <Link key={to} to={to} className="rounded-xl border border-navy-600 bg-navy-700 px-4 py-2.5 text-sm font-semibold hover:border-gold-500">{label}</Link>)}
+          <div className="divide-y divide-navy-600">
+            {([["/complete?section=match", "Matchday", Swords], ["/complete?tab=calendar&display=atlas", "Tournament atlas", Compass], ["/profile?tab=stats", "Elo analytics", TrendingUp]] as const).map(([to, label, Icon]) =>
+              <Link key={to} to={to} className="flex min-h-11 items-center gap-2 py-2 text-sm font-semibold hover:text-gold-300"><Icon size={16} aria-hidden className="text-gold-300" />{label}</Link>)}
           </div>
         </Card>
-      </div>
-      <div className="mb-6 flex flex-wrap items-center gap-2 text-xs text-ink-muted">
-        <CalendarDays size={15} className="text-gold-400" aria-hidden />
-        <time dateTime={calendarDate(save).toISOString().slice(0, 10)} data-testid="home-date">
-          {calendarLabel(save)} · Week {save.world.date.week}, day {save.world.day}
-        </time>
       </div>
       <div className="grid items-start gap-5 xl:grid-cols-[1.3fr_1fr]">
         <RatingsSection player={player} rankings={rankings} progress={progress} />
