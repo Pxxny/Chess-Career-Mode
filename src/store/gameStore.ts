@@ -1,3 +1,4 @@
+import { chooseCareer } from "@/utils/temporaryCareer";
 import { useLoadingStatus } from "./loadingStatus";
 import { competitionHealthIssue } from "@/game/career/health";
 import { retirementIssue } from "@/game/career/retirement";
@@ -1319,6 +1320,7 @@ export const useGameStore = create<GameStore>()(
       version: GAME_CONFIG.saveVersion,
       storage: {
         getItem: async () => {
+          if (chooseCareer) return null;
           const raw = await slotManager.storage.getItem();
           return raw ? (JSON.parse(raw) as StorageValue<unknown>) : null;
         },

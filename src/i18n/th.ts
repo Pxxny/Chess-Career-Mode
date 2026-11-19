@@ -4720,6 +4720,7 @@ export const TH_MESSAGES: Record<string, string> = {
   "Close other game windows before trying again. Your saved careers are kept.": "ปิดหน้าต่างเกมอื่นก่อนลองอีกครั้ง เซฟของคุณยังเก็บอยู่",
   "Game files could not load": "โหลดไฟล์เกมไม่สำเร็จ",
   "Reload to request a fresh copy of the game. Your saved careers are kept.": "โหลดเกมใหม่เพื่อขอไฟล์ชุดล่าสุด เซฟของคุณยังเก็บอยู่",
+  "Startup recovery": "กู้การเปิดเกม",
   "Reading saved careers…": "กำลังอ่านเซฟอาชีพ…",
   "Opening character creation…": "กำลังเปิดหน้าสร้างตัวละคร…",
   "Opening game screen…": "กำลังเปิดหน้าเกม…",

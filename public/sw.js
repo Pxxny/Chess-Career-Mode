@@ -1,5 +1,5 @@
 /* Offline support: the app shell and every same-origin file it loads are cached as you play. */
-const VERSION = "v37-career-safe-start";
+const VERSION = "v38-startup-recovery";
 const CACHE = `chess-career-${VERSION}`;
 const SHELL = [
   "/data/game-atlas.json", "/data/venue-cities.json",
@@ -19,7 +19,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(CACHE)
-      .then((cache) => cache.addAll(SHELL.map(path => new Request(path, { cache: "reload" }))))
+      .then((cache) => Promise.allSettled(SHELL.map(path => cache.add(new Request(path, { cache: "reload" })))))
       .then(() => self.skipWaiting()),
   );
 });
@@ -42,6 +42,8 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  // Recovery must work independently of any cached application HTML.
+  if (url.pathname === "/recovery.html") return;
   if (request.mode === "navigate") {
     // Pages: the network first so updates arrive, the cached shell when offline.
     event.respondWith(

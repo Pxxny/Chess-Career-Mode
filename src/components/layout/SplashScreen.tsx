@@ -34,6 +34,7 @@ export function SplashScreen({ phase, percent, showWorker = false }: {
     {!error && showWorker && busy && total > 0 && <p className="text-xs tabular-nums text-ink-faint">{done.toLocaleString()} / {total.toLocaleString()}</p>}
     {!error && slow && <p className="max-w-md text-sm text-ink-muted">This step is taking longer than expected. If the game is open in another tab or window, close that copy before reloading.</p>}
     {hydrationError && <p className="max-w-md text-sm text-ink-muted">Close other game windows before trying again. Your saved careers are kept.</p>}
+    {percent !== 100 && !temporaryCareer && <a href="/recovery.html" className="inline-flex min-h-11 items-center px-4 text-sm underline">Startup recovery</a>}
     {(slow || error) && <div className="flex flex-wrap justify-center gap-2">
       {!temporaryCareer && (error || slow) && <a href="/?temporary=1" className="inline-flex min-h-11 items-center rounded-lg border border-navy-600 px-4 text-sm">Play a temporary career</a>}
       {hydrationError && <button type="button" className="min-h-11 rounded-lg bg-gold-500/20 px-4 text-sm text-gold-300" onClick={() => void useGameStore.persist.rehydrate()}>Retry reading saves</button>}

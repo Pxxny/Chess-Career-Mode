@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Chess Career Mode · Startup recovery</title>
+  <style>
+    body { margin: 0; background: #0b1220; color: #f3e8d1; font: 16px system-ui, sans-serif; }
+    main { max-width: 34rem; margin: 12vh auto; padding: 1.25rem; }
+    h1 { font-size: 1.75rem; }
+    a, button { display: block; box-sizing: border-box; width: 100%; margin-block: .75rem; padding: .8rem 1rem; border: 1px solid #435367; border-radius: .75rem; background: #182538; color: inherit; font: inherit; text-align: start; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>กู้การเปิดเกม</h1>
+    <p>เปิดหน้าเลือกตัวละครเพื่อข้ามการเปิดอาชีพล่าสุดอัตโนมัติ หรือเชื่อมต่อใหม่เพื่อขอไฟล์เกมล่าสุด ทั้งสองทางจะเก็บเซฟเดิมไว้</p>
+    <a href="/?choose-career=1">เปิดหน้าเลือกตัวละคร</a>
+    <button type="button" id="reconnect">เชื่อมต่อใหม่และเปิดหน้าเลือกตัวละคร</button>
+    <a href="/?temporary=1">เล่นอาชีพชั่วคราว</a>
+    <p id="status" role="status"></p>
+  </main>
+  <script>
+    document.getElementById("reconnect").onclick = async function () {
+      this.disabled = true;
+      document.getElementById("status").textContent = "กำลังเชื่อมต่อใหม่…";
+      if ("serviceWorker" in navigator) {
+        try {
+          await Promise.race([
+            navigator.serviceWorker.getRegistration("/").then(registration => {
+              if (registration?.active && new URL(registration.active.scriptURL).pathname === "/sw.js") {
+                return registration.unregister();
+              }
+            }),
+            new Promise(resolve => setTimeout(resolve, 2500)),
+          ]);
+        } catch (_) {
+          // Still request a fresh document if the browser denies worker access.
+        }
+      }
+      location.replace("/?choose-career=1&retry-load=" + Date.now());
+    };
+  </script>
+</body>
+</html>
