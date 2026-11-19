@@ -40,7 +40,7 @@ export function BottomNav() {
           <span className="workspace-nav-label">More</span>
         </button>
       </nav>
-      {open && <Modal open title="All menus" onClose={() => setOpen(false)}>
+      {open && <Modal open title="All menus" presentation="sheet" onClose={() => setOpen(false)}>
         <div className="grid gap-4 sm:grid-cols-2">
           {groups.map(group => <section key={group.label}>
             <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-ink-muted">{group.label}</h2>

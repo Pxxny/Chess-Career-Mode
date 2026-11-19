@@ -1,5 +1,8 @@
+import { Check, ChevronDown, LayoutList } from "lucide-react";
+import { Modal } from "./Modal";
 import {
   useRef,
+  useState,
   useEffect,
   useId,
   type KeyboardEvent,
@@ -28,6 +31,8 @@ export function Tabs<T extends string>({
   children,
 }: TabsProps<T>) {
   const id = useId();
+  const [open, setOpen] = useState(false);
+  const activeLabel = tabs.find(tab => tab.id === active)?.label;
   const refs = useRef<Record<string, HTMLButtonElement | null>>({});
   const compact = tabs.length > 4;
   const visibleTabs = compact ? tabs.filter((tab, index) => index < 2 || tab.id === active) : tabs;
@@ -58,12 +63,34 @@ export function Tabs<T extends string>({
 
   return (
     <div>
-      <div className="mb-6 flex items-center gap-2 rounded-xl border border-white/[0.07] bg-navy-900/70 p-1.5">
+      {compact && <>
+        <div className="mb-4 sm:hidden">
+          <button type="button" aria-haspopup="dialog" aria-expanded={open} data-section-picker
+            aria-label={`${label}: choose section`} aria-controls={`${id}-panel-${active}`}
+            className="phone-section-trigger" onClick={() => setOpen(true)}>
+            <LayoutList size={18} aria-hidden className="shrink-0 text-gold-300" />
+            <span className="min-w-0 flex-1 break-words text-left">{activeLabel}</span>
+            <ChevronDown size={18} aria-hidden className="shrink-0 text-ink-muted" />
+          </button>
+        </div>
+        {open && <Modal open title={label} presentation="sheet" onClose={() => setOpen(false)}>
+          <ul className="divide-y divide-navy-600/70" data-section-options>
+            {tabs.map(tab => <li key={tab.id}>
+              <button type="button" aria-current={tab.id === active ? "page" : undefined}
+                className="flex min-h-12 w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm aria-[current=page]:bg-gold-500/10 aria-[current=page]:text-gold-300"
+                onClick={() => { onChange(tab.id); setOpen(false); }}>
+                <span>{tab.label}</span>{tab.id === active && <Check size={17} aria-hidden />}
+              </button>
+            </li>)}
+          </ul>
+        </Modal>}
+      </>}
+      <div className={`mb-6 items-center gap-2 rounded-xl border border-white/[0.07] bg-navy-900/70 p-1.5 ${compact ? "hidden sm:flex" : "flex"}`}>
       <div
         role="tablist"
         aria-label={label}
         onKeyDown={onKeyDown}
-        className="flex min-w-0 flex-1 gap-1 overflow-x-auto"
+        className="phone-tab-list flex min-w-0 flex-1 gap-1 overflow-x-auto"
       >
         {visibleTabs.map((tab) => (
           <button
@@ -92,7 +119,7 @@ export function Tabs<T extends string>({
       <div
         role="tabpanel"
         id={`${id}-panel-${active}`}
-        aria-labelledby={`${id}-tab-${active}`}
+        aria-label={activeLabel}
       >
         {children}
       </div>

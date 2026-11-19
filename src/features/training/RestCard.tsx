@@ -10,7 +10,7 @@ import { gameDay, tournamentSlot } from "@/game/competition/agenda";
 
 const OPTIONS: RestKind[] = ["break", "nap"];
 
-export function RestCard() {
+export function RestCard({ compact = false }: { compact?: boolean } = {}) {
   const save = useSave();
   const rest = useGameStore((s) => s.rest);
   const endDay = useGameStore((s) => s.endDay);
@@ -53,41 +53,28 @@ export function RestCard() {
     );
   };
 
-  return (
-    <Card className="mb-4">
-      <CardTitle>Rest &amp; recovery</CardTitle>
-      <p className="mb-3 text-sm text-ink-muted">
-        Recover during the day with a break or nap, or end the day to sleep. A
-        day with no training recovers extra.
-      </p>
-      <div className="grid gap-2 sm:grid-cols-3">
-        {OPTIONS.map((kind) => {
-          const info = restInfo(kind);
-          const block = restBlock(save, kind);
-          return (
-            <Button
-              key={kind}
-              variant="secondary"
-              onClick={() => doRest(kind)}
-              disabled={block !== null}
-              title={block ?? undefined}
-            >
-              {info.label} ({info.hours} h, -{info.recovery}%)
-            </Button>
-          );
-        })}
-        <Button onClick={sleep}>
-          <Moon size={16} aria-hidden />
-          {restDay ? "Rest day: end day" : "End day & sleep"}
-        </Button>
-      </div>
-      <p
-        role="status"
-        aria-live="polite"
-        className="mt-3 min-h-5 text-sm text-ink-muted"
-      >
-        {message}
-      </p>
-    </Card>
-  );
+  const endDayButton = <Button className="col-span-2 sm:col-span-1" onClick={sleep}>
+    <Moon size={16} aria-hidden />
+    {restDay ? "Rest day: end day" : "End day & sleep"}
+  </Button>;
+  const breaks = OPTIONS.map(kind => {
+    const info = restInfo(kind);
+    const block = restBlock(save, kind);
+    return <Button key={kind} className="min-w-0 px-2 text-xs sm:px-4 sm:text-sm"
+      variant="secondary" onClick={() => doRest(kind)} disabled={block !== null} title={block ?? undefined}>
+      {info.label} ({info.hours} h, -{info.recovery}%)
+    </Button>;
+  });
+
+  return <Card className="mb-4">
+    {!compact && <CardTitle>Rest &amp; recovery</CardTitle>}
+    {compact ? <>
+      {endDayButton}
+      <details className="mt-2">
+        <summary className="min-h-10 cursor-pointer py-2 text-sm font-semibold text-ink-muted">Short break or nap</summary>
+        <div className="grid grid-cols-2 gap-2">{breaks}</div>
+      </details>
+    </> : <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{breaks}{endDayButton}</div>}
+    <p role="status" aria-live="polite" className="mt-2 text-sm text-ink-muted empty:hidden">{message}</p>
+  </Card>;
 }

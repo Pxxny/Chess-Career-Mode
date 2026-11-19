@@ -4,7 +4,7 @@ import { Card, CardTitle } from "@/components/ui";
 import { recoveryDays } from "@/game/career/health";
 import { useSave } from "@/hooks/useGame";
 
-export function CareerHealthCard() {
+export function CareerHealthCard({ showTrainingLink = true }: { showTrainingLink?: boolean } = {}) {
   const save = useSave();
   const days = recoveryDays(save);
   const fatigue = save.training.fatigue;
@@ -17,7 +17,7 @@ export function CareerHealthCard() {
     <p className="mt-1 text-sm text-ink-muted">Fatigue {Math.round(fatigue)} / 100</p>
     {days > 0 && <p className="mt-2 text-sm text-ink-muted">End days to recover. If a round is due before you recover, you can withdraw from the event.</p>}
     <div className="mt-2 flex flex-wrap gap-3 text-sm text-gold-300">
-      <Link className="inline-flex min-h-11 items-center underline" to="/train">Open training & rest</Link>
+      {showTrainingLink && <Link className="inline-flex min-h-11 items-center underline" to="/train">Open training & rest</Link>}
       {save.tournament?.status === "playing" && <Link className="inline-flex min-h-11 items-center underline" to="/complete">Open current tournament</Link>}
     </div>
   </Card>;

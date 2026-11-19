@@ -1,3 +1,4 @@
+import { useLoadingStatus } from "./loadingStatus";
 import { competitionHealthIssue } from "@/game/career/health";
 import { retirementIssue } from "@/game/career/retirement";
 import { toggleWatchlist } from "@/game/social/directory";
@@ -1336,6 +1337,14 @@ export const useGameStore = create<GameStore>()(
       },
       partialize: (state) => ({ save: state.save }),
       migrate: migrateSave,
+      onRehydrateStorage: () => {
+        useLoadingStatus.setState({ hydrationError: null });
+        return (_state, error) => {
+          if (error) useLoadingStatus.setState({
+            hydrationError: error instanceof Error ? error.message : "Saved careers could not be read.",
+          });
+        };
+      },
       // `migrate` only runs when the stored version differs from the current one, so a save written by an earlier build of
       // the same version (for example one without `registrations`) would reach the screens incomplete. Bring every loaded save up to the current shape.
       merge: (persisted, current) => {

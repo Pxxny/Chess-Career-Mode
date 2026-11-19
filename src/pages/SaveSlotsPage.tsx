@@ -1,3 +1,4 @@
+import { LoadingReveal, SplashScreen } from "@/components/layout/SplashScreen";
 import { ImportBackup } from "@/features/career/ImportBackup";
 import { InstallSuggestion } from "@/features/install/InstallSuggestion";
 import { useCallback, useEffect, useState } from "react";
@@ -65,7 +66,10 @@ export function SaveSlotsPage() {
       ? toDelete.summary.name
       : `slot ${toDelete?.slot ?? ""}`;
 
+  if (!slots && !error) return <SplashScreen phase="Loading your characters…" percent={85} />;
+
   return (
+    <LoadingReveal>
     <main className="mx-auto w-full max-w-3xl px-4 py-8">
       <InstallSuggestion />
       <div className="mb-4 flex justify-end">
@@ -210,5 +214,6 @@ export function SaveSlotsPage() {
         </div>
       </Modal>
     </main>
+    </LoadingReveal>
   );
 }

@@ -3,7 +3,6 @@ import { GAME_CONFIG } from '@/data/config';
 import type { Morale } from '@/game/player/morale';
 import { hoursLeft } from '@/game/training/engine';
 import type { GameSave } from '@/types';
-import { formatMoney } from '@/utils/format';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -16,20 +15,19 @@ export function fatigueLabel(f: number): string {
 }
 
 export function TrainingStatus({ save, morale }: { save: GameSave; morale: Morale }) {
-  const { player, training, world } = save;
+  const { training, world } = save;
   const left = hoursLeft(training);
   const items: Array<[string, string]> = [
     ['Time left today', `${left} of ${GAME_CONFIG.sessions.hoursPerDay} h`],
-    ['Action points', `${player.ap.current}/${player.ap.max} AP`],
     ['Morale', `${morale.value} (${morale.label})`],
-    ['Money', formatMoney(player.money)],
+
   ];
   return (
-    <Card className="mb-4">
-      <p className="text-sm text-ink-muted">
+    <Card className="phone-training-status mb-4">
+      <p className="text-xs text-ink-muted">
         Year {world.date.year}, week {world.date.week}
       </p>
-      <p className="font-display text-xl font-bold text-ink">{DAYS[world.day - 1] ?? `Day ${world.day}`}</p>
+      <p className="text-lg font-bold text-ink">{DAYS[world.day - 1] ?? `Day ${world.day}`}</p>
       <div className="mt-3">
         <div className="mb-1.5 flex justify-between text-sm">
           <span className="text-ink-muted">Fatigue</span>
@@ -40,9 +38,9 @@ export function TrainingStatus({ save, morale }: { save: GameSave; morale: Moral
         <ProgressBar value={training.fatigue} label="Fatigue" />
         {training.fatigue >= 40 && <p className="mt-1.5 text-xs text-ink-muted">Tired players learn less from every session. Rest to recover.</p>}
       </div>
-      <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <dl className="phone-training-metrics mt-4 grid grid-cols-2 gap-3 sm:grid-cols-2">
         {items.map(([label, value]) => (
-          <div key={label} className="rounded-lg bg-navy-700/60 p-3">
+          <div key={label} className="training-metric rounded-lg bg-navy-700/60 p-3">
             <dt className="text-xs text-ink-muted">{label}</dt>
             <dd className="mt-1 font-semibold tabular-nums text-ink">{value}</dd>
           </div>

@@ -1,3 +1,5 @@
+import { recoveryDays } from "@/game/career/health";
+import { CareerHealthCard } from "@/features/career/CareerHealthCard";
 import { SectionMenu } from "@/components/ui";
 import { useState } from "react";
 import { Badge, Card, CardTitle } from "@/components/ui";
@@ -147,10 +149,13 @@ export function SessionsTab() {
             empty: "No master games are available in this era.",
           };
 
+  const recovering = recoveryDays(save) > 0;
+
   return (
     <>
       <TrainingStatus save={save} morale={morale} />
-      <RestCard />
+      {recovering && <CareerHealthCard showTrainingLink={false} />}
+      <RestCard compact={!recovering} />
 
       {result && (
         <Card className="mb-4" aria-live="polite">
@@ -225,7 +230,10 @@ export function SessionsTab() {
         </ul>
       </Card>
 
-      <DevelopmentCard save={save} />
+      <details className="home-section group mb-4">
+        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">Training progress</summary>
+        <div className="px-3"><DevelopmentCard save={save} /></div>
+      </details>
 
       <ChoiceDialog
         open={active !== null}

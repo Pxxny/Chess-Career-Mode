@@ -7,7 +7,7 @@ export async function createNpcPopulation(
   progress?: (value: CreationProgress) => void,
 ): Promise<Npc[]> {
   const update=(value:CreationProgress)=>{useLoadingStatus.setState({busy:true,phase:value.phase==="saving"?"Saving player database…":"Building player world…",done:value.done,total:value.total});progress?.(value);};
-  useLoadingStatus.setState({busy:true,phase:"Starting world worker…",done:0,total:0});
+  useLoadingStatus.setState({busy:true,phase:"Starting world worker…",done:0,total:0,careerId:career.id});
   if (typeof Worker === "undefined") {
     await new Promise((r) => setTimeout(r, 0));
     try{return await buildCareerWorldAsync(career, update);}finally{useLoadingStatus.setState({busy:false});}

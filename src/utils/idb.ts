@@ -19,7 +19,18 @@ let dbPromise: Promise<IDBDatabase> | null = null;
 export function openDb(): Promise<IDBDatabase> {
   dbPromise ??= new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
+    let abandoned = false;
+    const fail = (error: unknown) => {
+      if (abandoned) return;
+      abandoned = true;
+      clearTimeout(timeout);
+      dbPromise = null;
+      reject(error);
+    };
+    const timeout = setTimeout(() => fail(new Error("Browser storage is taking too long to respond.")), 15000);
+    request.onblocked = () => fail(new Error("Close other tabs or installed windows of this game, then reload."));
     request.onupgradeneeded = () => {
+      if (abandoned) { request.transaction?.abort(); return; }
       const db = request.result;
       if (!db.objectStoreNames.contains(STORES.keyval))
         db.createObjectStore(STORES.keyval);
@@ -46,16 +57,18 @@ export function openDb(): Promise<IDBDatabase> {
       }
     };
     request.onsuccess = () => {
+      if (abandoned) {
+        request.result.close();
+        return;
+      }
+      clearTimeout(timeout);
       request.result.onversionchange = () => {
         request.result.close();
         dbPromise = null;
       };
       resolve(request.result);
     };
-    request.onerror = () => {
-      dbPromise = null;
-      reject(request.error);
-    };
+    request.onerror = () => fail(request.error);
   });
   return dbPromise;
 }

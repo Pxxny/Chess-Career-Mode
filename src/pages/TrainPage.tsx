@@ -31,7 +31,6 @@ export function TrainPage() {
     <>
       <PageHeader
         title="Train"
-        description="Plan your day: train, rest and recover to improve the skills that decide your games."
       />
       <Tabs
         tabs={[...TABS]}
@@ -46,7 +45,9 @@ export function TrainPage() {
         {tab === "openings" && <OpeningsTab />}
       </Tabs>
       {tab === "sessions" && (
-        <Card className="mt-4">
+        <details className="home-section group mt-4">
+          <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">Playing style & archetype</summary>
+          <Card className="m-3">
           <CardTitle>
             Your archetype: {getArchetype(player.archetype).label}
           </CardTitle>
@@ -58,7 +59,8 @@ export function TrainPage() {
             Your archetype is a starting point. Every skill can be trained, and
             your tendencies change as you play.
           </p>
-        </Card>
+          </Card>
+        </details>
       )}
     </>
   );

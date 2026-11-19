@@ -10,6 +10,7 @@ interface ModalProps {
   children: ReactNode;
   footer?: ReactNode;
   size?: "md" | "lg" | "game";
+  presentation?: "dialog" | "sheet";
 }
 const modalStack: HTMLElement[] = [];
 let originalOverflow = "";
@@ -21,6 +22,7 @@ export function Modal({
   children,
   footer,
   size = "md",
+  presentation = "dialog",
 }: ModalProps) {
   const titleId = useId(),
     dialog = useRef<HTMLDivElement>(null),
@@ -83,7 +85,7 @@ export function Modal({
   if (!open) return null;
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/65 p-3 sm:items-center sm:p-5"
+      className={cn("fixed inset-0 z-50 flex items-end justify-center bg-black/65 p-3 sm:items-center sm:p-5", presentation === "sheet" && "phone-sheet-overlay")}
       onClick={onClose}
     >
       <div
@@ -94,6 +96,7 @@ export function Modal({
         aria-labelledby={titleId}
         className={cn(
           "max-h-[88dvh] w-full rounded-2xl border border-white/15 bg-navy-800 p-4 shadow-xl sm:p-6",
+          presentation === "sheet" && "phone-sheet",
           footer ? "flex flex-col overflow-hidden" : "overflow-y-auto",
           size === "game"
             ? "max-w-5xl"
@@ -112,7 +115,7 @@ export function Modal({
             {title}
           </h2>
           <div className="flex shrink-0 items-center gap-2">
-            <LanguageSelector compact />
+            {presentation !== "sheet" && <LanguageSelector compact />}
             <button
               type="button"
               aria-label="Close dialog"

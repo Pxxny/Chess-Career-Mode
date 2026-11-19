@@ -345,7 +345,8 @@ export function TournamentPanel({
     : undefined;
   const regs = registrationStates(save).filter(
     (r) => !swissOnly || (r.details?.format ?? "swiss") === "swiss",
-  );
+  ).sort((a, b) => Number(b.status === "ready") - Number(a.status === "ready") || bookedStart(a) - bookedStart(b));
+  const hasReadyEntry = regs.some(entry => entry.status === "ready");
   const earned = useMemo(() => earnedEntries(save, events).filter(
     ({ event }) => !swissOnly || event.details?.format === "swiss",
   ), [save, events, swissOnly]);
@@ -353,6 +354,7 @@ export function TournamentPanel({
     if (urlParams.get("section") !== "registrations") return;
     const frame = requestAnimationFrame(() => {
       const section = document.getElementById("your-registrations");
+      if (section instanceof HTMLDetailsElement) section.open = true;
       section?.focus({ preventScroll: true });
       section?.scrollIntoView({ block: "start" });
     });
@@ -412,7 +414,7 @@ export function TournamentPanel({
         : !targetEvent || e.id === targetEvent.id),
   ).sort((a,b)=>(quick==="value"||search?.sort==="value")?tournamentValue(save,b)-tournamentValue(save,a):0);
   return (
-    <div className="space-y-4" data-testid="tournament-panel"><Card><CardTitle>Competition hub</CardTitle><div className="flex flex-wrap gap-2">{[["current-tournament","Play & results"],["your-registrations",`Your entries (${regs.length+earned.length})`],["available-tournaments","Find a tournament"]].map(([id,label])=><Button key={id} variant="secondary" onClick={()=>document.getElementById(id)?.scrollIntoView({behavior:"smooth",block:"start"})}>{label}</Button>)}</div></Card>
+    <div className="space-y-3" data-testid="tournament-panel">
       {spotlight && <TournamentSpotlightDialog event={spotlight} onClose={() => setSpotlight(null)} />}
       {viewTournament && t && (
         <TournamentDetail
@@ -445,17 +447,9 @@ export function TournamentPanel({
           }}
         />
       )}
-      {swissOnly && (
-        <Card>
-          <CardTitle>Swiss Open</CardTitle>
-          <p className="text-sm text-ink-muted">
-            Score groups, colour balancing and maximum matching avoid repeat
-            opponents whenever a complete pairing without repeats exists. Lowest
-            score gets the bye, preferring players without a previous bye. This
-            game implementation is not FIDE-certified Dutch pairing software.
-          </p>
-        </Card>
-      )}
+      {swissOnly && <details className="home-section"><summary className="cursor-pointer px-4 py-3 text-sm font-semibold">Swiss Open</summary>
+        <p className="px-4 pb-3 text-sm text-ink-muted">Score groups, colour balancing and maximum matching avoid repeat opponents whenever a complete pairing without repeats exists.</p>
+      </details>}
       <div id="current-tournament" className="scroll-mt-24">{showCurrent && t ? (
         <Card>
           <CardTitle
@@ -471,6 +465,9 @@ export function TournamentPanel({
           >
             Current tournament · {t.name}
           </CardTitle>
+          {t.status === "playing" && (
+            <TournamentDayClock tournament={t} interactive />
+          )}
           <details className="mb-4"><summary className="cursor-pointer text-sm text-gold-300">Tournament information</summary><dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
             {[
               ["Location", t.details?.location ?? save.player.city.name],
@@ -557,9 +554,6 @@ export function TournamentPanel({
               </Button>
             </div>
           )}
-          {t.status === "playing" && (
-            <TournamentDayClock tournament={t} interactive />
-          )}
           <Button
             className="mb-3"
             variant="secondary"
@@ -568,11 +562,15 @@ export function TournamentPanel({
           >
             Open tournament / watch games
           </Button>
-          <TournamentTimetable tournament={t} />
           {t.details?.qualificationCircuit && <p className="my-3 rounded-xl bg-gold-500/10 p-3 text-sm text-gold-300">{circuitAdvancement(t.details) || "Final stage · qualifiers from all continents"}</p>}
-          <h3 className="mb-2 font-semibold text-ink">Tournament standings</h3>
-          <TournamentStandings t={t} />
-          <PairingHistory t={t} />
+          <details className="home-section my-3">
+            <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">Standings, pairings & schedule</summary>
+            <div className="space-y-3 px-3 pb-3">
+              <TournamentStandings t={t} />
+              <PairingHistory t={t} />
+              <TournamentTimetable tournament={t} />
+            </div>
+          </details>
           {t.status === "playing" && (
             <Button
               variant="danger"
@@ -588,19 +586,15 @@ export function TournamentPanel({
             </Button>
           )}
         </Card>
-      ) : (
-        <Card>
-          <CardTitle>Current tournament</CardTitle>
-          <p className="text-sm text-ink-muted">
-            {t
-              ? "An individual event is running in Tournament. Finish it before starting another."
-              : "No tournament in progress. Register below, then start during the event week. Finish before the end week; unplayed rounds are forfeited when the calendar passes it."}
-          </p>
-        </Card>
-      )}
-      </div><RegistrationQueue/><Card id="your-registrations" tabIndex={-1} className="scroll-mt-24" data-testid="your-registrations">
-        <CardTitle aside={<Badge tone="gold">{regs.length + earned.length}</Badge>}>Your registrations</CardTitle>
-        <p className="mb-4 text-sm text-ink-muted">Your qualified events and national team entries appear here automatically. Qualified entries still need registration confirmation.</p>
+      ) : null}</div>
+      {error && <p role="alert" className="rounded-lg border border-rose-400/25 p-3 text-sm text-rose-300">{error}</p>}
+      <details id="your-registrations" tabIndex={-1} className="home-section scroll-mt-24"
+        open={hasReadyEntry || urlParams.get("section") === "registrations" || undefined} data-testid="your-registrations">
+        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">
+          Your registrations <Badge tone="gold">{regs.length + earned.length}</Badge>
+          {hasReadyEntry && <span className="ml-2 text-gold-300">Ready to start</span>}
+        </summary>
+        <div className="px-3 pb-3">
         {running && (
           <p role="status" className="mb-3 text-xs text-gold-400">
             A match is running in the background. Its result will appear when it
@@ -681,14 +675,30 @@ export function TournamentPanel({
             </li>;
           })}
         </ul>}
-        <p className="mt-3 text-xs text-ink-faint">
-          Use End Day in Train to advance the calendar. Start in the listed
-          week; registration closes at the end of the deadline week. One
-          registration per starting week.
-        </p>
-      </Card>
+        </div>
+      </details>
+      <details className="home-section">
+        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">Registration queue</summary>
+        <div className="px-3 pb-3"><RegistrationQueue /></div>
+      </details>
       <Card id="available-tournaments" className="scroll-mt-24">
-        <CardTitle>Upcoming tournaments</CardTitle><div className="mb-4 flex flex-wrap gap-2">{[["all","All tournaments"],["ready","Ready to enter"],["norm","Norm opportunities"],["value","Best travel value"]].map(([id,label])=><Button key={id} variant={quick===id?"primary":"secondary"} aria-pressed={quick===id} onClick={()=>{setQuick(id as typeof quick);setLimit(6);}}>{label}</Button>)}</div><label className="mb-4 flex flex-wrap items-center gap-2 text-xs text-ink-muted">Travel class<select aria-label="Travel class" value={systemsOf(save).travelClass} onChange={e=>useGameStore.getState().careerSystemAction({type:'travel-class',value:e.target.value as 'economy'|'business'})} className="rounded-lg bg-navy-900 p-2 text-sm"><option value="economy">Economy</option><option value="business">Business · no jetlag</option></select></label>
+        <CardTitle>Upcoming tournaments</CardTitle>
+        <div className="mb-3 grid">          <input
+            aria-label="Search tournaments"
+            placeholder="Search tournaments…"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              if (selectedEventId)
+                setUrlParams((params) => {
+                  params.delete("event");
+                  return params;
+                });
+              setLimit(6);
+            }}
+            className="min-w-0 flex-1 rounded-lg bg-navy-900 p-3 text-sm text-ink"
+          />
+        </div>
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <Button variant="secondary" onClick={() => setFinderOpen(true)}>
             Find suitable tournaments
@@ -713,22 +723,11 @@ export function TournamentPanel({
           )}
         </div>
 
-        <div className="mb-3 grid gap-3 sm:grid-cols-3">
-          <input
-            aria-label="Search tournaments"
-            placeholder="Search tournaments…"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              if (selectedEventId)
-                setUrlParams((params) => {
-                  params.delete("event");
-                  return params;
-                });
-              setLimit(6);
-            }}
-            className="min-w-0 flex-1 rounded-lg bg-navy-900 p-3 text-sm text-ink"
-          />
+        <details className="home-section mb-4" open={search ? true : undefined}>
+          <summary className="cursor-pointer px-3 py-3 text-sm font-semibold">Tournament filters</summary>
+          <div className="px-3 pb-3">
+<div className="mb-4 flex flex-wrap gap-2">{[["all","All tournaments"],["ready","Ready to enter"],["norm","Norm opportunities"],["value","Best travel value"]].map(([id,label])=><Button key={id} variant={quick===id?"primary":"secondary"} aria-pressed={quick===id} onClick={()=>{setQuick(id as typeof quick);setLimit(6);}}>{label}</Button>)}</div><label className="mb-4 flex flex-wrap items-center gap-2 text-xs text-ink-muted">Travel class<select aria-label="Travel class" value={systemsOf(save).travelClass} onChange={e=>useGameStore.getState().careerSystemAction({type:'travel-class',value:e.target.value as 'economy'|'business'})} className="rounded-lg bg-navy-900 p-2 text-sm"><option value="economy">Economy</option><option value="business">Business · no jetlag</option></select></label>
+        <div className="mb-3 grid gap-3 sm:grid-cols-2">
           <label className="min-w-0 text-xs text-ink-muted"><span className="mb-1 block">Organizer type</span><select aria-label="Tournament organizer" value={organizer??'all'} onChange={e=>{const value=e.target.value as TournamentSearch['organizer'];setOrganizer(value);setLimit(6);setSearch(previous=>previous?{...previous,organizer:value}:null);}} className="w-full rounded-lg bg-navy-900 p-3 text-sm text-ink"><option value="all">All organizers</option><option>Official</option><option>Unofficial</option><option value="Sponsor">Sponsor-hosted</option></select></label>
           <label className="min-w-0 text-xs text-ink-muted"><span className="mb-1 block">Competition style</span><select
             aria-label="Tournament category"
@@ -803,6 +802,7 @@ export function TournamentPanel({
               ))}
           </select></label>
         </fieldset></details>
+        </div></details>
         <ul className="space-y-4" data-testid="open-events">
           {filtered.slice(0, limit).map((e) => {
             const totalEntrants = e.details?.showcase
@@ -866,7 +866,7 @@ export function TournamentPanel({
                   </Badge>
                 </div>
                 <p className="mt-2 text-sm text-ink-muted">{dateLabel(e)} · {e.details?.location} · ${e.entryFee + travelQuote(save,e).cost} total</p>
-                <p className="mt-1 text-xs text-gold-300">{tournamentCategory(e)} · {circuitAdvancement(e.details)}</p>
+                {circuitAdvancement(e.details) && <p className="mt-1 text-xs text-gold-300">{circuitAdvancement(e.details)}</p>}
                 {e.details?.organizer?.sponsorId&&<p className="mt-2 text-xs font-semibold text-gold-300">Sponsor-hosted · {e.details.organizer.name} · {e.details.organizer.status}</p>}
                 {e.details?.sponsorship&&<p className="mt-2 text-xs text-gold-300">Event partner · {e.details.sponsorship.name} · Market share {e.details.sponsorship.marketShare.toFixed(2)}%</p>}
                 <Button className="mt-2" variant="secondary" onClick={()=>setSpotlight(e)}>City map & tournament spotlight</Button><details className="mt-3"><summary className="cursor-pointer text-sm text-gold-300">Requirements, schedule & players</summary><EventFacts event={e} />
@@ -976,12 +976,10 @@ export function TournamentPanel({
           </Button>
         )}
       </Card>
-      {error && (
-        <p role="alert" className="text-sm text-red-300">
-          {error}
-        </p>
-      )}
-      <CareerTools/>
+      <details className="home-section">
+        <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">Career tools</summary>
+        <div className="px-3 pb-3"><CareerTools /></div>
+      </details>
 
     </div>
   );

@@ -9,11 +9,12 @@ interface Props {
   player: Player;
   rankings: Rankings;
   progress: CareerProgress;
+  tourAnchor?: boolean;
 }
 
 const rankText = (r: { rank: number; of: number }): string => `#${formatNumber(r.rank)}`;
 
-export function RatingsSection({ player, rankings, progress }: Props) {
+export function RatingsSection({ player, rankings, progress, tourAnchor = true }: Props) {
   const stats: Array<[string, string, string?]> = [
     ['Peak Elo', formatNumber(player.peakRating)],
     ['Rated games', formatNumber(player.ratedGames)],
@@ -22,7 +23,7 @@ export function RatingsSection({ player, rankings, progress }: Props) {
     ['City ranking', rankText(rankings.city), `of ${formatNumber(rankings.city.of)}`],
   ];
   return (
-    <Card data-tour="ratings" className="mb-4 w-full" aria-labelledby="ratings-title">
+    <Card data-tour={tourAnchor ? "ratings" : undefined} className="mb-4 w-full" aria-labelledby="ratings-title">
       <CardTitle aside={<Link to="/profile?tab=stats" className="flex min-h-11 items-center gap-1 text-xs font-semibold text-gold-300">View stats<ArrowUpRight size={14} aria-hidden /></Link>}>
         <span id="ratings-title">Player ratings</span>
       </CardTitle>
