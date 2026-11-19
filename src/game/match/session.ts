@@ -40,7 +40,7 @@ import type {
   ReviewLabel,
 } from "@/types";
 import { logWarn } from "@/utils/log";
-import { MatchClock, type Side } from "./clock";
+import { incrementAtPly, MatchClock, type Side } from "./clock";
 import {
   bookMoveFor,
   phaseOf,
@@ -263,6 +263,7 @@ export class MatchSession {
       tc.category === "none" ? 0 : tc.base * 1000,
       tc.increment * 1000,
       this.now,
+      tc.blackBase === undefined ? undefined : tc.blackBase * 1000,
     );
     this.game = createGame();
     for (const uci of options.initialState?.ucis ?? []) {
@@ -519,7 +520,7 @@ export class MatchSession {
       const complexity = legal.length > 36 ? 1.25 : legal.length < 12 ? 0.7 : 1;
       const spent = thinkTimeMs(profile, this.rng, {
         remainingMs: remaining,
-        incrementMs: tc.increment * 1000,
+        incrementMs: incrementAtPly(tc, ply),
         ply,
         fromBook,
         tc,
@@ -667,7 +668,7 @@ export class MatchSession {
       return false;
     }
     const mover = this.turnColor();
-    if (this.clock.hasTime && !this.clock.press(letterOf(mover), spentMs)) {
+    if (this.clock.hasTime && !this.clock.press(letterOf(mover), spentMs, incrementAtPly(this.setup.timeControl, this.game.ucis.length))) {
       this.finishGame(timeoutResult(this.game, letterOf(mover)));
       return false;
     }
@@ -782,8 +783,8 @@ export class MatchSession {
   /** The person takes over a side (or hands it back to the simulator) at any moment. */
   setController(color: PieceColor, kind: ControllerKind): void {
     if (this.status === "over" || this.controllers[color] === kind) return;
-    // In a rated game only the player's own side can be taken over. The opponent always plays for itself.
-    if (this.setup.rated && color !== this.setup.playerColor) return;
+    // In a rated game or tournament only the player's own side can be taken over. The opponent always plays for itself.
+    if ((this.setup.rated || this.setup.tournament) && color !== this.setup.playerColor) return;
     this.controllers[color] = kind;
     this.controlLog.push({ ply: this.game.ucis.length, color, to: kind });
     if (this.status === "paused" && kind === "human") this.resume();
@@ -830,8 +831,8 @@ export class MatchSession {
 
   resign(color: PieceColor = this.setup.playerColor): void {
     if (this.status === "over") return;
-    // In a rated game only the player can resign, and only for their own side.
-    if (this.setup.rated && color !== this.setup.playerColor) return;
+    // In a rated game or tournament the player can only resign for their own side.
+    if ((this.setup.rated || this.setup.tournament) && color !== this.setup.playerColor) return;
     this.finishGame({
       result: color === "white" ? "black" : "white",
       reason: "resignation",
@@ -881,7 +882,7 @@ export class MatchSession {
     const hands =
       this.controllers.white === "human" || this.controllers.black === "human";
     if (hands) {
-      if (this.game.ucis.length >= 2 && this.status !== "ready") {
+      if ((this.game.ucis.length >= 2 || this.setup.tournament?.armageddon) && this.status !== "ready") {
         const loser = this.setup.playerColor;
         this.finishGame({
           result: loser === "white" ? "black" : "white",
@@ -952,7 +953,7 @@ export class MatchSession {
     this.finish = finish;
     this.opts.onCheckpoint?.(null);
     this.emit();
-    if (this.game.ucis.length === 0) {
+    if (this.game.ucis.length === 0 && !this.setup.tournament?.armageddon) {
       this.opts.onVoid?.();
       return;
     }

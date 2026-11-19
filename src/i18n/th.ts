@@ -1,5 +1,10 @@
 /** English source messages stay in saves; only their presentation is localized. */
 export const TH_MESSAGES: Record<string, string> = {
+  "Same-day Armageddon": "Armageddon วันเดียวกัน",
+  "Play Armageddon": "เล่น Armageddon",
+  "White 10 min \u00b7 Black 7 min \u00b7 Black wins the tiebreak on a draw": "ขาว 10 นาที · ดำ 7 นาที · เสมอให้ดำชนะไทเบรก",
+  "Black wins the Armageddon tiebreak.": "ดำชนะไทเบรก Armageddon",
+
   "Career inbox": "กล่องแจ้งเตือนส่วนตัว",
   "Play next": "คิวแข่งถัดไป",
   "Qualified \u00b7 Claim entry": "ผ่านคัดเลือก · รับสิทธิ์",

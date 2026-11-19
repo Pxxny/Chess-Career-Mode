@@ -60,6 +60,7 @@ export interface ArchivedBoard {
   black: string;
   result: number | null;
   tiebreakWinner?: string;
+  armageddonResult?: number;
   broadcast?: TournamentPairing["broadcast"];
   matchKind?: "result-only" | "full-replay";
   whiteEloBefore?: number;
@@ -112,6 +113,7 @@ export function archiveTournament(t: ActiveTournament): ArchivedEvent {
         white: p.white,
         black: p.black,
         result: p.result,
+        ...(p.armageddonResult !== undefined ? { armageddonResult: p.armageddonResult } : {}),
         ...(p.tiebreakWinner ? { tiebreakWinner: p.tiebreakWinner } : {}),
         ...(p.broadcast ? { broadcast: p.broadcast } : {}),
       })),

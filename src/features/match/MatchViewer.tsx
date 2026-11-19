@@ -144,7 +144,7 @@ export function MatchViewer({ setup, onExit }: Props) {
   const turnColor = snap.turn;
 
   const confirmLeave = () => {
-    const hands = humanSides.length > 0 && snap.game.ucis.length >= 2 && !over;
+    const hands = humanSides.length > 0 && (snap.game.ucis.length >= 2 || setup.tournament?.armageddon) && !over;
     if (
       hands &&
       !confirmUI(
@@ -192,7 +192,7 @@ export function MatchViewer({ setup, onExit }: Props) {
   const subtitle = useMemo(
     () =>
       [
-        setup.rated ? "Rated" : "Friendly",
+        setup.rated ? "Rated" : setup.tournament?.armageddon ? "Tournament tiebreak" : "Friendly",
         describeTimeControl(setup.timeControl),
         snap.referee === "chess.js" ? "Rules: chess.js" : "Rules: built-in",
       ].join(" · "),
@@ -258,6 +258,9 @@ export function MatchViewer({ setup, onExit }: Props) {
           )}
         </p>
       )}
+      {setup.tournament?.armageddon && <p className="rounded-lg bg-gold-500/10 p-2 text-sm text-gold-300">
+        {setup.timeControl.label} · Black wins the tiebreak on a draw
+      </p>}
       {snap.notice && (
         <p
           role="status"
@@ -344,6 +347,7 @@ export function MatchViewer({ setup, onExit }: Props) {
               </p>
               <p className="text-sm text-ink-muted">
                 {resultText(snap.end, setup.white, setup.black)}
+                {setup.tournament?.armageddon && snap.end.result === "draw" && <span className="block text-gold-300">Black wins the Armageddon tiebreak.</span>}
               </p>
               {setup.rated && ratingChange !== null && (
                 <p className="mt-1 text-sm text-ink">
@@ -355,10 +359,10 @@ export function MatchViewer({ setup, onExit }: Props) {
               )}
               {!setup.rated && (
                 <p className="mt-1 text-xs text-ink-faint">
-                  A friendly game does not change your rating.
+                  {setup.tournament?.armageddon ? "This tiebreak counts toward tournament points." : "A friendly game does not change your rating."}
                 </p>
               )}
-              {snap.game.ucis.length === 0 && (
+              {snap.game.ucis.length === 0 && !setup.tournament?.armageddon && (
                 <p className="mt-1 text-xs text-ink-faint">
                   No moves were played, so nothing was recorded.
                 </p>
@@ -388,7 +392,7 @@ export function MatchViewer({ setup, onExit }: Props) {
                         <Pause className="h-4 w-4" aria-hidden /> Pause
                       </Button>
                     ))}
-                  {!setup.rated && !setup.social && controlButton(opponent)}
+                  {!setup.rated && !setup.tournament && !setup.social && controlButton(opponent)}
                   <Button
                     variant="secondary"
                     onClick={offerDraw}
@@ -402,13 +406,13 @@ export function MatchViewer({ setup, onExit }: Props) {
                     variant="danger"
                     onClick={() =>
                       session.resign(
-                        !setup.rated && humanSides.includes(turnColor)
+                        !setup.rated && !setup.tournament && humanSides.includes(turnColor)
                           ? turnColor
                           : player,
                       )
                     }
                     disabled={
-                      (!humanSides.includes(player) && setup.rated) ||
+                      (!humanSides.includes(player) && (setup.rated || !!setup.tournament)) ||
                       humanSides.length === 0
                     }
                   >

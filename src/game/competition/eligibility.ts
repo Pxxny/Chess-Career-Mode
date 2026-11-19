@@ -110,6 +110,9 @@ export function registrationIssue(
   if (event.details?.pointsSeries?.stage === "final") {
     if (!npcs || !seriesFinalists(save, npcs, event.details).some(row => row.id === "player"))
       return "Season Finals are restricted to the highest points scorers.";
+  } else if (event.details?.bulgariaChess) {
+    if (npcs && npcs.filter(npc => (!event.details?.gender || npc.gender === event.details.gender) &&
+      (npc.careerStatus === "active" || npc.careerStatus === "semi-retired")).length < 5) return "A six-player field is required.";
   } else if (event.details?.leagueDivision) {
     if (!npcs || event.details.invitedNpcIds?.length !== event.fieldSize - 1) return "The league roster is incomplete.";
   } else if (event.details?.showcase) {

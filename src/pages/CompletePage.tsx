@@ -66,7 +66,7 @@ export function CompletePage() {
   const [active, setActive] = useState<MatchSetup | null>(() => save.pendingMatch?.resume?.setup ?? null);
   const [queued, setQueued] = useState<MatchSetup|null>(null);
   const previewStart = (setup: MatchSetup) => {
-    if ((setup.rated || setup.tournament || setup.esports) && competitionHealthIssue(save)) return;
+    if (!setup.tournament?.armageddon && (setup.rated || setup.tournament || setup.esports) && competitionHealthIssue(save)) return;
     if (setup.prediction) setQueued(setup);
     else setActive(setup);
   };

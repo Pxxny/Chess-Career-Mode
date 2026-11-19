@@ -286,8 +286,8 @@ export function advanceCalendarTournaments(
       );
       if (teams.length >= 2) state.national.push({ event, teams });
     } else {
-      const field = calendarField(sameDay, event, roster);
-      if (field.length < 2) return;
+      const field = calendarField(sameDay, event, roster).slice(0, event.fieldSize);
+      if (field.length < (event.details?.bulgariaChess ? 6 : 2)) return;
       state.active.push({
         ...createTournament({
           npcOnly: true,

@@ -1,3 +1,4 @@
+import { awaitingArmageddon, tournamentTimeControl } from "@/game/competition/bulgariaChess";
 import { TournamentSeriesHistory } from "@/features/tournaments/TournamentSeriesHistory";
 import { NationalTeamCamp } from "./NationalTeamCamp";
 import { SeasonCompetitionTools } from "@/features/tournaments/SeasonCompetitionTools";
@@ -243,7 +244,7 @@ function IndividualPairingHistory({ t }: { t: ActiveTournament }) {
  const [round,setRound]=useState(Math.min(t.round-1,t.pairings.length-1)),[mine,setMine]=useState(false);
  useEffect(()=>setRound(Math.max(0,t.round-1)),[t.round,t.eventId]);
  const index=Math.max(0,Math.min(round,t.pairings.length-1)),names=new Map(t.players.map(p=>[p.id,`${p.name} (${p.elo})`]));
- return <section className="mt-4 rounded-xl bg-navy-900 p-4" data-testid="pairings-history"><h3 className="font-semibold">Pairings & history</h3><div className="my-3 flex flex-wrap items-center gap-2"><Button variant="secondary" disabled={index===0} onClick={()=>setRound(index-1)}>←</Button><select aria-label="Pairing round" value={index} onChange={e=>setRound(Number(e.target.value))} className="rounded-lg bg-navy-800 p-3">{t.pairings.map((_,i)=><option key={i} value={i}>Round {i+1}{i===t.round-1?' · current':''}</option>)}</select><Button variant="secondary" disabled={index>=t.pairings.length-1} onClick={()=>setRound(index+1)}>→</Button><label className="text-xs"><input type="checkbox" checked={mine} onChange={e=>setMine(e.target.checked)}/> My board only</label></div><ul className="max-h-96 space-y-2 overflow-auto">{(t.pairings[index]??[]).filter(p=>!mine||p.white==='player'||p.black==='player').map(p=><li key={p.white} className={`min-w-0 rounded-xl border p-3 text-sm ${p.white==='player'||p.black==='player'?'border-gold-500/40':'border-white/10'}`}><div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]"><p className="break-words">♔ {names.get(p.white)}</p><strong className="text-gold-300">{p.result===null?'Upcoming':`${p.result} – ${1-p.result}`}</strong><p className="break-words">♚ {p.black==='bye'?'Bye':names.get(p.black)}</p></div>{(p.prediction??p.forecast)&&<div className="mt-2"><PredictionSummary prediction={p.prediction??p.forecast}/></div>}</li>)}</ul></section>;
+ return <section className="mt-4 rounded-xl bg-navy-900 p-4" data-testid="pairings-history"><h3 className="font-semibold">Pairings & history</h3><div className="my-3 flex flex-wrap items-center gap-2"><Button variant="secondary" disabled={index===0} onClick={()=>setRound(index-1)}>←</Button><select aria-label="Pairing round" value={index} onChange={e=>setRound(Number(e.target.value))} className="rounded-lg bg-navy-800 p-3">{t.pairings.map((_,i)=><option key={i} value={i}>Round {i+1}{i===t.round-1?' · current':''}</option>)}</select><Button variant="secondary" disabled={index>=t.pairings.length-1} onClick={()=>setRound(index+1)}>→</Button><label className="text-xs"><input type="checkbox" checked={mine} onChange={e=>setMine(e.target.checked)}/> My board only</label></div><ul className="max-h-96 space-y-2 overflow-auto">{(t.pairings[index]??[]).filter(p=>!mine||p.white==='player'||p.black==='player').map(p=><li key={p.white} className={`min-w-0 rounded-xl border p-3 text-sm ${p.white==='player'||p.black==='player'?'border-gold-500/40':'border-white/10'}`}><div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]"><p className="break-words">♔ {names.get(p.white)}</p><strong className="text-gold-300">{p.result===null?'Upcoming':`${p.result} – ${1-p.result}`}</strong><p className="break-words">♚ {p.black==='bye'?'Bye':names.get(p.black)}</p></div>{p.armageddonResult !== undefined && <p className="mt-2 text-sm text-gold-300">Armageddon · {p.armageddonResult === 1 ? "White wins" : p.armageddonResult === 0 ? "Black wins" : "Draw · Black wins"}</p>}{(p.prediction??p.forecast)&&<div className="mt-2"><PredictionSummary prediction={p.prediction??p.forecast}/></div>}</li>)}</ul></section>;
 }
 
 function Entrants({ event }: { event: EntryEvent }) {
@@ -367,19 +368,20 @@ export function TournamentPanel({
     return () => cancelAnimationFrame(frame);
   }, [urlParams, route.key]);
   const t = save.tournament;
+  const armageddon = awaitingArmageddon(t);
   const showCurrent =
     t && Boolean(t.details?.leagueDivision) === leagueOnly && (!swissOnly || (t.details?.format ?? "swiss") === "swiss");
   const next = t ? playerOpponentId(t) : null,
     npc = next ? npcs.find((n) => n.id === next.id) : undefined;
   const play = (mode: "play" | "simulate") => {
-    if (!t || !next || !npc || running || !tournamentReady(save) || !!competitionHealthIssue(save)) return;
+    if (!t || !next || !npc || running || !tournamentReady(save) || (!armageddon && !!competitionHealthIssue(save))) return;
     onStart(
       buildMatchSetup({
         save,
         npc,
         playerColor: next.color,
-        timeControl: t.timeControl,
-        rated: true,
+        timeControl: tournamentTimeControl(t),
+        rated: !armageddon,
         mode,
         speed: mode === "simulate" ? "fast" : "brisk",
         tournament: {
@@ -388,6 +390,7 @@ export function TournamentPanel({
           level: t.level,
           round: t.round,
           rounds: t.rounds,
+          ...(armageddon ? { armageddon: true } : {}),
         },
         seed: Math.floor(Math.random() * 2 ** 31),
         db,
@@ -522,7 +525,8 @@ export function TournamentPanel({
           </dl></details>
           {t.status === "playing" && next && (
             <div className="mb-4 rounded-lg bg-navy-900 p-3">
-              <h3 className="font-semibold text-ink">Upcoming match</h3>
+              <h3 className="font-semibold text-ink">{armageddon ? "Same-day Armageddon" : "Upcoming match"}</h3>
+              {armageddon && <p className="mt-2 text-sm text-gold-300">White 10 min · Black 7 min · Black wins the tiebreak on a draw</p>}
               {t.team&&<p className="mt-2 text-sm font-semibold text-gold-300"><span>{teamName(t.team.country)}</span> · <span>Your board</span> {t.pairings[t.round-1].find(p=>p.white==='player'||p.black==='player')?.teamMatch?.board} · <span>{teamName(t.players.find(p=>p.id===next.id)?.countryCode??'')}</span></p>}
               <p className="my-2 text-sm text-ink-muted">
                 Round {t.round}:{" "}
@@ -534,17 +538,17 @@ export function TournamentPanel({
                   t.players.find((p) => p.id === next.id)?.elo}{" "}
                 · You play {next.color}.
               </p>
-              <UpcomingPredictions circuit="traditional" />
+              {!armageddon && <UpcomingPredictions circuit="traditional" />}
               <div className="flex flex-wrap gap-2">
                 <Button
-                  disabled={!npc || running || !tournamentReady(save) || !!competitionHealthIssue(save)}
+                  disabled={!npc || running || !tournamentReady(save) || (!armageddon && !!competitionHealthIssue(save))}
                   onClick={() => play("play")}
                   data-testid="play-round"
                 >
-                  Play the game
+                  {armageddon ? "Play Armageddon" : "Play the game"}
                 </Button>
                 <Button
-                  disabled={!npc || running || !tournamentReady(save) || !!competitionHealthIssue(save)}
+                  disabled={!npc || running || !tournamentReady(save) || (!armageddon && !!competitionHealthIssue(save))}
                   variant="secondary"
                   onClick={() => play("simulate")}
                 >
@@ -875,6 +879,7 @@ export function TournamentPanel({
                   </Badge>
                 </div>
                 <p className="mt-2 text-sm text-ink-muted">{dateLabel(e)} · {e.details?.location} · ${e.entryFee + travelQuote(save,e).cost} total</p>
+                {e.details?.bulgariaChess && <p className="mt-1 text-sm text-ink-muted">Six players · 10 rounds · Classical wins score 3. Classical draws go to same-day Armageddon.</p>}
                 {circuitAdvancement(e.details) && <p className="mt-1 text-xs text-gold-300">{circuitAdvancement(e.details)}</p>}
                 {e.details?.organizer?.sponsorId&&<p className="mt-2 text-xs font-semibold text-gold-300">Sponsor-hosted · {e.details.organizer.name} · {e.details.organizer.status}</p>}
                 {e.details?.sponsorship&&<p className="mt-2 text-xs text-gold-300">Event partner · {e.details.sponsorship.name} · Market share {e.details.sponsorship.marketShare.toFixed(2)}%</p>}

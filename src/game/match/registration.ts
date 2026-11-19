@@ -132,7 +132,7 @@ export function previewEntrants(
     const entrants = reg.entrantIds
       .map((id) => byId.get(id))
       .filter((n): n is Npc => !!n);
-    return reg.details?.showcase || reg.details?.format === "team"
+    return reg.details?.showcase || reg.details?.format === "team" || reg.details?.bulgariaChess
       ? entrants
       : entrants.slice(0, registrationCount(save, event, npcs));
   }
@@ -149,7 +149,7 @@ export function previewEntrants(
   }
   return projectedEntrants(save, event, npcs).slice(
     0,
-    registrationCount(save, event, npcs),
+    event.details?.bulgariaChess ? event.fieldSize : registrationCount(save, event, npcs),
   );
 }
 export function registerForEvent(
@@ -299,7 +299,7 @@ export function startRegisteredTournament(
     entryFee: reg.entryFee,
   } as ScheduledEvent;
   const finalIds =
-    reg.details?.showcase || reg.details?.pointsSeries?.stage === "final" || reg.details?.leagueDivision || !reg.entrantIds
+    reg.details?.showcase || reg.details?.pointsSeries?.stage === "final" || reg.details?.leagueDivision || reg.details?.bulgariaChess || !reg.entrantIds
       ? reg.entrantIds
       : reg.entrantIds.slice(0, registrationCount(save, event, npcs));
   const eligible = npcs.filter(
@@ -309,7 +309,7 @@ export function startRegisteredTournament(
       (!d?.qualificationCircuit?.selectTour || d.maxAge === undefined || n.age <= d.maxAge) &&
       (!finalIds || finalIds.includes(n.id)),
   );
-  if (!eligible.length) {
+  if (!eligible.length || (d?.bulgariaChess && eligible.length < 5)) {
     const refunded = {
       ...save,
       player: addMoney(save.player, reg.entryFee + (reg.travelCost ?? 0)),
@@ -321,7 +321,7 @@ export function startRegisteredTournament(
         refunded,
         `cancelled-${eventId}`,
         `${reg.name} cancelled`,
-        "No eligible opponents remain. Your entry fee was refunded.",
+        d?.bulgariaChess ? "The six-player field could not be filled. Your entry and travel costs were refunded." : "No eligible opponents remain. Your entry fee was refunded.",
       ),
     };
   }

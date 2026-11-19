@@ -1,3 +1,11 @@
+Chess Career Mode — Bulgaria Chess
+2026-11-19
+
+- เพิ่ม Bulgaria Chess Open และ Women’s แข่งพร้อมกันทุกปี 25 พฤศจิกายน–4 ธันวาคม สนามละ 6 คน แบบพบกันสองครั้ง 10 รอบ สลับสี
+- หมุนเวียนเมืองใหญ่ในบัลแกเรีย และจัดที่ Skopje ใน North Macedonia ทุกห้าปี เริ่มปี 2030
+- Classical ให้ 120 นาทีต่อคน เพิ่ม 10 วินาทีตั้งแต่ตาที่ 41 ชนะได้ 3 คะแนน ถ้าเสมอให้เล่น Armageddon วันเดียวกัน
+- Armageddon ให้ขาว 10 นาที ดำ 7 นาที ดำชนะไทเบรกหากเสมอ ให้คะแนน 1.5–1 รุ่น 2026 เพิ่ม 1 วินาทีตั้งแต่ตาที่ 41
+
 Chess Career Mode — Sponsor Market and Competition Expansion
 2026-11-19
 

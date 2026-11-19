@@ -1,3 +1,9 @@
+import type { MatchTimeControl } from "@/types";
+
+export function incrementAtPly(tc: MatchTimeControl, ply: number): number {
+  return Math.floor(ply / 2) + 1 >= (tc.incrementFromMove ?? 1) ? tc.increment * 1000 : 0;
+}
+
 export type Side = "w" | "b";
 
 /**
@@ -17,11 +23,11 @@ export class MatchClock {
   private readonly increment: number;
   private readonly now: () => number;
 
-  constructor(baseMs: number, incrementMs: number, now: () => number) {
+  constructor(baseMs: number, incrementMs: number, now: () => number, blackBaseMs = baseMs) {
     this.base = baseMs;
     this.increment = incrementMs;
     this.now = now;
-    this.left = { w: baseMs, b: baseMs };
+    this.left = { w: baseMs, b: blackBaseMs };
   }
 
   get hasTime(): boolean {
@@ -85,7 +91,7 @@ export class MatchClock {
    * given), adds the increment and hands the clock to the other side. Returns false when the flag had already
    * fallen: the move then arrived too late and the increment is not added.
    */
-  press(side: Side, spentMs?: number): boolean {
+  press(side: Side, spentMs?: number, increment = this.increment): boolean {
     if (this.active !== side) return true;
     const spent = this.hasTime
       ? spentMs === undefined
@@ -99,7 +105,7 @@ export class MatchClock {
       this.running = false;
       return false;
     }
-    this.left[side] = this.hasTime ? after + this.increment : this.left[side];
+    this.left[side] = this.hasTime ? after + increment : this.left[side];
     this.active = side === "w" ? "b" : "w";
     this.carried = 0;
     this.since = this.now();

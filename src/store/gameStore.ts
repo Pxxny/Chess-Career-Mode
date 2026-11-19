@@ -1,3 +1,4 @@
+import { awaitingArmageddon } from "@/game/competition/bulgariaChess";
 import { chooseCareer } from "@/utils/temporaryCareer";
 import { useLoadingStatus } from "./loadingStatus";
 import { competitionHealthIssue } from "@/game/career/health";
@@ -921,7 +922,7 @@ export const useGameStore = create<GameStore>()(
         if (!save) return null;
         if (
           !calendarOwned &&
-          (save.pendingMatch || matchRunning(save.career.id))
+          (save.pendingMatch || matchRunning(save.career.id) || awaitingArmageddon(save.tournament))
         )
           return null;
         const dayMeasured = beginMeasurement("calendar.day");
@@ -1141,7 +1142,8 @@ export const useGameStore = create<GameStore>()(
           finish.setup.tournament &&
           (save.tournament?.eventId !== finish.setup.tournament.id ||
             save.tournament.status !== "playing" ||
-            save.tournament.round !== finish.setup.tournament.round)
+            save.tournament.round !== finish.setup.tournament.round ||
+            awaitingArmageddon(save.tournament) !== Boolean(finish.setup.tournament.armageddon))
         )
           return null;
         if (

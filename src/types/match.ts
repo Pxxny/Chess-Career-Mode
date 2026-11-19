@@ -39,6 +39,7 @@ export interface MatchTournamentInfo {
   level: EventLevelId;
   round: number;
   rounds: number;
+  armageddon?: boolean;
 }
 
 /** What the clock needs. The same shape as the practice-game time controls. */
@@ -47,6 +48,8 @@ export interface MatchTimeControl {
   label: string;
   base: number;
   increment: number;
+  blackBase?: number;
+  incrementFromMove?: number;
   category: "none" | "bullet" | "blitz" | "rapid" | "classical";
 }
 
@@ -207,6 +210,7 @@ export interface BroadcastGame {
   termination?: MatchTermination;
 }
 export interface TournamentPairing {
+  armageddonResult?: number;
   teamMatch?: { a: string; b: string | null; board: number };
   broadcast?: BroadcastGame;
   forecast?: import("@/game/prediction/types").CompactPrediction;

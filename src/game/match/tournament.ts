@@ -1,3 +1,4 @@
+import { awaitingArmageddon, bulgariaPoints } from "@/game/competition/bulgariaChess";
 import { observePredictions } from "@/game/prediction/statistics";
 import {
   freezeTournamentRound,
@@ -349,7 +350,7 @@ export function playerOpponentId(
 ): { id: string; color: "white" | "black" } | null {
   if (t.status !== "playing") return null;
   const p = playerPairing(t);
-  if (!p || p.black === "bye" || p.result !== null) return null;
+  if (!p || p.black === "bye" || (p.result !== null && !awaitingArmageddon(t))) return null;
   return p.white === PLAYER_ID
     ? { id: p.black, color: "white" }
     : { id: p.white, color: "black" };
@@ -438,8 +439,20 @@ export function completeRound(
       winners.push(winner);
       eliminated.push(winner === w.id ? b.id : w.id);
     }
-    w.points += p.result;
-    b.points += 1 - p.result;
+    if (t.details?.bulgariaChess) {
+      if (p.result === .5 && p.armageddonResult === undefined) {
+        const draw = rng.chance(.25);
+        p.armageddonResult = w.isPlayer && t.withdrawn ? 0 : b.isPlayer && t.withdrawn ? 1
+          : draw ? .5 : rng.chance(expectedScore(w.elo + 70, b.elo)) ? 1 : 0;
+      }
+      if (p.result === .5) p.tiebreakWinner = p.armageddonResult === 1 ? w.id : b.id;
+      const points = bulgariaPoints(p);
+      w.points += points[0];
+      b.points += points[1];
+    } else {
+      w.points += p.result;
+      b.points += 1 - p.result;
+    }
     w.opponents.push(b.id);
     b.opponents.push(w.id);
     w.colors.push(1);
@@ -513,6 +526,19 @@ export function reportPlayerResult(
   env?: PredictionEnvironment,
 ): ActiveTournament {
   if (t.status !== "playing") return t;
+  if (t.details?.bulgariaChess) {
+    const pending = awaitingArmageddon(t);
+    if (pending || outcome === "draw") {
+      const pairings = t.pairings.map((round, index) => index !== t.round - 1 ? round : round.map(pair => {
+        if (pair.white !== PLAYER_ID && pair.black !== PLAYER_ID) return pair;
+        if (!pending) return { ...pair, result: .5 };
+        const score = outcome === "draw" ? .5 : Number((outcome === "win") === (pair.white === PLAYER_ID));
+        return { ...pair, armageddonResult: score };
+      }));
+      const updated = { ...t, pairings };
+      return pending ? completeRound(updated, null, env) : updated;
+    }
+  }
   return completeRound(
     t,
     outcome === "win" ? 1 : outcome === "draw" ? 0.5 : 0,

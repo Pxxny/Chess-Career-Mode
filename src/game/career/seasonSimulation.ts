@@ -1,3 +1,4 @@
+import { awaitingArmageddon } from "@/game/competition/bulgariaChess";
 import { competitionHealthIssue } from "@/game/career/health";
 import { buildEventTeams } from "@/game/competition/teamEvents";
 import { teamInfoOf } from "@/data/chess/nationalTeamEvents";
@@ -339,7 +340,7 @@ export async function runSeason(port: SeasonPort): Promise<void> {
     const s = seasonOf(save);
     if (!s) return;
     const healthIssue = competitionHealthIssue(save);
-    if (healthIssue) {
+    if (healthIssue && !awaitingArmageddon(save.tournament)) {
       port.commit(updateSeason(save, { status: "paused", action: healthIssue }));
       return;
     }
@@ -427,6 +428,7 @@ export async function runSeason(port: SeasonPort): Promise<void> {
               level: t.level,
               round: t.round,
               rounds: t.rounds,
+              ...(awaitingArmageddon(t) ? { armageddon: true } : {}),
             },
           });
           if (port.read()?.career.id !== id) return;

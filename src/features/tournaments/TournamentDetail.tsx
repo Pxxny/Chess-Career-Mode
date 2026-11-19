@@ -119,6 +119,10 @@ export function TournamentDetail({
   const d = t?.details ?? event?.details,
     window = event ? registrationWindow(save, event) : null;
   const rows: Array<[string, string | number]> = [
+    ...(d?.bulgariaChess ? [
+      ["Classical", "120 min · +10s from move 41 · win 3, loss 0"],
+      ["Armageddon", `Same day after a draw · White 10 min, Black 7 min${event?.year === 2026 || t?.year === 2026 ? " · +1s from move 41" : ""} · Black wins ties · 1.5–1 points`],
+    ] as Array<[string, string]> : []),
     ...(d?.pointsSeries?.stage === "final" ? [["Eligibility", `Top ${d.pointsSeries.seats} in the FIDE Season Points Circuit`] as [string, string]] : []),
     ...(d?.twoGameRematch ? [["Match format", "Two games with reversed colours, plus a tiebreak if level"] as [string, string]] : []),
     ...(d?.qualificationCircuit?.selectTour && d.prize !== undefined ? [["Prize fund", `$${d.prize.toLocaleString("en-US")}`] as [string, string]] : []),
@@ -336,6 +340,9 @@ export function TournamentDetail({
                                     ? "0–1"
                                     : "½–½"}
                             </p>
+                            {p.armageddonResult !== undefined && <p className="text-xs text-gold-300">
+                              Armageddon · {p.armageddonResult === 1 ? "White wins" : p.armageddonResult === 0 ? "Black wins" : "Draw · Black wins"}
+                            </p>}
                             {canLive ? (
                               <Button
                                 className="mt-2"

@@ -1,3 +1,4 @@
+import { tournamentTimeControl } from "@/game/competition/bulgariaChess";
 import {
   legalMoves,
   applyMove,
@@ -102,13 +103,13 @@ export async function playSeasonGame(
   );
   const tc = input.esports
     ? input.save.esports!.active!.event.timeControl
-    : (input.save.tournament?.details?.timeControl ?? DEFAULT_TIME_CONTROL);
+    : (input.save.tournament ? tournamentTimeControl(input.save.tournament) : DEFAULT_TIME_CONTROL);
   if (!tc) throw new Error("Tournament time control is missing.");
   const setup = buildMatchSetup({
     ...input,
     playerColor: input.color,
     timeControl: tc,
-    rated: true,
+    rated: !input.tournament.armageddon,
     mode: "simulate",
     speed: "max",
     seed,
@@ -137,8 +138,8 @@ export async function playSeasonGame(
           tc.base > 0
             ? Math.max(
                 0,
-                tc.base * 2000 +
-                  tc.increment * 1000 * finish.ucis.length -
+                (tc.base + (tc.blackBase ?? tc.base)) * 1000 +
+                  tc.increment * 1000 * Math.max(0, finish.ucis.length - 2 * ((tc.incrementFromMove ?? 1) - 1)) -
                   (c.white + c.black),
               )
             : null;
