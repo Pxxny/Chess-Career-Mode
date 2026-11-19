@@ -640,8 +640,12 @@ assert(
 assert.equal(saved.matches[0].setup.esports?.eventId, event.id);
 assert.equal(useGameStore.getState().finishMatch(finish, db), null);
 assert.equal(useGameStore.getState().save!.history.games.length, 1);
-if (esportsRoundDay(esportsOf(saved).active!) > gameDay(saved))
-  assert(useGameStore.getState().advanceCompetitionDay("esports").ok);
+if (esportsRoundDay(esportsOf(saved).active!) > gameDay(saved)) {
+  useGameStore.setState({ save: { ...saved, player: { ...saved.player, ap: { ...saved.player.ap, current: 0 } } } });
+  const advance = useGameStore.getState().advanceCompetitionDay("esports");
+  assert(advance.ok);
+  assert.equal(advance.ap.current, advance.ap.max);
+}
 const current = useGameStore.getState().save!,
   nextTarget = nextEsportsGame(current)!;
 // A new round must freeze a NEW pre-match forecast, rather than reusing the first round's immutable setup.
@@ -729,7 +733,10 @@ while (useGameStore.getState().save!.tournament!.status === "playing") {
       null,
       "future-day game must be rejected",
     );
-    assert(useGameStore.getState().advanceCompetitionDay("traditional").ok);
+    useGameStore.setState({ save: { ...current, player: { ...current.player, ap: { ...current.player.ap, current: 0 } } } });
+    const advance = useGameStore.getState().advanceCompetitionDay("traditional");
+    assert(advance.ok);
+    assert.equal(advance.ap.current, advance.ap.max);
     current = useGameStore.getState().save!;
     t = current.tournament!;
     advancedDays += gameDay(current) - before;

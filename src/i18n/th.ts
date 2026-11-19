@@ -1990,6 +1990,8 @@ export const TH_MESSAGES: Record<string, string> = {
   "Upcoming tournament": "ทัวร์นาเมนต์ถัดไป",
   Upcoming: "กำลังจะมาถึง",
   "Next match day": "วันแข่งถัดไป",
+  "Action points restored · {{0}}/{{1}} AP": "คืนพลังงานแล้ว · {{0}}/{{1}} AP",
+  "Could not reach the next match day.": "ยังเลื่อนไปถึงวันแข่งถัดไปไม่ได้",
   "Advance to next match day": "เลื่อนไปวันแข่งถัดไป",
   "Starting day": "วันเริ่มต้น",
   "Scheduled times": "เวลาในกำหนดการ",

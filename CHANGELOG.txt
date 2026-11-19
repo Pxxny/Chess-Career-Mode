@@ -1,3 +1,9 @@
+Chess Career Mode — Match Day AP Recovery
+2026-11-19
+
+- Advance to next match day ใช้การพักข้ามคืนแบบเดียวกับ Rest day ทั้งทัวร์ปกติและ Esports พร้อมแสดง AP หลังคืนพลังงานในวันแข่ง
+- การคืน AP ใช้เพดานตามผลของ jet lag ที่ยังมีอยู่ เช่นเดียวกับ Rest day
+
 Chess Career Mode — Dark Workspace
 2026-11-19
 

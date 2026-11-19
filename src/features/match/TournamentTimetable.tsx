@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui";
 import { useGameStore } from "@/store/gameStore";
 import { useSave } from "@/hooks/useGame";
@@ -123,6 +124,7 @@ export function TournamentDayClock({
 }) {
   const save = useSave(),
     advance = useGameStore((s) => s.advanceCompetitionDay);
+  const [message, setMessage] = useState("");
   const view = round ? { ...tournament, round } : tournament,
     slot = tournamentSlot(view),
     today = gameDay(save),
@@ -143,10 +145,14 @@ export function TournamentDayClock({
         </p>
       </div>
       {interactive && waiting && (
-        <Button variant="secondary" onClick={() => advance("traditional")}>
+        <Button variant="secondary" onClick={() => {
+          const result = advance("traditional");
+          setMessage(result.ok ? `Action points restored · ${result.ap.current}/${result.ap.max} AP` : result.error);
+        }}>
           Advance to next match day
         </Button>
       )}
+      {interactive && message && <p role="status" className="basis-full text-xs text-ink-muted">{message}</p>}
     </div>
   );
 }

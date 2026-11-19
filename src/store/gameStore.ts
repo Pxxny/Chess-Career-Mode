@@ -271,7 +271,7 @@ interface GameStore {
   ) => { ok: true; message: string } | { ok: false; error: string };
   advanceCompetitionDay: (
     circuit: "traditional" | "esports",
-  ) => { ok: true } | { ok: false; error: string };
+  ) => { ok: true; ap: GameSave["player"]["ap"] } | { ok: false; error: string };
   finishMatch: (finish: MatchFinish, db: OpeningDatabase) => MatchRecord | null;
   /** Stores the engine analysis of a match and sets the accuracy of its rated game. */
   attachMatchAnalysis: (
@@ -1115,15 +1115,19 @@ export const useGameStore = create<GameStore>()(
               : null;
         if (target === null || target <= gameDay(save))
           return { ok: false, error: "Complete today’s games first." };
-        for (
-          let i = 0;
-          i < 64 &&
-          get().save?.career.id === save.career.id &&
-          gameDay(get().save!) < target;
-          i++
-        )
-          get().endDay();
-        return { ok: true };
+        // Use the same overnight recovery as Rest day, including any active jet lag.
+        // Read AP from the settled save because calendar processing can apply its daily cap.
+        let current = save;
+        for (let i = 0; i < 64 && gameDay(current) < target; i++) {
+          const previousDay = gameDay(current);
+          const report = get().endDay();
+          const next = get().save;
+          if (!report || !next || next.career.id !== save.career.id || gameDay(next) <= previousDay) break;
+          current = next;
+        }
+        if (gameDay(current) !== target)
+          return { ok: false, error: "Could not reach the next match day." };
+        return { ok: true, ap: current.player.ap };
       },
       finishMatch: (finish, db) => {
         const { save } = get();

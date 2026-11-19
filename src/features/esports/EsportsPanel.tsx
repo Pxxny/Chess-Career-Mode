@@ -400,7 +400,8 @@ export function EsportsPanel({
                         disabled={running}
                         onClick={() => {
                           const r = advance("esports");
-                          if (!r.ok) setError(r.error);
+                          setError(r.ok ? "" : r.error);
+                          setMessage(r.ok ? `Action points restored · ${r.ap.current}/${r.ap.max} AP` : "");
                         }}
                       >
                         Advance to next esports match day
