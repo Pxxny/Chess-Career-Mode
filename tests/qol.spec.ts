@@ -28,7 +28,7 @@ async function readState(page: Page) {
 }
 async function fixture(
   page: Page,
-  kind: "history" | "transfer" | "long-event" | "legacy-world",
+  kind: "history" | "transfer" | "long-event" | "legacy-world" | "automatic-training",
 ) {
   await page.evaluate(async (kind) => {
     const db = await new Promise<IDBDatabase>((resolve) => {
@@ -106,6 +106,13 @@ async function fixture(
                 entryFee: 10,
               },
             ];
+          if (kind === "automatic-training") {
+            s.training.fatigue = 95;
+            s.registrations = [
+              { eventId: "early-event", name: "Early fixture", level: "local", year: 2026, week: 2, fieldSize: 32, entryFee: 10 },
+              { eventId: "later-event", name: "Later fixture", level: "local", year: 2026, week: 3, fieldSize: 32, entryFee: 10 },
+            ];
+          }
           if (kind === "history") {
             const player = {
               id: null,
@@ -263,7 +270,7 @@ async function fixture(
   ).toBeVisible();
 }
 
-test("QoL: date, work income, abroad/FIDE filters, diverse repertoire and chosen training to the next event", async ({
+test("QoL: date, work income, abroad/FIDE filters, diverse repertoire and automatic training to the next event", async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -337,7 +344,7 @@ test("QoL: date, work income, abroad/FIDE filters, diverse repertoire and chosen
   await page
     .getByRole("button", { name: "Simulate until tournament", exact: true })
     .click();
-  await page.getByRole("checkbox", { name: /Calculation Drills/ }).check();
+  await expect(page.getByRole("dialog").getByRole("checkbox")).toHaveCount(0);
   await page
     .getByRole("button", { name: "Confirm & simulate", exact: true })
     .click();
@@ -501,7 +508,6 @@ test("QoL: federation processing, calendar cancellation and additive legacy NPC 
   await page
     .getByRole("button", { name: "Simulate until tournament", exact: true })
     .click();
-  await page.getByRole("checkbox", { name: /Tactics Puzzle/ }).uncheck();
   await page
     .getByRole("button", { name: "Confirm & simulate", exact: true })
     .click();
@@ -517,7 +523,6 @@ test("QoL: federation processing, calendar cancellation and additive legacy NPC 
   await page
     .getByRole("button", { name: "Simulate until tournament", exact: true })
     .click();
-  await page.getByRole("checkbox", { name: /Tactics Puzzle/ }).uncheck();
   await page
     .getByRole("button", { name: "Confirm & simulate", exact: true })
     .click();
@@ -537,4 +542,22 @@ test("QoL: federation processing, calendar cancellation and additive legacy NPC 
     stopped.save.world.date,
   );
   expect(errors).toEqual([]);
+});
+
+test("fast-forward trains and rests automatically, stopping at the earliest booking", async ({ page }) => {
+  await createCareer(page);
+  await fixture(page, "automatic-training");
+  await page.goto("/complete?section=registrations");
+  const later = page.getByTestId("registrations").getByRole("listitem").filter({ hasText: "Later fixture" });
+  await later.getByRole("button", { name: "Simulate until tournament", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Plan the days before Later fixture" });
+  await expect(dialog.getByRole("checkbox")).toHaveCount(0);
+  await dialog.getByRole("button", { name: "Confirm & simulate", exact: true }).click();
+  await expect(page.getByText(/sessions completed .*Early fixture/)).toBeVisible();
+  const { save } = await readState(page);
+  expect(save.world.date).toMatchObject({ year: 2026, week: 2 });
+  expect(save.world.day).toBe(1);
+  expect(save.history.sessions.length).toBeGreaterThan(0);
+  expect(save.training.fatigue).toBeLessThan(95);
+  expect(save.training.hoursUsedToday).toBe(0);
 });

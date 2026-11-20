@@ -7,6 +7,7 @@ import {
 } from "@/game/career/highlights";
 import { coachedGame, news, weeklyCircuit } from "@/game/career/expansion";
 import {
+  autoTrainAndRest,
   newSeason,
   runSeason,
   seasonOf,
@@ -32,7 +33,7 @@ import { reconcileTournamentHistory } from "@/game/npc/tournamentHistory";
 import { applyWorldState, rerankNpcs } from "@/game/npc/worldState";
 import { gameFromSans } from "@/game/chess/rules";
 import { getBaseOpeningDatabase } from "@/game/openings/database";
-import { plannedTrainingDay, settleTransfer } from "@/game/qol/career";
+import { settleTransfer } from "@/game/qol/career";
 import { endDay } from "@/game/training/engine";
 import { indexRowsFromEvent } from "@/game/history/matchLedger";
 import { mergeMatches } from "@/store/matchArchive";
@@ -47,8 +48,8 @@ import type { GameSave, Npc } from "@/types";
  * persist path JSON.stringifies the save and IndexedDB structured-clones NPC records
  * before the transaction commits.
  *
- * Fast-forward matches Simulate until tournament with the dialog's default session
- * (tactics-puzzle), including the extra save write for the progress indicator.
+ * Fast-forward matches Simulate until tournament with automatic training and rest
+ * including the extra save write for the progress indicator.
  * A season matches Simulate season, including highlight pauses that are dismissed immediately.
  */
 
@@ -341,13 +342,13 @@ function populationNews(world: World, joined: number, retired: string[]) {
 
 /**
  * One call of `gameStore.endDay`, including the NPC writes it fires before returning.
- * `fastForward` adds the default planned session used by Simulate until tournament.
+ * `fastForward` adds the automatic training and rest used by Simulate until tournament.
  */
 function stepDay(world: World, mode: "fast-forward" | "season-day") {
   let save = world.save;
   if (mode === "fast-forward")
     save = world.acc.span("training.plan", () =>
-      plannedTrainingDay(save, ["tactics-puzzle"]).save,
+      autoTrainAndRest(save).save,
     );
   const advanced = world.acc.span("training.night", () => endDay(save));
   const expired = world.acc.span("competition.expire", () =>

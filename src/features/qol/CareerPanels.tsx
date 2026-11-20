@@ -3,10 +3,7 @@ import { useState } from "react";
 import { Button, Card, CardTitle, Modal } from "@/components/ui";
 import { useSave } from "@/hooks/useGame";
 import { useGameStore } from "@/store/gameStore";
-import { restInfo } from "@/game/training/engine";
 import {
-  AUTO_REST,
-  AUTO_TRAINING,
   CAREER_JOBS,
   careerDay,
   jobIssue,
@@ -163,7 +160,6 @@ export function AdvanceToEvent({
   ready?: boolean;
 }) {
   const [open, setOpen] = useState(false),
-    [ids, setIds] = useState<string[]>(["tactics-puzzle"]),
     [report, setReport] = useState<CalendarAdvanceReport | null>(null),
     [error, setError] = useState("");
   const advance = useGameStore((s) => s.simulateUntil);
@@ -184,57 +180,16 @@ export function AdvanceToEvent({
           size="lg"
         >
           <p className="mb-3 text-sm text-ink-muted">
-            Choose sessions to attempt once each day, in the order below. Normal
-            costs, requirements and fatigue apply. Blocked sessions are skipped;
-            you also rest on your own when too exhausted and with any hours
-            left over. Leave every box empty to rest. Stops for your earliest registered event so you do not miss
-            it.
+            The game chooses training that fits your available AP and hours,
+            and rests automatically when needed. It stops at your earliest
+            registered matchday.
           </p>
-          <div className="max-h-72 space-y-2 overflow-auto">
-            {[
-              ...AUTO_REST.map((r) => ({
-                id: r.id,
-                name: restInfo(r.kind).label,
-                hours: restInfo(r.kind).hours,
-                ap: 0,
-                money: 0,
-              })),
-              ...AUTO_TRAINING,
-            ].map((d) => (
-              <label
-                key={d.id}
-                className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg bg-navy-900 p-3 text-sm text-ink"
-              >
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 accent-[var(--accent)]"
-                  checked={ids.includes(d.id)}
-                  onChange={(e) =>
-                    setIds((prev) =>
-                      e.target.checked
-                        ? [...prev, d.id]
-                        : prev.filter((id) => id !== d.id),
-                    )
-                  }
-                />
-                <span>
-                  {d.name}
-                  <span className="block text-xs text-ink-muted">
-                    {d.hours}h · {d.ap} AP · ${d.money}
-                  </span>
-                </span>
-              </label>
-            ))}
-          </div>
           <div className="mt-4 flex flex-wrap gap-2">
             <Button
               onClick={async () => {
                 setOpen(false);
                 setReport(null);
-                const chosen = [...AUTO_REST, ...AUTO_TRAINING]
-                  .filter((d) => ids.includes(d.id))
-                  .map((d) => d.id);
-                const r = await advance(eventId, chosen);
+                const r = await advance(eventId);
                 if (r.ok) {
                   setReport(r.report);
                   setError("");
@@ -252,11 +207,8 @@ export function AdvanceToEvent({
       {report && (
         <p role="status" className="mt-2 text-xs text-ink-muted">
           {report.cancelled ? "Stopped" : "Ready"} after {report.days} days ·{" "}
-          {report.trained} sessions completed · {report.skipped} skipped ·{" "}
+          {report.trained} sessions completed ·{" "}
           {report.stoppedFor}
-          {report.notes.length > 0 && (
-            <span className="mt-1 block">{report.notes.join(" / ")}</span>
-          )}
         </p>
       )}
       {error && (

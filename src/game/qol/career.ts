@@ -365,8 +365,6 @@ export function plannedTrainingDay(
 export interface CalendarAdvanceReport {
   days: number;
   trained: number;
-  skipped: number;
   stoppedFor: string;
   cancelled: boolean;
-  notes: string[];
 }

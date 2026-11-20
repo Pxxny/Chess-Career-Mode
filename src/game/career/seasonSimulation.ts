@@ -215,24 +215,15 @@ export function updateSeason(
     },
   };
 }
-export function seasonTraining(save: GameSave): GameSave {
-  const s = seasonOf(save)!;
-  let next = save,
-    sessions = 0,
-    worked = false;
-  // Build a modest reserve using the same jobs/costs as manual play.
-  if (next.player.money < 100 && next.training.fatigue < 65) {
-    for (const job of [...CAREER_JOBS].sort((a, b) => b.pay - a.pay)) {
-      const r = workJob(next, job.id);
-      if (r.ok) {
-        next = r.save;
-        worked = true;
-        break;
-      }
-    }
-  }
+/** Picks eligible free sessions, then fills available recovery time automatically. */
+export function autoTrainAndRest(
+  save: GameSave,
+  focus: AnnualFocus = "balanced",
+  learningFocus?: readonly LearningFocus[],
+): { save: GameSave; sessions: number } {
+  let next = save;
   const before = yearReviewOf(next).current.sessions;
-  const limit = s.focus === "learning" ? 3 : 2;
+  const limit = focus === "learning" ? 3 : 2;
   // Rest first when exhausted; normal daily nap/break limits still apply.
   if (next.training.fatigue >= 60) {
     const r = takeRest(next, "nap");
@@ -240,7 +231,7 @@ export function seasonTraining(save: GameSave): GameSave {
   }
   for (let i = 0; i < limit; i++) {
     // Rotate selected topics by the persisted session count, including after resume.
-    const priorities = s.focus === "learning" ? normalizeLearningFocus(s.learningFocus) : [];
+    const priorities = focus === "learning" ? normalizeLearningFocus(learningFocus) : [];
     const target = LEARNING_FOCUSES.find((f) =>
       f.id === priorities[yearReviewOf(next).current.sessions % priorities.length]);
     const targetStats: readonly string[] = target?.stats ?? [];
@@ -265,8 +256,29 @@ export function seasonTraining(save: GameSave): GameSave {
     if (!r.ok) break;
     next = r.save;
   }
-  sessions = yearReviewOf(next).current.sessions - before;
+  const sessions = yearReviewOf(next).current.sessions - before;
   next = plannedTrainingDay(next, []).save;
+  return { save: next, sessions };
+}
+
+export function seasonTraining(save: GameSave): GameSave {
+  const s = seasonOf(save)!;
+  let next = save,
+    worked = false;
+  // Build a modest reserve using the same jobs/costs as manual play.
+  if (next.player.money < 100 && next.training.fatigue < 65) {
+    for (const job of [...CAREER_JOBS].sort((a, b) => b.pay - a.pay)) {
+      const r = workJob(next, job.id);
+      if (r.ok) {
+        next = r.save;
+        worked = true;
+        break;
+      }
+    }
+  }
+  const training = autoTrainAndRest(next, s.focus, s.learningFocus);
+  next = training.save;
+  const { sessions } = training;
   return updateSeason(next, {
     phase: "end-day",
     sessions: s.sessions + sessions,

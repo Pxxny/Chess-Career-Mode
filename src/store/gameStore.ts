@@ -12,6 +12,7 @@ import { createSeasonGameClient } from "./seasonGameClient";
 import type { LearningFocus } from "@/game/career/learningFocus";
 import { queueMatchRecords, writeMatchArchive } from "./matchArchive";
 import {
+  autoTrainAndRest,
   newSeason,
   runSeason,
   seasonOf,
@@ -73,7 +74,6 @@ import {
   workJob,
   requestTransfer,
   settleTransfer,
-  plannedTrainingDay,
   type CalendarAdvanceReport,
 } from "@/game/qol/career";
 import { matchRunning } from "@/store/matchLocks";
@@ -191,7 +191,6 @@ interface GameStore {
   cancelCalendar: () => void;
   simulateUntil: (
     eventId: string,
-    sessions: string[],
   ) => Promise<
     { ok: true; report: CalendarAdvanceReport } | { ok: false; error: string }
   >;
@@ -727,7 +726,7 @@ export const useGameStore = create<GameStore>()(
         if (r.ok) set({ save: r.save });
         return r.ok ? { ok: true } : r;
       },
-      simulateUntil: async (eventId, sessions) => {
+      simulateUntil: async (eventId) => {
         const start = get().save;
         if (!start || get().calendarProgress)
           return {
@@ -761,10 +760,8 @@ export const useGameStore = create<GameStore>()(
         const report: CalendarAdvanceReport = {
           days: 0,
           trained: 0,
-          skipped: 0,
           stoppedFor: stop.name,
           cancelled: false,
-          notes: [],
         };
         calendarCancelled = false;
         holdSimulation();
@@ -776,14 +773,8 @@ export const useGameStore = create<GameStore>()(
               report.cancelled = true;
               break;
             }
-            const plan = plannedTrainingDay(current, sessions);
-            report.trained += plan.completed.length;
-            report.skipped += plan.skipped.length;
-            for (const skip of plan.skipped) {
-              const note = `${skip.name}: ${skip.reason}`;
-              if (!report.notes.includes(note) && report.notes.length < 8)
-                report.notes.push(note);
-            }
+            const plan = autoTrainAndRest(current);
+            report.trained += plan.sessions;
             calendarOwned = true;
             calendarDaySave = plan.save;
             try {
