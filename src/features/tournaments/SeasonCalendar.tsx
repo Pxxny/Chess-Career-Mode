@@ -5,7 +5,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import thLocale from '@fullcalendar/core/locales/th';
 import { LanguageContext } from '@/i18n/context';
 import { useSave } from '@/hooks/useGame';
-import { formatMoney } from '@/utils/format';
+import { useMoney } from "@/hooks/useMoney";
 import { registrationWindow } from '@/game/competition/registrationWindow';
 import { dayLabel } from '@/game/competition/agenda';
 import { Button } from '@/components/ui';
@@ -14,6 +14,7 @@ import type { ScheduledEvent } from '@/game/world/schedule';
 import type { EventDetails } from '@/game/competition/types';
 interface CalendarItem {id:string;name:string;start:number;end:number;details?:EventDetails;level?:string;event?:ScheduledEvent;}
 export default function SeasonCalendar({year,events,onSelect}:{year:number;events:CalendarItem[];onSelect:(id:string)=>void}) {
+  const formatMoney = useMoney();
  const save=useSave();
  const [displayMonth,setDisplayMonth]=useState(`${year}-01`);
  const language=useContext(LanguageContext),[view,setView]=useState<'month'|'timeline'>('month'),[month,setMonth]=useState(0);

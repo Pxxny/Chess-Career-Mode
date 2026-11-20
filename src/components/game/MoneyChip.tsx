@@ -1,8 +1,9 @@
 import { StatDelta } from './StatDelta';
 import { Coins } from 'lucide-react';
-import { formatMoney } from '@/utils/format';
+import { useMoney } from "@/hooks/useMoney";
 
 export function MoneyChip({ amount }: { amount: number }) {
+  const formatMoney = useMoney();
   return (
     <div
       role="img"

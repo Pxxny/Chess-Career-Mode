@@ -1,7 +1,10 @@
+import { useMoney } from "@/hooks/useMoney";
 import { useId } from 'react';
 import type { CareerArticle } from '@/game/career/highlights';
 /** A locally rendered keepsake, using the saved podium rather than predicted winners. */
 export function CeremonyArt({article}:{article:CareerArticle}){
+  const formatMoney = useMoney();
+
  const id=useId().replaceAll(':',''),c=article.ceremony!,opening=c.phase==='opening';
  const figures=opening?[{name:'',rank:2},{name:'',rank:1},{name:'',rank:3}]:[c.podium[1],c.podium[0],c.podium[2]].filter(Boolean);
  const positions:Record<number,number>={1:400,2:220,3:580};
@@ -27,7 +30,7 @@ export function CeremonyArt({article}:{article:CareerArticle}){
  {opening&&<><path d="M315 307H485" stroke="#d5b16a" strokeWidth="7"/><path d="M400 290L390 323M403 291L412 324" stroke="#f5e5ae" strokeWidth="3"/><text x="400" y="385" textAnchor="middle" fontSize="18" fill="#e9d390">Let the competition begin</text></>}
  <text x="400" y="448" textAnchor="middle" fontSize="11" fill="#bdc7b3">{article.year} · {c.location??'Career tournament venue'} · Career illustration</text>
  </svg>
- <figcaption className="px-4 py-3 text-xs text-ink-muted">{opening?'Opening ceremony':'Award ceremony'}{!opening&&c.playerRank?` · Your result #${c.playerRank}`:''}{!opening&&c.prize!==undefined?` · Prize $${c.prize}`:''}</figcaption>
+ <figcaption className="px-4 py-3 text-xs text-ink-muted">{opening?'Opening ceremony':'Award ceremony'}{!opening&&c.playerRank?` · Your result #${c.playerRank}`:''}{!opening&&c.prize!==undefined?` · Prize ${formatMoney(c.prize)}`:''}</figcaption>
  {!opening&&c.podium.length>0&&<ol className="space-y-1 border-t border-white/10 px-4 py-3 text-sm" aria-label="Award podium">{c.podium.map(p=><li key={p.rank} className={p.rank===1?"font-semibold text-gold-300":"text-ink-muted"}>#{p.rank} · {p.name}{p.points!==undefined?` · ${p.points} pts`:""}</li>)}</ol>}
  </figure>;
 }

@@ -4,7 +4,7 @@ import { Badge, Button } from "@/components/ui";
 import { DIFFICULTY_LABELS } from "@/data/trainingSessions";
 import { previewSession } from "@/game/training/engine";
 import type { GameSave, TrainingSessionDef } from "@/types";
-import { formatMoney } from "@/utils/format";
+import { useMoney } from "@/hooks/useMoney";
 
 interface Props {
   def: TrainingSessionDef;
@@ -15,6 +15,7 @@ interface Props {
 const stars = (n: number): string => "★".repeat(n) + "☆".repeat(4 - n);
 
 export function SessionCard({ def, save, onStart }: Props) {
+  const formatMoney = useMoney();
   const preview = previewSession(save, def);
   const blocked = preview.blocks.length > 0;
   const moraleText =

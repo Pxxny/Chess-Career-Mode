@@ -1,3 +1,4 @@
+import { useMoney } from "@/hooks/useMoney";
 import { useNpcStore } from "@/store/npcStore";
 import { SeasonPresentation } from "./SeasonPresentation";
 import { standings } from "@/game/match/tournament";
@@ -17,6 +18,8 @@ import {
 import { dayLabel, gameDay } from "@/game/competition/agenda";
 import { translateUI } from "@/i18n/translate";
 export function SimulateSeason() {
+  const formatMoney = useMoney();
+
   const save = useGameStore((s) => s.save)!,
     busy = useGameStore((s) => s.calendarProgress),
     run = useGameStore((s) => s.simulateSeason);
@@ -62,7 +65,7 @@ export function SimulateSeason() {
           </p>
           <p>
             Elo {season.startRating} → {season.endRating ?? save.player.rating}{" "}
-            · ${season.startMoney} → ${season.endMoney ?? save.player.money}
+            · {formatMoney(season.startMoney)} → {formatMoney(season.endMoney ?? save.player.money)}
           </p>
           {season.timing && (
             <p data-testid="season-timing">
@@ -157,7 +160,7 @@ export function SimulateSeason() {
           <details className="mb-4 rounded-xl bg-navy-900/60 p-3 text-sm text-ink-muted">
             <summary className="cursor-pointer font-semibold">How simulation works</summary>
             <p className="mt-2">Season games play real legal moves with the dedicated two-ply season engine. Results, openings, replays, chess clocks and PGN are saved. Full engine analysis is available on request.</p>
-            <p className="mt-2">Normal AP, training hours, fatigue, entry fees and eligibility apply. The manager keeps a $50 reserve, takes available jobs when funds are low and honors existing tournament bookings. New automatic entries are individual events that finish this year.</p>
+            <p className="mt-2">Normal AP, training hours, fatigue, entry fees and eligibility apply. The manager keeps a {formatMoney(50)} reserve, takes available jobs when funds are low and honors existing tournament bookings. New automatic entries are individual events that finish this year.</p>
           </details>
           <p className="mb-4 text-xs text-ink-muted">
             You can pause after the current action and continue later. Reloading
@@ -170,6 +173,8 @@ export function SimulateSeason() {
   );
 }
 export function SeasonProgressDialog() {
+  const formatMoney = useMoney();
+
   const population=useNpcStore(s=>s.npcs);
   const ratings=useMemo(()=>new Map(population.map(n=>[n.id,n.currentElo])),[population]);
   const running = useGameStore((s) => s.seasonRunning),
@@ -232,7 +237,7 @@ export function SeasonProgressDialog() {
           {season.games} games · {season.wins}W {season.draws}D {season.losses}L
           · {season.tournaments} tournaments
         </p>
-        <div className="grid grid-cols-3 gap-2 rounded-xl bg-navy-900 p-3 text-center" data-testid="season-progress-report">{[['Elo',`${save.player.rating-season.startRating>=0?'+':''}${save.player.rating-season.startRating}`],['Money',`${save.player.money-season.startMoney>=0?'+':''}$${save.player.money-season.startMoney}`],['Training',String(season.sessions)]].map(([label,value])=><div key={label}><p className="text-[10px] uppercase tracking-wider text-ink-faint">{label}</p><p className="mt-1 text-lg font-bold text-gold-300">{value}</p></div>)}</div>
+        <div className="grid grid-cols-3 gap-2 rounded-xl bg-navy-900 p-3 text-center" data-testid="season-progress-report">{[['Elo',`${save.player.rating-season.startRating>=0?'+':''}${save.player.rating-season.startRating}`],['Money',`${save.player.money-season.startMoney>=0?'+':''}${formatMoney(save.player.money-season.startMoney)}`],['Training',String(season.sessions)]].map(([label,value])=><div key={label}><p className="text-[10px] uppercase tracking-wider text-ink-faint">{label}</p><p className="mt-1 text-lg font-bold text-gold-300">{value}</p></div>)}</div>
         <p className="text-xs text-ink-muted">
           Completed actions are saved. Pause stops after the current action.
         </p>

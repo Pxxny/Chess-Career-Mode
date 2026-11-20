@@ -1,3 +1,4 @@
+import { useMoney } from "@/hooks/useMoney";
 import { STAT_LABELS } from "@/data/stats";
 import { confirmUI } from "@/i18n/translate";
 import { useState } from "react";
@@ -14,6 +15,8 @@ import {
 } from "@/game/qol/career";
 import { COUNTRIES, getCountry } from "@/data/world/countries";
 export function WorkPanel() {
+  const formatMoney = useMoney();
+
   const save = useSave(),
     work = useGameStore((s) => s.workCareerJob),
     [message, setMessage] = useState("");
@@ -27,7 +30,7 @@ export function WorkPanel() {
           ledger.
         </p>
         <p className="mt-3 text-sm text-ink">
-          ${save.player.money} · {save.player.ap.current} AP ·{" "}
+          {formatMoney(save.player.money)} · {save.player.ap.current} AP ·{" "}
           {Math.max(0, 8 - save.training.hoursUsedToday)} hours left
         </p>
         {message && (
@@ -44,7 +47,7 @@ export function WorkPanel() {
               <CardTitle>{j.name}</CardTitle>
               <p className="text-sm text-ink-muted">{j.description}</p>
               <p className="my-3 text-sm text-ink">
-                Earn ${j.pay} · {j.hours}h · {j.ap} AP · +{j.fatigue} fatigue
+                Earn {formatMoney(j.pay)} · {j.hours}h · {j.ap} AP · +{j.fatigue} fatigue
               </p>
               <p className="mb-3 text-xs text-ink-muted">
                 {j.elo
@@ -56,7 +59,7 @@ export function WorkPanel() {
                 onClick={() => {
                   const r = work(j.id);
                   setMessage(
-                    r.ok ? `${j.name} completed. Earned $${j.pay}.` : r.error,
+                    r.ok ? `${j.name} completed. Earned ${formatMoney(j.pay)}.` : r.error,
                   );
                 }}
               >
@@ -71,6 +74,8 @@ export function WorkPanel() {
   );
 }
 export function FederationTransferPanel() {
+  const formatMoney = useMoney();
+
   const save = useSave(),
     state = qolOf(save),
     request = useGameStore((s) => s.requestFederationTransfer),
@@ -119,7 +124,7 @@ export function FederationTransferPanel() {
             onClick={() => {
               if (
                 !confirmUI(
-                  "Apply for a federation transfer? The $250 processing fee is non-refundable. Completion cancels and refunds entries restricted to your former federation.",
+                  `Apply for a federation transfer? The ${formatMoney(250)} processing fee is non-refundable. Completion cancels and refunds entries restricted to your former federation.`,
                 )
               )
                 return;

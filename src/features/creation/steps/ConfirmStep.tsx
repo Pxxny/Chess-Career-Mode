@@ -9,7 +9,7 @@ import { getEra } from "@/data/eras";
 import { SKILL_DEFINITIONS } from "@/data/skills";
 import { ageAtStart, MONTH_NAMES } from "@/game/player/birth";
 import { createStartingSkills } from "@/game/player/createPlayer";
-import { formatMoney } from "@/utils/format";
+import { useMoney } from "@/hooks/useMoney";
 import type { CharacterDraft } from "../useCharacterDraft";
 import { genderLabel } from "./IdentityStep";
 import { databaseChoice } from "@/game/npc/playerDatabase";
@@ -25,6 +25,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 }
 
 export function ConfirmStep({ draft }: { draft: CharacterDraft }) {
+  const formatMoney = useMoney();
   const { country, city } = draft;
   const archetype = getArchetype(draft.archetype);
   const skills = createStartingSkills(archetype.id);

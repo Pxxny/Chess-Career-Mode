@@ -257,6 +257,7 @@ export interface ActiveTournament {
   entryRequirements?: string;
   withdrawn?: boolean;
   details?: import("@/game/competition/types").EventDetails;
+  keresGroups?: string[][];
   eliminated?: string[];
   knockoutWinners?: string[];
   eventId: string;

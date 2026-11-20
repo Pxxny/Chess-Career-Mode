@@ -3,7 +3,7 @@ import { SPONSORSHIPS, sponsorMarketShare, sponsorMonth } from '@/data/reputatio
 import { hashString } from '@/utils/format';
 /** Stable fictional commercial partners; fees, prize pools and qualification rights are unchanged. */
 export function withEventPartner(event:ScheduledEvent):ScheduledEvent {
- const d=event.details;if(!d||d.qualificationCircuit?.seriesId==='fide'||d.reference||d.historicalSchedule||d.sponsorship)return event;
+ const d=event.details;if(!d||d.keres||d.qualificationCircuit?.seriesId==='fide'||d.reference||d.historicalSchedule||d.sponsorship)return event;
  const seed=hashString(`event-partner:${event.id}:${event.year}`);
  if(seed%100>=35)return event;
  const prestige=d.prestige??0;

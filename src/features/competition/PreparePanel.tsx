@@ -1,3 +1,4 @@
+import { useMoney } from "@/hooks/useMoney";
 import { dayStamp } from "@/game/competition/agenda";
 import { playerOpponentId } from "@/game/match/tournament";
 import { nextEsportsGame } from "@/game/esports/core";
@@ -34,6 +35,8 @@ const repertoireGroups: {
   { key: "backups", label: "Backup variations" },
 ];
 export function PreparePanel() {
+  const formatMoney = useMoney();
+
   const save = useSave(),
     npcs = useNpcs(),
     db = useOpeningDb(),
@@ -190,7 +193,7 @@ export function PreparePanel() {
             </select>
           </label>
           <p className="self-end pb-2 text-sm text-ink-muted">
-            {save.player.ap.current} AP · ${save.player.money} ·{" "}
+            {save.player.ap.current} AP · {formatMoney(save.player.money)} ·{" "}
             {Math.max(0, 8 - save.training.hoursUsedToday)} hours left today
           </p>
         </div>
@@ -237,13 +240,13 @@ export function PreparePanel() {
                     {state.plan.approach} · {state.plan.decision}
                   </p>
                   <p className="mt-2 text-sm text-ink-muted">
-                    Cost: {cost.ap} AP · ${cost.money} · {cost.hours} in-game
+                    Cost: {cost.ap} AP · {formatMoney(cost.money)} · {cost.hours} in-game
                     hour{cost.hours > 1 ? "s" : ""}. Prepare up to {cost.depth}{" "}
                     half-moves in selected opening lines.
                   </p>
                   <p className="mt-2 text-xs text-ink-faint">
                     Adds fatigue (2 per hour). Preparation remains available for
-                    this event. A scouting report costs 1 AP, $10 and 1 hour for
+                    this event. A scouting report costs 1 AP, {formatMoney(10)} and 1 hour for
                     each opponent.
                   </p>
                 </div>
@@ -492,7 +495,7 @@ export function PreparePanel() {
             <CardTitle>Scout Opponent</CardTitle>
             <p className="mb-3 text-xs text-ink-muted">
               Choose from the registered field. One report per opponent and
-              tournament; costs 1 AP, $10 and 1 in-game hour. Public information
+              tournament; costs 1 AP, {formatMoney(10)} and 1 in-game hour. Public information
               is available immediately.
             </p>
             <select
@@ -529,7 +532,7 @@ export function PreparePanel() {
                 >
                   {report
                     ? "Report available"
-                    : "Investigate opponent · 1 AP / $10 / 1h"}
+                    : "Investigate opponent · 1 AP / {formatMoney(10)} / 1h"}
                 </Button>
                 {report && (
                   <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2">

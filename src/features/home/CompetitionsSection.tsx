@@ -10,7 +10,7 @@ import {
   type ScheduledEvent,
 } from "@/game/world/schedule";
 import type { Player } from "@/types";
-import { formatMoney } from "@/utils/format";
+import { useMoney } from "@/hooks/useMoney";
 
 interface Props {
   player: Player;
@@ -24,6 +24,7 @@ const startsIn = (weeks: number): string =>
   weeks <= 0 ? "this week" : weeks === 1 ? "next week" : `in ${weeks} weeks`;
 
 export function CompetitionsSection({ player, schedule, rankings }: Props) {
+  const formatMoney = useMoney();
   const save = useSave();
   const upcoming = schedule.slice(0, UPCOMING);
   const eligible = (e: ScheduledEvent) =>

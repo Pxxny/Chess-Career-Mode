@@ -13,10 +13,11 @@ import { getCountry } from "@/data/world/countries";
 import { useGameStore } from "@/store/gameStore";
 import { slotManager, type SlotState } from "@/store/saveSlots";
 import { useSlotUi } from "@/store/slotUi";
-import { formatMoney } from "@/utils/format";
+import { useMoney } from "@/hooks/useMoney";
 
 /** Shown while no character is open: up to GAME_CONFIG.saveSlots characters, each a separate career. */
 export function SaveSlotsPage() {
+  const formatMoney = useMoney();
   const selectSlot = useGameStore((s) => s.selectSlot);
   const deleteSlot = useGameStore((s) => s.deleteSlot);
   const startCreating = useSlotUi((s) => s.startCreating);

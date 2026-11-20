@@ -1,3 +1,4 @@
+import { keresEvents } from "@/game/competition/keres";
 import { bulgariaChessEvents } from "@/game/competition/bulgariaChess";
 import { annualSeriesEvents } from "@/game/competition/seasonSeries";
 import { sponsorEvents } from "@/game/competition/sponsorEvents";
@@ -226,7 +227,7 @@ export function getSchedule(now: GameStamp, region: Region, careerId: string, ho
     const key = JSON.stringify([year, careerId, region]);
     let annual = annualCache.get(key);
     if (!annual) {
-      const raw = [...buildSchedule({ year: year - 1, week: 52 }, region, careerId, 52).filter((e) => e.year === year), ...bulgariaChessEvents(year)];
+      const raw = [...buildSchedule({ year: year - 1, week: 52 }, region, careerId, 52).filter((e) => e.year === year), ...bulgariaChessEvents(year), ...keresEvents(year)];
       annual = distributeAnnualVenues(raw, region, careerId).map((event) => {
         let e = event;
         if (e.details && !e.details.organizer) {

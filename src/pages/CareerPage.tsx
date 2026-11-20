@@ -33,9 +33,11 @@ import { newestFirst } from "@/game/history/createHistory";
 import { computeStats, findRivals } from "@/game/history/stats";
 import { useSave } from "@/hooks/useGame";
 import { cn } from "@/utils/cn";
-import { formatMoney, formatNumber } from "@/utils/format";
+import { formatNumber } from "@/utils/format";
+import { useMoney } from "@/hooks/useMoney";
 
 export function CareerPage() {
+  const formatMoney = useMoney();
   const [params, setParams] = useSearchParams();
   const availableViews = [
     "overview",

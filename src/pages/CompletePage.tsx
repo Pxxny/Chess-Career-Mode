@@ -44,10 +44,11 @@ type Tab =
   | "world"
   | "players"
   | "calendar"
+  | "popularity"
   | "event-history";
 
 function landingTab(value: string | null): Tab | undefined {
-  return value === "calendar" || value === "world" || value === "players" || value === "rankings" || value === "league" ? value : undefined;
+  return value === "popularity" || value === "calendar" || value === "world" || value === "players" || value === "rankings" || value === "league" ? value : undefined;
 }
 
 export function CompletePage() {
@@ -133,6 +134,7 @@ export function CompletePage() {
         tabs={[
           { id: "tournament", label: "Tournament" },
           { id: "calendar", label: "Annual calendar" },
+          { id: "popularity", label: "Popularity" },
           { id: "world", label: "World Hub" },
           { id: "players", label: "Player directory" },
           { id: "event-history", label: "Tournament history" },
@@ -182,6 +184,7 @@ export function CompletePage() {
         {tab === "world" && <WorldHub view="overview" />}
         {tab === "players" && <NpcDirectory />}
         {tab === "calendar" && <AnnualTournaments />}
+        {tab === "popularity" && <AnnualTournaments key="popularity" popularity />}
         {tab === "event-history" && <AnnualTournaments history />}
         {tab === "swiss" && <TournamentPanel onStart={previewStart} swissOnly />}
         {tab === "prepare" && <PreparePanel />}

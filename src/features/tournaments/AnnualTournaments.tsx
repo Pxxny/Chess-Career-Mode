@@ -1,4 +1,6 @@
-import { useSearchParams } from "react-router-dom";
+import { divisionFixture } from "@/game/competition/divisionLeague";
+import { esportsEvents } from "@/game/esports/catalog";
+import { Link, useSearchParams } from "react-router-dom";
 import { globalQualificationCalendar } from '@/game/competition/qualificationCircuit';
 import { eventAccent } from "@/game/competition/visuals";
 import { isBackgroundCircuit, matchesOrganizer, type TournamentSearch } from "@/game/competition/finder";
@@ -32,7 +34,7 @@ import { TournamentDetail } from "./TournamentDetail";
 import { annualEvents } from "@/game/competition/worldCalendar";
 const TournamentAtlas = lazy(() => import("./TournamentAtlas"));
 const SeasonCalendar = lazy(() => import("./SeasonCalendar"));
-export function AnnualTournaments({ history = false }: { history?: boolean }) {
+export function AnnualTournaments({ history = false, popularity = false }: { history?: boolean; popularity?: boolean }) {
   const [params] = useSearchParams();
   const [atlasView, setAtlasView] = useState(() => !history && params.get("display") === "atlas");
   useEffect(() => setAtlasView(!history && params.get("display") === "atlas"), [history, params]);
@@ -84,6 +86,26 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
     () => [...new Map([...globalQualificationCalendar(selectedYear),...annualEvents(save, selectedYear)].map(e=>[e.id,e])).values()],
     [selectedYear, save.career.id, save.player.country, save.player.city.name, save.hostedEvents],
   );
+  const popularityEvents = useMemo(() => {
+    if (!popularity) return events;
+    const byId = new Map(events.map(event => [event.id, event]));
+    for (const booking of save.registrations) {
+      if (booking.year !== selectedYear || byId.has(booking.eventId)) continue;
+      byId.set(booking.eventId, {
+        ...booking, id: booking.eventId, minElo: booking.minElo ?? 0,
+        minReputation: booking.minReputation ?? 0, invitational: false,
+        registrationDeadline: { year: booking.year, week: booking.week - 1 },
+        weeksUntilStart: 0, weeksUntilDeadline: 0,
+      });
+    }
+    if (selectedYear === save.world.date.year) {
+      for (const playoff of [false, true]) {
+        const fixture = divisionFixture(save, npcs, playoff);
+        if (fixture) byId.set(fixture.id, byId.get(fixture.id) ?? fixture);
+      }
+    }
+    return [...byId.values()];
+  }, [events, npcs, popularity, save, selectedYear]);
   const records = useMemo(() => {
     const map = new Map(stored.map((e) => [e.id, e]));
     for (const e of retainedArchives(save))
@@ -109,7 +131,7 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
     kind: "regular" | "national";
     event?: ScheduledEvent;
     record?: ArchivedEvent;
-  }> = events.map((event) => {
+  }> = popularityEvents.map((event) => {
     const record = recordById.get(event.id);
     return {
       id: event.id,
@@ -144,6 +166,37 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
       );
     });
   }
+  const rankings = (() => {
+    if (!popularity) return [];
+    const active = new Map((save.calendarTournaments?.active ?? []).map(t => [t.eventId, t.players.length]));
+    for (const row of save.calendarTournaments?.national ?? []) active.set(row.event.id, row.teams.length);
+    if (save.tournament) active.set(save.tournament.eventId, save.tournament.team?.teams.length ?? save.tournament.players.length);
+    const start = selectedYear * 364;
+    const esports = new Map(esportsEvents(start, save.career.id, 363).map(event => [event.id, { event, teams: undefined as number | undefined }]));
+    for (const entry of save.esports?.entries ?? []) {
+      if (entry.event.day >= start && entry.event.day < start + 364)
+        esports.set(entry.event.id, { event: entry.event, teams: undefined });
+    }
+    for (const result of [...(save.esports?.history ?? []), ...(save.esports?.active ? [save.esports.active] : [])]) {
+      if (result.event.day >= start && result.event.day < start + 364)
+        esports.set(result.event.id, { event: result.event, teams: result.teams.length });
+    }
+    const rows = source.map(row => {
+      const actual = row.record?.fieldSize ?? active.get(row.id);
+      return { ...row, entrants: actual ?? row.event?.fieldSize ?? 0, actual: actual !== undefined,
+        unit: row.kind === "national" ? "teams" : "players", start: row.record?.startDay ?? bookedStart(row.event!),
+        prestige: row.event?.details?.prestige ?? 0, esports: false };
+    });
+    for (const { event, teams } of esports.values()) {
+      rows.push({ id: event.id, name: event.name, kind: "regular",
+        entrants: teams ?? 4, actual: teams !== undefined, unit: "teams", start: event.day,
+        prestige: 0, esports: true });
+    }
+    return rows.sort((a, b) => b.entrants - a.entrants || b.prestige - a.prestige ||
+      a.start - b.start || a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
+  })();
+  const rankedMatches = rankings.map((row, index) => ({ ...row, rank: index + 1 }))
+    .filter(row => row.name.toLowerCase().includes(query.trim().toLowerCase()));
   const filtered = source.filter(
     (e) =>
       (qualifierCountry==='all'||e.event?.details?.qualificationCircuit?.country===qualifierCountry) &&
@@ -160,6 +213,37 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
       data-testid={history ? "annual-history" : "annual-calendar"}
       className="space-y-4"
     >
+      {popularity ? <>
+        <Card>
+          <CardTitle>Tournament popularity</CardTitle>
+          <p className="mb-3 text-sm text-ink-muted">Ranked by field size. Uses recorded turnout when available and scheduled capacity otherwise. Ties use prestige, then start date.</p>
+          <div className="flex flex-wrap gap-2">
+            <select aria-label="Tournament year" className="rounded-lg bg-navy-900 p-3" value={selectedYear}
+              onChange={e => { setYear(Number(e.target.value)); setLimit(20); }}>
+              {years.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+            <input aria-label="Search tournament popularity" className="min-w-0 flex-1 rounded-lg bg-navy-900 p-3"
+              placeholder="Search tournaments…" value={query} onChange={e => { setQuery(e.target.value); setLimit(20); }} />
+          </div>
+          {error && <p role="alert" className="mt-3 text-red-300">{error}</p>}
+          <p className="mt-3 text-xs text-ink-muted">{rankedMatches.length} tournaments</p>
+        </Card>
+        <ol className="divide-y divide-navy-600 rounded-xl bg-navy-800 px-4" aria-label="Tournament popularity ranking">
+          {rankedMatches.slice(0, limit).map(row => (
+            <li key={row.id} value={row.rank} className="grid grid-cols-[3rem_minmax(0,1fr)] items-center gap-3 py-3">
+              <strong className={row.rank <= 3 ? "text-gold-300" : "text-ink-muted"}>#{row.rank}</strong>
+              <div className="min-w-0">
+                {row.esports
+                  ? <Link className="break-words font-semibold" to="/complete?circuit=esports">{row.name}</Link>
+                  : <button type="button" className="break-words text-left font-semibold" onClick={() => setSelected(row)}>{row.name}</button>}
+                <p className="text-xs text-ink-muted">{row.entrants.toLocaleString()} {row.unit} · {row.actual ? "Recorded entrants" : "Scheduled capacity"} · {dayLabel(row.start).slice(0, 10)}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+        {!rankedMatches.length && <Card>No tournaments match this search.</Card>}
+        {rankedMatches.length > limit && <Button variant="secondary" onClick={() => setLimit(n => n + 50)}>Show more tournaments</Button>}
+      </> : <>
       <Card>
         <CardTitle>
           {history
@@ -349,6 +433,7 @@ export function AnnualTournaments({ history = false }: { history?: boolean }) {
           Show more events
         </Button>
       )}
+      </>}
       {selected && (
         <TournamentDetail
           key={selected.event?.id ?? selected.record!.id}

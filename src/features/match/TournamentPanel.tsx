@@ -1,3 +1,6 @@
+import { KERES_FORMAT, KERES_GROUP_RULES, keresStage } from "@/game/competition/keres";
+import { KeresGroupStandings } from "@/features/tournaments/KeresGroupStandings";
+import { useMoney } from "@/hooks/useMoney";
 import { NationalTeamTables } from "@/features/expansion/NationalTeamTables";
 import { awaitingArmageddon, tournamentTimeControl } from "@/game/competition/bulgariaChess";
 import { TournamentSeriesHistory } from "@/features/tournaments/TournamentSeriesHistory";
@@ -74,6 +77,8 @@ import { TeamTournamentStandings, TeamRoundBoards } from './TeamTournamentPanel'
 import { teamStandings, teamName } from '@/game/competition/teamTournament';
 
 export function EventFacts({ event }: { event: ScheduledEvent }) {
+
+  const formatMoney = useMoney();
   const d = event.details;
   const save = useSave();
   const travel=travelQuote(save,event);
@@ -105,12 +110,12 @@ export function EventFacts({ event }: { event: ScheduledEvent }) {
             : dateLabel(d?.end ?? event),
     ],
     ["Registration deadline", dayLabel(registrationWindow(save, event).close)],
-    ["Entry fee", `$${event.entryFee}`],
-    ["Travel estimate", `$${travel.cost}`],
+    ["Entry fee", formatMoney(event.entryFee)],
+    ["Travel estimate", formatMoney(travel.cost)],
     ["From", `${travel.from.city}, ${getCountry(travel.from.country)?.name??travel.from.country}`],
     ["Distance", travel.km===null?"Coordinates not recorded":`${travel.km.toLocaleString()} km`],
     ["Arrival", travel.jetlag?`Jetlag · −${travel.jetlag} AP for 2 days`:"No jetlag"],
-    ["Total to register", `$${event.entryFee + travel.cost}`],
+    ["Total to register", formatMoney(event.entryFee + travel.cost)],
     ["Required Elo", `${event.minElo}+`],
     [
       "Participant limit",
@@ -123,7 +128,8 @@ export function EventFacts({ event }: { event: ScheduledEvent }) {
     ["Organizer", d?.organizer ? d.organizer.name : "Not recorded"],
     ["Organization", d?.organizer?.status ?? "Not recorded"],
     ["Time control", d?.timeControl.label ?? "Classical"],
-    ["Format", d?.format ?? "swiss"],
+    ["Format", d?.keres ? KERES_FORMAT : (d?.format ?? "swiss")],
+    ...(d?.keres ? [["Group rules", KERES_GROUP_RULES]] : []),
     ...(d?.historicalSchedule ? [["Calendar origin", "Verified dates & format · career simulation"]] : []),
     ...(d?.format?.includes("round-robin")
       ? [
@@ -139,7 +145,7 @@ export function EventFacts({ event }: { event: ScheduledEvent }) {
         ]
       : []),
     ["Rounds", d?.rounds ?? "Announced at start"],
-    ["Prize money", `$${d?.prize ?? 0}`],
+    ["Prize money", formatMoney(d?.prize ?? 0)],
     ["Prestige", `${d?.prestige ?? 0}/100`],
     ["Qualification requirements", requirementsText(event)],
     ...(d?.qualificationCircuit?.sponsor ? [["Sponsor", d.qualificationCircuit.sponsor], ["World Finals destination", d.qualificationCircuit.worldFinalName ?? "World Qualification Finals"]] : []),
@@ -182,10 +188,11 @@ function IndividualTournamentStandings({ t }: { t: ActiveTournament }) {
         data-testid="standings"
       >
         <caption className="mb-2 text-left text-xs text-ink-muted">
-          {t.details?.format?.includes("round-robin")
-            ? "Ties: Sonneborn–Berger, wins, Elo, ID."
-            : "Ties: Buchholz Cut 1, Buchholz, Sonneborn–Berger, wins, Elo, ID."}{" "}
-          Bye tiebreak scores use a virtual opponent; byes do not count as wins.
+          {t.details?.keres
+            ? "Overall standings rank players by when they were eliminated. Group standings use group games only."
+            : `${t.details?.format?.includes("round-robin")
+                ? "Ties: Sonneborn–Berger, wins, Elo, ID."
+                : "Ties: Buchholz Cut 1, Buchholz, Sonneborn–Berger, wins, Elo, ID."} Bye tiebreak scores use a virtual opponent; byes do not count as wins.`}
         </caption>
         <thead className="sticky top-0 bg-navy-800 text-xs text-ink-faint">
           <tr>
@@ -315,6 +322,8 @@ export function TournamentPanel({
   swissOnly?: boolean;
   leagueOnly?: boolean;
 }) {
+  const formatMoney = useMoney();
+
   const save = useSave(),
     npcs = useNpcs(),
     db = useOpeningDb();
@@ -468,6 +477,7 @@ export function TournamentPanel({
               <Badge tone="gold">
                 {t.status === "finished"
                   ? "Finished"
+                  : t.details?.keres ? `${keresStage(t)} · Game slot ${t.round} / ${t.rounds}`
                   : t.details?.format === "round-robin-bo3"
                     ? `Series ${Math.ceil(t.round / 3)} / ${Math.ceil(t.rounds / 3)} · game ${((t.round - 1) % 3) + 1}`
                     : `Round ${t.round} / ${t.rounds}`}
@@ -479,6 +489,7 @@ export function TournamentPanel({
           {t.status === "playing" && (
             <TournamentDayClock tournament={t} interactive />
           )}
+          {t.keresGroups && <KeresGroupStandings tournament={t} />}
           {t.team && (
             <div className="mb-4 space-y-2">
               <h3 className="font-semibold">Round {t.round} · Match tables</h3>
@@ -514,7 +525,7 @@ export function TournamentPanel({
                 "Tournament standing",
                 t.team?`#${teamStandings(t).findIndex(team=>team.country===t.team!.country)+1} / ${t.team.teams.length}`:`#${standings(t).find((r) => r.player.isPlayer)?.rank ?? "—"} / ${t.players.length}`,
               ],
-              ["Tournament prize", `$${t.prizeFund}`],
+              ["Tournament prize", formatMoney(t.prizeFund)],
               ["Registration status", "Registered · fee paid"],
               ["Format", t.details?.format ?? "swiss"],
               [
@@ -575,7 +586,7 @@ export function TournamentPanel({
           )}
           {t.status === "finished" && (
             <div className="mb-4 text-sm text-gold-400">
-              Final rank: {t.finalRank} · Prize: ${t.prize}
+              Final rank: {t.finalRank} · Prize: {formatMoney(t.prize)}
               <Button className="ml-3" onClick={close}>
                 Close results
               </Button>
@@ -644,8 +655,7 @@ export function TournamentPanel({
               {r.details?.format === "team" && <NationalTeamCamp save={save} entry={r} />}
               {r.details && <p className="mt-1 text-xs text-ink-muted">{r.details.location} · {getCountry(r.details.country)?.name ?? r.details.country}</p>}
               <p className="my-2 text-xs text-ink-muted">
-                {dateLabel(r)} · {r.status} · fee paid ${r.entryFee} · travel $
-                {r.travelCost ?? 0}
+                {dateLabel(r)} · {r.status} · fee paid {formatMoney(r.entryFee)} · travel {formatMoney(r.travelCost ?? 0)}
                 {r.status === "missed" ? " · fee lost" : ""}
               </p>
               <Entrants
@@ -696,7 +706,7 @@ export function TournamentPanel({
               <p className="mt-2 text-xs text-ink-muted"><span>Qualified via</span>: <span translate="no">{qualification.source}</span> ({qualification.year})</p>
               <p className="mt-1 text-xs text-ink-muted"><span>Qualification valid through</span>: {event.details?.qualificationCircuit?.season ?? qualification.year + 2}</p>
               <p className="mt-2 text-xs text-ink-muted"><span>Registration opens</span>: {dayLabel(window.open)} · <span>Registration deadline</span>: {dayLabel(window.close)}</p>
-              <p className="mt-1 text-xs text-ink-muted"><span>Entry fee</span>: ${event.entryFee} · <span>Travel</span>: ${travelQuote(save,event).cost}</p>
+              <p className="mt-1 text-xs text-ink-muted"><span>Entry fee</span>: {formatMoney(event.entryFee)} · <span>Travel</span>: {formatMoney(travelQuote(save,event).cost)}</p>
               {issue && <p className="mt-3 text-xs text-gold-300">{issue}</p>}
               <details className="mt-3 text-sm"><summary className="cursor-pointer text-ink-muted">Entry details</summary><div className="mt-3"><EventFacts event={event} /></div></details>
               <Button className="mt-3" disabled={!!issue || running} onClick={() => result(register(event))}>Confirm registration</Button>
@@ -894,7 +904,7 @@ export function TournamentPanel({
                               : "Registration open"}
                   </Badge>
                 </div>
-                <p className="mt-2 text-sm text-ink-muted">{dateLabel(e)} · {e.details?.location} · ${e.entryFee + travelQuote(save,e).cost} total</p>
+                <p className="mt-2 text-sm text-ink-muted">{dateLabel(e)} · {e.details?.location} · {formatMoney(e.entryFee + travelQuote(save,e).cost)} total</p>
                 {e.details?.bulgariaChess && <p className="mt-1 text-sm text-ink-muted">Six players · 10 rounds · Classical wins score 3. Classical draws go to same-day Armageddon.</p>}
                 {circuitAdvancement(e.details) && <p className="mt-1 text-xs text-gold-300">{circuitAdvancement(e.details)}</p>}
                 {e.details?.organizer?.sponsorId&&<p className="mt-2 text-xs font-semibold text-gold-300">Sponsor-hosted · {e.details.organizer.name} · {e.details.organizer.status}</p>}

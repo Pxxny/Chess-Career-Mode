@@ -8,9 +8,10 @@ import { annualEvents } from "@/game/competition/worldCalendar";
 import { travelQuote } from "@/game/competition/travel";
 import { dateLabel, stampFromIndex, stampIndex } from "@/game/competition/catalog";
 import { dayStamp, gameDay } from "@/game/competition/agenda";
-import { formatMoney } from "@/utils/format";
+import { useMoney } from "@/hooks/useMoney";
 
 export function FinancePanel() {
+  const formatMoney = useMoney();
   const save = useSave();
   const finance = buildFinance(save);
   const [period, setPeriod] = useState<"week" | "month">("week");

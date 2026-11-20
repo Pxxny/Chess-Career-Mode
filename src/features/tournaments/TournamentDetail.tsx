@@ -1,3 +1,6 @@
+import { KERES_FORMAT, KERES_GROUP_RULES } from "@/game/competition/keres";
+import { KeresGroupStandings } from "./KeresGroupStandings";
+import { useMoney } from "@/hooks/useMoney";
 import { TournamentSeriesHistory } from "./TournamentSeriesHistory";
 import { EligibilityFeedback } from "./EligibilityFeedback";
 import { useMatchRunning } from "@/store/matchLocks";
@@ -40,6 +43,8 @@ export function TournamentDetail({
   tournament?: ActiveTournament;
   onClose: () => void;
 }) {
+
+  const formatMoney = useMoney();
   const save = useSave(),
     npcs = useNpcs(),
     running = useMatchRunning(save.career.id),
@@ -125,7 +130,7 @@ export function TournamentDetail({
     ] as Array<[string, string]> : []),
     ...(d?.pointsSeries?.stage === "final" ? [["Eligibility", `Top ${d.pointsSeries.seats} in the FIDE Season Points Circuit`] as [string, string]] : []),
     ...(d?.twoGameRematch ? [["Match format", "Two games with reversed colours, plus a tiebreak if level"] as [string, string]] : []),
-    ...(d?.qualificationCircuit?.selectTour && d.prize !== undefined ? [["Prize fund", `$${d.prize.toLocaleString("en-US")}`] as [string, string]] : []),
+    ...(d?.prize !== undefined ? [["Prize fund", formatMoney(d.prize)] as [string, string]] : []),
     ...(d?.qualificationCircuit ? [["Qualification route", circuitAdvancement(d) || "Final stage · qualifiers from all continents"], ["Qualification season", d.qualificationCircuit.season], ...(d.qualificationCircuit.selectTour?.quotaBoost?.length ? [["Extra seat this year", d.qualificationCircuit.selectTour.quotaBoost.join(", ")]] : []), ...(d.qualificationCircuit.selectTour?.hostedBy ? [["Hosted in the home city of", d.qualificationCircuit.selectTour.hostedBy]] : []), ...(event ? [["Qualification requirements", requirementsText(event)]] : [])] as Array<[string, string | number]> : []),
     [
       "Event type",
@@ -163,7 +168,8 @@ export function TournamentDetail({
             fieldSize: t?.players.length ?? event!.fieldSize,
           }),
     ],
-    ["Format", record?.format ?? d?.format ?? "Not recorded"],
+    ["Format", d?.keres ? KERES_FORMAT : (record?.format ?? d?.format ?? "Not recorded")],
+    ...(d?.keres ? [["Group rules", KERES_GROUP_RULES] as [string, string]] : []),
     [
       "Time control",
       record?.timeControl ?? d?.timeControl.label ?? "Not recorded",
@@ -388,6 +394,7 @@ export function TournamentDetail({
                         ? "Projected national squads · selections may change before the event starts."
                         : "Announced entrants · rankings and points appear after games are played."}
                 </p>
+                {t?.keresGroups && <KeresGroupStandings tournament={t} />}
                 {t?.team ? <TeamTournamentStandings t={t}/> : players.length ? (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">

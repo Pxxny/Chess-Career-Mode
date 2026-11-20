@@ -86,6 +86,7 @@ export function eventAgenda(
 export function maximumPlayerGames(
   event: Pick<ScheduledEvent, "details" | "fieldSize">,
 ): number {
+  if (event.details?.keres) return event.details.rounds;
   const opponents = Math.max(0, event.fieldSize - 1);
   switch (event.details?.format) {
     case "round-robin":

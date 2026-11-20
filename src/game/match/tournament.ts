@@ -1,3 +1,4 @@
+import { keresGroupPairs, keresGroupTable, keresStructure } from "@/game/competition/keres";
 import { awaitingArmageddon, bulgariaPoints } from "@/game/competition/bulgariaChess";
 import { observePredictions } from "@/game/prediction/statistics";
 import {
@@ -193,7 +194,7 @@ export function createTournament(
     })),
   ];
   const format = event.details?.format ?? "swiss";
-  const rounds =
+  const rounds = event.details?.keres ? keresStructure(players.length).rounds :
     format === "match"
       ? 14
       : format === "round-robin" ||
@@ -304,6 +305,23 @@ export function pairRound(t: ActiveTournament): TournamentPairing[] {
     }
     return pairs;
   }
+  if (t.details?.keres) {
+    const { prelim, groupEnd, rounds } = keresStructure(order.length);
+    if (t.round > prelim && t.round <= groupEnd)
+      return keresGroupPairs(t.keresGroups!, t.round - prelim - 1);
+    if (t.round > rounds - 7) {
+      const finalists = order.filter(p => t.round === 1 || t.knockoutWinners?.includes(p.id));
+      if (finalists.length < 2) return [];
+      const [a, b] = t.round % 2 ? finalists : finalists.slice().reverse();
+      return [{ white: a.id, black: b.id, result: null }];
+    }
+    if (groupEnd > 0 && t.round === groupEnd + 1) {
+      const tables = keresGroupTable(t);
+      return tables.map((group, index) => ({
+        white: group[0].id, black: tables[index ^ 1][1].id, result: null,
+      }));
+    }
+  }
   if (format === "knockout") {
     const eligible =
       t.round === 1
@@ -335,6 +353,20 @@ export function startRound(
   t: ActiveTournament,
   env?: PredictionEnvironment,
 ): ActiveTournament {
+  if (t.details?.keres && !t.keresGroups) {
+    const { prelim, groups } = keresStructure(t.players.length);
+    if (groups && t.round === prelim + 1) {
+      const qualified = new Set(t.knockoutWinners);
+      const seeds = t.players.filter(p => prelim === 0 || qualified.has(p.id))
+        .sort((a, b) => b.elo - a.elo || a.id.localeCompare(b.id));
+      const brackets = Array.from({ length: groups }, (): string[] => []);
+      seeds.forEach((p, index) => {
+        const row = Math.floor(index / groups), column = index % groups;
+        brackets[row % 2 ? groups - 1 - column : column].push(p.id);
+      });
+      t = { ...t, keresGroups: brackets };
+    }
+  }
   const next: ActiveTournament = freezeTournamentRound(
     {
       ...t,
@@ -406,7 +438,10 @@ export function completeRound(
 ): ActiveTournament {
   if (t.status !== "playing") return t;
   t = freezeTournamentRound(t, env);
-  const knockout = t.details?.format === "knockout";
+  const keres = t.details?.keres ? keresStructure(t.players.length) : undefined;
+  const groupStage = keres && t.round > keres.prelim && t.round <= keres.groupEnd;
+  const keresFinal = keres && t.round > keres.rounds - 7;
+  const knockout = t.details?.format === "knockout" && !groupStage && !keresFinal;
   const winners: string[] = [],
     eliminated = [...(t.eliminated ?? [])];
   const players = t.players.map((p) => ({
@@ -508,6 +543,31 @@ export function completeRound(
     pairings,
     ...(knockout ? { knockoutWinners: winners, eliminated } : {}),
   };
+  if (groupStage && t.round === keres.groupEnd) {
+    const tables = keresGroupTable(done);
+    done.knockoutWinners = tables.flatMap(group => group.slice(0, 2).map(p => p.id));
+    done.eliminated = [...eliminated, ...[3, 2].flatMap(rank =>
+      tables.map(group => group[rank]).sort((a, b) => a.points - b.points || a.elo - b.elo).map(p => p.id))];
+  }
+  let keresClinched = false;
+  if (keresFinal) {
+    const games = pairings.slice(keres.rounds - 7).flat();
+    const first = games[0];
+    if (first) {
+      const score = games.reduce((sum, game) =>
+        sum + (game.white === first.white ? game.result! : 1 - game.result!), 0);
+      const lead = 2 * score - games.length;
+      keresClinched = Math.abs(lead) > 7 - games.length;
+      if (keresClinched || games.length === 7) {
+        const winner = lead === 0
+          ? (rng.chance(expectedScore(get(first.white).elo, get(first.black).elo)) ? first.white : first.black)
+          : lead > 0 ? first.white : first.black;
+        if (lead === 0) roundPairings[0].tiebreakWinner = winner;
+        done.knockoutWinners = [winner];
+        done.eliminated = [...eliminated, winner === first.white ? first.black : first.white];
+      }
+    }
+  }
   if(t.team)done=scoreTeamRound(done);
   if (
     t.round >= t.rounds &&
@@ -532,7 +592,7 @@ export function completeRound(
   const matchClinched =
     t.details?.format === "match" &&
     Math.abs(players[0].points - players[1].points) > t.rounds - t.round;
-  if (t.round >= t.rounds || matchClinched) return finishTournament(done);
+  if (t.round >= t.rounds || matchClinched || keresClinched) return finishTournament(done);
   return startRound({ ...done, round: t.round + 1 }, nextEnv);
 }
 
@@ -672,7 +732,12 @@ export function standings(t: ActiveTournament): StandingRow[] {
               : p.result === 1),
       ),
     );
+  const keresEliminations = new Map(t.details?.keres ? t.eliminated?.map((id, index) => [id, index]) : []);
   rows.sort((a, b) => {
+    if (t.details?.keres)
+      return (keresEliminations.get(b.player.id) ?? t.players.length) -
+        (keresEliminations.get(a.player.id) ?? t.players.length) ||
+        b.player.points - a.player.points || b.player.elo - a.player.elo;
     if (t.details?.format === "knockout")
       return (
         Number(t.knockoutWinners?.includes(b.player.id)) -

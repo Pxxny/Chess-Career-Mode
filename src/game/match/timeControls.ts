@@ -38,7 +38,9 @@ export const DEFAULT_TIME_CONTROL: MatchTimeControl = PRESETS.rapid[1];
 export function describeTimeControl(tc: MatchTimeControl): string {
   const minutes = tc.base / 60;
   const base = minutes >= 1 ? `${trim(minutes)} min` : `${tc.base} s`;
-  return tc.increment ? `${base} + ${tc.increment} s` : base;
+  if (!tc.increment) return base;
+  const from = tc.incrementFromMove && tc.incrementFromMove > 1 ? ` from move ${tc.incrementFromMove}` : "";
+  return `${base} + ${tc.increment} s${from}`;
 }
 
 /** The time control of a tournament level. */

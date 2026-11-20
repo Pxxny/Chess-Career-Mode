@@ -1,11 +1,5 @@
-const money = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0,
-});
 const number = new Intl.NumberFormat('en-US');
 
-export const formatMoney = (value: number): string => money.format(value);
 export const formatNumber = (value: number): string => number.format(value);
 
 export function getInitials(name: string): string {

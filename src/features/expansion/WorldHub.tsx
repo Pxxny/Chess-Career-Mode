@@ -1,3 +1,4 @@
+import { useMoney } from "@/hooks/useMoney";
 import { Link } from "react-router-dom";
 import { EliteStats, eliteLink } from "@/features/elite/ElitePresentation";
 import { PageHeader } from "@/components/ui";
@@ -66,6 +67,8 @@ export function WorldHub({
 }: {
   view: "federation" | "teams" | "coach" | "news" | "overview";
 }) {
+  const formatMoney = useMoney();
+
   const save = useSave(),
     npcs = useNpcs(),
     state = stateOf(save);
@@ -420,7 +423,7 @@ export function WorldHub({
                 {cup.represented
                   ? "You represented your country."
                   : "You followed your country as a federation member."}{" "}
-                Prize ${cup.prize}.
+                Prize {formatMoney(cup.prize)}.
               </p>
             </Card>
             <Card>

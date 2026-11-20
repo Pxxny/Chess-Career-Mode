@@ -25,6 +25,7 @@ export type Qualification =
   | "world-championship"
   | "super-invitation";
 export interface EventDetails {
+  keres?: boolean;
   bulgariaChess?: boolean;
   pointsSeries?: { id: import("./seasonSeries").PointsSeries; stage: "leg" | "final"; year: number; seats?: number };
   invitedNpcIds?: string[];

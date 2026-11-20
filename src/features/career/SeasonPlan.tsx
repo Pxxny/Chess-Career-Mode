@@ -1,3 +1,4 @@
+import { useMoney } from "@/hooks/useMoney";
 import { travelQuote } from "@/game/competition/travel";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -16,6 +17,8 @@ import {
 import { dayLabel, bookedStart } from "@/game/competition/agenda";
 import { registrationWindow } from "@/game/competition/registrationWindow";
 export function SeasonPlan() {
+  const formatMoney = useMoney();
+
   const save = useSave(),
     plan = planningOf(save),
     goals = annualGoals(save),
@@ -117,7 +120,7 @@ export function SeasonPlan() {
                 <p>{reason}</p>
                 <p className="text-xs text-ink-muted">
                   {dayLabel(bookedStart(e)).slice(0, 10)} · {e.fieldSize}{" "}
-                  players · ${e.entryFee + travelQuote(save,e).cost}
+                  players · {formatMoney(e.entryFee + travelQuote(save,e).cost)}
                 </p>
                 <Link
                   className="mt-2 inline-block text-gold-300 underline"

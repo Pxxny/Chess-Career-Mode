@@ -71,8 +71,12 @@ export function calendarBusyIds(
             bookedEnd({ ...t, fieldSize: t.players.length }) - bookedStart(t),
           ),
       )
-    )
-      t.players.forEach((p) => ids.add(p.id));
+    ) {
+      const eliminated = t.details?.keres ? new Set(t.eliminated) : undefined;
+      for (const player of t.players) {
+        if (!eliminated?.has(player.id)) ids.add(player.id);
+      }
+    }
   for (const n of save.calendarTournaments?.national ?? [])
     if (
       n.event.id !== event?.id &&

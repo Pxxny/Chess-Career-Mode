@@ -3,11 +3,12 @@ import { useState } from "react";
 import { Badge, Card, CardTitle, Modal } from "@/components/ui";
 import { useGameStore } from "@/store/gameStore";
 import type { YearReview } from "@/game/career/yearReview";
-import { formatMoney } from "@/utils/format";
+import { useMoney } from "@/hooks/useMoney";
 import { STAT_LABELS } from "@/data/stats";
 
 const signed = (n: number) => `${n > 0 ? "+" : ""}${n}`;
 function ReviewDetails({ review: r }: { review: YearReview }) {
+  const formatMoney = useMoney();
   const games = r.rated.wins + r.rated.draws + r.rated.losses;
   const practice = r.practice.wins + r.practice.draws + r.practice.losses;
   const rows: [string, string][] = [

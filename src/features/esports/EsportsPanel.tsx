@@ -1,3 +1,4 @@
+import { useMoney } from "@/hooks/useMoney";
 import { TransferMarket } from "@/features/career/systems/TransferMarket";
 import { confirmUI } from "@/i18n/translate";
 import { UpcomingPredictions } from "@/features/prediction/CareerPrediction";
@@ -177,6 +178,8 @@ export function EsportsPanel({
 }: {
   onStart: (setup: MatchSetup) => void;
 }) {
+  const formatMoney = useMoney();
+
   const navigate = useNavigate();
   const save = useSave(),
     npcs = useNpcs(),
@@ -439,8 +442,8 @@ export function EsportsPanel({
               )}
               {current.status === "finished" && (
                 <p className="my-3 text-sm text-gold-300">
-                  Final rank #{current.rank} · Team prize ${current.teamPrize} ·
-                  Your share ${current.playerPrize}
+                  Final rank #{current.rank} · Team prize {formatMoney(current.teamPrize)} ·
+                  Your share {formatMoney(current.playerPrize)}
                   <Button
                     className="ml-3"
                     variant="secondary"
@@ -571,8 +574,7 @@ export function EsportsPanel({
                       {dayLabel(e.deadline)} · {e.timeControl.label}
                     </p>
                     <p className="mt-2 text-sm text-ink">
-                      Team entry ${e.fee} · prize pool $
-                      {e.prize.toLocaleString()} · 4 teams · 3 fixtures
+                      Team entry {formatMoney(e.fee)} · prize pool {formatMoney(e.prize)} · 4 teams · 3 fixtures
                     </p>
                     <p className="mt-2 text-xs text-ink-muted">
                       {issue ?? "Entry requirements met."}
@@ -670,7 +672,7 @@ export function EsportsPanel({
                 {state.team.members.length}/{state.team.size} · average Elo{" "}
                 {Math.round(teamRating(state.team))}
                 {state.team.contractEnd !== undefined
-                  ? ` · contract ends ${dayLabel(state.team.contractEnd)} · salary $${state.team.salary}/week`
+                  ? ` · contract ends ${dayLabel(state.team.contractEnd)} · salary ${formatMoney(state.team.salary ?? 0)}/week`
                   : ""}
               </p>
               <ul className="space-y-2">
@@ -762,7 +764,7 @@ export function EsportsPanel({
                       {org.name} · {o.size === 2 ? "Duo" : "Trio"}
                     </p>
                     <p className="my-2 text-xs text-ink-muted">
-                      12-week contract · ${org.salary}/week · expires{" "}
+                      12-week contract · {formatMoney(org.salary)}/week · expires{" "}
                       {dayLabel(o.expires)} · minimum {org.min} Elo
                     </p>
                     <Button
@@ -812,7 +814,7 @@ export function EsportsPanel({
               className="mb-3 rounded-lg bg-navy-900 p-3"
             >
               <summary className="cursor-pointer text-sm font-semibold text-ink">
-                {c.event.name} · #{c.rank} · your prize ${c.playerPrize}
+                {c.event.name} · #{c.rank} · your prize {formatMoney(c.playerPrize)}
                 {c.withdrawn ? " · withdrawn" : ""}
               </summary>
               <TeamResults competition={c} />
