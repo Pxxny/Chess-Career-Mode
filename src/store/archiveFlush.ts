@@ -36,6 +36,8 @@ export interface ArchiveFlushMarker {
 
 /** Index rows per chunk transaction. About 0.4–0.8 s of IndexedDB work per chunk in Chromium. */
 export const ARCHIVE_CHUNK_ROWS = 5000;
+/** Longest stretch of puts (structured clone on the main thread) before the next slice, in ms. */
+export const PUT_SLICE_MS = 8;
 
 export const archiveKey = (careerId: string, e: Pick<ArchivedEvent, "year" | "id">) =>
   `${careerId}|${e.year}|${e.id}`;
@@ -87,10 +89,30 @@ export async function flushEventArchive(careerId: string, records: readonly Arch
     const progress = { ...marker };
     await transact([STORES.tournamentArchive, STORES.matchIndex, STORES.meta], "readwrite", (tx) => {
       const archive = tx.objectStore(STORES.tournamentArchive);
-      for (const event of chunkEvents) archive.put({ key: archiveKey(careerId, event), event });
       const index = tx.objectStore(STORES.matchIndex);
-      for (const row of chunkRows) index.put(row);
-      tx.objectStore(STORES.meta).put(progress, archiveFlushKey(careerId));
+      const meta = tx.objectStore(STORES.meta);
+      // The same puts in the same order and the same single transaction as before, but issued in
+      // time slices: each slice continues from the success callback of the previous slice's last
+      // put (the transaction stays active there), so the browser can paint between slices instead
+      // of cloning a whole 5,000-row chunk in one task.
+      const total = chunkEvents.length + chunkRows.length + 1;
+      let next = 0;
+      const putAt = (i: number): IDBRequest =>
+        i < chunkEvents.length
+          ? archive.put({ key: archiveKey(careerId, chunkEvents[i]), event: chunkEvents[i] })
+          : i < chunkEvents.length + chunkRows.length
+            ? index.put(chunkRows[i - chunkEvents.length])
+            : meta.put(progress, archiveFlushKey(careerId));
+      const pump = () => {
+        const started = performance.now();
+        let last: IDBRequest | undefined;
+        while (next < total) {
+          last = putAt(next++);
+          if (performance.now() - started >= PUT_SLICE_MS) break;
+        }
+        if (next < total && last) last.onsuccess = pump;
+      };
+      pump();
     });
     await hooks.afterChunk?.(marker.chunksDone);
     await yieldToUi();

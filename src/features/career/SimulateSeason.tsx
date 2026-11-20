@@ -175,9 +175,12 @@ export function SeasonProgressDialog() {
   const running = useGameStore((s) => s.seasonRunning),
     save = useGameStore((s) => s.save),
     pause = useGameStore((s) => s.cancelCalendar);
-  const gameStatus = useSeasonGameStatus();
+  // Re-render when a recorded game starts or ends; the ply counter is read on the 200 ms tick
+  // below instead of re-rendering the whole dialog for every worker progress message.
+  const gamePlaying = useSeasonGameStatus((s) => s.started !== null);
   const [elapsed, setElapsed] = useState(0),
-    [gameElapsed, setGameElapsed] = useState(0);
+    [gameElapsed, setGameElapsed] = useState(0),
+    [gamePly, setGamePly] = useState(0);
   useEffect(() => {
     if (!running) return;
     const at = performance.now();
@@ -187,6 +190,7 @@ export function SeasonProgressDialog() {
       setGameElapsed(
         game.started === null ? 0 : (performance.now() - game.started) / 1000,
       );
+      setGamePly(game.ply);
     };
     const timer = setInterval(tick, 200);
     return () => clearInterval(timer);
@@ -218,9 +222,9 @@ export function SeasonProgressDialog() {
         <p data-testid="season-elapsed">
           Elapsed this run: {elapsed.toFixed(1)} s
         </p>
-        {gameStatus.started !== null && (
+        {gamePlaying && (
           <p data-testid="season-game-progress">
-            Playing recorded game: {gameStatus.ply} plies ·{" "}
+            Playing recorded game: {gamePly} plies ·{" "}
             {gameElapsed.toFixed(1)} s
           </p>
         )}

@@ -27,7 +27,8 @@ import type { BroadcastGame } from "@/types";
 import { writeEventArchive, writeMissingEventArchive } from "./tournamentArchive";
 import { waitForMatchIndex } from "./matchIndex";
 import { beginMeasurement } from "@/diagnostics/performance";
-import { advanceCalendarTournaments } from "@/game/competition/worldCalendar";
+import { advanceCalendarTournamentSteps } from "@/game/competition/worldCalendar";
+import { drainSteps, runStepsSliced, type Steps } from "@/game/steps";
 import { chooseAnnualFocus, type AnnualFocus } from "@/game/career/planning";
 import {
   signSponsor,
@@ -91,7 +92,7 @@ import {
   playTeamCup,
   stateOf,
   coachedGame,
-  weeklyCircuit,
+  weeklyCircuitSteps,
   news,
   type CoachTerm,
 } from "@/game/career/expansion";
@@ -326,6 +327,135 @@ function migrateSave(
   return state;
 }
 
+/** Longest synchronous stretch of a simulated day before the browser gets a frame (ms). */
+let sliceBudgetMs = 8;
+/** Tests: 0 yields after every step, Infinity never yields. Results must not depend on it. */
+export function setDaySliceBudget(ms: number): void {
+  sliceBudgetMs = ms;
+}
+
+/**
+ * End day as resumable steps. `drainSteps(endDaySteps(get, set, false))` is the original blocking
+ * End day. With `sliced`, the season runner resumes it across tasks: the steps are identical, and
+ * the only asynchronous continuation (population news after the weekly world sync) is attached
+ * after the day is committed, exactly where the blocking version runs it.
+ */
+function* endDaySteps(
+  get: () => GameStore,
+  set: (partial: Partial<GameStore>) => void,
+  sliced: boolean,
+): Steps<NightReport | null> {
+        if (get().calendarProgress && !calendarOwned) return null;
+        const save =
+          calendarOwned && calendarDaySave ? calendarDaySave : get().save;
+        if (!save) return null;
+        if (
+          !calendarOwned &&
+          (save.pendingMatch || matchRunning(save.career.id) || awaitingArmageddon(save.tournament))
+        )
+          return null;
+        const dayMeasured = beginMeasurement("calendar.day");
+        const advanced = endDay(save);
+        const next = advanceEsports(
+            settleTransfer(expireCompetition(advanced.save)),
+            useNpcStore.getState().npcs,
+          ),
+          report = advanced.report;
+        calendarSync = Promise.resolve();
+        const announce = (population: { joined: Npc[]; retired: Npc[] }) => {
+          if (population.joined.length || population.retired.length)
+            get().populationNews(
+              save.career.id,
+              next.world.date.year,
+              population.joined.length,
+              population.retired.map((n) => n.name),
+            );
+        };
+        let synced: Promise<{ joined: Npc[]; retired: Npc[] }> | null = null;
+        // Apply the new date before selecting circuit entrants, so retiring players cannot compete
+        // and this year's cohort is available immediately. Persistence continues asynchronously.
+        if (
+          report.newWeek &&
+          useNpcStore.getState().careerId === save.career.id
+        ) {
+          synced = useNpcStore
+            .getState()
+            .syncWorld({
+              year: next.world.date.year,
+              week: next.world.date.week,
+              alternateHistory: next.world.alternateHistory,
+            });
+          if (sliced) synced.catch(() => undefined);
+          else calendarSync = synced.then(announce);
+        }
+        let localPool: Promise<unknown> | null = null;
+        if (next.player.country !== save.player.country) {
+          localPool = useNpcStore
+            .getState()
+            .ensureLocalPool(
+              save.career.id,
+              next.player.country,
+              next.player.city.name,
+              next.world.date.year,
+            );
+          if (sliced) localPool.catch(() => undefined);
+          else calendarSync = Promise.all([calendarSync, localPool]);
+        }
+        // Settle newly expired tournaments before background fields use those same NPCs.
+        if (useNpcStore.getState().careerId === save.career.id) {
+          const completed = reconcileTournamentHistory(
+            next,
+            useNpcStore.getState().npcs,
+          );
+          if (completed.length)
+            void useNpcStore.getState().updateNpcs(completed);
+        }
+        yield;
+        const eventsMeasured = beginMeasurement("calendar.events");
+        const calendar =
+          useNpcStore.getState().careerId === save.career.id
+            ? yield* advanceCalendarTournamentSteps(
+                save,
+                next,
+                useNpcStore.getState().npcs,
+              )
+            : { save: next, changed: [] };
+        eventsMeasured({ npcs: calendar.changed.length });
+        if (calendar.changed.length)
+          void useNpcStore.getState().updateNpcs(calendar.changed);
+        yield;
+        const circuitMeasured = report.newWeek
+          ? beginMeasurement("calendar.circuit")
+          : null;
+        const bulletin = report.newWeek
+          ? yield* weeklyCircuitSteps(calendar.save, useNpcStore.getState().npcs)
+          : { save: calendar.save, changed: [] };
+        circuitMeasured?.({ npcs: bulletin.changed.length });
+        yield;
+        const season = seasonOf(bulletin.save);
+        const published =
+          season?.status === "paused"
+            ? updateSeason(bulletin.save, {
+                phase: "choose",
+                days: gameDay(bulletin.save) - season.startDay,
+              })
+            : bulletin.save;
+        const settled=settleActivities(published,useNpcStore.getState().npcs);
+        set({ save: settled.save });
+        if (
+          bulletin.changed.length &&
+          useNpcStore.getState().careerId === save.career.id
+        )
+          void useNpcStore.getState().updateNpcs(bulletin.changed);
+        if (sliced) {
+          // Attached only now, so population news lands after this day's save as before.
+          if (synced) calendarSync = synced.then(announce);
+          if (localPool) calendarSync = Promise.all([calendarSync, localPool]);
+        }
+        dayMeasured({ newWeek: report.newWeek, days: 1 });
+        return report;
+}
+
 export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
@@ -432,13 +562,20 @@ export const useGameStore = create<GameStore>()(
             },
             finish: (finish) => !!get().finishMatch(finish, db),
             advanceDay: async () => {
-              calendarOwned = true;
               calendarDaySave = null;
-              try {
-                get().endDay();
-              } finally {
-                calendarOwned = false;
-              }
+              // Same steps as End day, resumed across tasks so the browser can paint between NPC
+              // events. The calendar is marked as owned only while a step runs.
+              await runStepsSliced(endDaySteps(get, set, true), {
+                budgetMs: sliceBudgetMs,
+                around: (run) => {
+                  calendarOwned = true;
+                  try {
+                    return run();
+                  } finally {
+                    calendarOwned = false;
+                  }
+                },
+              });
               await calendarSync;
             },
             yield: () => new Promise<void>((r) => setTimeout(r, 0)),
@@ -472,11 +609,10 @@ export const useGameStore = create<GameStore>()(
                 }),
               });
           }
-          set({ seasonRunning: false, calendarProgress: null });
+          let saved = false;
           try {
             await releaseSimulation();
-            flushTournamentArchive();
-            flushMatches();
+            saved = true;
           } catch (error) {
             outcome = {
               ok: false,
@@ -485,6 +621,12 @@ export const useGameStore = create<GameStore>()(
                   ? `${error.message} The previous save is unchanged.`
                   : "Could not save the season. The previous save is unchanged.",
             };
+          }
+          // Keep the dialog and action guards active until the pause or end-of-season checkpoint is durable.
+          set({ seasonRunning: false, calendarProgress: null });
+          if (saved) {
+            flushTournamentArchive();
+            flushMatches();
           }
         }
         return outcome;
@@ -926,106 +1068,7 @@ export const useGameStore = create<GameStore>()(
             },
           });
       },
-      endDay: () => {
-        if (get().calendarProgress && !calendarOwned) return null;
-        const save =
-          calendarOwned && calendarDaySave ? calendarDaySave : get().save;
-        if (!save) return null;
-        if (
-          !calendarOwned &&
-          (save.pendingMatch || matchRunning(save.career.id) || awaitingArmageddon(save.tournament))
-        )
-          return null;
-        const dayMeasured = beginMeasurement("calendar.day");
-        const advanced = endDay(save);
-        const next = advanceEsports(
-            settleTransfer(expireCompetition(advanced.save)),
-            useNpcStore.getState().npcs,
-          ),
-          report = advanced.report;
-        calendarSync = Promise.resolve();
-        // Apply the new date before selecting circuit entrants, so retiring players cannot compete
-        // and this year's cohort is available immediately. Persistence continues asynchronously.
-        if (
-          report.newWeek &&
-          useNpcStore.getState().careerId === save.career.id
-        ) {
-          calendarSync = useNpcStore
-            .getState()
-            .syncWorld({
-              year: next.world.date.year,
-              week: next.world.date.week,
-              alternateHistory: next.world.alternateHistory,
-            })
-            .then((population) => {
-              if (population.joined.length || population.retired.length)
-                get().populationNews(
-                  save.career.id,
-                  next.world.date.year,
-                  population.joined.length,
-                  population.retired.map((n) => n.name),
-                );
-            });
-        }
-        if (next.player.country !== save.player.country) {
-          calendarSync = Promise.all([
-            calendarSync,
-            useNpcStore
-              .getState()
-              .ensureLocalPool(
-                save.career.id,
-                next.player.country,
-                next.player.city.name,
-                next.world.date.year,
-              ),
-          ]);
-        }
-        // Settle newly expired tournaments before background fields use those same NPCs.
-        if (useNpcStore.getState().careerId === save.career.id) {
-          const completed = reconcileTournamentHistory(
-            next,
-            useNpcStore.getState().npcs,
-          );
-          if (completed.length)
-            void useNpcStore.getState().updateNpcs(completed);
-        }
-        const eventsMeasured = beginMeasurement("calendar.events");
-        const calendar =
-          useNpcStore.getState().careerId === save.career.id
-            ? advanceCalendarTournaments(
-                save,
-                next,
-                useNpcStore.getState().npcs,
-              )
-            : { save: next, changed: [] };
-        eventsMeasured({ npcs: calendar.changed.length });
-        if (calendar.changed.length)
-          void useNpcStore.getState().updateNpcs(calendar.changed);
-        const circuitMeasured = report.newWeek
-          ? beginMeasurement("calendar.circuit")
-          : null;
-        const bulletin = report.newWeek
-          ? weeklyCircuit(calendar.save, useNpcStore.getState().npcs)
-          : { save: calendar.save, changed: [] };
-        circuitMeasured?.({ npcs: bulletin.changed.length });
-        const season = seasonOf(bulletin.save);
-        const published =
-          season?.status === "paused"
-            ? updateSeason(bulletin.save, {
-                phase: "choose",
-                days: gameDay(bulletin.save) - season.startDay,
-              })
-            : bulletin.save;
-        const settled=settleActivities(published,useNpcStore.getState().npcs);
-        set({ save: settled.save });
-        if (
-          bulletin.changed.length &&
-          useNpcStore.getState().careerId === save.career.id
-        )
-          void useNpcStore.getState().updateNpcs(bulletin.changed);
-        dayMeasured({ newWeek: report.newWeek, days: 1 });
-        return report;
-      },
+      endDay: () => drainSteps(endDaySteps(get, set, false)),
 
       recordGame: (input) => {
         const { save } = get();

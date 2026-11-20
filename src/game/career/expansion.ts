@@ -1,7 +1,8 @@
 import { competitionHealthIssue } from "@/game/career/health";
 import { queueArchives, retainedArchives } from "@/game/competition/archive";
 import { personalWorldNews } from "@/game/social/memories";
-import { simulateWorldCircuit } from "@/game/npc/activity";
+import { simulateWorldCircuitSteps } from "@/game/npc/activity";
+import { drainSteps, type Steps } from "@/game/steps";
 import { recordPredictions } from "@/game/prediction/statistics";
 import type { PredictionSnapshot } from "@/game/prediction/types";
 import { GAME_CONFIG } from "@/data/config";
@@ -493,10 +494,18 @@ export function weeklyCircuit(
   save: GameSave,
   npcs: Npc[],
 ): { save: GameSave; changed: Npc[] } {
+  return drainSteps(weeklyCircuitSteps(save, npcs));
+}
+
+/** `weeklyCircuit` as resumable steps (see `simulateWorldCircuitSteps`). */
+export function* weeklyCircuitSteps(
+  save: GameSave,
+  npcs: Npc[],
+): Steps<{ save: GameSave; changed: Npc[] }> {
   const index = save.world.date.year * 52 + save.world.date.week;
   const state = stateOf(save);
   if (index <= state.lastBulletin) return { save, changed: [] };
-  const result = simulateWorldCircuit(save, npcs);
+  const result = yield* simulateWorldCircuitSteps(save, npcs);
   let next: GameSave = {
     ...save,
     expansion: { ...state, lastBulletin: index },

@@ -17,10 +17,16 @@ import type { PredictionObservation } from "@/game/prediction/types";
 import { createRng, mixSeed } from "@/game/rng";
 import { hashString } from "@/utils/format";
 import { applyNpcResult } from "./results";
+import { drainSteps } from "@/game/steps";
 import type { GameSave, Npc } from "@/types";
 
 /** Extend the existing weekly circuit: rotating local fields plus regular elite competition. */
 export function simulateWorldCircuit(save: GameSave, npcs: Npc[]) {
+  return drainSteps(simulateWorldCircuitSteps(save, npcs));
+}
+
+/** `simulateWorldCircuit` as resumable steps: pauses after each upcoming field and each circuit event. */
+export function* simulateWorldCircuitSteps(save: GameSave, npcs: Npc[]) {
   const index = save.world.date.year * 52 + save.world.date.week;
   const busy = new Set(
     save.tournament?.status === "playing"
@@ -41,8 +47,10 @@ export function simulateWorldCircuit(save: GameSave, npcs: Npc[]) {
   // Calendar events take priority, including those starting after today's daily tick.
   const today=gameDay(save);
   for(const event of annualEvents(save,save.world.date.year))
-    if(bookedStart(event)>=today&&bookedStart(event)<today+7&&event.details?.format!=='team')
+    if(bookedStart(event)>=today&&bookedStart(event)<today+7&&event.details?.format!=='team') {
       calendarField(save,event,npcs).forEach(n=>busy.add(n.id));
+      yield;
+    }
   const active = npcs.filter(
     (n) =>
       !busy.has(n.id) &&
@@ -232,6 +240,7 @@ export function simulateWorldCircuit(save: GameSave, npcs: Npc[]) {
       headlines.push(
         `${ranked[0].name} wins ${name} (${scores.get(ranked[0].id)!.points}/${rounds}).`,
       );
+    yield;
   }
   return {
     changed,

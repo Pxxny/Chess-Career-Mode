@@ -116,15 +116,6 @@ function orientationOf(
     ? [a, b]
     : [b, a];
 }
-const compatibleOf = (a: PairSide, b: PairSide, aElo: number, bElo: number, round: number): boolean => {
-  const [w, bk] = orientationOf(a, b, aElo, bElo, round);
-  return (
-    colorPenaltyOf(w, 1) < 20 &&
-    colorPenaltyOf(bk, -1) < 20 &&
-    Math.abs(w.balance + 1) <= 2 &&
-    Math.abs(bk.balance - 1) <= 2
-  );
-};
 /** Score-group matching, colour preferences, one bye per player where possible, rematches only if unavoidable.
  * This is a deterministic game Swiss implementation, not certified FIDE Dutch software. */
 export function swissPairings(
@@ -156,7 +147,11 @@ export function swissPairings(
             half = pool.length / 2;
           const sides = pool.map(sideOf);
           const graph = sides.map((a, i) => {
+            // One orientation per candidate pair serves both the colour check and the edge cost
+            // (both used the same `orientationOf(a, b, eloA, eloB, round)`), and each cost is
+            // computed once instead of on every sort comparison. Same edges, same order.
             const edges: number[] = [];
+            const costs = new Float64Array(pool.length);
             for (let j = 0; j < pool.length; j++) {
               if (j === i) continue;
               const b = sides[j];
@@ -165,32 +160,28 @@ export function swissPairings(
                 (a.met.has(pool[j].id) || b.met.has(pool[i].id))
               )
                 continue;
+              const [w, bk] = orientationOf(a, b, pool[i].elo, pool[j].elo, round);
               if (
                 strictColors &&
-                !compatibleOf(a, b, pool[i].elo, pool[j].elo, round)
+                !(
+                  colorPenaltyOf(w, 1) < 20 &&
+                  colorPenaltyOf(bk, -1) < 20 &&
+                  Math.abs(w.balance + 1) <= 2 &&
+                  Math.abs(bk.balance - 1) <= 2
+                )
               )
                 continue;
               edges.push(j);
-            }
-            const cost = (x: number): number => {
-              const [w, bk] = orientationOf(
-                a,
-                sides[x],
-                pool[i].elo,
-                pool[x].elo,
-                round,
-              );
-              return (
-                Math.abs(pool[i].points - pool[x].points) * 10000 +
-                (a.met.has(pool[x].id) ? 1000000 : 0) +
+              costs[j] =
+                Math.abs(pool[i].points - pool[j].points) * 10000 +
+                (a.met.has(pool[j].id) ? 1000000 : 0) +
                 (round === 1
-                  ? Math.abs((i < half ? i + half : i - half) - x) * 100
-                  : Math.abs(i - x) * 10) +
+                  ? Math.abs((i < half ? i + half : i - half) - j) * 100
+                  : Math.abs(i - j) * 10) +
                 colorPenaltyOf(w, 1) +
-                colorPenaltyOf(bk, -1)
-              );
-            };
-            edges.sort((j, k) => cost(j) - cost(k) || j - k);
+                colorPenaltyOf(bk, -1);
+            }
+            edges.sort((j, k) => costs[j] - costs[k] || j - k);
             return edges;
           });
           const matching = maximumMatching(graph);

@@ -1,5 +1,6 @@
 import { GAME_CONFIG } from "@/data/config";
 import { span } from "@/diagnostics/spanSink";
+import { drainSteps, type Steps } from "@/game/steps";
 import { competitionOf } from "./preparation";
 import { circuitAllocation } from "./rollDown";
 import { recordSelectWinner } from "./selectTours";
@@ -241,6 +242,20 @@ export function advanceCalendarTournaments(
   after: GameSave,
   population: Npc[],
 ): { save: GameSave; changed: Npc[] } {
+  return drainSteps(advanceCalendarTournamentSteps(before, after, population));
+}
+
+/**
+ * The same day of calendar events as `advanceCalendarTournaments`, as resumable steps. It pauses
+ * (`yield`) after each started event, each played round and each team event so a caller can let
+ * the browser paint between them. Every step runs the same code in the same order on data this
+ * function owns, so the result does not depend on where or whether the caller pauses.
+ */
+export function* advanceCalendarTournamentSteps(
+  before: GameSave,
+  after: GameSave,
+  population: Npc[],
+): Steps<{ save: GameSave; changed: Npc[] }> {
   if (!population.length || before.career.id !== after.career.id)
     return { save: after, changed: [] };
   const day = gameDay(before);
@@ -310,19 +325,20 @@ export function advanceCalendarTournaments(
       });
     }
     });
+    yield;
   }
   const active: ActiveTournament[] = [];
   for (let t of state.active) {
-    const played = span("calendar.rounds", () => {
-      let nextT = t;
-      while (nextT.status === "playing" && tournamentSlot(nextT).absoluteDay <= day)
-        nextT = completeRound(nextT, null, {
+    while (t.status === "playing" && tournamentSlot(t).absoluteDay <= day) {
+      const current = t;
+      t = span("calendar.rounds", () =>
+        completeRound(current, null, {
           ...predictionEnvironment(before),
           player: undefined,
-        });
-      return nextT;
-    });
-    t = played;
+        }),
+      );
+      yield;
+    }
     if (t.status === "playing") {
       active.push(t);
       continue;
@@ -365,6 +381,7 @@ export function advanceCalendarTournaments(
       ...recordPredictions(next, tournamentObservations(t)),
       calendarTournaments: state,
     };
+    yield;
   }
   const national: CalendarTournamentState["national"] = [];
   for (const entry of state.national) {
@@ -455,6 +472,7 @@ export function advanceCalendarTournaments(
       ...recordPredictions(next, result.samples),
       calendarTournaments: state,
     };
+    yield;
   }
   state = { ...state, active, national };
   return {

@@ -57,10 +57,27 @@ export function pickField(
   const left = [...pool];
   const weight = (n: Npc): number =>
     Math.exp(-0.5 * ((n.currentElo - target) / 260) ** 2) + 1e-6;
+  // Same draw as `rng.weighted(left, weight)` (one `rng.next()`, identical left-to-right sums and
+  // scan), but each NPC's weight is computed once instead of twice per pick. `weights` stays
+  // index-aligned with `left`, so every selection, and the RNG stream, is unchanged.
+  const weights = left.map(weight);
   while (chosen.length < count && left.length) {
-    const pick = rng.weighted(left, weight);
+    let total = 0;
+    for (let i = 0; i < weights.length; i++) total += weights[i];
+    let roll = rng.next() * total,
+      at = left.length - 1;
+    for (let i = 0; i < weights.length; i++) {
+      roll -= weights[i];
+      if (roll < 0) {
+        at = i;
+        break;
+      }
+    }
+    const pick = left[at];
     chosen.push(pick);
-    left.splice(left.indexOf(pick), 1);
+    const removed = left.indexOf(pick);
+    left.splice(removed, 1);
+    weights.splice(removed, 1);
   }
   return chosen;
 }
