@@ -1,72 +1,76 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import "fake-indexeddb/auto";
+import { describe, expect, it, vi } from "vitest";
 import type { Npc } from "@/types";
+import { STORES, transact } from "@/utils/idb";
+import { saveSlotKey } from "./saveSlots";
 import {
   flushSimulation,
   holdSimulation,
-  rememberNpcWrites,
-  rememberSave,
+  queueNpcWrites,
+  queueSave,
   releaseSimulation,
-  setSimulationWriters,
   simulationActive,
 } from "./simulationJournal";
 
 const npc = (id: string, elo: number) => ({ id, currentElo: elo }) as Npc;
+const readSlot = (slot: number) => transact<string>([STORES.keyval], "readonly",
+  (tx) => tx.objectStore(STORES.keyval).get(saveSlotKey(slot)));
+const readNpc = (careerId: string, id: string) => transact<{ npc: Npc }>(
+  [STORES.careerNpcs], "readonly",
+  (tx) => tx.objectStore(STORES.careerNpcs).get(`${careerId}|${id}`),
+);
 
 describe("simulation journal", () => {
-  const saves: string[] = [];
-  const npcBatches: string[][] = [];
-  let npcFail = false;
-  beforeEach(() => {
-    saves.length = 0;
-    npcBatches.length = 0;
-    npcFail = false;
-    setSimulationWriters({
-      save: async (_name, json) => {
-        saves.push(json);
-      },
-      npcs: async (rows) => {
-        if (npcFail) throw new Error("npc disk full");
-        npcBatches.push(rows.map((n) => `${n.id}:${n.currentElo}`));
-      },
+  it("persists each latest NPC and the latest save together", async () => {
+    const writes: Array<{ store: string; tx: IDBTransaction }> = [];
+    const put = IDBObjectStore.prototype.put;
+    const spy = vi.spyOn(IDBObjectStore.prototype, "put").mockImplementation(function (this: IDBObjectStore, ...args) {
+      writes.push({ store: this.name, tx: this.transaction });
+      return put.apply(this, args);
     });
+    try {
+      holdSimulation();
+      expect(simulationActive()).toBe(true);
+      await queueSave(1, { state: { n: 1 }, version: 1 });
+      await queueNpcWrites("career", [npc("a", 1000), npc("b", 1100)]);
+      await queueSave(1, { state: { n: 2 }, version: 1 });
+      await queueNpcWrites("career", [npc("a", 1200)]);
+      expect(writes).toEqual([]);
+      await releaseSimulation();
+      expect(writes.map(({ store }) => store)).toEqual([STORES.careerNpcs, STORES.careerNpcs, STORES.keyval]);
+      expect(new Set(writes.map(({ tx }) => tx)).size).toBe(1);
+      expect(await readNpc("career", "a")).toEqual({ key: "career|a", npc: npc("a", 1200) });
+      expect(await readNpc("career", "b")).toEqual({ key: "career|b", npc: npc("b", 1100) });
+      expect(JSON.parse((await readSlot(1))!).state.n).toBe(2);
+      expect(simulationActive()).toBe(false);
+    } finally {
+      spy.mockRestore();
+    }
   });
 
-  it("keeps the latest NPC and writes it once, before the save", async () => {
-    const order: string[] = [];
-    setSimulationWriters({
-      save: async (_name, json) => {
-        order.push("save");
-        saves.push(json);
-      },
-      npcs: async (rows) => {
-        order.push("npcs");
-        npcBatches.push(rows.map((n) => `${n.id}:${n.currentElo}`));
-      },
+  it("keeps the previous save and rolls back NPCs after a failed NPC write", async () => {
+    const previous = JSON.stringify({ state: { ok: false }, version: 1 });
+    await transact([STORES.keyval], "readwrite", (tx) => {
+      tx.objectStore(STORES.keyval).put(previous, saveSlotKey(2));
     });
     holdSimulation();
-    expect(simulationActive()).toBe(true);
-    rememberSave("slot", { state: { n: 1 }, version: 1 });
-    rememberNpcWrites("career", [npc("a", 1000), npc("b", 1100)]);
-    rememberSave("slot", { state: { n: 2 }, version: 1 });
-    rememberNpcWrites("career", [npc("a", 1200)]);
-    expect(saves).toEqual([]);
-    await releaseSimulation();
-    expect(order).toEqual(["npcs", "save"]);
-    expect(npcBatches).toEqual([["a:1200", "b:1100"]]);
-    expect(JSON.parse(saves[0]).state.n).toBe(2);
-    expect(simulationActive()).toBe(false);
-  });
-
-  it("does not write the save when the NPC flush fails, and retries the same payload", async () => {
-    npcFail = true;
-    holdSimulation();
-    rememberSave("slot", { state: { ok: true }, version: 1 });
-    rememberNpcWrites("career", [npc("a", 1500)]);
-    await expect(releaseSimulation()).rejects.toThrow("npc disk full");
-    expect(saves).toEqual([]);
-    npcFail = false;
+    await queueSave(2, { state: { ok: true }, version: 1 });
+    await queueNpcWrites("retry", [npc("a", 1500), npc("b", 1600)]);
+    const put = IDBObjectStore.prototype.put;
+    const fail = vi.spyOn(IDBObjectStore.prototype, "put").mockImplementation(function (this: IDBObjectStore, ...args) {
+      if (this.name === STORES.careerNpcs && args[0]?.key === "retry|b") throw new Error("npc disk full");
+      return put.apply(this, args);
+    });
+    try {
+      await expect(releaseSimulation()).rejects.toThrow("npc disk full");
+    } finally {
+      fail.mockRestore();
+    }
+    expect(await readSlot(2)).toBe(previous);
+    expect(await readNpc("retry", "a")).toBeUndefined();
     await flushSimulation();
-    expect(npcBatches).toEqual([["a:1500"]]);
-    expect(saves).toHaveLength(1);
+    expect((await readNpc("retry", "a"))?.npc).toEqual(npc("a", 1500));
+    expect((await readNpc("retry", "b"))?.npc).toEqual(npc("b", 1600));
+    expect(JSON.parse((await readSlot(2))!).state.ok).toBe(true);
   });
 });

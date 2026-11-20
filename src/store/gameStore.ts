@@ -18,13 +18,14 @@ import {
   updateSeason,
 } from "@/game/career/seasonSimulation";
 import { getBaseOpeningDatabase } from "@/game/openings/database";
-import { retainedArchives, queueArchives } from "@/game/competition/archive";
+import { retainedArchives, type ArchivedEvent } from "@/game/competition/archive";
 import {
   updateBroadcast,
   type BroadcastContext,
 } from "@/game/competition/broadcast";
 import type { BroadcastGame } from "@/types";
-import { writeEventArchive } from "./tournamentArchive";
+import { writeEventArchive, writeMissingEventArchive } from "./tournamentArchive";
+import { waitForMatchIndex } from "./matchIndex";
 import { beginMeasurement } from "@/diagnostics/performance";
 import { advanceCalendarTournaments } from "@/game/competition/worldCalendar";
 import { chooseAnnualFocus, type AnnualFocus } from "@/game/career/planning";
@@ -147,7 +148,7 @@ import type {
   SituationId,
 } from "@/types";
 import { slotManager, summarize } from "./saveSlots";
-import { rememberSave, holdSimulation, releaseSimulation, simulationActive, simulationPending, flushSimulation } from "./simulationJournal";
+import { queueSave, holdSimulation, releaseSimulation, simulationActive, flushPendingWrites } from "./simulationJournal";
 import { useNpcStore } from "./npcStore";
 
 let calendarCancelled = false;
@@ -794,12 +795,14 @@ export const useGameStore = create<GameStore>()(
         calendarCancelled = true;
         void slotManager.setActive(null);
         set({ save: null });
+        void flushPendingWrites().catch(() => {});
       },
 
       selectSlot: async (slot) => {
         calendarCancelled = true;
         let persisted: { state?: unknown; version?: number } | null = null;
         try {
+          await flushPendingWrites();
           const raw = await slotManager.readSlot(slot);
           persisted = raw
             ? (JSON.parse(raw) as { state?: unknown; version?: number })
@@ -817,6 +820,7 @@ export const useGameStore = create<GameStore>()(
       },
 
       deleteSlot: async (slot) => {
+        await flushPendingWrites();
         const careerId = summarize(
           slot,
           await slotManager.readSlot(slot),
@@ -825,7 +829,14 @@ export const useGameStore = create<GameStore>()(
         const deleting = slotManager.deleteSlot(slot);
         if (wasOpen) set({ save: null });
         await deleting;
-        if (careerId) await useNpcStore.getState().forgetCareer(careerId);
+        if (careerId) {
+          await Promise.all([
+            archiveFlushes.get(careerId),
+            matchFlushes.get(careerId),
+            waitForMatchIndex(careerId),
+          ]);
+          await useNpcStore.getState().forgetCareer(careerId);
+        }
       },
 
       renamePlayer: (name) =>
@@ -1324,22 +1335,28 @@ export const useGameStore = create<GameStore>()(
         getItem: async () => {
           if (chooseCareer) return null;
           const raw = await slotManager.storage.getItem();
-          return raw ? (JSON.parse(raw) as StorageValue<unknown>) : null;
+          return raw ? (JSON.parse(raw) as StorageValue<Pick<GameStore, "save">>) : null;
         },
-        setItem: async (name, value: StorageValue<unknown>) => {
-          if (
-            rememberSave(name, {
-              state: value.state,
-              version: value.version ?? 0,
-            })
-          )
-            return;
-          if (simulationPending()) await flushSimulation();
-          return slotManager.storage.setItem(name, JSON.stringify(value));
+        setItem: async (_name, value: StorageValue<Pick<GameStore, "save">>) => {
+          // Journaled during a simulation; otherwise coalesced with the NPC writes of the same
+          // action and serialized once (see simulationJournal.queueSave).
+          const slot = slotManager.getActive();
+          if (slot === null || !value.state.save) return;
+          return queueSave(slot, {
+            state: value.state,
+            version: value.version ?? 0,
+          });
         },
         removeItem: () => slotManager.storage.removeItem(),
       },
-      partialize: (state) => ({ save: state.save }),
+      partialize: ({ save }) => {
+        const world = useNpcStore.getState();
+        return {
+          save: save && world.status === "ready" && world.careerId === save.career.id
+            ? { ...save, npcOrder: world.rosterOrder }
+            : save,
+        };
+      },
       migrate: migrateSave,
       onRehydrateStorage: () => {
         useLoadingStatus.setState({ hydrationError: null });
@@ -1406,25 +1423,31 @@ useNpcStore.subscribe((state, previous) => {
 });
 
 // A single flush per career. Outbox records remain in the save if storage fails.
-const archiveFlushes = new Set<string>();
+const archiveFlushes = new Map<string, Promise<void>>();
 const archiveAttempts = new Map<string, number>();
-function flushTournamentArchive() {
+function flushTournamentArchive(backfill: ArchivedEvent[] = []) {
   if (simulationActive()) return;
   const save = useGameStore.getState().save;
   if (
-    !save?.tournamentArchivePending?.length ||
+    !save ||
+    (!save.tournamentArchivePending?.length && !backfill.length) ||
     typeof indexedDB === "undefined" ||
     archiveFlushes.has(save.career.id)
   )
     return;
   const careerId = save.career.id,
-    pending = save.tournamentArchivePending;
-  archiveFlushes.add(careerId);
-  void writeEventArchive(careerId, pending)
+    pending = save.tournamentArchivePending ?? [];
+  const write = Promise.resolve()
+    .then(async () => {
+      // Zustand queues the save after notifying subscribers. Persist the outbox before archiving.
+      await flushPendingWrites();
+      await writeMissingEventArchive(careerId, backfill);
+      await writeEventArchive(careerId, pending);
+    })
     .then(() => {
       archiveAttempts.delete(careerId);
       const current = useGameStore.getState().save;
-      if (current?.career.id !== careerId) return;
+      if (current?.career.id !== careerId || !pending.length) return;
       const written = new Map(pending.map((e) => [e.id, e]));
       useGameStore.setState({
         save: {
@@ -1447,8 +1470,9 @@ function flushTournamentArchive() {
         current?.career.id === careerId &&
         (retry || current.tournamentArchivePending?.some((e) => !pending.includes(e)))
       )
-        flushTournamentArchive();
+        flushTournamentArchive(retry ? backfill : []);
     });
+  archiveFlushes.set(careerId, write);
 }
 useGameStore.subscribe((state, previous) => {
   if (
@@ -1456,11 +1480,9 @@ useGameStore.subscribe((state, previous) => {
     state.save &&
     state.save.career.id !== previous.save?.career.id
   ) {
-    const records = retainedArchives(state.save);
-    if (records.length) {
-      useGameStore.setState({ save: queueArchives(state.save, records) });
-      return;
-    }
+    const pendingIds = new Set(state.save.tournamentArchivePending?.map((event) => event.id));
+    flushTournamentArchive(retainedArchives(state.save).filter((event) => !pendingIds.has(event.id)));
+    return;
   }
   if (
     state.save?.career.id !== previous.save?.career.id ||
@@ -1470,7 +1492,7 @@ useGameStore.subscribe((state, previous) => {
     flushTournamentArchive();
 });
 
-const matchFlushes = new Set<string>();
+const matchFlushes = new Map<string, Promise<void>>();
 const matchAttempts = new Map<string, number>();
 function flushMatches() {
   if (simulationActive()) return;
@@ -1484,8 +1506,11 @@ function flushMatches() {
     return;
   const id = save.career.id,
     pending = save.matchArchivePending;
-  matchFlushes.add(id);
-  void writeMatchArchive(id, pending)
+  const write = Promise.resolve()
+    .then(async () => {
+      await flushPendingWrites();
+      await writeMatchArchive(id, pending);
+    })
     .then(() => {
       matchAttempts.delete(id);
       const current = useGameStore.getState().save;
@@ -1513,6 +1538,7 @@ function flushMatches() {
       )
         flushMatches();
     });
+  matchFlushes.set(id, write);
 }
 useGameStore.subscribe((state, previous) => {
   if (typeof indexedDB === "undefined" || !state.save) return;
@@ -1535,3 +1561,12 @@ useGameStore.subscribe((state,previous)=>{
  const next=captureHighlights(previous.save,state.save,useNpcStore.getState().npcs);
  if(next!==state.save)useGameStore.setState({save:next});
 });
+
+// Coalesced writes wait a few milliseconds; write them before the page is hidden or closed.
+if (typeof window !== "undefined") {
+  const flushNow = () => void flushPendingWrites().catch(() => {});
+  window.addEventListener("pagehide", flushNow);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flushNow();
+  });
+}

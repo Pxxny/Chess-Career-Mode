@@ -1,5 +1,5 @@
 /* Offline support: the app shell and every same-origin file it loads are cached as you play. */
-const VERSION = "v40-bulgaria-chess";
+const VERSION = "v42-phase4a-followup";
 const CACHE = `chess-career-${VERSION}`;
 const SHELL = [
   "/data/game-atlas.json", "/data/venue-cities.json",
@@ -47,7 +47,7 @@ self.addEventListener("fetch", (event) => {
   if (request.mode === "navigate") {
     // Pages: the network first so updates arrive, the cached shell when offline.
     event.respondWith(
-      fetch(request, { cache: "no-cache" })
+      fetch(request, { cache: "reload" })
         .then((response) => {
           if (response.ok && response.headers.get("content-type")?.includes("text/html")) {
             const copy = response.clone();

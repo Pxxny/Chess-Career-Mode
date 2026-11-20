@@ -28,13 +28,20 @@
             document.getElementById('boot-recovery').hidden = false;
           }
         };
-        document.getElementById('boot-reload').onclick = () => {
+        const reload = () => {
           const url = new URL(location.href);
           url.searchParams.set('retry-load', Date.now());
           location.replace(url);
         };
+        document.getElementById('boot-reload').onclick = reload;
         window.addEventListener('error', ({ target }) => {
-          if (target instanceof HTMLScriptElement && target.type === 'module') reveal();
+          if (!(target instanceof HTMLScriptElement) || target.type !== 'module') return;
+          const retry = new URLSearchParams(location.search).has('retry-load');
+          if (navigator.onLine && navigator.serviceWorker?.controller && !retry) {
+            reload();
+          } else {
+            reveal();
+          }
         }, true);
         new MutationObserver((_, observer) => {
           document.getElementById('boot-recovery').hidden = true;

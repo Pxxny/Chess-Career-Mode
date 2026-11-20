@@ -26,6 +26,8 @@ export interface CareerRecord {
 }
 
 export interface GameSave {
+  /** NPC iteration order used by seeded tournament field selection. */
+  npcOrder?: string[];
   hostedEvents?: import("@/game/world/schedule").ScheduledEvent[];
   teamCamps?: Record<string, { openingId: string; goals: number[] }>;
   health?: import("@/game/career/health").CareerHealth;

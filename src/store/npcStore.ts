@@ -24,12 +24,25 @@ import {
   readNpcDatabase,
   writeNpcDatabase,
 } from "./npcRepository";
-import { rememberNpcWrites } from "./simulationJournal";
+import { queueNpcWrites } from "./simulationJournal";
 
 async function persistChanged(careerId: string | null, dirty: Npc[]) {
   if (!careerId || !dirty.length) return;
-  if (rememberNpcWrites(careerId, dirty)) return;
-  await putNpcs(dirty, careerId).catch(() => undefined);
+  // Inside a simulation the journal keeps them; otherwise writes within a few ms are coalesced.
+  await queueNpcWrites(careerId, dirty).catch(() => undefined);
+}
+
+function restoreRosterOrder(npcs: Npc[], order?: readonly string[]): Npc[] {
+  if (!Array.isArray(order) || !order.length) return npcs;
+  const byId = new Map(npcs.map((npc) => [npc.id, npc]));
+  const ordered: Npc[] = [];
+  for (const id of order) {
+    const npc = byId.get(id);
+    if (!npc) continue;
+    ordered.push(npc);
+    byId.delete(id);
+  }
+  return [...ordered, ...byId.values()];
 }
 
 interface NpcStore {
@@ -41,6 +54,7 @@ interface NpcStore {
   startYear: number;
   playerDatabase: CareerRecord["playerDatabase"];
   npcs: Npc[];
+  rosterOrder: string[];
   /** Loads the NPC database of a career. It is built and saved only when missing or outdated. */
   ensureLocalPool: (
     careerId: string,
@@ -48,7 +62,7 @@ interface NpcStore {
     city: string,
     year: number,
   ) => Promise<void>;
-  loadDatabase: (career: CareerRecord) => Promise<void>;
+  loadDatabase: (career: CareerRecord, order?: readonly string[]) => Promise<void>;
   /** Rebuilds every NPC from the seed for a new career. */
   resetDatabase: (
     career: CareerRecord,
@@ -68,6 +82,7 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
   startYear: 0,
   playerDatabase: undefined,
   npcs: [],
+  rosterOrder: [],
 
   ensureLocalPool: async (careerId, country, city, year) => {
     if (get().careerId !== careerId) return;
@@ -86,7 +101,7 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
     );
     if (merged.added.length) {
       const npcs = upgradeNpcIdentities(merged.npcs);
-      set({ npcs });
+      set({ npcs, rosterOrder: npcs.map((npc) => npc.id) });
       const before = new Map(previous.map((n) => [n.id, n]));
       await persistChanged(
         careerId,
@@ -94,7 +109,7 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
       );
     }
   },
-  loadDatabase: async (career) => {
+  loadDatabase: async (career, order) => {
     if (get().careerId === career.id && get().status !== "idle" && get().status !== "error") return;
     set({
       status: "loading",
@@ -133,9 +148,9 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
                 )
               : []),
           ];
-          const merged = mergeNpcAdditions(stored.npcs, candidates);
+          const merged = mergeNpcAdditions(restoreRosterOrder(stored.npcs, order), candidates);
           const upgraded = upgradeNpcIdentities(merged.npcs);
-          set({ npcs: upgraded });
+          set({ npcs: upgraded, rosterOrder: upgraded.map((npc) => npc.id) });
           if (grow)
             await writeNpcDatabase(upgraded, career).catch(() => undefined);
           else if (merged.added.length || upgraded !== merged.npcs) {
@@ -156,7 +171,7 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
       if (get().careerId !== career.id) return;
       const npcs = await createNpcPopulation(career);
       if (get().careerId !== career.id) return;
-      set({ npcs });
+      set({ npcs, rosterOrder: npcs.map((npc) => npc.id) });
       await writeNpcDatabase(npcs, career).catch(() => undefined);
       if (get().careerId === career.id) set({ status: "ready", error: null });
     } catch (error) {
@@ -164,6 +179,7 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
       set({
         status: "error",
         npcs: [],
+      rosterOrder: [],
         error:
           error instanceof Error
             ? error.message
@@ -177,6 +193,7 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
     progress?.({ phase: "saving", done: npcs.length, total: npcs.length });
     set({
       npcs,
+      rosterOrder: npcs.map((npc) => npc.id),
       status: "ready",
       error: null,
       careerId: career.id,
@@ -209,7 +226,7 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
     );
     const changed = next.filter((npc, i) => npc !== previous[i]);
     if (changed.length) {
-      set({ npcs: next });
+      set(joined.length ? { npcs: next, rosterOrder: next.map((npc) => npc.id) } : { npcs: next });
       await persistChanged(careerId, changed);
     }
     return { joined, retired };
@@ -227,7 +244,7 @@ export const useNpcStore = create<NpcStore>()((set, get) => ({
 
   forgetCareer: async (careerId) => {
     if (get().careerId === careerId)
-      set({ status: "idle", error: null, careerId: null, npcs: [] });
+      set({ status: "idle", error: null, careerId: null, npcs: [], rosterOrder: [] });
     await deleteNpcDatabase(careerId).catch(() => undefined);
   },
 }));

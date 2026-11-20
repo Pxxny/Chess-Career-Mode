@@ -6,6 +6,7 @@ import { useMatchRecords } from "@/hooks/useMatchRecords";
 import { useSave } from "@/hooks/useGame";
 import {
   dedupeRows,
+  eventInvolves,
   indexRowsFromEvent,
   indexRowsFromMatch,
   outcomeOfScore,
@@ -197,12 +198,14 @@ export function NpcHistoryPanel({
   const [detail, setDetail] = useState<MatchIndexRow | null>(null);
   useEffect(() => {
     let active = true;
+    // Only events that seat this NPC are expanded; rows of other pending events are never built.
     const local = dedupeRows([
-      ...(save.tournamentArchivePending ?? []).flatMap((event) =>
-        indexRowsFromEvent(save.career.id, event),
-      ),
-      ...matches.flatMap((match) => indexRowsFromMatch(save.career.id, match)),
-    ]).filter((row) => row.npcId === npcId);
+      ...(save.tournamentArchivePending ?? [])
+        .filter((event) => eventInvolves(event, npcId))
+        .flatMap((event) => indexRowsFromEvent(save.career.id, event, npcId)),
+      ...matches.flatMap((match) => indexRowsFromMatch(save.career.id, match))
+        .filter((row) => row.npcId === npcId),
+    ]);
     void (async () => {
       try {
         await ensureMatchIndex(save.career.id);
@@ -269,9 +272,12 @@ export function NpcHistoryPanel({
         const pending = (save.tournamentArchivePending ?? [])
           .filter((event) => event.id === id)
           .flatMap((event) => indexRowsFromEvent(save.career.id, event));
-        const unique = sortRows(dedupeRows([...stored, ...pending])).filter(
-          (row, index, all) => all.findIndex((item) => item.matchId === row.matchId) === index,
-        );
+        const seen = new Set<string>();
+        const unique = sortRows(dedupeRows([...stored, ...pending])).filter((row) => {
+          if (seen.has(row.matchId)) return false;
+          seen.add(row.matchId);
+          return true;
+        });
         setEventRows(unique.length ? unique : (rows ?? []).filter((row) => row.eventId === id));
       })
       .catch(() => setEventRows((rows ?? []).filter((row) => row.eventId === id)));

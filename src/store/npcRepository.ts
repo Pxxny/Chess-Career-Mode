@@ -1,4 +1,6 @@
 import { GAME_CONFIG } from "@/data/config";
+import { invalidateMatchIndexStatus, matchIndexStatusKey, matchIndexStores } from "./matchIndex";
+import { archiveFlushKey } from "./archiveFlush";
 import type { CareerRecord, Npc } from "@/types";
 import { STORES, transact } from "@/utils/idb";
 import { fictionalCountFor } from "@/game/npc/playerDatabase";
@@ -19,6 +21,10 @@ const npcKey = (careerId: string, npcId: string): string =>
   `${careerId}|${npcId}`;
 const careerRange = (careerId: string): IDBKeyRange =>
   IDBKeyRange.bound(`${careerId}|`, `${careerId}|\uffff`);
+
+export function putNpcRows(store: IDBObjectStore, careerId: string, npcs: readonly Npc[]): void {
+  for (const npc of npcs) store.put({ key: npcKey(careerId, npc.id), npc });
+}
 
 export const metaFor = (career: CareerRecord): NpcDatabaseMeta => ({
   databaseKey: career.databaseKey,
@@ -78,7 +84,7 @@ export const idbNpcBackend: NpcBackend = {
     await transact([STORES.careerNpcs, STORES.meta], "readwrite", (tx) => {
       const store = tx.objectStore(STORES.careerNpcs);
       store.delete(careerRange(careerId));
-      npcs.forEach((npc) => store.put({ key: npcKey(careerId, npc.id), npc }));
+      putNpcRows(store, careerId, npcs);
       tx.objectStore(STORES.meta).put(meta, metaKeyFor(careerId));
     });
   },
@@ -86,22 +92,26 @@ export const idbNpcBackend: NpcBackend = {
   putMany: async (careerId, npcs) => {
     await transact([STORES.careerNpcs], "readwrite", (tx) => {
       const store = tx.objectStore(STORES.careerNpcs);
-      npcs.forEach((npc) => store.put({ key: npcKey(careerId, npc.id), npc }));
+      putNpcRows(store, careerId, npcs);
     });
   },
 
   deleteAll: async (careerId) => {
+    const indexes = await matchIndexStores();
     await transact(
-      [STORES.careerNpcs, STORES.meta, STORES.tournamentArchive, STORES.matchArchive, STORES.matchIndex],
+      [STORES.careerNpcs, STORES.meta, STORES.tournamentArchive, STORES.matchArchive, ...indexes],
       "readwrite",
       (tx) => {
         tx.objectStore(STORES.tournamentArchive).delete(careerRange(careerId));
         tx.objectStore(STORES.matchArchive).delete(careerRange(careerId));
-        tx.objectStore(STORES.matchIndex).delete(careerRange(careerId));
+        for (const name of indexes) tx.objectStore(name).delete(careerRange(careerId));
         tx.objectStore(STORES.careerNpcs).delete(careerRange(careerId));
         tx.objectStore(STORES.meta).delete(metaKeyFor(careerId));
+        tx.objectStore(STORES.meta).delete(matchIndexStatusKey(careerId));
+        tx.objectStore(STORES.meta).delete(archiveFlushKey(careerId));
       },
     );
+    invalidateMatchIndexStatus(careerId);
   },
 
   readLegacy: async () => {

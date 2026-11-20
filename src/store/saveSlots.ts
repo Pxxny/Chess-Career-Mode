@@ -12,6 +12,7 @@ export interface SlotBackend {
 }
 
 const SLOT_TIMEOUT = { timeoutMs: 10000 };
+export const saveSlotKey = (slot: number): string => `${GAME_CONFIG.saveKey}-slot-${slot}`;
 
 export const idbSlotBackend: SlotBackend = {
   get: async (key) => (await transact<string>([STORES.keyval], 'readonly', (tx) => tx.objectStore(STORES.keyval).get(key), SLOT_TIMEOUT)) ?? undefined,
@@ -108,7 +109,7 @@ const CLOSED_GAME = /^\{"state":\{"save":null/;
 export function createSlotManager(backend: SlotBackend, slotCount: number = GAME_CONFIG.saveSlots) {
   const baseKey = GAME_CONFIG.saveKey;
   const metaKey = `${baseKey}-slots`;
-  const slotKey = (slot: number): string => `${baseKey}-slot-${slot}`;
+  const slotKey = saveSlotKey;
   let active: number | null = null;
   let ready: Promise<void> | null = null;
 
@@ -161,6 +162,9 @@ export function createSlotManager(backend: SlotBackend, slotCount: number = GAME
       await init();
       return validSlot(slot) ? backend.get(slotKey(slot)) : undefined;
     },
+
+    writeSlot: (slot: number, value: string): Promise<void> =>
+      validSlot(slot) ? backend.set(slotKey(slot), value) : Promise.reject(new Error(`Invalid save slot ${slot}`)),
 
     /** Writes the value into the slot that is active right now. Does nothing while no character is open. */
     async writeActive(value: string): Promise<void> {

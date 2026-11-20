@@ -7,11 +7,11 @@ import { ApMeter } from '@/components/game/ApMeter';
 import { MoneyChip } from '@/components/game/MoneyChip';
 import { Avatar,Button,Modal } from '@/components/ui';
 import { ROUTES } from '@/data/navigation';
-import { usePlayer, useSave } from '@/hooks/useGame';
+import { usePlayer, useYear } from '@/hooks/useGame';
 import { usePreferences } from '@/store/preferences';
 import { BoardPreferences } from '@/features/match/BoardPreferences';
 export function TopBar({wakeStatus}:{wakeStatus:ScreenWakeStatus}) {
- const year=useSave().world.date.year;
+ const year=useYear();
  const player=usePlayer(),sound=useSoundEnabled(),theme=usePreferences(s=>s.theme),setTheme=usePreferences(s=>s.setTheme),[settings,setSettings]=useState(false);
  return <header className="sticky top-0 z-30 border-b border-navy-600 bg-navy-950/95 pt-[env(safe-area-inset-top)] backdrop-blur-xl"><div className="phone-topbar mx-auto grid max-w-[1370px] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 px-4 py-2 sm:flex sm:h-[72px] sm:justify-between sm:px-7">
  <Link to={ROUTES.profile} aria-label={`Open profile for ${player.name}`} className="phone-profile flex min-w-0 items-center gap-3 rounded-full py-1 pr-3 hover:bg-white/5"><Avatar name={player.name} seed={player.avatarSeed} appearance={player.appearance}/><span translate="no" className="truncate text-sm font-semibold sm:text-base">{player.name}</span></Link>

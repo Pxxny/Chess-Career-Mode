@@ -96,6 +96,7 @@ function sideRow(
 export function indexRowsFromEvent(
   careerId: string,
   event: ArchivedEvent,
+  npcId?: string,
 ): MatchIndexRow[] {
   const names = namesOf(event);
   const rows: MatchIndexRow[] = [];
@@ -113,6 +114,7 @@ export function indexRowsFromEvent(
     },
   ) => {
     if (!whiteId || !blackId || blackId === "bye" || whiteScore === null) return;
+    if (npcId !== undefined && npcId !== whiteId && npcId !== blackId) return;
     const seat = `${round}|${whiteId}|${blackId}`;
     const occurrence = seen.get(seat) ?? 0;
     seen.set(seat, occurrence + 1);
@@ -131,7 +133,7 @@ export function indexRowsFromEvent(
       kind: "result-only" as const,
       replay: false,
     };
-    rows.push(
+    if (npcId === undefined || npcId === whiteId) rows.push(
       sideRow({
         ...shared,
         npcId: whiteId,
@@ -142,6 +144,8 @@ export function indexRowsFromEvent(
         eloBefore: elo?.whiteEloBefore,
         eloAfter: elo?.whiteEloAfter,
       }),
+    );
+    if (npcId === undefined || npcId === blackId) rows.push(
       sideRow({
         ...shared,
         npcId: blackId,
@@ -169,6 +173,18 @@ export function indexRowsFromEvent(
     }
   }
   return rows;
+}
+
+/**
+ * True when any board of the event (Swiss pairings or team boards, including team members and
+ * reserves) seats `npcId`. Allocation-free pre-check so one NPC's view does not build index rows
+ * for every pending event.
+ */
+export function eventInvolves(event: ArchivedEvent, npcId: string): boolean {
+  for (const round of event.pairings)
+    for (const board of round) if (board.white === npcId || board.black === npcId) return true;
+  for (const board of event.teamBoards ?? []) if (board.whiteId === npcId || board.blackId === npcId) return true;
+  return false;
 }
 
 const sideId = (side: { id: string | null; isPlayer: boolean }): string =>

@@ -33,6 +33,7 @@ export default function App() {
     return last ? Math.floor(last.day / 364) : save?.career.startYear;
   });
   const career = useGameStore((s) => s.save?.career ?? null);
+  const npcOrder = useGameStore((s) => s.save?.npcOrder);
   const npcsReady = useNpcStore(
     (s) => s.status === "ready" && s.careerId === (career?.id ?? null),
   );
@@ -50,8 +51,8 @@ export default function App() {
 
   // Load the NPC database that belongs to the saved career.
   useEffect(() => {
-    if (hydrated && career) void loadDatabase(career);
-  }, [hydrated, career, loadDatabase]);
+    if (hydrated && career) void loadDatabase(career, npcOrder);
+  }, [hydrated, career, npcOrder, loadDatabase]);
 
   // Recover a current-home cohort too when an older or partially restored NPC world is opened.
   useEffect(() => {

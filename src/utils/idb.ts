@@ -1,7 +1,9 @@
 import { temporaryCareer } from "./temporaryCareer";
 import { beginMeasurement } from "@/diagnostics/performance";
 const DB_NAME = "chess-career-mode";
-const DB_VERSION = 7;
+// Add an empty store at startup. Removing secondary indexes from the populated v7
+// store blocked startup for up to 57 seconds in Chromium.
+const DB_VERSION = 8;
 
 export const STORES = {
   keyval: "keyval",
@@ -12,7 +14,8 @@ export const STORES = {
   careerNpcs: "careerNpcs",
   tournamentArchive: "tournamentArchive",
   /** Compact match references. Full boards stay in the tournament or match archive. */
-  matchIndex: "matchIndex",
+  matchIndex: "compactMatchIndex",
+  legacyMatchIndex: "matchIndex",
 } as const;
 
 let dbPromise: Promise<IDBDatabase> | null = null;
@@ -50,11 +53,8 @@ export function openDb(): Promise<IDBDatabase> {
         db.createObjectStore(STORES.careerNpcs, { keyPath: "key" });
       if (!db.objectStoreNames.contains(STORES.matchIndex)) {
         const index = db.createObjectStore(STORES.matchIndex, { keyPath: "key" });
-        index.createIndex("byCareer", "careerId");
         index.createIndex("byNpc", ["careerId", "npcId", "day", "key"]);
         index.createIndex("byEvent", ["careerId", "eventId", "round", "key"]);
-        index.createIndex("byMatch", ["careerId", "matchId"]);
-        index.createIndex("byH2H", ["careerId", "npcId", "opponentId", "day", "key"]);
       }
     };
     request.onsuccess = () => {
@@ -92,7 +92,14 @@ export async function transact<T = undefined>(
     const db = await openDb();
     const result = await new Promise<T | undefined>((resolve, reject) => {
       const tx = db.transaction(storeNames, mode);
-      const request = work(tx);
+      let request: IDBRequest<T> | void;
+      try {
+        request = work(tx);
+      } catch (error) {
+        try { tx.abort(); } catch { /* Work already aborted the transaction. */ }
+        reject(error);
+        return;
+      }
       const timer = options && setTimeout(() => {
         reject(new Error("Saved careers are taking too long to read or save. Try again."));
         // Stop this request so a later retry cannot race a pending migration write.

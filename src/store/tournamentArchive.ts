@@ -1,10 +1,8 @@
 import type { ArchivedEvent } from "@/game/competition/archive";
 import { putEventIndex } from "@/store/matchIndex";
 import { STORES, transact } from "@/utils/idb";
-export const archiveKey = (
-  careerId: string,
-  e: Pick<ArchivedEvent, "year" | "id">,
-) => `${careerId}|${e.year}|${e.id}`;
+import { archiveKey, flushEventArchive } from "./archiveFlush";
+export { archiveKey } from "./archiveFlush";
 const range = (careerId: string, year?: number) => {
   const prefix = `${careerId}|${year === undefined ? "" : `${year}|`}`;
   return IDBKeyRange.bound(prefix, prefix + "\uffff");
@@ -22,18 +20,16 @@ export async function readEventArchive(
   );
   return (rows ?? []).map((r) => r.event);
 }
+/**
+ * Writes archived events and their index rows in verified chunks (see `archiveFlush.ts`).
+ * Resolves only after the commit marker is stored; rejects (and leaves the outbox alone) otherwise.
+ */
 export async function writeEventArchive(
   careerId: string,
   records: ArchivedEvent[],
 ) {
   if (typeof indexedDB === "undefined" || !records.length) return;
-  await transact([STORES.tournamentArchive, STORES.matchIndex], "readwrite", (tx) => {
-    const events = tx.objectStore(STORES.tournamentArchive);
-    const index = tx.objectStore(STORES.matchIndex);
-    for (const event of records)
-      events.put({ key: archiveKey(careerId, event), event });
-    putEventIndex(index, careerId, records);
-  });
+  await flushEventArchive(careerId, records);
 }
 /** Legacy summaries may fill gaps, but must never replace an archive with full pairings. */
 export async function writeMissingEventArchive(
@@ -49,7 +45,7 @@ export async function writeMissingEventArchive(
       const index = tx.objectStore(STORES.matchIndex);
       for (const event of records) {
         const key = archiveKey(careerId, event),
-          request = store.get(key);
+          request = store.getKey(key);
         request.onsuccess = () => {
           if (request.result !== undefined) return;
           store.put({ key, event });

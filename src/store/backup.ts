@@ -2,7 +2,7 @@ import { temporaryCareer } from "@/utils/temporaryCareer";
 import { z } from "zod";
 import { highlightsSchema } from "@/game/career/highlights";
 import { readMatchArchive, mergeMatches, matchKey } from "./matchArchive";
-import { putEventIndex, putMatchIndex } from "./matchIndex";
+import { matchIndexStatusKey, putEventIndex, putMatchIndex } from "./matchIndex";
 import { seasonOf } from "@/game/career/seasonSimulation";
 import { readEventArchive, archiveKey } from "./tournamentArchive";
 import {
@@ -58,10 +58,11 @@ export async function createBackup(
     save.matches,
   );
   const archive = new Map(
-    [...archived, ...retainedArchives(save)].map((e) => [e.id, e]),
+    [...retainedArchives(save), ...archived, ...(save.tournamentArchivePending ?? [])]
+      .map((e) => [e.id, e]),
   );
   const payload = structuredClone({
-    save,
+    save: { ...save, npcOrder: npcs.map((npc) => npc.id) },
     npcs,
     ...(matches.length ? { matchArchive: matches } : {}),
     ...(archive.size ? { tournamentArchive: [...archive.values()] } : {}),
@@ -233,6 +234,7 @@ export async function restoreBackup(
     throw new Error("Choose an empty character slot.");
   const validated = await parseBackup(JSON.stringify(backup));
   const save = upgradeSave(structuredClone(validated.payload.save));
+  save.npcOrder ??= validated.payload.npcs.map((npc) => npc.id);
   const oldId = save.career.id;
   const id = crypto.randomUUID();
   save.career = {
@@ -284,6 +286,8 @@ export async function restoreBackup(
           event,
         });
       const index = tx.objectStore(STORES.matchIndex);
+      // The whole restore is one transaction, so the index is complete when it commits.
+      tx.objectStore(STORES.meta).put({ state: "ready", updatedAt: Date.now() }, matchIndexStatusKey(id));
       putEventIndex(index, id, validated.payload.tournamentArchive ?? []);
       putMatchIndex(
         index,
