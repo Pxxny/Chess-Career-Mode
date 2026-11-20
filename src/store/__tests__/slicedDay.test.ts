@@ -64,7 +64,8 @@ async function state(m: Mods) {
   const { upgradeSave } = await import("@/game/training/migrate");
   const save = upgradeSave(m.G.useGameStore.getState().save!);
   return {
-    save: norm({ ...save, tournamentArchivePending: undefined, matchArchivePending: undefined }),
+    // The ordered NPC array below covers roster order, including on an in-memory save.
+    save: norm({ ...save, npcOrder: undefined, tournamentArchivePending: undefined, matchArchivePending: undefined }),
     npcs: norm(m.N.useNpcStore.getState().npcs), // includes list order
   };
 }
