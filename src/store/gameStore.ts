@@ -760,6 +760,8 @@ export const useGameStore = create<GameStore>()(
         const report: CalendarAdvanceReport = {
           days: 0,
           trained: 0,
+          sessions: [],
+          gains: [],
           stoppedFor: stop.name,
           cancelled: false,
         };
@@ -774,14 +776,28 @@ export const useGameStore = create<GameStore>()(
               break;
             }
             const plan = autoTrainAndRest(current);
-            report.trained += plan.sessions;
             calendarOwned = true;
             calendarDaySave = plan.save;
             try {
-              get().endDay();
+              if (!get().endDay()) throw new Error("Could not advance the calendar.");
             } finally {
               calendarOwned = false;
               calendarDaySave = null;
+            }
+            report.trained += plan.sessions.length;
+            for (const session of plan.sessions) {
+              const previous = report.sessions.find((item) => item.id === session.sessionId);
+              if (previous) previous.count++;
+              else report.sessions.push({ id: session.sessionId, name: session.name, count: 1 });
+              for (const gain of session.gains) {
+                const total = report.gains.find((item) => item.stat === gain.stat);
+                if (total) {
+                  total.xp += gain.xp;
+                  total.levels += gain.levels;
+                } else {
+                  report.gains.push({ stat: gain.stat, xp: gain.xp, levels: gain.levels });
+                }
+              }
             }
             report.days++;
             set({

@@ -1,3 +1,4 @@
+import type { StatKey } from "@/types";
 import { getLanguage } from "@/i18n/language";
 import type { GameSave } from "@/types";
 import { getCountry } from "@/data/world/countries";
@@ -365,6 +366,8 @@ export function plannedTrainingDay(
 export interface CalendarAdvanceReport {
   days: number;
   trained: number;
+  sessions: Array<{ id: string; name: string; count: number }>;
+  gains: Array<{ stat: StatKey; xp: number; levels: number }>;
   stoppedFor: string;
   cancelled: boolean;
 }

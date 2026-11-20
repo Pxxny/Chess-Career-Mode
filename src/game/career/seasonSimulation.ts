@@ -1,7 +1,7 @@
 import { awaitingArmageddon } from "@/game/competition/bulgariaChess";
 import { competitionHealthIssue } from "@/game/career/health";
 import { captureHighlights, highlightsOf } from "./highlights";
-import type { GameSave, Npc } from "@/types";
+import type { GameSave, Npc, SessionRecord } from "@/types";
 import type { MatchFinish } from "@/game/match/session";
 import {
   gameDay,
@@ -220,9 +220,9 @@ export function autoTrainAndRest(
   save: GameSave,
   focus: AnnualFocus = "balanced",
   learningFocus?: readonly LearningFocus[],
-): { save: GameSave; sessions: number } {
+): { save: GameSave; sessions: SessionRecord[] } {
   let next = save;
-  const before = yearReviewOf(next).current.sessions;
+  const sessions: SessionRecord[] = [];
   const limit = focus === "learning" ? 3 : 2;
   // Rest first when exhausted; normal daily nap/break limits still apply.
   if (next.training.fatigue >= 60) {
@@ -255,8 +255,8 @@ export function autoTrainAndRest(
     const r = performSession(next, chosen.d.id);
     if (!r.ok) break;
     next = r.save;
+    sessions.push(r.outcome.record);
   }
-  const sessions = yearReviewOf(next).current.sessions - before;
   next = plannedTrainingDay(next, []).save;
   return { save: next, sessions };
 }
@@ -278,7 +278,7 @@ export function seasonTraining(save: GameSave): GameSave {
   }
   const training = autoTrainAndRest(next, s.focus, s.learningFocus);
   next = training.save;
-  const { sessions } = training;
+  const sessions = training.sessions.length;
   return updateSeason(next, {
     phase: "end-day",
     sessions: s.sessions + sessions,

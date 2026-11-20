@@ -1,3 +1,5 @@
+import { STAT_LABELS } from "../src/data/stats";
+import type { SessionRecord, StatKey } from "../src/types";
 import { openSectionTab } from "./navigation";
 import { test, expect, type Page } from "@playwright/test";
 import { createCareer } from "./helpers";
@@ -558,6 +560,23 @@ test("fast-forward trains and rests automatically, stopping at the earliest book
   expect(save.world.date).toMatchObject({ year: 2026, week: 2 });
   expect(save.world.day).toBe(1);
   expect(save.history.sessions.length).toBeGreaterThan(0);
+  const report = page.getByTestId("calendar-training-report");
+  const sessions = save.history.sessions as SessionRecord[];
+  const counts = new Map<string, number>();
+  const gains = new Map<StatKey, { xp: number; levels: number }>();
+  for (const session of sessions) {
+    counts.set(session.name, (counts.get(session.name) ?? 0) + 1);
+    for (const gain of session.gains) {
+      const total = gains.get(gain.stat) ?? { xp: 0, levels: 0 };
+      gains.set(gain.stat, { xp: total.xp + gain.xp, levels: total.levels + gain.levels });
+    }
+  }
+  expect(gains.size).toBeGreaterThan(0);
+  for (const [name, count] of counts)
+    await expect(report.getByText(`${name} · ×${count}`, { exact: true })).toBeVisible();
+  for (const [stat, { xp, levels }] of gains)
+    await expect(report.getByText(`${STAT_LABELS[stat]} · +${levels} · +${Number(xp.toFixed(1))} XP`, { exact: true })).toBeVisible();
+
   expect(save.training.fatigue).toBeLessThan(95);
   expect(save.training.hoursUsedToday).toBe(0);
 });

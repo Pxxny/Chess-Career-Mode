@@ -2496,6 +2496,8 @@ export const TH_MESSAGES: Record<string, string> = {
   "{{0}} game days remaining": "เหลือ {{0}} วันในเกม",
   "Plan the days before {{0}}": "วางแผนช่วงก่อน {{0}}",
   "The game chooses training that fits your available AP and hours, and rests automatically when needed. It stops at your earliest registered matchday.": "เกมเลือกการฝึกตาม AP และเวลาที่มี พร้อมพักให้อัตโนมัติเมื่อจำเป็น และจะหยุดเมื่อถึงวันแข่งของรายการที่ลงทะเบียนไว้เร็วที่สุด",
+  "Training completed": "การฝึกที่ทำไป",
+  "Stat gains": "ค่าสถานะที่เพิ่ม",
   "Simulate until tournament": "จำลองเวลาจนถึงทัวร์นาเมนต์",
   "Choose sessions to attempt once each day, in the order below. Normal costs, requirements and fatigue apply. Blocked sessions are skipped; you also rest on your own when too exhausted and with any hours left over. Leave every box empty to rest. Stops for your earliest registered event so you do not miss it.":
     "เลือกกิจกรรมที่จะทำวันละครั้งตามลำดับด้านล่าง ใช้ค่าใช้จ่าย เกณฑ์ และความเหนื่อยตามปกติ กิจกรรมที่ทำไม่ได้จะถูกข้าม ระบบจะพักเองเมื่อเหนื่อยเกินไปและใช้ชั่วโมงที่เหลือพักผ่อน หากไม่เลือกกิจกรรมจะพักทั้งวัน ระบบจะหยุดที่รายการที่สมัครไว้และมาถึงก่อนสุด",

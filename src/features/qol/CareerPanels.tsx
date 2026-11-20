@@ -1,3 +1,4 @@
+import { STAT_LABELS } from "@/data/stats";
 import { confirmUI } from "@/i18n/translate";
 import { useState } from "react";
 import { Button, Card, CardTitle, Modal } from "@/components/ui";
@@ -205,11 +206,34 @@ export function AdvanceToEvent({
         </Modal>
       )}
       {report && (
-        <p role="status" className="mt-2 text-xs text-ink-muted">
-          {report.cancelled ? "Stopped" : "Ready"} after {report.days} days ·{" "}
-          {report.trained} sessions completed ·{" "}
-          {report.stoppedFor}
-        </p>
+        <div className="mt-2 space-y-2 text-sm text-ink-muted" data-testid="calendar-training-report">
+          <p role="status">
+            {report.cancelled ? "Stopped" : "Ready"} after {report.days} days ·{" "}
+            {report.trained} sessions completed · {report.stoppedFor}
+          </p>
+          {report.sessions.length > 0 && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <section>
+                <h3 className="font-semibold text-ink">Training completed</h3>
+                <ul className="mt-1 space-y-1">
+                  {report.sessions.map(({ id, name, count }) => (
+                    <li key={id}>{name} · ×{count}</li>
+                  ))}
+                </ul>
+              </section>
+              <section>
+                <h3 className="font-semibold text-ink">Stat gains</h3>
+                <ul className="mt-1 space-y-1">
+                  {report.gains.map(({ stat, xp, levels }) => (
+                    <li key={stat}>
+                      {STAT_LABELS[stat]} · +{levels} · +{Number(xp.toFixed(1))} XP
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </div>
+          )}
+        </div>
       )}
       {error && (
         <p role="alert" className="mt-2 text-xs text-red-300">
