@@ -7,7 +7,11 @@ import { NpcTable } from "@/features/world/NpcTable";
 import { NpcProfileModal } from "@/features/world/NpcProfileModal";
 import type { Npc } from "@/types";
 import { CaptainPanel } from "@/features/career/systems/CaptainPanel";
-import { ChessTeamCanvas } from "./ChessTeamCanvas";
+import { NationalTeamTables } from "./NationalTeamTables";
+import { annualEvents } from "@/game/competition/worldCalendar";
+import { bookedStart, dayLabel } from "@/game/competition/agenda";
+import { registrationStates } from "@/game/match/registration";
+import { registrationIssue } from "@/game/competition/eligibility";
 import { confirmUI } from "@/i18n/translate";
 import { useMemo, useState } from "react";
 import { Badge, Button, Card, CardTitle } from "@/components/ui";
@@ -66,7 +70,8 @@ export function WorldHub({
     npcs = useNpcs(),
     state = stateOf(save);
   const join = useGameStore((s) => s.joinFederation),
-    play = useGameStore((s) => s.playTeamCup),
+    start = useGameStore((s) => s.startTournament),
+    register = useGameStore((s) => s.registerForEvent),
     hire = useGameStore((s) => s.hireCoach),
     cancel = useGameStore((s) => s.cancelCoach);
   const [eligibleOnly,setEligibleOnly]=useState(true);
@@ -237,13 +242,12 @@ export function WorldHub({
       (t) => t.country === save.player.country,
     );
     const selected = !!eventHome?.players.some((p) => p.id === "player");
-    const ready = save.registrations.some(
-      (r) =>
-        r.details?.format === "team" &&
-        teamInfoOf(r.details).key === spec.key &&
-        r.year === year &&
-        r.week === save.world.date.week,
+    const event = annualEvents(save, year).find((entry) =>
+      entry.details?.format === "team" && teamInfoOf(entry.details).key === spec.key,
     );
+    const booking = registrationStates(save).find((entry) => entry.eventId === event?.id);
+    const active = save.tournament?.eventId === event?.id && save.tournament?.status === "playing";
+    const entryIssue = event && !booking ? registrationIssue(save, event, npcs) : null;
     const issues = teamEntryIssues(save, info);
     const rules = [
       spec.gender ? "Women only" : null,
@@ -259,15 +263,8 @@ export function WorldHub({
     return (
       <div className="space-y-4">
         <Card>
-          <CardTitle>Your national chess team · {year}</CardTitle>
-          <p className="mb-3 text-sm text-gold-300">{country?.name} · {selected ? "Selected for starting boards" : "Selection follows eligible federation rankings"}</p>
-          {eventHome && <><ChessTeamCanvas players={eventHome.players}/><CaptainPanel eventKey={spec.key} players={eventHome.players}/></>}
-          <p className="text-sm text-ink-muted">
-            Twenty national team competitions run each game year. Teams select
-            their highest-rated eligible players for the boards; you represent
-            your country when selected. Individual Elo is unchanged. Vacant
-            boards lose by forfeit, so small federations can still take part.
-          </p>
+          <CardTitle>National team matchday · {year}</CardTitle>
+          <p className="text-sm text-ink-muted">{country?.flag} {country?.federation.name}</p>
           <label className="my-3 flex items-center gap-2 text-sm"><input type="checkbox" checked={eligibleOnly} onChange={e=>setEligibleOnly(e.target.checked)}/> Events for my federation and age group</label><label className="mt-3 block text-sm text-ink-muted">
             National team event
             <select
@@ -286,9 +283,9 @@ export function WorldHub({
               ))}
             </select>
           </label>
-          <p className="mt-3 text-ink">
-            {country?.flag} {country?.federation.name}
-          </p>
+          {event && <p className="mt-3 font-semibold text-gold-300">
+            Matchday · {dayLabel(bookedStart(booking ?? event))}
+          </p>}
           <ul className="my-3 space-y-1 text-sm text-ink-muted">
             <li>
               {`Teams this year: ${info.teams} (usual field ${spec.teams[0]}–${spec.teams[1]})`}
@@ -309,43 +306,51 @@ export function WorldHub({
               {`Not eligible as a player: ${issues.join("; ")}.`}
             </p>
           )}
-          {eventHome ? (
-            <ul className="my-3 space-y-1">
-              {eventHome.players.map((p, i) => (
-                <li key={p.id} className="text-sm text-ink-muted">
-                  Board {i + 1}: <span translate="no">{p.name}</span> · {p.elo}
-                  {p.id === "player" ? " · YOU" : ""}
-                </li>
-              ))}
-              {(eventHome.reserves ?? []).map((p) => (
-                <li key={p.id} className="text-sm text-ink-muted">
-                  Reserve: <span translate="no">{p.name}</span> · {p.elo}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-ink-muted">
-              Your federation has no eligible players for this event.
+          <div className="my-4 space-y-3">
+            <h3 className="font-semibold text-ink">Starting tables</h3>
+            <p className="text-sm text-ink-muted">
+              {selected ? "Selected for starting boards" : "Selection follows eligible federation rankings"}
             </p>
+            <NationalTeamTables tables={Array.from({ length: info.boards }, (_, i) => ({
+              board: i + 1, assigned: eventHome?.players[i],
+            }))} />
+            {!!eventHome?.reserves?.length && (
+              <div className="rounded-lg bg-navy-900 p-3">
+                <h4 className="text-sm font-semibold">Reserves</h4>
+                <ul className="mt-1 space-y-1 text-sm text-ink-muted">
+                  {eventHome.reserves.map((p) => (
+                    <li key={p.id}><span translate="no">{p.name}</span> · Elo {p.elo}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {eventHome && <CaptainPanel eventKey={spec.key} players={eventHome.players} />}
+          </div>
+          {active ? (
+            <a href="#current-tournament" className="text-sm font-semibold text-gold-300 underline">View match tables</a>
+          ) : cup ? (
+            <p className="text-sm font-semibold text-gold-300">Cup finished this year</p>
+          ) : booking ? (
+            <Button
+              disabled={booking.status !== "ready" || save.tournament?.status === "playing"}
+              onClick={() => {
+                const result = start(booking.eventId);
+                act(result, "National team tournament started.");
+                if (result.ok) requestAnimationFrame(() => document.getElementById("current-tournament")?.scrollIntoView());
+              }}
+            >
+              {booking.status === "ready" ? "Start national team tournament" : booking.status === "missed" ? "Matchday has passed" : "Waiting for matchday"}
+            </Button>
+          ) : event && selected ? (
+            <>
+              <Button disabled={!!entryIssue} onClick={() => act(register(event), "National team registration confirmed.")}>
+                Register for matchday
+              </Button>
+              {entryIssue && <p className="mt-2 text-sm text-ink-muted">{entryIssue}</p>}
+            </>
+          ) : (
+            <p className="text-sm text-ink-muted">Follow team results through the annual calendar once the event begins.</p>
           )}
-          <p className="mb-1 text-xs text-ink-muted">
-            {`Selected players spend 2 AP and earn up to $${spec.prize} appearance/prize money, scaled by finishing position.`}
-          </p>
-          <p className="mb-3 text-xs text-ink-muted">
-            Selected players must register in Tournament before the deadline
-            and play in the event week. Unselected members can follow the
-            simulated exhibition free. Membership is required.
-          </p>
-          <Button
-            disabled={!!cup || (selected && !ready)}
-            onClick={() => {const result=play(spec.key);act(result,selected?'National team tournament started.':'National team cup completed.');if(result.ok&&selected)document.getElementById('current-tournament')?.scrollIntoView({behavior:'smooth',block:'start'});}}
-          >
-            {cup
-              ? "Cup finished this year"
-              : selected && !ready
-                ? "Register in Tournament first"
-                : selected ? "Start national team tournament" : "Simulate national team cup"}
-          </Button>
           {message && (
             <p role="status" className="mt-3 text-gold-400">
               {message}

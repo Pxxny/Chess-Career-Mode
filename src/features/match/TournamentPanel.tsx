@@ -1,3 +1,4 @@
+import { NationalTeamTables } from "@/features/expansion/NationalTeamTables";
 import { awaitingArmageddon, tournamentTimeControl } from "@/game/competition/bulgariaChess";
 import { TournamentSeriesHistory } from "@/features/tournaments/TournamentSeriesHistory";
 import { NationalTeamCamp } from "./NationalTeamCamp";
@@ -374,7 +375,7 @@ export function TournamentPanel({
   const next = t ? playerOpponentId(t) : null,
     npc = next ? npcs.find((n) => n.id === next.id) : undefined;
   const play = (mode: "play" | "simulate") => {
-    if (!t || !next || !npc || running || !tournamentReady(save) || (!armageddon && !!competitionHealthIssue(save))) return;
+    if (!t || (t.team && mode === "simulate") || !next || !npc || running || !tournamentReady(save) || (!armageddon && !!competitionHealthIssue(save))) return;
     onStart(
       buildMatchSetup({
         save,
@@ -478,6 +479,21 @@ export function TournamentPanel({
           {t.status === "playing" && (
             <TournamentDayClock tournament={t} interactive />
           )}
+          {t.team && (
+            <div className="mb-4 space-y-2">
+              <h3 className="font-semibold">Round {t.round} · Match tables</h3>
+              <NationalTeamTables tables={(t.pairings[t.round - 1] ?? []).flatMap((pair) => {
+                const table = pair.teamMatch;
+                if (!table || (table.a !== t.team!.country && table.b !== t.team!.country)) return [];
+                return [{
+                  board: table.board,
+                  white: t.players.find((p) => p.id === pair.white),
+                  black: t.players.find((p) => p.id === pair.black),
+                  score: pair.result,
+                }];
+              })} />
+            </div>
+          )}
           <details className="mb-4"><summary className="cursor-pointer text-sm text-gold-300">Tournament information</summary><dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
             {[
               ["Location", t.details?.location ?? save.player.city.name],
@@ -547,13 +563,13 @@ export function TournamentPanel({
                 >
                   {armageddon ? "Play Armageddon" : "Play the game"}
                 </Button>
-                <Button
+                {!t.team && <Button
                   disabled={!npc || running || !tournamentReady(save) || (!armageddon && !!competitionHealthIssue(save))}
                   variant="secondary"
                   onClick={() => play("simulate")}
                 >
                   Simulate (take control any time)
-                </Button>
+                </Button>}
               </div>
             </div>
           )}

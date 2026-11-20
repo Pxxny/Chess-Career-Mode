@@ -1,5 +1,5 @@
 /* Offline support: the app shell and every same-origin file it loads are cached as you play. */
-const VERSION = "v43-sim-season-sliced";
+const VERSION = "v44-national-team-matchday";
 const CACHE = `chess-career-${VERSION}`;
 const SHELL = [
   "/data/game-atlas.json", "/data/venue-cities.json",

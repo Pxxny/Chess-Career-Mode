@@ -89,7 +89,6 @@ import { chooseSelectReward as applySelectReward } from "@/game/competition/sele
 import {
   hireCoach,
   joinFederation,
-  playTeamCup,
   stateOf,
   coachedGame,
   weeklyCircuitSteps,
@@ -224,7 +223,6 @@ interface GameStore {
   ) => { ok: true } | { ok: false; error: string };
   cancelCoach: () => void;
   joinFederation: () => { ok: true } | { ok: false; error: string };
-  playTeamCup: (key?: string) => { ok: true } | { ok: false; error: string };
   populationNews: (
     careerId: string,
     year: number,
@@ -888,20 +886,6 @@ export const useGameStore = create<GameStore>()(
           npc = useNpcStore.getState().npcs.find((n) => n.id === id);
         if (!save || !npc) return { ok: false, error: "Opponent unavailable." };
         const r = scoutOpponent(save, npc, eventId);
-        if (r.ok) set({ save: r.save });
-        return r.ok ? { ok: true } : r;
-      },
-      playTeamCup: (key) => {
-        const save = get().save;
-        if (!save) return { ok: false, error: "No career." };
-        if (get().calendarProgress) return {ok:false,error:'Calendar simulation is running.'};
-        const entry=save.registrations.find(r=>r.details?.format==='team'&&r.year===save.world.date.year&&r.week===save.world.date.week&&(!key||r.details.teamEvent?.key===key));
-        if(entry)return get().startTournament(entry.eventId);
-        const r = playTeamCup(
-          save,
-          useNpcStore.getState().npcs,
-          key ? { key } : {},
-        );
         if (r.ok) set({ save: r.save });
         return r.ok ? { ok: true } : r;
       },

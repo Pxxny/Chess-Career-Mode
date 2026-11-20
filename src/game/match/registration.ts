@@ -96,7 +96,7 @@ export function registrationStates(save: GameSave): Registration[] {
   const now = weekIndex(save.world.date);
   return save.registrations.map((r) => {
     const at = weekIndex(r);
-    if (r.details?.agenda?.exactStart) {
+    if (r.details?.agenda?.exactStart || r.details?.format === "team") {
       const diff = bookedStart(r) - gameDay(save);
       return {
         ...r,
@@ -244,9 +244,11 @@ export function startRegisteredTournament(
   const reg = save.registrations.find((r) => r.eventId === eventId);
   if (!reg)
     return { ok: false, error: "You are not registered for this event." };
-  const diff = reg.details?.agenda?.exactStart
+  const diff = reg.details?.agenda?.exactStart || reg.details?.format === "team"
     ? bookedStart(reg) - gameDay(save)
     : weekIndex(reg) - weekIndex(save.world.date);
+  if (diff > 0 && reg.details?.format === "team")
+    return { ok: false, error: "Wait until the scheduled national team matchday." };
   if (diff > 0)
     return {
       ok: false,

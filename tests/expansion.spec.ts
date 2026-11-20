@@ -1,3 +1,4 @@
+import { createCareer } from "./helpers";
 import { openSectionTab } from "./navigation";
 import { expect, test, type Page } from "@playwright/test";
 
@@ -74,6 +75,7 @@ test("expanded look, federation, coaching, team entry guard, tournament entrants
   expect(original.save.player.appearance.hairStyle).toMatch(/^female-/);
   await page.getByRole("link", { name: "Tournament", exact: true }).click();
   await page.getByText("Federation & national teams", { exact: true }).click();
+  await page.getByRole("button", { name: "Membership & federations" }).click();
   await page
     .getByRole("button", { name: "Join federation · $35", exact: true })
     .click();
@@ -92,13 +94,9 @@ test("expanded look, federation, coaching, team entry guard, tournament entrants
   expect((await snapshot(page)).save.player.money).toBe(161);
   await openSectionTab(page, "Tournament");
   await page.getByText("Federation & national teams", { exact: true }).click();
-  // The enlarged local pool keeps this beginner outside the national top four; spectator access stays available.
-  await expect(
-    page.getByRole("button", {
-      name: "Simulate national team cup",
-      exact: true,
-    }),
-  ).toBeEnabled();
+  await page.getByRole("button", { name: "Team selection & boards" }).click();
+  await expect(page.getByTestId("national-team-tables")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Simulate national team cup", exact: true })).toHaveCount(0);
   expect((await snapshot(page)).save.expansion.cups).toHaveLength(0);
   await openSectionTab(page, "Tournament");
   await page
@@ -190,4 +188,18 @@ test("expanded look, federation, coaching, team entry guard, tournament entrants
     fullPage: true,
   });
   expect(errors).toEqual([]);
+});
+
+test("national team matchday shows separate tables on mobile without a cup simulator", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await createCareer(page);
+  await page.goto("/complete?section=teams");
+  const tables = page.getByTestId("national-team-tables");
+  await expect(tables).toBeVisible();
+  await expect(tables.getByText("Table 1", { exact: true })).toBeVisible();
+  await expect(tables.getByText("Table 4", { exact: true })).toBeVisible();
+  await expect(page.getByText(/^Matchday · /)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Simulate national team cup" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Start national team tournament" })).toHaveCount(0);
+  expect(await tables.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
 });

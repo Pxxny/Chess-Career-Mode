@@ -1,7 +1,5 @@
 import { awaitingArmageddon } from "@/game/competition/bulgariaChess";
 import { competitionHealthIssue } from "@/game/career/health";
-import { buildEventTeams } from "@/game/competition/teamEvents";
-import { teamInfoOf } from "@/data/chess/nationalTeamEvents";
 import { captureHighlights, highlightsOf } from "./highlights";
 import type { GameSave, Npc } from "@/types";
 import type { MatchFinish } from "@/game/match/session";
@@ -293,14 +291,13 @@ export function chooseSeasonEvent(save: GameSave, npcs: Npc[]) {
   const candidates = careerSchedule(save, 8).filter(
     (e) =>
       !e.details?.showcase &&
+      e.details?.format !== "team" &&
       bookedStart(e) >= gameDay(save) &&
       reservedUntil(e) < s.targetDay &&
       bookedStart(e) >= s.lastEventDay + spacing &&
       e.entryFee + (e.details?.travelCost ?? 0) <=
         Math.max(0, save.player.money - 50) &&
-      registrationIssue(save, e, npcs) === null &&
-      (e.details?.format !== "team" || buildEventTeams(save, npcs, teamInfoOf(e.details))
-        .find((team) => team.country === save.player.country)?.players.some((p) => p.id === "player")),
+      registrationIssue(save, e, npcs) === null,
   );
   return (
     candidates.sort(
@@ -351,6 +348,16 @@ export async function runSeason(port: SeasonPort): Promise<void> {
       port.commit(
         updateSeason(save, { status: "completed", action: "Season complete" }),
       );
+      return;
+    }
+    const teamMatch = save.tournament;
+    const teamRoundToday = teamMatch?.team && teamMatch.status === "playing" && playerOpponentId(teamMatch) &&
+      tournamentSlot(teamMatch).absoluteDay <= gameDay(save);
+    const teamEventToday = registrationStates(save).some((entry) =>
+      entry.status === "ready" && entry.details?.format === "team",
+    );
+    if (teamRoundToday || teamEventToday) {
+      port.commit(updateSeason(save, { status: "paused", action: "Play your national team match to continue." }));
       return;
     }
     // A manually started booking after pausing takes priority over ending the day.

@@ -3,7 +3,7 @@ import { SPONSORSHIPS, sponsorMarketShare } from "@/data/reputation";
 import { DEFAULT_APPEARANCE } from "@/data/appearance";
 import { createCareerRecord } from "@/game/career/createCareer";
 import { createNewSave } from "@/game/createNewSave";
-import { registerForEvent, startRegisteredTournament } from "@/game/match/registration";
+import { registerForEvent, registrationStates, startRegisteredTournament } from "@/game/match/registration";
 import { reportPlayerResult, standings } from "@/game/match/tournament";
 import { travelQuote } from "./travel";
 import { annualSeriesEvents, seriesStandings } from "./seasonSeries";
@@ -40,6 +40,35 @@ function result(event: ScheduledEvent, rank: number) {
 }
 
 describe("competition expansion", () => {
+  it("starts a national team event only on its scheduled day", () => {
+    const save = career();
+    const fixture = divisionFixture(save, roster, false)!;
+    const stamp = { year: fixture.year, week: fixture.week };
+    const registration = {
+      ...fixture, eventId: "team-matchday",
+      details: {
+        ...fixture.details!, format: "team" as const,
+        agenda: { ...fixture.details!.agenda!, startDay: 4, exactStart: false },
+      },
+    };
+    const onDay = (day: number): GameSave => ({
+      ...save, registrations: [registration], world: { ...save.world, date: stamp, day },
+    });
+    expect(registrationStates(onDay(3))[0].status).toBe("upcoming");
+    expect(startRegisteredTournament(onDay(3), registration.eventId, roster, 8)).toMatchObject({
+      ok: false, error: "Wait until the scheduled national team matchday.",
+    });
+    expect(registrationStates(onDay(4))[0].status).toBe("ready");
+    // On matchday the date gate passes and the usual team eligibility checks still apply.
+    expect(startRegisteredTournament(onDay(4), registration.eventId, roster, 8)).toMatchObject({
+      ok: false, error: "Join your federation for this year first.",
+    });
+    expect(registrationStates(onDay(5))[0].status).toBe("missed");
+    expect(startRegisteredTournament(onDay(5), registration.eventId, roster, 8)).toMatchObject({
+      ok: false, error: "The event has already taken place.",
+    });
+  });
+
   it("changes monthly market share and keeps LogG in the lowest position", () => {
     const month = 2026 * 12;
     const shares = SPONSORSHIPS.map(sponsor => sponsorMarketShare(sponsor, month));

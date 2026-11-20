@@ -86,6 +86,8 @@ export function MatchViewer({ setup, onExit }: Props) {
   const { session, snap } = useMatchSession(setup);
   const currentSave = useSave();
   const esportsEvent = currentSave.esports?.active;
+  const playingForNationalTeam = !!currentSave.tournament?.team &&
+    currentSave.tournament.eventId === setup.tournament?.id;
   const [message, setMessage] = useState<string | null>(null);
   const [offering, setOffering] = useState(false);
   const live = snap.viewPly === null;
@@ -374,7 +376,7 @@ export function MatchViewer({ setup, onExit }: Props) {
             <div className="flex flex-wrap gap-2" data-testid="match-controls">
               {!over && snap.status !== "ready" && (
                 <>
-                  {controlButton(player)}
+                  {!playingForNationalTeam && controlButton(player)}
                   {setup.mode === "simulate" &&
                     humanSides.length === 0 &&
                     (snap.status === "paused" ? (

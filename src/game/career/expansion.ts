@@ -1,26 +1,11 @@
-import { competitionHealthIssue } from "@/game/career/health";
-import { queueArchives, retainedArchives } from "@/game/competition/archive";
+import { queueArchives } from "@/game/competition/archive";
 import { personalWorldNews } from "@/game/social/memories";
 import { simulateWorldCircuitSteps } from "@/game/npc/activity";
 import { drainSteps, type Steps } from "@/game/steps";
 import { recordPredictions } from "@/game/prediction/statistics";
 import type { PredictionSnapshot } from "@/game/prediction/types";
 import { GAME_CONFIG } from "@/data/config";
-import { COUNTRIES } from "@/data/world/countries";
-import { createRng, mixSeed } from "@/game/rng";
-import {
-  LEGACY_TEAM_INFO,
-  resolveTeamEvent,
-  teamInfoOf,
-  teamSpec,
-  type TeamEventInfo,
-} from "@/data/chess/nationalTeamEvents";
-import {
-  buildEventTeams,
-  simulateTeamEvent,
-  teamPrize,
-} from "@/game/competition/teamEvents";
-import { hashString } from "@/utils/format";
+import { LEGACY_TEAM_INFO } from "@/data/chess/nationalTeamEvents";
 import type { GameSave, Npc, NewsItem, SkillKey } from "@/types";
 
 export type CoachTerm = "game" | "week" | "month";
@@ -75,7 +60,6 @@ export interface TeamCup {
   format?: "round-robin" | "swiss";
   teamCount?: number;
 }
-const MAX_CUPS = 24;
 export interface ExpansionState {
   membershipYear: number | null;
   coach: CoachContract | null;
@@ -322,173 +306,6 @@ export function federationTeams(save: GameSave, npcs: Npc[]): NationalTeam[] {
 }
 /** Key of a stored cup; cups from before the event catalog were the annual Olympiad. */
 export const cupKey = (cup: TeamCup): string => cup.key ?? LEGACY_TEAM_INFO.key;
-export function playTeamCup(
-  save: GameSave,
-  npcs: Npc[],
-  opts: { eventId?: string; key?: string } = {},
-): { ok: true; save: GameSave } | { ok: false; error: string } {
-  const healthIssue = competitionHealthIssue(save);
-  if (healthIssue) return { ok: false, error: healthIssue };
-  const state = stateOf(save),
-    year = save.world.date.year;
-  if (state.membershipYear !== year)
-    return { ok: false, error: "Join your federation for this year first." };
-  const teamRegistration = opts.eventId
-    ? save.registrations.find(
-        (r) => r.eventId === opts.eventId && r.details?.format === "team",
-      )
-    : save.registrations.find(
-        (r) =>
-          r.details?.format === "team" &&
-          r.year === year &&
-          r.week === save.world.date.week &&
-          (!opts.key || teamInfoOf(r.details).key === opts.key),
-      );
-  const spec0 = opts.key ? teamSpec(opts.key) : undefined;
-  if (opts.key && !spec0 && !teamRegistration)
-    return { ok: false, error: "Unknown national team event." };
-  const info: TeamEventInfo = teamRegistration
-    ? teamInfoOf(teamRegistration.details)
-    : spec0
-      ? resolveTeamEvent(spec0, year)
-      : LEGACY_TEAM_INFO;
-  const spec = teamSpec(info.key) ?? teamSpec(LEGACY_TEAM_INFO.key)!;
-  if (
-    state.cups.some(
-      (c) =>
-        c.year === year &&
-        cupKey(c) === info.key &&
-        (c.represented || !teamRegistration),
-    )
-  )
-    return {
-      ok: false,
-      error: "This year’s national team cup is already finished.",
-    };
-  if (save.tournament?.status === "playing")
-    return { ok: false, error: "Finish your individual tournament first." };
-  const teams = buildEventTeams(save, npcs, info).map((t) => ({
-      ...t,
-      players: t.players.map((p) => ({ ...p })),
-      reserves: (t.reserves ?? []).map((p) => ({ ...p })),
-    })),
-    home = teams.find((t) => t.country === save.player.country);
-  if (!home && teamRegistration)
-    return { ok: false, error: "Your federation has no eligible players." };
-  if (teams.length < 2)
-    return { ok: false, error: "At least two national teams are needed." };
-  const represented = !!home?.players.some((p) => p.id === "player");
-  if (represented && !teamRegistration)
-    return {
-      ok: false,
-      error:
-        "Register for the national teams event in Tournament and start during its event week.",
-    };
-  if (represented)
-    return {ok:false,error:'Start your registered national team event in Tournament to play each round.'};
-  if (represented && save.player.ap.current < 2)
-    return { ok: false, error: "Representing your country costs 2 AP." };
-  const rng = createRng(
-    mixSeed(hashString(save.career.id), year ^ hashString(info.key)),
-  );
-  const result = simulateTeamEvent(save, npcs, info, teams, rng);
-  const ranked = result.teams;
-  const rank = home ? ranked.findIndex((t) => t.country === home.country) : -1;
-  // National games are stored in the cup itself, with separate rating from individual rated history.
-  const prize = represented ? teamPrize(spec, rank, ranked.length) : 0;
-  const cup: TeamCup = {
-    playedOnDay:
-      (save.world.date.year * 52 + save.world.date.week - 1) * 7 +
-      (save.world.day ?? 1) -
-      1,
-    year,
-    teams: ranked,
-    boards: result.boards,
-    represented,
-    prize,
-    key: info.key,
-    name: spec.name,
-    boardsPerTeam: info.boards,
-    reserves: info.reserves,
-    rounds: result.rounds,
-    format: result.format,
-    teamCount: ranked.length,
-  };
-  let next: GameSave = {
-    ...save,
-    player: {
-      ...save.player,
-      money: save.player.money + prize,
-      ap: {
-        ...save.player.ap,
-        current: save.player.ap.current - (represented ? 2 : 0),
-      },
-    },
-    registrations: teamRegistration
-      ? save.registrations.filter((r) => r.eventId !== teamRegistration.eventId)
-      : save.registrations,
-    expansion: {
-      ...state,
-      cups: [
-        ...state.cups.filter(
-          (c) => !(c.year === year && cupKey(c) === info.key),
-        ),
-        cup,
-      ].slice(-MAX_CUPS),
-    },
-  };
-  next = recordPredictions(next, result.samples);
-  if (prize)
-    next = {
-      ...next,
-      history: {
-        ...next.history,
-        ledger: [
-          ...next.history.ledger,
-          {
-            ...save.world.date,
-            id: `team-prize-${year}-${info.key}`,
-            kind: "prize" as const,
-            label: "National team cup appearance/prize",
-            amount: prize,
-          },
-        ].slice(-GAME_CONFIG.history.maxLedger),
-      },
-    };
-  const n = ranked.length,
-    fixtures =
-      result.format === "round-robin"
-        ? result.rounds
-        : result.rounds * Math.floor(n / 2);
-  next = news(
-    next,
-    `national-cup-${year}-${info.key}`,
-    `${COUNTRIES.find((c) => c.code === ranked[0].country)?.name ?? ranked[0].country} wins the ${spec.name}`,
-    `${n} teams, ${fixtures * info.boards} board games. ${
-      home
-        ? `Your country finished #${rank + 1}.`
-        : "Your country did not take part."
-    } ${represented ? "You played on the national team." : "You followed the team as a federation member."}`,
-  );
-  if (represented) {
-    const games = result.boards.filter(
-      (b) => b.whiteId === "player" || b.blackId === "player",
-    ).length;
-    for (let i = 0; i < games; i++) next = coachedGame(next);
-  }
-  return {
-    ok: true,
-    save: queueArchives(
-      next,
-      retainedArchives(next).filter(
-        (e) =>
-          e.source === "national-team" &&
-          e.year === year &&
-          e.id === `career-${info.key}-${year}`,
-      ),
-    ),
-  };
-}
 /** The existing weekly circuit now records every entrant and updates ratings from board results. */
 export function weeklyCircuit(
   save: GameSave,

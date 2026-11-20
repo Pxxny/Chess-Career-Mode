@@ -118,7 +118,7 @@ export function reservedUntil(
 ) {
   return Math.max(
     bookedEnd(event),
-    bookedStart(event) + (event.details?.agenda?.exactStart ? 0 : 6),
+    bookedStart(event) + (event.details?.agenda?.exactStart || event.details?.format === "team" ? 0 : 6),
   );
 }
 export function tournamentSlot(t: ActiveTournament) {
