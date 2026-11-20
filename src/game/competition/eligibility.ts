@@ -1,3 +1,4 @@
+import { KERES_FIELD_LIMIT } from "./keres";
 import { seriesFinalists } from "./seasonSeries";
 import { travelQuote } from "./travel";
 import { teamSpec,teamInfoOf } from "@/data/chess/nationalTeamEvents";
@@ -78,7 +79,7 @@ export function registrationIssue(
     event.entryFee < 0 ||
     !Number.isInteger(event.fieldSize) ||
     event.fieldSize < 2 ||
-    event.fieldSize > 256 ||
+    event.fieldSize > (event.details?.keres ? KERES_FIELD_LIMIT : 256) ||
     !Number.isInteger(event.week) ||
     event.week < 1 ||
     event.week > 52

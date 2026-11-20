@@ -5,17 +5,18 @@ import { dayStamp } from "./agenda";
 
 const hosts = [["EE", "Tallinn"], ["FI", "Helsinki"], ["CZ", "Prague"], ["NL", "Amsterdam"], ["ES", "Madrid"], ["DE", "Berlin"]];
 const groupRounds = 24;
+export const KERES_FIELD_LIMIT = 1024;
 export const KERES_FORMAT = "Single elimination to 32 · 8 groups of 4 · top 2 per group to the round of 16 · best-of-7 final";
 export const KERES_GROUP_RULES = "8 games against each group opponent (24 per player). Ties use game wins, then entry Elo.";
 
 export function keresEvents(year: number): ScheduledEvent[] {
   const prize = 150_000 + (hashString(`fide-keres-fund:${year}`) % 31) * 5_000;
-  const { rounds } = keresStructure(1024);
+  const { rounds } = keresStructure(KERES_FIELD_LIMIT);
   return [13, 36].map((week, edition) => {
     const [country, location] = hosts[(((year - 2026) * 2 + edition) % hosts.length + hosts.length) % hosts.length];
     return {
       id: `paul-keres-${year}-${edition + 1}`, name: `Paul Keres Cup · ${edition === 0 ? "Spring" : "Autumn"} ${year}`,
-      year, week, level: "international", fieldSize: 1024, entryFee: 0, minElo: 0, minReputation: 0,
+      year, week, level: "international", fieldSize: KERES_FIELD_LIMIT, entryFee: 0, minElo: 0, minReputation: 0,
       registrationDeadline: { year, week: week - 1 }, weeksUntilStart: 0, weeksUntilDeadline: 0, invitational: false,
       details: {
         keres: true, category: "Paul Keres Cup", country, location,

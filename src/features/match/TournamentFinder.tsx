@@ -1,3 +1,4 @@
+import { KERES_FIELD_LIMIT } from "@/game/competition/keres";
 import { TOURNAMENT_CONTINENTS } from "@/game/competition/venues";
 import { useState } from "react";
 import { Button, Modal } from "@/components/ui";
@@ -26,7 +27,7 @@ export function TournamentFinder({
       continent,
       qualification,
       minPlayers: 2,
-      maxPlayers: 256,
+      maxPlayers: KERES_FIELD_LIMIT,
       availableOnly: true,
     },
   );
@@ -90,8 +91,8 @@ export function TournamentFinder({
           {number("toWeek", "Starts within (weeks)", 0, 52)}
           {number("minElo", "Minimum entry Elo from", 0, 3500)}
           {number("maxElo", "Minimum entry Elo up to", 0, 3500)}
-          {number("minPlayers", "Participant limit from", 2, 256)}
-          {number("maxPlayers", "Participant limit up to", 2, 256)}
+          {number("minPlayers", "Participant limit from", 2, KERES_FIELD_LIMIT)}
+          {number("maxPlayers", "Participant limit up to", 2, KERES_FIELD_LIMIT)}
         </fieldset>
         <div className="grid gap-3 sm:grid-cols-3">
           <label className="text-sm text-ink-muted">

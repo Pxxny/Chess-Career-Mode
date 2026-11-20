@@ -1,3 +1,4 @@
+import { keresEvents } from "./keres";
 import { describe, expect, it } from "vitest";
 import { SPONSORSHIPS, sponsorMarketShare } from "@/data/reputation";
 import { DEFAULT_APPEARANCE } from "@/data/appearance";
@@ -40,6 +41,17 @@ function result(event: ScheduledEvent, rank: number) {
 }
 
 describe("competition expansion", () => {
+  it("allows registration for both 1024-seat Paul Keres Cup editions during their windows", () => {
+    const save = career();
+    for (const event of keresEvents(save.world.date.year)) {
+      expect(registrationIssue(save, event, roster)).toBe("Registration has not opened yet.");
+      const open = { ...save, world: { ...save.world, date: event.registrationDeadline, day: 1 } };
+      const result = registerForEvent(open, event, roster);
+      expect(result.ok && result.save.registrations[0].fieldSize).toBe(1024);
+      expect(registrationIssue(open, { ...event, fieldSize: 1025 }, roster)).toBe("Invalid event data.");
+      expect(registrationIssue(open, { ...event, details: { ...event.details!, keres: false } }, roster)).toBe("Invalid event data.");
+    }
+  });
   it("starts a national team event only on its scheduled day", () => {
     const save = career();
     const fixture = divisionFixture(save, roster, false)!;

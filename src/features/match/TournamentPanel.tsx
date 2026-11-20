@@ -1,4 +1,4 @@
-import { KERES_FORMAT, KERES_GROUP_RULES, keresStage } from "@/game/competition/keres";
+import { KERES_FIELD_LIMIT, KERES_FORMAT, KERES_GROUP_RULES, keresStage } from "@/game/competition/keres";
 import { KeresGroupStandings } from "@/features/tournaments/KeresGroupStandings";
 import { useMoney } from "@/hooks/useMoney";
 import { NationalTeamTables } from "@/features/expansion/NationalTeamTables";
@@ -444,7 +444,7 @@ export function TournamentPanel({
       )}
       {finderOpen && (
         <TournamentFinder
-          initial={search??{fromWeek:0,toWeek:52,minElo:0,maxElo:save.player.rating,continent,qualification:qualificationFilter,minPlayers:2,maxPlayers:256,availableOnly:true,organizer}}
+          initial={search??{fromWeek:0,toWeek:52,minElo:0,maxElo:save.player.rating,continent,qualification:qualificationFilter,minPlayers:2,maxPlayers:KERES_FIELD_LIMIT,availableOnly:true,organizer}}
           continent={continent}
           qualification={qualificationFilter}
           rating={save.player.rating}
